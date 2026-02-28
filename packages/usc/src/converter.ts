@@ -13,6 +13,8 @@ import {
   XMLParser,
   ASTBuilder,
   renderDocument,
+  renderSection,
+  generateFrontmatter,
   createLinkResolver,
   FORMAT_VERSION,
   GENERATOR,
@@ -33,6 +35,8 @@ export interface ConvertOptions {
   input: string;
   /** Output directory root */
   output: string;
+  /** Output granularity: "section" (one file per section) or "chapter" (sections inline) */
+  granularity: "section" | "chapter";
   /** How to render cross-references */
   linkStyle: "relative" | "canonical" | "plaintext";
   /** Include source credits in output */
@@ -61,6 +65,7 @@ export interface ConvertResult {
 
 /** Default convert options */
 const DEFAULTS: Omit<ConvertOptions, "input" | "output"> = {
+  granularity: "section",
   linkStyle: "plaintext",
   includeSourceCredits: true,
   includeNotes: true,
@@ -99,14 +104,15 @@ export async function convertTitle(options: ConvertOptions): Promise<ConvertResu
   const opts = { ...DEFAULTS, ...options };
   const files: string[] = [];
 
-  // Collect sections during parsing (synchronous), write after parsing completes
-  const sections: CollectedSection[] = [];
+  // Collect emitted nodes during parsing (synchronous), write after parsing completes
+  const collected: CollectedSection[] = [];
 
-  // Set up the AST builder to emit at section level
+  // Set up the AST builder — emit level depends on granularity
+  const emitAt = opts.granularity === "chapter" ? "chapter" as const : "section" as const;
   const builder = new ASTBuilder({
-    emitAt: "section",
+    emitAt,
     onEmit: (node, context) => {
-      sections.push({ node, context });
+      collected.push({ node, context });
     },
   });
 
@@ -120,24 +126,39 @@ export async function convertTitle(options: ConvertOptions): Promise<ConvertResu
   const stream = createReadStream(opts.input, "utf-8");
   await parser.parseStream(stream);
 
-  // Create link resolver and pre-register all section paths
-  // (enables cross-reference resolution within the same title)
-  const linkResolver = createLinkResolver();
-  for (const { node, context } of sections) {
-    const sectionNum = node.numValue;
-    if (sectionNum && node.identifier) {
-      const filePath = buildOutputPath(context, sectionNum, opts.output);
-      linkResolver.register(node.identifier, filePath);
-    }
-  }
-
-  // Write all collected sections to disk and collect metadata
   const sectionMetas: SectionMeta[] = [];
-  for (const { node, context } of sections) {
-    const result = await writeSection(node, context, opts, linkResolver);
-    if (result) {
-      files.push(result.filePath);
-      sectionMetas.push(result.meta);
+
+  if (opts.granularity === "chapter") {
+    // Chapter-level: each emitted node is a chapter containing sections
+    for (const { node, context } of collected) {
+      const result = await writeChapter(node, context, opts);
+      if (result) {
+        files.push(result.filePath);
+        // Collect section-level metadata from chapter children
+        for (const meta of result.sectionMetas) {
+          sectionMetas.push(meta);
+        }
+      }
+    }
+  } else {
+    // Section-level: each emitted node is a single section
+    // Create link resolver and pre-register all section paths
+    const linkResolver = createLinkResolver();
+    for (const { node, context } of collected) {
+      const sectionNum = node.numValue;
+      if (sectionNum && node.identifier) {
+        const filePath = buildOutputPath(context, sectionNum, opts.output);
+        linkResolver.register(node.identifier, filePath);
+      }
+    }
+
+    // Write all collected sections to disk and collect metadata
+    for (const { node, context } of collected) {
+      const result = await writeSection(node, context, opts, linkResolver);
+      if (result) {
+        files.push(result.filePath);
+        sectionMetas.push(result.meta);
+      }
     }
   }
 
@@ -347,6 +368,103 @@ async function writeMetaFiles(
   const titleMetaPath = join(titleDir, "_meta.json");
   await mkdir(dirname(titleMetaPath), { recursive: true });
   await writeFile(titleMetaPath, JSON.stringify(titleMeta, null, 2) + "\n", "utf-8");
+}
+
+/** Result of writing a chapter file */
+interface WriteChapterResult {
+  filePath: string;
+  sectionMetas: SectionMeta[];
+}
+
+/**
+ * Write a chapter-level file (all sections inlined).
+ * The emitted node is a chapter LevelNode whose children include section LevelNodes.
+ */
+async function writeChapter(
+  chapterNode: LevelNode,
+  context: EmitContext,
+  options: ConvertOptions,
+): Promise<WriteChapterResult | null> {
+  const chapterNum = chapterNode.numValue;
+  if (!chapterNum) return null;
+
+  const titleNum = findAncestor(context.ancestors, "title")?.numValue ?? "0";
+  const titleDir = `title-${padTwo(titleNum)}`;
+  const chapterFile = `chapter-${padTwo(chapterNum)}.md`;
+  const filePath = join(options.output, "usc", titleDir, chapterFile);
+
+  // Build chapter-level frontmatter
+  const titleAncestor = findAncestor(context.ancestors, "title");
+  const meta = context.documentMeta;
+  const chapterName = chapterNode.heading?.trim() ?? "";
+  const titleName = titleAncestor?.heading?.trim() ?? meta.dcTitle ?? "";
+  const currency = parseCurrency(meta.docPublicationName ?? "");
+  const lastUpdated = parseDate(meta.created ?? "");
+
+  const fmData: FrontmatterData = {
+    identifier: chapterNode.identifier ?? `/us/usc/t${titleNum}/ch${chapterNum}`,
+    title: `${titleNum} USC Chapter ${chapterNum} - ${chapterName}`,
+    title_number: parseIntSafe(titleNum),
+    title_name: titleName,
+    section_number: chapterNum,
+    section_name: chapterName,
+    chapter_number: parseIntSafe(chapterNum),
+    chapter_name: chapterName,
+    positive_law: meta.positivelaw ?? false,
+    currency,
+    last_updated: lastUpdated,
+  };
+
+  const notesFilter = buildNotesFilter(options);
+  const renderOpts: RenderOptions = {
+    headingOffset: 0,
+    linkStyle: options.linkStyle,
+    notesFilter,
+  };
+
+  // Build the chapter Markdown: heading + each section rendered with H2
+  const parts: string[] = [];
+  parts.push(generateFrontmatter(fmData));
+  parts.push("");
+  parts.push(`# Chapter ${chapterNum} — ${chapterName}`);
+
+  // Collect section metas and render each section
+  const sectionMetas: SectionMeta[] = [];
+
+  for (const child of chapterNode.children) {
+    if (child.type === "level" && child.levelType === "section") {
+      const sectionOpts: RenderOptions = { ...renderOpts, headingOffset: 1 };
+      const sectionNode = options.includeSourceCredits ? child : stripSourceCredits(child);
+      const sectionMd = renderSection(sectionNode, sectionOpts);
+      parts.push("");
+      parts.push(sectionMd);
+
+      // Collect section metadata
+      const sectionNum = child.numValue ?? "0";
+      const hasNotes = child.children.some(
+        (c) => c.type === "notesContainer" || c.type === "note",
+      );
+      sectionMetas.push({
+        identifier: child.identifier ?? `/us/usc/t${titleNum}/s${sectionNum}`,
+        number: sectionNum,
+        name: child.heading?.trim() ?? "",
+        relativeFile: chapterFile,
+        contentLength: sectionMd.length,
+        hasNotes,
+        status: child.status ?? "current",
+        chapterIdentifier: chapterNode.identifier ?? "",
+        chapterNumber: chapterNum,
+        chapterName,
+      });
+    }
+  }
+
+  const markdown = parts.join("\n") + "\n";
+
+  await mkdir(dirname(filePath), { recursive: true });
+  await writeFile(filePath, markdown, "utf-8");
+
+  return { filePath, sectionMetas };
 }
 
 function buildOutputPath(

@@ -10,6 +10,7 @@ const FIXTURES_DIR = resolve(import.meta.dirname, "../../../fixtures/fragments")
 
 /** Default options for tests */
 const DEFAULTS: Omit<ConvertOptions, "input" | "output"> = {
+  granularity: "section",
   linkStyle: "plaintext",
   includeSourceCredits: true,
   includeNotes: true,
@@ -189,5 +190,27 @@ describe("convertTitle", () => {
     expect(content).toContain("### Findings");
     // Should not contain editorial/amendment notes
     expect(content).not.toContain("### Amendments");
+  });
+
+  it("outputs chapter-level files when granularity is chapter", async () => {
+    const result = await convertTitle({
+      ...DEFAULTS,
+      input: resolve(FIXTURES_DIR, "simple-section.xml"),
+      output: outputDir,
+      granularity: "chapter",
+    });
+
+    expect(result.sectionsWritten).toBeGreaterThan(0);
+    expect(result.files).toHaveLength(1);
+
+    // Should be a chapter file, not a section file in a subdirectory
+    const filePath = result.files[0]!;
+    expect(filePath).toContain("chapter-01.md");
+    expect(filePath).not.toContain("chapter-01/");
+
+    // Content should have chapter heading and section as H2
+    const content = await readFile(filePath, "utf-8");
+    expect(content).toContain("# Chapter 1");
+    expect(content).toContain("## § 2.");
   });
 });

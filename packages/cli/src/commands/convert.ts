@@ -10,6 +10,7 @@ import { convertTitle } from "@law2md/usc";
 /** Parsed options from the convert command */
 interface ConvertCommandOptions {
   output: string;
+  granularity: "section" | "chapter";
   linkStyle: "relative" | "canonical" | "plaintext";
   includeSourceCredits: boolean;
   includeNotes: boolean;
@@ -23,6 +24,11 @@ export const convertCommand = new Command("convert")
   .description("Convert USC XML file(s) to Markdown")
   .argument("<input>", "Path to a USC XML file")
   .option("-o, --output <dir>", "Output directory", "./output")
+  .option(
+    "-g, --granularity <level>",
+    'Output granularity: "section" (one file per section) or "chapter" (sections inline)',
+    "section",
+  )
   .option(
     "--link-style <style>",
     'Cross-reference link style: "relative", "canonical", or "plaintext"',
@@ -76,6 +82,7 @@ export const convertCommand = new Command("convert")
       const result = await convertTitle({
         input: inputPath,
         output: outputPath,
+        granularity: options.granularity,
         linkStyle: options.linkStyle,
         includeSourceCredits: options.includeSourceCredits,
         includeNotes,

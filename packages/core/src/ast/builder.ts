@@ -102,6 +102,8 @@ export class ASTBuilder {
   private tableCollector: TableCollector | null = null;
   /** Active USLM layout collector (null when not inside a layout) */
   private layoutCollector: TableCollector | null = null;
+  /** Nesting depth inside <toc> — elements inside toc are handled by layout collector only */
+  private tocDepth = 0;
   /** Current meta field being collected (e.g., "dc:title", "docNumber") */
   private metaField: string | null = null;
   /** Attributes of the current meta property element */
@@ -144,6 +146,42 @@ export class ASTBuilder {
     if (name === "main") {
       return;
     }
+
+    // --- Collector zones: checked BEFORE normal element handlers ---
+
+    if (name === "xhtml:table") {
+      this.tableCollector = {
+        headers: [], rows: [], currentRow: [], cellText: "",
+        inHead: false, inCell: false, isComplex: false, cellDepth: 0,
+      };
+      return;
+    }
+    if (this.tableCollector) {
+      this.handleTableOpen(name, attrs);
+      return;
+    }
+
+    if (name === "layout") {
+      this.layoutCollector = {
+        headers: [], rows: [], currentRow: [], cellText: "",
+        inHead: false, inCell: false, isComplex: false, cellDepth: 0,
+      };
+      return;
+    }
+    if (this.layoutCollector) {
+      this.handleLayoutOpen(name, attrs);
+      return;
+    }
+
+    if (name === "toc") {
+      this.tocDepth++;
+      return;
+    }
+    if (this.tocDepth > 0) {
+      return;
+    }
+
+    // --- Normal element handlers ---
 
     // Handle level elements (title, chapter, section, subsection, etc.)
     if (LEVEL_ELEMENTS.has(name)) {
@@ -200,52 +238,6 @@ export class ASTBuilder {
       return;
     }
 
-    // Handle XHTML table elements
-    if (name === "xhtml:table") {
-      this.tableCollector = {
-        headers: [],
-        rows: [],
-        currentRow: [],
-        cellText: "",
-        inHead: false,
-        inCell: false,
-        isComplex: false,
-        cellDepth: 0,
-      };
-      return;
-    }
-
-    if (this.tableCollector) {
-      this.handleTableOpen(name, attrs);
-      return;
-    }
-
-    // Handle USLM layout elements (inside <toc> or standalone)
-    if (name === "layout") {
-      this.layoutCollector = {
-        headers: [],
-        rows: [],
-        currentRow: [],
-        cellText: "",
-        inHead: false,
-        inCell: false,
-        isComplex: false,
-        cellDepth: 0,
-      };
-      return;
-    }
-
-    if (this.layoutCollector) {
-      this.handleLayoutOpen(name, attrs);
-      return;
-    }
-
-    // Skip <toc> container — layout inside it handles the content
-    if (name === "toc") {
-      this.stack.push({ kind: "ignore", node: null, elementName: name, textBuffer: "" });
-      return;
-    }
-
     // Handle <p> elements — they're content-like within their parent
     if (name === "p") {
       // p elements don't create separate AST nodes; their text flows
@@ -290,6 +282,12 @@ export class ASTBuilder {
       return;
     }
 
+    // Handle </toc> close
+    if (name === "toc") {
+      this.tocDepth = Math.max(0, this.tocDepth - 1);
+      return;
+    }
+
     // Handle USLM layout close
     if (name === "layout" && this.layoutCollector) {
       this.finishLayout();
@@ -298,6 +296,11 @@ export class ASTBuilder {
 
     if (this.layoutCollector) {
       this.handleLayoutClose(name);
+      return;
+    }
+
+    // Skip elements inside toc that aren't in a layout
+    if (this.tocDepth > 0) {
       return;
     }
 
@@ -393,6 +396,11 @@ export class ASTBuilder {
 
     // Skip text inside layout but outside cells
     if (this.layoutCollector) {
+      return;
+    }
+
+    // Skip text inside toc but outside layout
+    if (this.tocDepth > 0) {
       return;
     }
 
