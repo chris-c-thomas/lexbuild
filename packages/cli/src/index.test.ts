@@ -1,8 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { execFileSync } from "node:child_process";
+import { createRequire } from "node:module";
 import { resolve } from "node:path";
 
 const CLI_PATH = resolve(import.meta.dirname, "../dist/index.js");
+const require = createRequire(import.meta.url);
+const pkg = require("../package.json") as { version: string };
 
 describe("law2md CLI", () => {
   it("shows help text", () => {
@@ -13,11 +16,11 @@ describe("law2md CLI", () => {
     expect(output).toContain("convert");
   });
 
-  it("shows version", () => {
+  it("shows version from package.json", () => {
     const output = execFileSync("node", [CLI_PATH, "--version"], {
       encoding: "utf-8",
     });
-    expect(output.trim()).toBe("0.1.0");
+    expect(output.trim()).toBe(pkg.version);
   });
 
   it("shows convert command help", () => {

@@ -2,14 +2,30 @@
  * YAML frontmatter generator for section Markdown files.
  */
 
+import { readFileSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { stringify } from "yaml";
 import type { FrontmatterData } from "../ast/types.js";
+
+/** Resolve package.json version at module load time */
+function readPackageVersion(): string {
+  try {
+    const dir = dirname(fileURLToPath(import.meta.url));
+    // Works from both src/markdown/ (dev) and dist/ (built)
+    const pkgPath = resolve(dir, "..", "..", "package.json");
+    const raw = readFileSync(pkgPath, "utf-8");
+    return (JSON.parse(raw) as { version: string }).version;
+  } catch {
+    return "0.0.0";
+  }
+}
 
 /** Output format version */
 export const FORMAT_VERSION = "1.0.0";
 
-/** Generator identifier */
-export const GENERATOR = "law2md@0.1.0";
+/** Generator identifier (reads version from package.json) */
+export const GENERATOR = `law2md@${readPackageVersion()}`;
 
 /**
  * Generate a YAML frontmatter string from section metadata.
