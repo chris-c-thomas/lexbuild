@@ -50,6 +50,11 @@ export type {
 export { ASTBuilder } from "./ast/builder.js";
 export type { ASTBuilderOptions } from "./ast/builder.js";
 
+// Markdown rendering
+export { renderDocument, renderSection, renderNode } from "./markdown/renderer.js";
+export type { RenderOptions } from "./markdown/renderer.js";
+export { generateFrontmatter, FORMAT_VERSION, GENERATOR } from "./markdown/frontmatter.js";
+
 // Legacy aliases for backward compatibility with existing tests
 export { USLM_NS as USLM_NAMESPACE } from "./xml/namespace.js";
 export { XHTML_NS as XHTML_NAMESPACE } from "./xml/namespace.js";
