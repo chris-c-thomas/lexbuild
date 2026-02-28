@@ -11,17 +11,13 @@ positive_law: true
 currency: "119-73"
 last_updated: "2025-12-03"
 format_version: "1.0.0"
-generator: "law2md@0.1.0"
+generator: "law2md@0.0.0"
 source_credit: "(July 30, 1947, ch. 388, 61 Stat. 633.)"
 ---
 
 # § 2. “County” as including “parish”, and so forth
 
-
-
-
 The word “county” includes a parish, or any other equivalent subdivision of a State or Territory of the United States.
-
 
 ---
 

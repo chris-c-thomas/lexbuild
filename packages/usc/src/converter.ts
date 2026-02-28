@@ -12,6 +12,7 @@ import {
   XMLParser,
   ASTBuilder,
   renderDocument,
+  createLinkResolver,
 } from "@law2md/core";
 import type {
   LevelNode,
@@ -19,6 +20,7 @@ import type {
   FrontmatterData,
   RenderOptions,
   AncestorInfo,
+  LinkResolver,
 } from "@law2md/core";
 
 /** Options for converting a USC XML file */
@@ -85,9 +87,20 @@ export async function convertTitle(options: ConvertOptions): Promise<ConvertResu
   const stream = createReadStream(opts.input, "utf-8");
   await parser.parseStream(stream);
 
+  // Create link resolver and pre-register all section paths
+  // (enables cross-reference resolution within the same title)
+  const linkResolver = createLinkResolver();
+  for (const { node, context } of sections) {
+    const sectionNum = node.numValue;
+    if (sectionNum && node.identifier) {
+      const filePath = buildOutputPath(context, sectionNum, opts.output);
+      linkResolver.register(node.identifier, filePath);
+    }
+  }
+
   // Write all collected sections to disk
   for (const { node, context } of sections) {
-    const filePath = await writeSection(node, context, opts);
+    const filePath = await writeSection(node, context, opts, linkResolver);
     if (filePath) {
       files.push(filePath);
     }
@@ -111,6 +124,7 @@ async function writeSection(
   node: LevelNode,
   context: EmitContext,
   options: ConvertOptions,
+  linkResolver?: LinkResolver | undefined,
 ): Promise<string | null> {
   const sectionNum = node.numValue;
   if (!sectionNum) return null;
@@ -121,10 +135,13 @@ async function writeSection(
   // Build frontmatter data
   const frontmatter = buildFrontmatter(node, context);
 
-  // Build render options
+  // Build render options with link resolver for relative links
   const renderOpts: RenderOptions = {
     headingOffset: 0,
     linkStyle: options.linkStyle,
+    resolveLink: linkResolver
+      ? (identifier: string) => linkResolver.resolve(identifier, filePath)
+      : undefined,
   };
 
   // Optionally strip source credits

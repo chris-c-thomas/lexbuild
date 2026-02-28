@@ -317,6 +317,8 @@ export class ASTBuilder {
     }
 
     if (frame.kind === "content" || frame.kind === "sourceCredit") {
+      // Skip whitespace-only text between <p> elements (XML formatting noise)
+      if (!text.trim()) return;
       // Create a text inline node and append to parent
       const textNode: InlineNode = { type: "inline", inlineType: "text", text };
       const parent = frame.node;
@@ -678,15 +680,15 @@ export class ASTBuilder {
     if (!parentFrame) return;
 
     if (parentFrame.kind === "content" || parentFrame.kind === "sourceCredit") {
-      // Add text as inline child
       const textNode: InlineNode = { type: "inline", inlineType: "text", text };
       const parent = parentFrame.node;
       if (parent && "children" in parent && Array.isArray(parent.children)) {
-        // Add paragraph break if not the first child
-        if ((parent.children as InlineNode[]).length > 0) {
-          (parent.children as InlineNode[]).push({ type: "inline", inlineType: "text", text: "\n\n" });
+        const children = parent.children as InlineNode[];
+        // Add paragraph break before this <p>'s text if there are prior children
+        if (children.length > 0) {
+          children.push({ type: "inline", inlineType: "text", text: "\n\n" });
         }
-        (parent.children as InlineNode[]).push(textNode);
+        children.push(textNode);
       }
     } else if (parentFrame.kind === "note" || parentFrame.kind === "level" || parentFrame.kind === "quotedContent") {
       // Wrap in a ContentNode

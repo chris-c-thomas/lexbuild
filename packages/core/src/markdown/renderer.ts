@@ -195,9 +195,12 @@ function renderSmallLevel(node: LevelNode, options: RenderOptions): string {
 
 /**
  * Render a content block (content, chapeau, continuation, proviso).
+ * Normalizes whitespace: collapses runs of whitespace between paragraphs
+ * into clean double-newline paragraph breaks, and trims edges.
  */
 function renderContent(node: ContentNode): string {
-  return renderInlineChildren(node.children);
+  const raw = renderInlineChildren(node.children);
+  return normalizeWhitespace(raw);
 }
 
 /**
@@ -205,6 +208,15 @@ function renderContent(node: ContentNode): string {
  */
 function renderInlineChildren(children: InlineNode[], options?: RenderOptions): string {
   return children.map((child) => renderInline(child, options)).join("");
+}
+
+/**
+ * Normalize whitespace in rendered text:
+ * - Trim leading/trailing whitespace
+ * - Collapse 2+ consecutive newlines (with optional spaces) into double-newline
+ */
+function normalizeWhitespace(text: string): string {
+  return text.trim().replace(/\n\s*\n/g, "\n\n");
 }
 
 // ---------------------------------------------------------------------------
