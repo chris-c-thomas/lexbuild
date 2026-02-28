@@ -19,6 +19,7 @@ import type {
   EmitContext,
   FrontmatterData,
   RenderOptions,
+  NotesFilter,
   AncestorInfo,
   LinkResolver,
 } from "@law2md/core";
@@ -33,6 +34,14 @@ export interface ConvertOptions {
   linkStyle: "relative" | "canonical" | "plaintext";
   /** Include source credits in output */
   includeSourceCredits: boolean;
+  /** Include notes in output. True = all notes (default). False = no notes. */
+  includeNotes: boolean;
+  /** Include editorial notes only (when includeNotes is false) */
+  includeEditorialNotes: boolean;
+  /** Include statutory notes only (when includeNotes is false) */
+  includeStatutoryNotes: boolean;
+  /** Include amendment history notes only (when includeNotes is false) */
+  includeAmendments: boolean;
 }
 
 /** Result of a conversion */
@@ -51,6 +60,10 @@ export interface ConvertResult {
 const DEFAULTS: Omit<ConvertOptions, "input" | "output"> = {
   linkStyle: "plaintext",
   includeSourceCredits: true,
+  includeNotes: true,
+  includeEditorialNotes: false,
+  includeStatutoryNotes: false,
+  includeAmendments: false,
 };
 
 /** A collected section ready to be written */
@@ -135,6 +148,9 @@ async function writeSection(
   // Build frontmatter data
   const frontmatter = buildFrontmatter(node, context);
 
+  // Build notes filter
+  const notesFilter = buildNotesFilter(options);
+
   // Build render options with link resolver for relative links
   const renderOpts: RenderOptions = {
     headingOffset: 0,
@@ -142,6 +158,7 @@ async function writeSection(
     resolveLink: linkResolver
       ? (identifier: string) => linkResolver.resolve(identifier, filePath)
       : undefined,
+    notesFilter,
   };
 
   // Optionally strip source credits
@@ -258,6 +275,27 @@ function buildFrontmatter(node: LevelNode, context: EmitContext): FrontmatterDat
 /**
  * Find an ancestor by level type.
  */
+/**
+ * Build a NotesFilter from convert options.
+ * Returns undefined if all notes should be included (default).
+ */
+function buildNotesFilter(options: ConvertOptions): NotesFilter | undefined {
+  // Default: include all notes
+  if (options.includeNotes) return undefined;
+
+  // No notes at all
+  if (!options.includeEditorialNotes && !options.includeStatutoryNotes && !options.includeAmendments) {
+    return { editorial: false, statutory: false, amendments: false };
+  }
+
+  // Selective inclusion
+  return {
+    editorial: options.includeEditorialNotes,
+    statutory: options.includeStatutoryNotes,
+    amendments: options.includeAmendments,
+  };
+}
+
 function findAncestor(ancestors: readonly AncestorInfo[], levelType: string): AncestorInfo | undefined {
   return ancestors.find((a) => a.levelType === levelType);
 }

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uscDoc xmlns="http://xml.house.gov/schemas/uslm/1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" identifier="/us/usc/t1">
+<meta>
+  <dc:title>Title 1</dc:title>
+  <dc:type>USCTitle</dc:type>
+  <docNumber>1</docNumber>
+  <property role="is-positive-law">yes</property>
+  <dcterms:created>2025-12-03T10:11:39</dcterms:created>
+</meta>
+<main>
+<title identifier="/us/usc/t1"><num value="1">Title 1—</num><heading>GENERAL PROVISIONS</heading>
+<chapter identifier="/us/usc/t1/ch1"><num value="1">CHAPTER 1—</num><heading>RULES OF CONSTRUCTION</heading>
+<section identifier="/us/usc/t1/s99"><num value="99">§ 99.</num><heading> Test section with notes</heading>
+<subsection identifier="/us/usc/t1/s99/a"><num value="a">(a)</num><content> Main text of subsection a.</content>
+</subsection>
+<sourceCredit>(Added Pub. L. 104–199, § 3(a), Sept. 21, 1996.)</sourceCredit>
+<notes type="uscNote">
+<note role="crossHeading" topic="editorialNotes"><heading><b>Editorial Notes</b></heading></note>
+<note topic="amendments"><heading>Amendments</heading>
+<p>2022—Pub. L. 117–228 amended section generally.</p>
+<p>1996—Pub. L. 104–199 added this section.</p>
+</note>
+<note role="crossHeading" topic="statutoryNotes"><heading><b>Statutory Notes and Related Subsidiaries</b></heading></note>
+<note topic="separability"><heading>Severability</heading>
+<p>If any provision of this Act is held to be unconstitutional, the remainder shall not be affected.</p>
+</note>
+<note topic="miscellaneous"><heading>Findings</heading>
+<p>Congress finds the following important matters.</p>
+</note>
+</notes>
+</section>
+</chapter>
+</title>
+</main>
+</uscDoc>

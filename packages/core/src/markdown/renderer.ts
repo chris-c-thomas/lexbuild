@@ -19,6 +19,16 @@ import type {
 import { SMALL_LEVELS } from "../ast/types.js";
 import { generateFrontmatter } from "./frontmatter.js";
 
+/** Notes filtering configuration */
+export interface NotesFilter {
+  /** Include editorial notes (codification, dispositionOfSections, etc.) */
+  editorial: boolean;
+  /** Include statutory notes (changeOfName, regulations, miscellaneous, repeals, etc.) */
+  statutory: boolean;
+  /** Include amendment history (amendments, effectiveDateOfAmendment) */
+  amendments: boolean;
+}
+
 /** Options for controlling Markdown rendering */
 export interface RenderOptions {
   /** Heading level offset (0 = section is H1, 1 = section is H2) */
@@ -27,6 +37,8 @@ export interface RenderOptions {
   linkStyle: "relative" | "canonical" | "plaintext";
   /** Function to resolve a USLM identifier to a relative file path (for linkStyle "relative") */
   resolveLink?: ((identifier: string) => string | null) | undefined;
+  /** Notes filtering. Undefined = include all notes. */
+  notesFilter?: NotesFilter | undefined;
 }
 
 /** Default render options */
@@ -401,16 +413,115 @@ function renderSourceCredit(node: SourceCreditNode, options: RenderOptions): str
  * Render a notes container (<notes type="uscNote">).
  */
 function renderNotesContainer(node: NotesContainerNode, options: RenderOptions): string {
+  const filter = options.notesFilter;
+
+  // No filter = include everything (default behavior)
+  if (!filter) {
+    const parts: string[] = [];
+    for (const child of node.children) {
+      const rendered = renderNode(child, options);
+      if (rendered) {
+        parts.push(rendered);
+      }
+    }
+    return parts.join("\n\n");
+  }
+
+  // Filter notes by category
   const parts: string[] = [];
+  let currentCategory: "editorial" | "statutory" | "unknown" = "unknown";
 
   for (const child of node.children) {
-    const rendered = renderNode(child, options);
-    if (rendered) {
-      parts.push(rendered);
+    if (child.type !== "note") {
+      const rendered = renderNode(child, options);
+      if (rendered) parts.push(rendered);
+      continue;
+    }
+
+    // Cross-heading notes set the category
+    if (child.role === "crossHeading") {
+      if (child.topic === "editorialNotes") {
+        currentCategory = "editorial";
+      } else if (child.topic === "statutoryNotes") {
+        currentCategory = "statutory";
+      }
+      // Only render the heading if we'll include notes in this category
+      if (shouldIncludeCategory(currentCategory, filter)) {
+        const rendered = renderNode(child, options);
+        if (rendered) parts.push(rendered);
+      }
+      continue;
+    }
+
+    // Regular notes — check if their topic/category passes the filter
+    if (shouldIncludeNote(child, currentCategory, filter)) {
+      const rendered = renderNode(child, options);
+      if (rendered) parts.push(rendered);
     }
   }
 
   return parts.join("\n\n");
+}
+
+/** Amendment-related topics */
+const AMENDMENT_TOPICS = new Set([
+  "amendments",
+  "effectiveDateOfAmendment",
+  "shortTitleOfAmendment",
+]);
+
+/** Editorial-specific topics */
+const EDITORIAL_TOPICS = new Set([
+  "codification",
+  "dispositionOfSections",
+]);
+
+/** Statutory-specific topics */
+const STATUTORY_TOPICS = new Set([
+  "changeOfName",
+  "regulations",
+  "miscellaneous",
+  "repeals",
+  "separability",
+  "crossReferences",
+]);
+
+/**
+ * Check if a category of notes should be included based on the filter.
+ */
+function shouldIncludeCategory(
+  category: "editorial" | "statutory" | "unknown",
+  filter: NotesFilter,
+): boolean {
+  if (category === "editorial") return filter.editorial || filter.amendments;
+  if (category === "statutory") return filter.statutory || filter.amendments;
+  // Unknown category — include if any filter is enabled
+  return filter.editorial || filter.statutory || filter.amendments;
+}
+
+/**
+ * Check if an individual note should be included based on its topic and category.
+ */
+function shouldIncludeNote(
+  node: NoteNode,
+  currentCategory: "editorial" | "statutory" | "unknown",
+  filter: NotesFilter,
+): boolean {
+  const topic = node.topic ?? "";
+
+  // Amendment topics included by amendments filter
+  if (AMENDMENT_TOPICS.has(topic)) return filter.amendments;
+
+  // Topic-specific classification takes precedence over category
+  if (EDITORIAL_TOPICS.has(topic)) return filter.editorial;
+  if (STATUTORY_TOPICS.has(topic)) return filter.statutory;
+
+  // Fall back to category from cross-heading
+  if (currentCategory === "editorial") return filter.editorial;
+  if (currentCategory === "statutory") return filter.statutory;
+
+  // Unknown — include if any filter is active
+  return filter.editorial || filter.statutory || filter.amendments;
 }
 
 /**
