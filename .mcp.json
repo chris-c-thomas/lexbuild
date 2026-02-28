@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "context7": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@anthropic-ai/mcp-remote@latest",
+        "https://mcp.context7.com/mcp"
+      ],
+      "env": {}
+    }
+  }
+}
