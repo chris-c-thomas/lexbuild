@@ -75,6 +75,8 @@ export class ASTBuilder {
 
   /** Whether we are currently inside the <meta> block */
   private inMeta = false;
+  /** Nesting depth inside <quotedContent> — levels inside quotes are not emitted */
+  private quotedContentDepth = 0;
   /** Current meta field being collected (e.g., "dc:title", "docNumber") */
   private metaField: string | null = null;
   /** Attributes of the current meta property element */
@@ -307,6 +309,10 @@ export class ASTBuilder {
         inlineNode.children = [];
       }
       inlineNode.children.push(textChild);
+
+      // Also bubble text up to any heading/num ignore frame below this inline
+      // (handles <heading><b>Editorial Notes</b></heading> pattern)
+      this.bubbleTextToCollector(text);
       return;
     }
 
@@ -413,11 +419,11 @@ export class ASTBuilder {
       children: [],
     };
 
-    // If this is a big level (above the emit level), push an ancestor placeholder.
-    // The heading and numValue will be filled in as <num> and <heading> are parsed.
+    // If this is a big level (above the emit level) and we're NOT inside quotedContent,
+    // push an ancestor placeholder. The heading and numValue will be filled in later.
     const emitIndex = LEVEL_TYPES_ARRAY.indexOf(this.options.emitAt);
     const thisIndex = LEVEL_TYPES_ARRAY.indexOf(levelType);
-    if (thisIndex >= 0 && thisIndex < emitIndex) {
+    if (thisIndex >= 0 && thisIndex < emitIndex && this.quotedContentDepth === 0) {
       this.ancestors.push({
         levelType,
         identifier: attrs["identifier"],
@@ -432,6 +438,12 @@ export class ASTBuilder {
     if (!frame) return;
 
     const node = frame.node as LevelNode;
+
+    // If we're inside a quotedContent, don't emit — treat as a child node
+    if (this.quotedContentDepth > 0) {
+      this.addToParent(node);
+      return;
+    }
 
     // Should we emit this node?
     if (levelType === this.options.emitAt) {
@@ -588,6 +600,7 @@ export class ASTBuilder {
   // ---------------------------------------------------------------------------
 
   private openQuotedContent(attrs: Attributes): void {
+    this.quotedContentDepth++;
     const node: QuotedContentNode = {
       type: "quotedContent",
       origin: attrs["origin"],
@@ -597,6 +610,7 @@ export class ASTBuilder {
   }
 
   private closeQuotedContent(): void {
+    this.quotedContentDepth--;
     const frame = this.popFrame("quotedContent");
     if (!frame) return;
 
@@ -681,6 +695,25 @@ export class ASTBuilder {
       const parent = parentFrame.node;
       if (parent && "children" in parent && Array.isArray(parent.children)) {
         (parent.children as ASTNode[]).push(contentNode);
+      }
+    }
+  }
+
+  /**
+   * Bubble text content up to the nearest heading/num ignore frame on the stack.
+   * This handles patterns like <heading><b>Editorial Notes</b></heading>
+   * where the text is inside an inline child but needs to be collected by the heading frame.
+   */
+  private bubbleTextToCollector(text: string): void {
+    for (let i = this.stack.length - 2; i >= 0; i--) {
+      const f = this.stack[i];
+      if (f?.kind === "ignore" && (f.elementName === "heading" || f.elementName === "num")) {
+        f.textBuffer += text;
+        return;
+      }
+      // Stop bubbling if we hit a non-inline, non-ignore frame
+      if (f && f.kind !== "inline" && f.kind !== "ignore") {
+        return;
       }
     }
   }
