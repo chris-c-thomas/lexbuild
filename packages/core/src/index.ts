@@ -55,8 +55,3 @@ export { renderDocument, renderSection, renderNode } from "./markdown/renderer.j
 export type { RenderOptions } from "./markdown/renderer.js";
 export { generateFrontmatter, FORMAT_VERSION, GENERATOR } from "./markdown/frontmatter.js";
 
-// Legacy aliases for backward compatibility with existing tests
-export { USLM_NS as USLM_NAMESPACE } from "./xml/namespace.js";
-export { XHTML_NS as XHTML_NAMESPACE } from "./xml/namespace.js";
-export { DC_NS as DC_NAMESPACE } from "./xml/namespace.js";
-export { DCTERMS_NS as DCTERMS_NAMESPACE } from "./xml/namespace.js";
