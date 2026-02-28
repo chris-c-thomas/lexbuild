@@ -1,10 +1,8 @@
 # law2md
 
-Convert U.S. legislative XML into structured Markdown for AI and RAG systems.
+Convert the U.S. Code source XML content into structured Markdown for use with AI and RAG systems.
 
 > **Status: In Development** -- law2md is under active development. Phase 1 (foundation) is complete. The tool can convert U.S. Code XML to section-level Markdown with frontmatter metadata. See [Project Status](#project-status) for details on what works today and what is planned.
-
----
 
 ## Overview
 
@@ -212,4 +210,4 @@ The U.S. Code XML is public domain and freely available for download at [uscode.
 
 ## License
 
-[MIT](LICENSE)
+MIT. See [LICENSE](LICENSE).
