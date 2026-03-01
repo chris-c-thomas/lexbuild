@@ -172,7 +172,7 @@ export async function convertTitle(options: ConvertOptions): Promise<ConvertResu
       }
     }
   } else {
-    // Section-level: each emitted node is a single section
+    // Section-level with relative links: need two-pass for link resolver
     // Track duplicate section numbers per chapter to disambiguate filenames
     const sectionCounts = new Map<string, number>();
     const suffixes: (string | undefined)[] = [];
