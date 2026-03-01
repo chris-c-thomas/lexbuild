@@ -1,0 +1,24 @@
+---
+identifier: "/us/usc/t5/s3598"
+title: "5 USC § 3598 - FBI Reserve Service"
+title_number: 5
+title_name: "GOVERNMENT ORGANIZATION AND EMPLOYEES"
+section_number: "3598"
+section_name: "FBI Reserve Service"
+chapter_number: 35
+chapter_name: "RETENTION PREFERENCE, VOLUNTARY SEPARATION INCENTIVE PAYMENTS, RESTORATION, AND REEMPLOYMENT"
+positive_law: true
+currency: "unknown"
+last_updated: "2025-12-03"
+format_version: "1.0.0"
+generator: "law2md@0.0.0"
+source_credit: "(Pub. L. 110–181, Jan. 28, 2008.)"
+---
+
+# § 3598. FBI Reserve Service
+
+The Director of the Federal Bureau of Investigation may provide for the establishment of a FBI Reserve Service (second version).
+
+---
+
+**Source Credit**: (Pub. L. 110–181, Jan. 28, 2008.)
