@@ -114,7 +114,9 @@ law2md convert ./xml/usc42.xml -o ./output --dry-run
 
 ```bash
 law2md convert <input> [options]
+```
 
+```text
 Arguments:
   input                          Path to a USC XML file
 
