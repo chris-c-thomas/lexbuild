@@ -251,7 +251,9 @@ https://uscode.house.gov/download/releasepoints/us/pl/{congress}/{law}/xml_uscAl
 
 Where `{NN}` is zero-padded title number (01-54), `{congress}` is Congress number, `{law}` is public law number.
 
-Example (current as of late 2025): `xml_usc01@119-43.zip`
+Example (current as of early 2026): `xml_usc01@119-73not60.zip`
+
+Note: Release points can include exclusion suffixes (e.g., `119-73not60` means "through PL 119-73, excluding PL 119-60"). The current release point is hardcoded in `packages/usc/src/downloader.ts` as `CURRENT_RELEASE_POINT`.
 
 The zip contains a single XML file named like `usc01.xml`.
 
