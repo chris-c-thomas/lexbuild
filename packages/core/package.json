@@ -1,6 +1,6 @@
 {
   "name": "@law2md/core",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Core XML parsing, AST, and Markdown rendering for law2md",
   "type": "module",
   "main": "./dist/index.js",

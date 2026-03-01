@@ -50,6 +50,13 @@ export const LEVEL_ELEMENTS = new Set([
   "item",
   "subitem",
   "subsubitem",
+  // Appendix-level elements
+  "appendix",
+  "compiledAct",
+  "reorganizationPlans",
+  "reorganizationPlan",
+  "courtRules",
+  "courtRule",
 ]);
 
 /** USLM elements that represent content blocks */

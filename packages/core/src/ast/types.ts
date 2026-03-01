@@ -9,9 +9,15 @@
 export const LEVEL_TYPES = [
   // Big levels (above section)
   "title",
+  "appendix",
   "subtitle",
   "chapter",
   "subchapter",
+  "compiledAct",
+  "reorganizationPlans",
+  "reorganizationPlan",
+  "courtRules",
+  "courtRule",
   "article",
   "subarticle",
   "part",
@@ -38,9 +44,15 @@ export type LevelType = (typeof LEVEL_TYPES)[number];
 /** Big levels: above section in the hierarchy */
 export const BIG_LEVELS = new Set<LevelType>([
   "title",
+  "appendix",
   "subtitle",
   "chapter",
   "subchapter",
+  "compiledAct",
+  "reorganizationPlans",
+  "reorganizationPlan",
+  "courtRules",
+  "courtRule",
   "article",
   "subarticle",
   "part",

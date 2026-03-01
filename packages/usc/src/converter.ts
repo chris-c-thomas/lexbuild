@@ -49,18 +49,28 @@ export interface ConvertOptions {
   includeStatutoryNotes: boolean;
   /** Include amendment history notes only (when includeNotes is false) */
   includeAmendments: boolean;
+  /** Dry-run mode: parse and report structure without writing files */
+  dryRun: boolean;
 }
 
 /** Result of a conversion */
 export interface ConvertResult {
-  /** Number of sections written */
+  /** Number of sections written (or that would be written in dry-run) */
   sectionsWritten: number;
-  /** Output paths of all written files */
+  /** Output paths of all written files (empty in dry-run) */
   files: string[];
   /** Title number extracted from metadata */
   titleNumber: string;
   /** Title name extracted from metadata */
   titleName: string;
+  /** Whether this was a dry run */
+  dryRun: boolean;
+  /** Chapter count */
+  chapterCount: number;
+  /** Estimated total tokens */
+  totalTokenEstimate: number;
+  /** Peak resident set size in bytes during conversion */
+  peakMemoryBytes: number;
 }
 
 /** Default convert options */
@@ -72,6 +82,7 @@ const DEFAULTS: Omit<ConvertOptions, "input" | "output"> = {
   includeEditorialNotes: false,
   includeStatutoryNotes: false,
   includeAmendments: false,
+  dryRun: false,
 };
 
 /** Metadata collected for a written section (used to build _meta.json) */
@@ -79,6 +90,8 @@ interface SectionMeta {
   identifier: string;
   number: string;
   name: string;
+  /** Filename only (e.g., "section-3598.md" or "section-3598-2.md" for duplicates) */
+  fileName: string;
   /** File path relative to the title directory (e.g., "chapter-01/section-1.md") */
   relativeFile: string;
   /** Content length in characters (for token estimation) */
@@ -103,6 +116,7 @@ interface CollectedSection {
 export async function convertTitle(options: ConvertOptions): Promise<ConvertResult> {
   const opts = { ...DEFAULTS, ...options };
   const files: string[] = [];
+  let peakMemory = process.memoryUsage.rss();
 
   // Collect emitted nodes during parsing (synchronous), write after parsing completes
   const collected: CollectedSection[] = [];
@@ -125,36 +139,73 @@ export async function convertTitle(options: ConvertOptions): Promise<ConvertResu
   // Parse the XML file
   const stream = createReadStream(opts.input, "utf-8");
   await parser.parseStream(stream);
+  peakMemory = Math.max(peakMemory, process.memoryUsage.rss());
 
   const sectionMetas: SectionMeta[] = [];
+  const meta = builder.getDocumentMeta();
 
-  if (opts.granularity === "chapter") {
+  if (opts.dryRun) {
+    // Dry-run: collect metadata without writing files
+    for (const { node, context } of collected) {
+      if (opts.granularity === "chapter") {
+        // Extract section metadata from chapter children
+        for (const child of node.children) {
+          if (child.type === "level" && child.levelType === "section") {
+            sectionMetas.push(buildSectionMetaDryRun(child, node, context));
+          }
+        }
+      } else {
+        if (node.numValue) {
+          sectionMetas.push(buildSectionMetaDryRun(node, null, context));
+        }
+      }
+    }
+  } else if (opts.granularity === "chapter") {
     // Chapter-level: each emitted node is a chapter containing sections
     for (const { node, context } of collected) {
       const result = await writeChapter(node, context, opts);
       if (result) {
         files.push(result.filePath);
-        // Collect section-level metadata from chapter children
-        for (const meta of result.sectionMetas) {
-          sectionMetas.push(meta);
+        for (const m of result.sectionMetas) {
+          sectionMetas.push(m);
         }
       }
     }
   } else {
-    // Section-level: each emitted node is a single section
-    // Create link resolver and pre-register all section paths
-    const linkResolver = createLinkResolver();
+    // Section-level with relative links: need two-pass for link resolver
+    // Track duplicate section numbers per chapter to disambiguate filenames
+    const sectionCounts = new Map<string, number>();
+    const suffixes: (string | undefined)[] = [];
     for (const { node, context } of collected) {
       const sectionNum = node.numValue;
+      if (!sectionNum) {
+        suffixes.push(undefined);
+        continue;
+      }
+      const chapterDir = buildChapterDir(context) ?? "__root__";
+      const key = `${chapterDir}/${sectionNum}`;
+      const count = (sectionCounts.get(key) ?? 0) + 1;
+      sectionCounts.set(key, count);
+      suffixes.push(count > 1 ? `-${count}` : undefined);
+    }
+
+    const linkResolver = createLinkResolver();
+    for (const [i, { node, context }] of collected.entries()) {
+      const sectionNum = node.numValue;
       if (sectionNum && node.identifier) {
-        const filePath = buildOutputPath(context, sectionNum, opts.output);
-        linkResolver.register(node.identifier, filePath);
+        const filePath = buildOutputPath(context, sectionNum, opts.output, suffixes[i]);
+        // For duplicates, register with the XML element @id to disambiguate
+        const regId = suffixes[i] ? `${node.identifier}#${suffixes[i]}` : node.identifier;
+        linkResolver.register(regId, filePath);
+        // Always register the first occurrence under the canonical identifier
+        if (!suffixes[i]) {
+          linkResolver.register(node.identifier, filePath);
+        }
       }
     }
 
-    // Write all collected sections to disk and collect metadata
-    for (const { node, context } of collected) {
-      const result = await writeSection(node, context, opts, linkResolver);
+    for (const [i, { node, context }] of collected.entries()) {
+      const result = await writeSection(node, context, opts, linkResolver, suffixes[i]);
       if (result) {
         files.push(result.filePath);
         sectionMetas.push(result.meta);
@@ -162,16 +213,27 @@ export async function convertTitle(options: ConvertOptions): Promise<ConvertResu
     }
   }
 
-  const meta = builder.getDocumentMeta();
+  // Generate _meta.json files (skip in dry-run)
+  if (!opts.dryRun) {
+    await writeMetaFiles(sectionMetas, meta, opts);
+  }
 
-  // Generate _meta.json files
-  await writeMetaFiles(sectionMetas, meta, opts);
+  // Final memory sample
+  peakMemory = Math.max(peakMemory, process.memoryUsage.rss());
+
+  // Compute stats
+  const chapterIds = new Set(sectionMetas.map((s) => s.chapterIdentifier));
+  const totalTokens = sectionMetas.reduce((sum, s) => sum + Math.ceil(s.contentLength / 4), 0);
 
   return {
-    sectionsWritten: files.length,
+    sectionsWritten: opts.dryRun ? sectionMetas.length : files.length,
     files,
     titleNumber: meta.docNumber ?? "unknown",
     titleName: meta.dcTitle ?? "Unknown Title",
+    dryRun: opts.dryRun,
+    chapterCount: chapterIds.size,
+    totalTokenEstimate: totalTokens,
+    peakMemoryBytes: peakMemory,
   };
 }
 
@@ -190,12 +252,14 @@ async function writeSection(
   context: EmitContext,
   options: ConvertOptions,
   linkResolver?: LinkResolver | undefined,
+  /** Disambiguation suffix for duplicate section numbers (e.g., "-2") */
+  dupSuffix?: string | undefined,
 ): Promise<WriteSectionResult | null> {
   const sectionNum = node.numValue;
   if (!sectionNum) return null;
 
-  // Build the output file path
-  const filePath = buildOutputPath(context, sectionNum, options.output);
+  // Build the output file path (with optional duplicate suffix)
+  const filePath = buildOutputPath(context, sectionNum, options.output, dupSuffix);
 
   // Build frontmatter data
   const frontmatter = buildFrontmatter(node, context);
@@ -229,9 +293,10 @@ async function writeSection(
   const titleNum = findAncestor(context.ancestors, "title")?.numValue ?? "0";
   const chapterAncestor = findAncestor(context.ancestors, "chapter");
   const chapterDir = chapterAncestor?.numValue ? `chapter-${padTwo(chapterAncestor.numValue)}` : "";
+  const sectionFileName = `section-${sectionNum}${dupSuffix ?? ""}.md`;
   const relativeFile = chapterDir
-    ? `${chapterDir}/section-${sectionNum}.md`
-    : `section-${sectionNum}.md`;
+    ? `${chapterDir}/${sectionFileName}`
+    : sectionFileName;
 
   const hasNotes = node.children.some(
     (c) => c.type === "notesContainer" || c.type === "note",
@@ -241,6 +306,7 @@ async function writeSection(
     identifier: node.identifier ?? `/us/usc/t${titleNum}/s${sectionNum}`,
     number: sectionNum,
     name: node.heading?.trim() ?? "",
+    fileName: sectionFileName,
     relativeFile,
     contentLength: markdown.length,
     hasNotes,
@@ -268,8 +334,9 @@ async function writeMetaFiles(
 ): Promise<void> {
   if (sectionMetas.length === 0) return;
 
-  const titleNum = docMeta.docNumber ?? "0";
-  const titleDir = join(options.output, "usc", `title-${padTwo(titleNum)}`);
+  const docNum = docMeta.docNumber ?? "0";
+  const titleDirName = buildTitleDirFromDocNumber(docNum);
+  const titleDir = join(options.output, "usc", titleDirName);
   const currency = parseCurrency(docMeta.docPublicationName ?? "");
 
   // Group sections by chapter
@@ -313,7 +380,7 @@ async function writeMetaFiles(
       identifier: sm.identifier,
       number: sm.number,
       name: sm.name,
-      file: `section-${sm.number}.md`,
+      file: sm.fileName,
       token_estimate: Math.ceil(sm.contentLength / 4),
       has_notes: sm.hasNotes,
       status: sm.status,
@@ -324,7 +391,7 @@ async function writeMetaFiles(
       identifier: chapterId,
       chapter_number: parseIntSafe(first.chapterNumber),
       chapter_name: first.chapterName,
-      title_number: parseIntSafe(titleNum),
+      title_number: parseIntSafe(docNum),
       section_count: sections.length,
       sections,
     };
@@ -349,8 +416,8 @@ async function writeMetaFiles(
     format_version: FORMAT_VERSION,
     generator: GENERATOR,
     generated_at: new Date().toISOString(),
-    identifier: docMeta.identifier ?? `/us/usc/t${titleNum}`,
-    title_number: parseIntSafe(titleNum),
+    identifier: docMeta.identifier ?? `/us/usc/t${docNum}`,
+    title_number: parseIntSafe(docNum),
     title_name: docMeta.dcTitle ?? "",
     positive_law: docMeta.positivelaw ?? false,
     currency,
@@ -448,6 +515,7 @@ async function writeChapter(
         identifier: child.identifier ?? `/us/usc/t${titleNum}/s${sectionNum}`,
         number: sectionNum,
         name: child.heading?.trim() ?? "",
+        fileName: `section-${sectionNum}.md`,
         relativeFile: chapterFile,
         contentLength: sectionMd.length,
         hasNotes,
@@ -471,20 +539,80 @@ function buildOutputPath(
   context: EmitContext,
   sectionNum: string,
   outputRoot: string,
+  /** Disambiguation suffix for duplicate section numbers (e.g., "-2") */
+  dupSuffix?: string | undefined,
 ): string {
-  const titleNum = findAncestor(context.ancestors, "title")?.numValue ?? "00";
-  const chapterNum = findAncestor(context.ancestors, "chapter")?.numValue;
+  const titleDir = buildTitleDir(context);
+  const chapterDir = buildChapterDir(context);
+  const sectionFile = `section-${sectionNum}${dupSuffix ?? ""}.md`;
 
-  const titleDir = `title-${padTwo(titleNum)}`;
-  const sectionFile = `section-${sectionNum}.md`;
-
-  if (chapterNum) {
-    const chapterDir = `chapter-${padTwo(chapterNum)}`;
+  if (chapterDir) {
     return join(outputRoot, "usc", titleDir, chapterDir, sectionFile);
   }
 
-  // No chapter — section directly under title (unusual but handle it)
   return join(outputRoot, "usc", titleDir, sectionFile);
+}
+
+/**
+ * Build the title directory name from context.
+ * Handles appendix titles: docNumber "5a" → "title-05-appendix"
+ */
+function buildTitleDir(context: EmitContext): string {
+  // Check for appendix via docNumber (e.g., "5a", "11a")
+  const docNum = context.documentMeta.docNumber ?? "";
+  const appendixMatch = /^(\d+)a$/i.exec(docNum);
+  if (appendixMatch?.[1]) {
+    return `title-${padTwo(appendixMatch[1])}-appendix`;
+  }
+
+  // Check for appendix ancestor
+  const appendixAncestor = findAncestor(context.ancestors, "appendix");
+  if (appendixAncestor) {
+    const num = appendixAncestor.numValue ?? docNum;
+    const numericPart = /^(\d+)/.exec(num);
+    if (numericPart?.[1]) {
+      return `title-${padTwo(numericPart[1])}-appendix`;
+    }
+  }
+
+  // Normal title
+  const titleNum = findAncestor(context.ancestors, "title")?.numValue ?? "00";
+  return `title-${padTwo(titleNum)}`;
+}
+
+/**
+ * Build the chapter directory name from context.
+ * Handles chapter equivalents: compiledAct, reorganizationPlan.
+ */
+function buildChapterDir(context: EmitContext): string | undefined {
+  // Standard chapter
+  const chapterNum = findAncestor(context.ancestors, "chapter")?.numValue;
+  if (chapterNum) return `chapter-${padTwo(chapterNum)}`;
+
+  // Compiled act as chapter equivalent
+  const compiledAct = findAncestor(context.ancestors, "compiledAct");
+  if (compiledAct) {
+    const heading = compiledAct.heading?.trim() ?? "";
+    // Use a slug of the heading as directory name
+    const slug = heading.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50);
+    return slug || "compiled-act";
+  }
+
+  // Reorganization plan as chapter equivalent
+  const reorgPlan = findAncestor(context.ancestors, "reorganizationPlan");
+  if (reorgPlan) {
+    const heading = reorgPlan.heading?.trim() ?? "";
+    const slug = heading.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50);
+    return slug || "reorganization-plan";
+  }
+
+  // Reorganization plans container
+  const reorgPlans = findAncestor(context.ancestors, "reorganizationPlans");
+  if (reorgPlans) {
+    return "reorganization-plans";
+  }
+
+  return undefined;
 }
 
 /**
@@ -492,12 +620,15 @@ function buildOutputPath(
  */
 function buildFrontmatter(node: LevelNode, context: EmitContext): FrontmatterData {
   const meta = context.documentMeta;
-  const titleAncestor = findAncestor(context.ancestors, "title");
-  const chapterAncestor = findAncestor(context.ancestors, "chapter");
+  const titleAncestor = findAncestor(context.ancestors, "title") ?? findAncestor(context.ancestors, "appendix");
+  const chapterAncestor = findAncestor(context.ancestors, "chapter")
+    ?? findAncestor(context.ancestors, "compiledAct")
+    ?? findAncestor(context.ancestors, "reorganizationPlan");
   const subchapterAncestor = findAncestor(context.ancestors, "subchapter");
   const partAncestor = findAncestor(context.ancestors, "part");
 
-  const titleNum = parseIntSafe(meta.docNumber ?? titleAncestor?.numValue ?? "0");
+  const docNum = meta.docNumber ?? titleAncestor?.numValue ?? "0";
+  const titleNum = parseIntSafe(docNum.replace(/a$/i, ""));
   const sectionNum = node.numValue ?? "0";
   const sectionName = node.heading?.trim() ?? "";
   const titleName = titleAncestor?.heading?.trim() ?? meta.dcTitle ?? "";
@@ -565,6 +696,54 @@ function buildFrontmatter(node: LevelNode, context: EmitContext): FrontmatterDat
  * Build a NotesFilter from convert options.
  * Returns undefined if all notes should be included (default).
  */
+/**
+ * Build SectionMeta from AST node without rendering (for dry-run mode).
+ */
+function buildSectionMetaDryRun(
+  sectionNode: LevelNode,
+  chapterNode: LevelNode | null,
+  context: EmitContext,
+): SectionMeta {
+  const titleNum = findAncestor(context.ancestors, "title")?.numValue ?? "0";
+  const chapterAncestor = chapterNode
+    ? { numValue: chapterNode.numValue, heading: chapterNode.heading, identifier: chapterNode.identifier }
+    : findAncestor(context.ancestors, "chapter");
+  const sectionNum = sectionNode.numValue ?? "0";
+  const chapterNum = chapterAncestor?.numValue ?? "0";
+  const chapterDir = chapterNum !== "0" ? `chapter-${padTwo(chapterNum)}` : "";
+
+  const hasNotes = sectionNode.children.some(
+    (c) => c.type === "notesContainer" || c.type === "note",
+  );
+
+  // Rough content length estimate from AST text nodes
+  let contentLength = 0;
+  const walk = (node: { children?: readonly { text?: string | undefined; children?: readonly unknown[] }[] | undefined; text?: string | undefined }): void => {
+    if (node.text) contentLength += node.text.length;
+    if (node.children) {
+      for (const child of node.children) {
+        walk(child as typeof node);
+      }
+    }
+  };
+  walk(sectionNode as unknown as Parameters<typeof walk>[0]);
+
+  const sectionFileName = `section-${sectionNum}.md`;
+  return {
+    identifier: sectionNode.identifier ?? `/us/usc/t${titleNum}/s${sectionNum}`,
+    number: sectionNum,
+    name: sectionNode.heading?.trim() ?? "",
+    fileName: sectionFileName,
+    relativeFile: chapterDir ? `${chapterDir}/${sectionFileName}` : sectionFileName,
+    contentLength,
+    hasNotes,
+    status: sectionNode.status ?? "current",
+    chapterIdentifier: chapterAncestor?.identifier ?? "",
+    chapterNumber: chapterNum,
+    chapterName: chapterAncestor?.heading?.trim() ?? "",
+  };
+}
+
 function buildNotesFilter(options: ConvertOptions): NotesFilter | undefined {
   // Default: include all notes
   if (options.includeNotes) return undefined;
@@ -589,6 +768,18 @@ function findAncestor(ancestors: readonly AncestorInfo[], levelType: string): An
 /**
  * Zero-pad a number string to 2 digits.
  */
+/**
+ * Build title directory name from docNumber.
+ * "5" → "title-05", "5a" → "title-05-appendix"
+ */
+function buildTitleDirFromDocNumber(docNum: string): string {
+  const appendixMatch = /^(\d+)a$/i.exec(docNum);
+  if (appendixMatch?.[1]) {
+    return `title-${padTwo(appendixMatch[1])}-appendix`;
+  }
+  return `title-${padTwo(docNum)}`;
+}
+
 function padTwo(num: string): string {
   const n = parseInt(num, 10);
   if (isNaN(n)) return num;

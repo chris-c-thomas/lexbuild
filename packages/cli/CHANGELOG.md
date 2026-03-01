@@ -1,5 +1,24 @@
 # law2md
 
+## 0.3.0
+
+### Minor Changes
+
+- Phase 3: Scale & Download
+  - feat(usc): OLRC downloader with zip extraction and release point support
+  - feat(cli): `law2md download` command with `--title`, `--all`, `--release-point`
+  - feat(usc,cli): `--dry-run` mode for convert command
+  - feat(usc,cli): peak memory and token reporting in convert output
+  - feat(core,usc): handle appendix titles with separate output directories
+  - feat(usc): disambiguate duplicate section numbers with `-2` suffix
+  - feat(usc): status edge cases (repealed, reserved, transferred) in frontmatter and `_meta.json`
+
+### Patch Changes
+
+- Updated dependencies
+  - @law2md/core@0.3.0
+  - @law2md/usc@0.3.0
+
 ## 0.2.0
 
 ### Minor Changes

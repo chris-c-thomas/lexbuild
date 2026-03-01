@@ -17,6 +17,7 @@ const DEFAULTS: Omit<ConvertOptions, "input" | "output"> = {
   includeEditorialNotes: false,
   includeStatutoryNotes: false,
   includeAmendments: false,
+  dryRun: false,
 };
 
 describe("convertTitle", () => {
@@ -212,5 +213,131 @@ describe("convertTitle", () => {
     const content = await readFile(filePath, "utf-8");
     expect(content).toContain("# Chapter 1");
     expect(content).toContain("## § 2.");
+  });
+
+  it("reports structure without writing files in dry-run mode", async () => {
+    const result = await convertTitle({
+      ...DEFAULTS,
+      input: resolve(FIXTURES_DIR, "simple-section.xml"),
+      output: outputDir,
+      dryRun: true,
+    });
+
+    expect(result.dryRun).toBe(true);
+    expect(result.sectionsWritten).toBe(1);
+    expect(result.chapterCount).toBe(1);
+    expect(result.totalTokenEstimate).toBeGreaterThan(0);
+    // No files should be written
+    expect(result.files).toHaveLength(0);
+
+    // Verify output directory is empty
+    const { readdir } = await import("node:fs/promises");
+    await expect(readdir(join(outputDir, "usc"))).rejects.toThrow();
+  });
+
+  describe("duplicate section handling", () => {
+    it("disambiguates duplicate section numbers with -2 suffix", async () => {
+      const result = await convertTitle({
+        ...DEFAULTS,
+        input: resolve(FIXTURES_DIR, "duplicate-sections.xml"),
+        output: outputDir,
+      });
+
+      // Should produce 3 files: section-3598.md, section-3598-2.md, section-3599.md
+      expect(result.sectionsWritten).toBe(3);
+      expect(result.files).toHaveLength(3);
+
+      const chapterDir = join(outputDir, "usc", "title-05", "chapter-35");
+      const files = await readdir(chapterDir);
+      expect(files).toContain("section-3598.md");
+      expect(files).toContain("section-3598-2.md");
+      expect(files).toContain("section-3599.md");
+    });
+
+    it("writes distinct content to each duplicate file", async () => {
+      await convertTitle({
+        ...DEFAULTS,
+        input: resolve(FIXTURES_DIR, "duplicate-sections.xml"),
+        output: outputDir,
+      });
+
+      const chapterDir = join(outputDir, "usc", "title-05", "chapter-35");
+      const first = await readFile(join(chapterDir, "section-3598.md"), "utf-8");
+      const second = await readFile(join(chapterDir, "section-3598-2.md"), "utf-8");
+
+      expect(first).toContain("first version");
+      expect(second).toContain("second version");
+      expect(first).not.toContain("second version");
+      expect(second).not.toContain("first version");
+    });
+
+    it("lists both duplicates in _meta.json", async () => {
+      await convertTitle({
+        ...DEFAULTS,
+        input: resolve(FIXTURES_DIR, "duplicate-sections.xml"),
+        output: outputDir,
+      });
+
+      const metaPath = join(outputDir, "usc", "title-05", "chapter-35", "_meta.json");
+      const meta = JSON.parse(await readFile(metaPath, "utf-8")) as {
+        sections: Array<{ number: string; file: string }>;
+      };
+
+      const s3598files = meta.sections
+        .filter((s) => s.number === "3598")
+        .map((s) => s.file);
+      expect(s3598files).toHaveLength(2);
+      expect(s3598files).toContain("section-3598.md");
+      expect(s3598files).toContain("section-3598-2.md");
+    });
+  });
+
+  describe("status handling", () => {
+    it("includes status in frontmatter for sections with status", async () => {
+      const result = await convertTitle({
+        ...DEFAULTS,
+        input: resolve(FIXTURES_DIR, "section-with-status.xml"),
+        output: outputDir,
+      });
+
+      expect(result.sectionsWritten).toBe(4);
+
+      const chapterDir = join(outputDir, "usc", "title-05", "chapter-10");
+
+      // Repealed section should have status in frontmatter
+      const repealed = await readFile(join(chapterDir, "section-1001.md"), "utf-8");
+      expect(repealed).toContain('status: "repealed"');
+
+      // Transferred section
+      const transferred = await readFile(join(chapterDir, "section-1002.md"), "utf-8");
+      expect(transferred).toContain('status: "transferred"');
+
+      // Reserved section
+      const reserved = await readFile(join(chapterDir, "section-1003.md"), "utf-8");
+      expect(reserved).toContain('status: "reserved"');
+
+      // Normal section should NOT have status field (omitted when current)
+      const normal = await readFile(join(chapterDir, "section-1004.md"), "utf-8");
+      expect(normal).not.toContain("status:");
+    });
+
+    it("includes status in _meta.json for all sections", async () => {
+      await convertTitle({
+        ...DEFAULTS,
+        input: resolve(FIXTURES_DIR, "section-with-status.xml"),
+        output: outputDir,
+      });
+
+      const metaPath = join(outputDir, "usc", "title-05", "chapter-10", "_meta.json");
+      const meta = JSON.parse(await readFile(metaPath, "utf-8")) as {
+        sections: Array<{ number: string; status: string }>;
+      };
+
+      const byNumber = Object.fromEntries(meta.sections.map((s) => [s.number, s.status]));
+      expect(byNumber["1001"]).toBe("repealed");
+      expect(byNumber["1002"]).toBe("transferred");
+      expect(byNumber["1003"]).toBe("reserved");
+      expect(byNumber["1004"]).toBe("current");
+    });
   });
 });

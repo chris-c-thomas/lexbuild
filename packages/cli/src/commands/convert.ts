@@ -17,6 +17,7 @@ interface ConvertCommandOptions {
   includeEditorialNotes: boolean;
   includeStatutoryNotes: boolean;
   includeAmendments: boolean;
+  dryRun: boolean;
   verbose: boolean;
 }
 
@@ -41,6 +42,7 @@ export const convertCommand = new Command("convert")
   .option("--include-editorial-notes", "Include editorial notes only", false)
   .option("--include-statutory-notes", "Include statutory notes only", false)
   .option("--include-amendments", "Include amendment history notes only", false)
+  .option("--dry-run", "Parse and report structure without writing files", false)
   .option("-v, --verbose", "Enable verbose logging", false)
   .action(async (input: string, options: ConvertCommandOptions) => {
     const inputPath = resolve(input);
@@ -89,18 +91,34 @@ export const convertCommand = new Command("convert")
         includeEditorialNotes: options.includeEditorialNotes,
         includeStatutoryNotes: options.includeStatutoryNotes,
         includeAmendments: options.includeAmendments,
+        dryRun: options.dryRun,
       });
 
       const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+      const memMB = (result.peakMemoryBytes / 1024 / 1024).toFixed(1);
 
-      console.log(
-        `Converted ${result.titleName} (Title ${result.titleNumber}): ${result.sectionsWritten} sections in ${elapsed}s`,
-      );
+      if (result.dryRun) {
+        console.log(`[dry-run] ${result.titleName} (Title ${result.titleNumber})`);
+        console.log(`  Chapters:         ${result.chapterCount}`);
+        console.log(`  Sections:         ${result.sectionsWritten}`);
+        console.log(`  Estimated tokens: ${result.totalTokenEstimate.toLocaleString()}`);
+        console.log(`  Parse time:       ${elapsed}s`);
+        console.log(`  Peak memory:      ${memMB} MB`);
+      } else {
+        console.log(
+          `Converted ${result.titleName} (Title ${result.titleNumber}): ` +
+            `${result.sectionsWritten} sections, ${result.chapterCount} chapters in ${elapsed}s`,
+        );
 
-      if (options.verbose && result.files.length > 0) {
-        console.log(`\nFiles written:`);
-        for (const file of result.files) {
-          console.log(`  ${file}`);
+        if (options.verbose) {
+          console.log(`  Estimated tokens: ${result.totalTokenEstimate.toLocaleString()}`);
+          console.log(`  Peak memory:      ${memMB} MB`);
+          if (result.files.length > 0) {
+            console.log(`\nFiles written:`);
+            for (const file of result.files) {
+              console.log(`  ${file}`);
+            }
+          }
         }
       }
     } catch (err) {
