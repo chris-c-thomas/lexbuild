@@ -1,34 +1,39 @@
 # law2md
 
-[![CI](https://github.com/chris-c-thomas/law2md/actions/workflows/ci.yml/badge.svg)](https://github.com/chris-c-thomas/law2md/actions/workflows/ci.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/chris-c-thomas/law2md/ci.yml?style=flat-square&label=CI)](https://github.com/chris-c-thomas/law2md/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/law2md?style=flat-square)](https://www.npmjs.com/package/law2md)
+[![license](https://img.shields.io/github/license/chris-c-thomas/law2md?style=flat-square)](LICENSE)
+[![issues](https://img.shields.io/github/issues/chris-c-thomas/law2md?style=flat-square)](https://github.com/chris-c-thomas/law2md/issues)
+[![pull requests](https://img.shields.io/github/issues-pr/chris-c-thomas/law2md?style=flat-square)](https://github.com/chris-c-thomas/law2md/pulls)
 
-Convert the U.S. Code source XML into structured Markdown for use with AI and RAG systems.
+Convert the United States Code into structured Markdown for AI and RAG Systems.
+
+---
 
 ## Overview
 
-`law2md` is a command-line tool that converts official U.S. Code XML files (published in the [USLM schema](https://uscode.house.gov/download/resources/USLM-User-Guide.pdf) by the Office of the Law Revision Counsel) into clean, structured Markdown optimized for AI ingestion, retrieval-augmented generation (RAG), and legal research workflows.
+`law2md` is a command-line tool that converts [XML files](https://uscode.house.gov/download/download.shtml) of the United States Code published by the [Office of the Law Revision Counsel](https://uscode.house.gov/) into clean, structured Markdown optimized for AI ingestion, retrieval-augmented generation (RAG), and legal research workflows.
 
-The U.S. Code comprises 54 titles of federal statutory law. The official XML representation is deeply nested, laden with presentation markup, and difficult to work with directly. `law2md` transforms this XML into per-section Markdown files with YAML frontmatter, predictable file paths, and content sized for typical embedding models.
+The U.S. Code comprises 54 titles of federal statutory law. The official XML is deeply nested, laden with presentation markup, and difficult to work with directly. The OLRC provides a user guide for the [United States Legislative Markup](https://uscode.house.gov/download/resources/USLM-User-Guide.pdf).
 
-### Why This Exists
+`law2md` transforms this XML into per-section, or optional per-chapter, Markdown files with YAML frontmatter, predictable file paths, and content sized for typical embedding models.
 
-Legal texts are among the most frequently cited sources in AI systems, yet there is no production-grade, open-source pipeline that converts canonical legislative XML into chunked, metadata-rich Markdown suitable for embedding and retrieval. `law2md` fills that gap.
+### Features
 
-### Key Features
-
-- **Built-in downloader** -- download individual titles or the entire U.S. Code directly from OLRC with `law2md download`
-- **Streaming SAX parser** -- processes XML files of any size (including 100MB+ titles like Title 42) with bounded memory usage
-- **Section-level output** -- each section of the U.S. Code becomes its own Markdown file, sized appropriately for RAG chunk windows
+- **Built-in downloader** -- fetch individual titles or the entire U.S. Code directly from OLRC
+- **Streaming SAX parser** -- processes XML files of any size (including 100MB+ titles) with bounded memory
+- **Section-level output** -- each section becomes its own Markdown file, sized for RAG chunk windows
 - **Chapter-level output** -- optional mode that inlines all sections into per-chapter files
-- **YAML frontmatter** -- every file includes structured metadata (identifier, title, chapter, part, section, positive law status, source credit, currency, status)
-- **Structural fidelity** -- preserves the full USLM hierarchy from title down through subsubitem, using bold inline numbering that mirrors legal citation convention
-- **Tables** -- XHTML tables and USLM layout tables converted to Markdown pipe tables
-- **Cross-reference links** -- resolve within the output corpus as relative links, or fall back to OLRC website URLs
+- **YAML frontmatter** -- structured metadata on every file (identifier, title, chapter, section, status, source credit)
+- **Structural fidelity** -- preserves the full USLM hierarchy using bold inline numbering that mirrors legal citation convention
+- **Cross-reference links** -- resolved as relative links within the corpus, or as OLRC website URLs
 - **Filterable notes** -- editorial notes, statutory notes, and amendment history can be selectively included or excluded
-- **Metadata indexes** -- `_meta.json` sidecar files at title and chapter levels with section listings and token estimates
-- **Source credits** -- enactment source annotations included with each section
-- **Dry-run mode** -- preview conversion stats (sections, chapters, tokens, memory) without writing files
+- **Metadata indexes** -- `_meta.json` sidecar files with section listings and token estimates
+- **Tables** -- XHTML tables and USLM layout tables converted to Markdown pipe tables
+- **Dry-run mode** -- preview conversion stats without writing files
 - **Appendix handling** -- titles with appendices (5, 11, 18, 28) output to separate directories
+
+---
 
 ## Installation
 
@@ -38,7 +43,7 @@ Legal texts are among the most frequently cited sources in AI systems, yet there
 npm install -g law2md
 ```
 
-### From Source
+### From source
 
 Requires [Node.js](https://nodejs.org/) >= 20 and [pnpm](https://pnpm.io/) >= 10.
 
@@ -49,11 +54,28 @@ pnpm install
 pnpm turbo build
 ```
 
+---
+
+## Quick Start
+
+```bash
+# Download Title 1 (smallest title, good for testing)
+law2md download --title 1 -o ./xml
+
+# Convert to Markdown
+law2md convert ./xml/usc01.xml -o ./output
+
+# Or do both in one shot
+law2md download --title 1 -o ./xml && law2md convert ./xml/usc01.xml -o ./output
+```
+
+---
+
 ## Usage
 
-### Download U.S. Code XML
+### Download
 
-Use the built-in download command to fetch title XML files directly from OLRC:
+Fetch U.S. Code XML files directly from the Office of the Law Revision Counsel:
 
 ```bash
 # Download a single title
@@ -66,18 +88,18 @@ law2md download --all -o ./xml
 law2md download --title 26 -o ./xml --release-point 119-73not60
 ```
 
-Or download manually from the [OLRC download page](https://uscode.house.gov/download/download.shtml). Each title is distributed as a zip file containing a single XML file (e.g., `usc01.xml` for Title 1).
+Or download manually from the [OLRC download page](https://uscode.house.gov/download/download.shtml).
 
-### Convert to Markdown
+### Convert
 
 ```bash
-# Convert a single title (section-level output)
+# Section-level output (default)
 law2md convert ./xml/usc01.xml -o ./output
 
-# Chapter-level output (sections inlined into chapter files)
+# Chapter-level output
 law2md convert ./xml/usc01.xml -o ./output -g chapter
 
-# With cross-reference links resolved to OLRC URLs
+# Cross-reference links resolved to OLRC URLs
 law2md convert ./xml/usc05.xml -o ./output --link-style canonical
 
 # Include only amendment notes
@@ -86,14 +108,11 @@ law2md convert ./xml/usc01.xml -o ./output --include-amendments
 # Exclude all notes
 law2md convert ./xml/usc01.xml -o ./output --no-include-notes
 
-# Verbose output showing all written files
-law2md convert ./xml/usc01.xml -o ./output -v
-
 # Dry-run: preview stats without writing files
 law2md convert ./xml/usc42.xml -o ./output --dry-run
 ```
 
-### CLI Options
+### CLI Reference
 
 ```
 law2md convert <input> [options]
@@ -103,16 +122,15 @@ Arguments:
 
 Options:
   -o, --output <dir>             Output directory (default: "./output")
-  -g, --granularity <level>      Output granularity: "section" or "chapter"
-                                 (default: "section")
-  --link-style <style>           Cross-reference style: "plaintext", "canonical",
-                                 or "relative" (default: "plaintext")
+  -g, --granularity <level>      "section" or "chapter" (default: "section")
+  --link-style <style>           "plaintext", "canonical", or "relative"
+                                 (default: "plaintext")
   --no-include-source-credits    Exclude source credit annotations
   --no-include-notes             Exclude all notes
   --include-editorial-notes      Include editorial notes only
   --include-statutory-notes      Include statutory notes only
   --include-amendments           Include amendment history notes only
-  --dry-run                      Parse and report structure without writing files
+  --dry-run                      Parse and report without writing files
   -v, --verbose                  Enable verbose logging
   -h, --help                     Display help
 
@@ -126,11 +144,13 @@ Options:
   -h, --help                     Display help
 ```
 
-When multiple `--include-*-notes` flags are specified, they combine additively. Specifying any selective flag automatically switches from the default "include all notes" behavior to "include only selected categories."
+When multiple `--include-*-notes` flags are specified, they combine additively.
+
+---
 
 ## Output Format
 
-### Section-Level Directory Structure (default)
+### Directory Structure
 
 ```
 output/
@@ -149,23 +169,11 @@ output/
         ...
 ```
 
-### Chapter-Level Directory Structure (`--granularity chapter`)
-
-```
-output/
-  usc/
-    title-01/
-      _meta.json
-      chapter-01.md
-      chapter-02.md
-      chapter-03.md
-```
-
-Title directories are zero-padded to two digits (`title-01` through `title-54`). Chapter directories and files follow the same convention. Section files use the section number as-is, which may be alphanumeric (e.g., `section-106a.md`, `section-7801.md`).
+Title directories are zero-padded (`title-01` through `title-54`). Chapter directories follow the same convention. Section files use the section number as-is, which may be alphanumeric (e.g., `section-106a.md`, `section-7801.md`).
 
 ### Markdown Structure
 
-Each section file consists of YAML frontmatter followed by the statutory text:
+Each section file consists of YAML frontmatter followed by statutory text:
 
 ```yaml
 ---
@@ -198,19 +206,13 @@ Columbia, the Commonwealth of Puerto Rico, or any other territory...
 ---
 
 **Source Credit**: (Added Pub. L. 104-199, § 3(a), Sept. 21, 1996, ...)
-
-## Editorial Notes
-
-### Amendments
-
-2022-- amended section generally. Prior to amendment, text read as follows: ...
 ```
 
-Subsections and below use bold inline numbering (`**(a)**`, `**(1)**`, `**(A)**`, `**(i)**`) rather than Markdown headings. This preserves a flat document structure that works well with embedding models and chunking strategies. The numbering scheme follows standard legal citation convention.
+Subsections and below use bold inline numbering (`**(a)**`, `**(1)**`, `**(A)**`, `**(i)**`) rather than Markdown headings. This preserves a flat document structure optimized for embedding models and chunking strategies.
 
 ### Metadata Indexes
 
-Each title and chapter directory includes a `_meta.json` file with structured metadata for programmatic access:
+Each title directory includes a `_meta.json` file for programmatic access:
 
 ```json
 {
@@ -245,62 +247,58 @@ Each title and chapter directory includes a `_meta.json` file with structured me
 }
 ```
 
-For the complete output format specification, see [docs/OUTPUT_FORMAT.md](docs/OUTPUT_FORMAT.md).
+For the complete output format specification, see [docs/output-format.md](docs/output-format.md).
 
-## Project Status
+---
 
-### Phase 1: Foundation -- Complete (v0.1.0)
-
-Core conversion pipeline: SAX streaming parser, AST builder with section-emit pattern, Markdown renderer, YAML frontmatter generator, USC converter, and CLI `convert` command.
-
-### Phase 2: Content Fidelity -- Complete (v0.2.0)
-
-Content quality improvements: whitespace normalization, cross-reference link resolver (relative/canonical/plaintext), XHTML and USLM layout table conversion, notes filtering with CLI flags, `_meta.json` sidecar index generation, and chapter-level granularity mode.
-
-### Phase 3: Scale and Download -- Complete (v0.3.0)
-
-Built-in OLRC downloader with zip extraction (`law2md download`), dry-run mode for conversion previews, peak memory and token reporting, appendix title handling (Titles 5a, 11a, 18a, 28a), duplicate section number disambiguation, and status edge case handling (repealed, reserved, transferred sections).
-
-E2E verified: all 54 titles (58 files including appendices), 60,261 sections, 25 seconds total.
-
-### Phase 4: Polish and Publish -- Complete
-
-Snapshot test suite for output stability (15 pinned fixtures), title-level README.md generation in output directories, CONTRIBUTING.md, GitHub Actions CI (Node 20/22 matrix), changesets-based npm publish workflow.
-
-## Repository Structure
+## Project Structure
 
 ```
 law2md/
   packages/
     core/          @law2md/core -- XML parsing, AST, Markdown rendering
-    usc/           @law2md/usc -- U.S. Code-specific conversion logic
-    cli/           law2md -- CLI entry point
+    usc/           @law2md/usc -- U.S. Code conversion logic and downloader
+    cli/           law2md -- CLI entry point (the published npm package)
   fixtures/
-    xml/           Full USC XML files (not committed, user-provided)
     fragments/     Small XML snippets for unit tests
     expected/      Expected output snapshots
   docs/            Architecture, output format spec, extension guide
 ```
 
-The project is structured as a monorepo managed with [pnpm](https://pnpm.io/) workspaces and [Turborepo](https://turbo.build/). The separation into `core` and `usc` packages is intentional -- the architecture is designed to support additional legal source types (Code of Federal Regulations, state statutes) by adding new packages that share the core XML parsing and Markdown rendering infrastructure.
+The project is a monorepo managed with [pnpm](https://pnpm.io/) workspaces and [Turborepo](https://turbo.build/). The separation into `core` and `usc` packages is designed to support additional legal source types (CFR, state statutes) by adding new packages that share the core infrastructure.
+
+---
 
 ## Development
 
 ```bash
 pnpm install               # Install dependencies
-pnpm turbo build            # Build all packages
-pnpm turbo test             # Run all tests (137 tests)
-pnpm turbo lint             # Lint all packages
-pnpm turbo typecheck        # Type-check all packages
+pnpm turbo build           # Build all packages
+pnpm turbo test            # Run all tests
+pnpm turbo lint            # Lint all packages
+pnpm turbo typecheck       # Type-check all packages
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor guide, and [CLAUDE.md](CLAUDE.md) for detailed code conventions, schema reference, and design decisions.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor guide.
+
+---
+
+## Documentation
+
+- [Output Format Specification](docs/output-format.md) -- directory layout, frontmatter schema, metadata indexes, RAG guidance
+- [Architecture](docs/architecture.md) -- system overview, package design, data flow, memory profile
+- [XML Element Reference](docs/xml-element-reference.md) -- USLM element mapping and Markdown output
+- [Extending](docs/extending.md) -- guide for adding new legal source types
+
+---
 
 ## Data Sources
 
-`law2md` processes XML files published by the [Office of the Law Revision Counsel](https://uscode.house.gov/) (OLRC) of the U.S. House of Representatives. The XML uses the United States Legislative Markup (USLM) 1.0 schema.
+`law2md` processes XML published by the [Office of the Law Revision Counsel](https://uscode.house.gov/) (OLRC) of the U.S. House of Representatives. The XML uses the United States Legislative Markup (USLM) 1.0 schema.
 
-The U.S. Code XML is public domain and freely available for download at [uscode.house.gov/download/download.shtml](https://uscode.house.gov/download/download.shtml).
+The U.S. Code XML is public domain and freely available at [uscode.house.gov/download/download.shtml](https://uscode.house.gov/download/download.shtml).
+
+---
 
 ## License
 

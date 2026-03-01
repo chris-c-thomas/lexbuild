@@ -20,7 +20,6 @@ This specification is versioned independently of the CLI. The current version is
         ├── README.md
         ├── chapter-{NN}/
         │   ├── _meta.json
-        │   ├── README.md
         │   ├── section-{ID}.md
         │   ├── section-{ID}.md
         │   └── ...
@@ -50,12 +49,12 @@ This specification is versioned independently of the CLI. The current version is
 | Chapter directory/file | `chapter-{NN}` (2-digit zero-padded) | `chapter-01`, `chapter-99` |
 | Subchapter directory | `subchapter-{ID}` | `subchapter-I`, `subchapter-II` |
 | Section file | `section-{ID}.md` (NOT zero-padded) | `section-1.md`, `section-7801.md`, `section-202a.md` |
-| Metadata sidecar | `_meta.json` | — |
-| Directory overview | `README.md` | — |
+| Metadata sidecar | `_meta.json` | -- |
+| Directory overview | `README.md` | -- |
 
-Titles with appendices (5, 11, 18, 28) produce a sibling appendix directory containing compiled acts, court rules, and reorganization plans as separate documents.
+Titles with appendices (5, 11, 18, 28) produce a sibling appendix directory containing compiled acts, court rules, and reorganization plans.
 
-Section IDs match the `@value` attribute of the `<num>` element in the source XML. They are typically numeric but can be alphanumeric (e.g., `202a`, `7701-1`).
+Section IDs match the `@value` attribute of the `<num>` element in the source XML. They are typically numeric but can be alphanumeric (e.g., `202a`, `7701-1`). Duplicate section numbers within a title are disambiguated with a `-2`, `-3` suffix (e.g., `section-3598-2.md`).
 
 ---
 
@@ -97,17 +96,16 @@ part_name: "General Rules"                 # String
 
 # Metadata
 positive_law: true                         # Boolean
-currency: "119-43"                         # Release point identifier
+currency: "119-73"                         # Release point identifier
 last_updated: "2025-12-03"                # ISO date from XML generation
 format_version: "1.0.0"                   # Output format version
-generator: "law2md@0.1.0"                 # Generator version
+generator: "law2md@0.4.0"                 # Generator version
 
-# Optional (present when --include-source-credits is true)
-source_credit: "(July 30, 1947, ...)"     # Full source credit text
+# Optional
+source_credit: "(July 30, 1947, ...)"     # Full source credit text (included by default)
+status: "repealed"                         # Only present for non-current sections
 ---
 ```
-
-Chapter-level files use the same schema, replacing section-specific fields with chapter-level equivalents and adding a `sections` array in the frontmatter listing contained section identifiers.
 
 ### Content Structure
 
@@ -214,13 +212,13 @@ Complex tables (with colspan, rowspan, or nested content) render as fenced HTML:
 ```json
 {
   "format_version": "1.0.0",
-  "generator": "law2md@0.1.0",
-  "generated_at": "2025-02-26T12:00:00.000Z",
+  "generator": "law2md@0.4.0",
+  "generated_at": "2025-12-03T12:00:00.000Z",
   "identifier": "/us/usc/t1",
   "title_number": 1,
   "title_name": "General Provisions",
   "positive_law": true,
-  "currency": "119-43",
+  "currency": "119-73",
   "source_xml": "usc01.xml",
   "granularity": "section",
   "stats": {
@@ -275,7 +273,7 @@ Complex tables (with colspan, rowspan, or nested content) render as fenced HTML:
 
 ### Token Estimation
 
-The `token_estimate` field uses `tiktoken` with the `cl100k_base` encoding (shared by GPT-4 and Claude) for accurate token counts. This enables downstream RAG pipelines to make precise chunk-planning decisions without re-tokenizing.
+The `token_estimate` field uses a character/4 heuristic (`Math.ceil(contentLength / 4)`) to approximate token counts. This provides a reasonable estimate for RAG chunk planning without requiring a tokenizer dependency.
 
 ### Section Status Values
 
@@ -288,29 +286,6 @@ The `token_estimate` field uses `tiktoken` with the `cl100k_base` encoding (shar
 | `reserved` | Section number reserved for future use |
 
 ---
-
-## Consolidated Index (Optional)
-
-The `law2md index` command can produce a single consolidated index file spanning all converted titles:
-
-```json
-{
-  "format_version": "1.0.0",
-  "generated_at": "2025-02-26T12:00:00.000Z",
-  "titles": [
-    {
-      "identifier": "/us/usc/t1",
-      "number": 1,
-      "name": "General Provisions",
-      "directory": "title-01",
-      "section_count": 13,
-      "token_estimate": 12500
-    }
-  ],
-  "total_sections": 13,
-  "total_tokens_estimate": 12500
-}
-```
 
 ## RAG Integration Guidance
 
@@ -326,11 +301,11 @@ For section-level output (default), each `.md` file is typically a good chunk si
 
 When ingesting into a vector database, extract these fields from frontmatter for filtering:
 
-- `identifier` — unique key, enables precise citation lookup
-- `title_number` — filter by title
-- `chapter_number` — filter by chapter
-- `positive_law` — filter for authoritative vs. prima facie evidence
-- `section_number` — sort/filter by section
+- `identifier` -- unique key, enables precise citation lookup
+- `title_number` -- filter by title
+- `chapter_number` -- filter by chapter
+- `positive_law` -- filter for authoritative vs. prima facie evidence
+- `section_number` -- sort/filter by section
 
 ### File Path as Stable ID
 

@@ -30,7 +30,7 @@ law2md/
 - **Validation**: `zod`
 - **YAML**: `yaml` package
 - **Zip**: `yauzl`
-- **Token Counting**: character/4 heuristic (`tiktoken` integration deferred to Phase 4)
+- **Token Counting**: character/4 heuristic
 - **Logging**: `pino`
 - **Testing**: `vitest`
 - **Build**: `tsup`
@@ -286,7 +286,7 @@ output/usc/title-{NN}/chapter-{NN}/section-{N}.md
 
 8. **Appendix titles**: Separate output directories (e.g., `title-05-appendix/`) for titles with appendices (5, 11, 18, 28).
 
-9. **Token estimation**: Uses character/4 heuristic for token counts in `_meta.json`. `tiktoken` (`cl100k_base` encoding) integration planned for Phase 4.
+9. **Token estimation**: Uses character/4 heuristic for token counts in `_meta.json`.
 
 10. **Table of Disposition**: Excluded from section-level output. Included in title-level README.md.
 
@@ -304,9 +304,12 @@ output/usc/title-{NN}/chapter-{NN}/section-{N}.md
 
 ## When Adding New Source Types (CFR, State Statutes)
 
+> **Note**: The extension architecture is aspirational. No pluggable handler interfaces exist yet — element handling is built into the `ASTBuilder` class. See `docs/extending.md` for details.
+
 1. Create a new package: `packages/cfr/` (or `packages/state-il/`, etc.)
-2. Implement source-specific element handlers extending `@law2md/core` interfaces
-3. Add a new `--source-type` option value in `packages/cli`
-4. Reuse `@law2md/core` for XML parsing, AST, Markdown rendering, and frontmatter
-5. Add source-specific download logic if applicable
-6. Document the source's XML schema in the package README
+2. Implement a converter function analogous to `convertTitle()` in `@law2md/usc`
+3. Extend or adapt the `ASTBuilder` for source-specific elements
+4. Add a new CLI command in `packages/cli`
+5. Reuse `@law2md/core` for XML parsing, AST types, Markdown rendering, and frontmatter
+6. Add source-specific download logic if applicable
+7. Document the source's XML schema in the package README

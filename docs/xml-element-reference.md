@@ -2,7 +2,7 @@
 
 Quick reference for USLM 1.0 (patch 1.0.15) elements encountered in U.S. Code XML files, their semantic meaning, and how `law2md` converts them to Markdown.
 
-**Source**: `docs/reference/uslm/uslm-schema-and-css/USLM-1.0.15.xsd` and `docs/reference/uslm/uslm-user-guide.pdf`
+**Source**: USLM-1.0.15.xsd schema and USLM User Guide (v0.1.4, Oct 2013)
 
 ---
 
@@ -22,7 +22,7 @@ The schema defines 7 root element types (all derived from `<lawDoc>`): `<lawDoc>
 
 | Element | Parent | Purpose | Frontmatter Field |
 |---------|--------|---------|-------------------|
-| `<dc:title>` | `<meta>` | Title display name | `title_name` |
+| `<dc:title>` | `<meta>` | Title display name (e.g., "Title 1") | `title` (display); `title_name` comes from `<heading>` |
 | `<dc:type>` | `<meta>` | Document type (always "USCTitle") | — |
 | `<docNumber>` | `<meta>` | Title number | `title_number` |
 | `<docPublicationName>` | `<meta>` | Publication name | — |
@@ -97,7 +97,7 @@ All derive from InlineType (mixed content: text + inline/marker children). CSS r
 | `<term>` | `**text**` | Defined term (within `<def>`), CSS renders small-caps |
 | `<shortTitle>` | Plain text | Short title when first declared |
 | `<inline>` | Plain text | Generic inline container |
-| `<del>` | `~~text~~` | Deleted text (in modifications) |
+| `<del>` | Plain text | Deleted text (in modifications), rendered as plain text |
 | `<ins>` | Plain text | Inserted text (in modifications) |
 
 ## Reference Elements
@@ -191,15 +191,15 @@ TOCs are included in README.md files for title and chapter directories. They are
 
 | Element | Handling |
 |---------|----------|
-| `<compiledAct>` | Treated as a level (title appendices → separate `title-NN-appendix/` dir) |
+| `<compiledAct>` | Treated as a level (title appendices -> separate `title-NN-appendix/` dir) |
 | `<courtRules>` / `<courtRule>` | Treated as levels (title appendices) |
 | `<reorganizationPlans>` / `<reorganizationPlan>` | Treated as levels (title appendices) |
-| `<fillIn>` | Rendered as `___` (blank line) |
-| `<checkBox>` | Rendered as `[ ]` (form checkbox, rare) |
-| `<img>` | `![alt](src)` if image available |
-| `<center>` | Plain text (centering not meaningful in Markdown) |
-| `<br>` | Markdown line break (two trailing spaces or `\`) |
-| `<marker>` | Generic empty marker (rare, typically ignored) |
+| `<br>` | Markdown line break |
+| `<fillIn>` | Not currently handled (silently ignored) |
+| `<checkBox>` | Not currently handled (rare in USC) |
+| `<img>` | Not currently handled |
+| `<center>` | Not currently handled (content preserved as text) |
+| `<marker>` | Not currently handled (rare) |
 
 ## Universal Attributes
 
