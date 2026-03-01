@@ -8,12 +8,13 @@ const require = createRequire(import.meta.url);
 const pkg = require("../package.json") as { version: string };
 
 describe("law2md CLI", () => {
-  it("shows help text", () => {
+  it("shows help text with both commands", () => {
     const output = execFileSync("node", [CLI_PATH, "--help"], {
       encoding: "utf-8",
     });
     expect(output).toContain("law2md");
     expect(output).toContain("convert");
+    expect(output).toContain("download");
   });
 
   it("shows version from package.json", () => {
@@ -30,5 +31,15 @@ describe("law2md CLI", () => {
     expect(output).toContain("Convert USC XML");
     expect(output).toContain("--output");
     expect(output).toContain("--link-style");
+  });
+
+  it("shows download command help", () => {
+    const output = execFileSync("node", [CLI_PATH, "download", "--help"], {
+      encoding: "utf-8",
+    });
+    expect(output).toContain("Download U.S. Code XML");
+    expect(output).toContain("--title");
+    expect(output).toContain("--all");
+    expect(output).toContain("--release-point");
   });
 });

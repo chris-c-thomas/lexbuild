@@ -3,6 +3,7 @@
 import { createRequire } from "node:module";
 import { Command } from "commander";
 import { convertCommand } from "./commands/convert.js";
+import { downloadCommand } from "./commands/download.js";
 
 const require = createRequire(import.meta.url);
 const pkg = require("../package.json") as { version: string };
@@ -15,5 +16,6 @@ program
   .version(pkg.version);
 
 program.addCommand(convertCommand);
+program.addCommand(downloadCommand);
 
 program.parse();
