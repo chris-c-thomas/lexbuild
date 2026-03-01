@@ -2,7 +2,7 @@
 
 Convert the U.S. Code source XML content into structured Markdown for use with AI and RAG systems.
 
-> **Status: In Development** -- Phases 1 and 2 are complete. The tool converts U.S. Code XML to section-level or chapter-level Markdown with frontmatter, tables, filterable notes, cross-reference link resolution, and metadata indexes. See [Project Status](#project-status) for details.
+> **Status: In Development** -- Phases 1 through 3 are complete. The tool downloads and converts all 54 titles of the U.S. Code XML to section-level or chapter-level Markdown with frontmatter, tables, filterable notes, cross-reference link resolution, and metadata indexes. See [Project Status](#project-status) for details.
 
 ## Overview
 
@@ -16,16 +16,19 @@ Legal texts are among the most frequently cited sources in AI systems, yet there
 
 ### Key Features
 
-- **Streaming SAX parser** -- processes XML files of any size (including 100MB+ titles like Title 26) with bounded memory usage
+- **Built-in downloader** -- download individual titles or the entire U.S. Code directly from OLRC with `law2md download`
+- **Streaming SAX parser** -- processes XML files of any size (including 100MB+ titles like Title 42) with bounded memory usage
 - **Section-level output** -- each section of the U.S. Code becomes its own Markdown file, sized appropriately for RAG chunk windows
 - **Chapter-level output** -- optional mode that inlines all sections into per-chapter files
-- **YAML frontmatter** -- every file includes structured metadata (identifier, title, chapter, part, section, positive law status, source credit, currency)
+- **YAML frontmatter** -- every file includes structured metadata (identifier, title, chapter, part, section, positive law status, source credit, currency, status)
 - **Structural fidelity** -- preserves the full USLM hierarchy from title down through subsubitem, using bold inline numbering that mirrors legal citation convention
 - **Tables** -- XHTML tables and USLM layout tables converted to Markdown pipe tables
 - **Cross-reference links** -- resolve within the output corpus as relative links, or fall back to OLRC website URLs
 - **Filterable notes** -- editorial notes, statutory notes, and amendment history can be selectively included or excluded
 - **Metadata indexes** -- `_meta.json` sidecar files at title and chapter levels with section listings and token estimates
 - **Source credits** -- enactment source annotations included with each section
+- **Dry-run mode** -- preview conversion stats (sections, chapters, tokens, memory) without writing files
+- **Appendix handling** -- titles with appendices (5, 11, 18, 28) output to separate directories
 
 ## Installation
 
@@ -49,9 +52,20 @@ pnpm turbo build
 
 ### Download U.S. Code XML
 
-Download one or more title XML files from the [OLRC download page](https://uscode.house.gov/download/download.shtml). Each title is distributed as a zip file containing a single XML file (e.g., `usc01.xml` for Title 1).
+Use the built-in download command to fetch title XML files directly from OLRC:
 
-Place the extracted XML files in a directory of your choice.
+```bash
+# Download a single title
+node packages/cli/dist/index.js download --title 1 -o ./fixtures/xml
+
+# Download all 54 titles
+node packages/cli/dist/index.js download --all -o ./fixtures/xml
+
+# Use a specific release point
+node packages/cli/dist/index.js download --title 26 -o ./fixtures/xml --release-point 119-73not60
+```
+
+Or download manually from the [OLRC download page](https://uscode.house.gov/download/download.shtml). Each title is distributed as a zip file containing a single XML file (e.g., `usc01.xml` for Title 1).
 
 ### Convert to Markdown
 
@@ -73,6 +87,9 @@ node packages/cli/dist/index.js convert path/to/usc01.xml -o ./output --no-inclu
 
 # Verbose output showing all written files
 node packages/cli/dist/index.js convert path/to/usc01.xml -o ./output -v
+
+# Dry-run: preview stats without writing files
+node packages/cli/dist/index.js convert path/to/usc42.xml -o ./output --dry-run
 ```
 
 ### CLI Options
@@ -94,7 +111,17 @@ Options:
   --include-editorial-notes      Include editorial notes only
   --include-statutory-notes      Include statutory notes only
   --include-amendments           Include amendment history notes only
+  --dry-run                      Parse and report structure without writing files
   -v, --verbose                  Enable verbose logging
+  -h, --help                     Display help
+
+law2md download [options]
+
+Options:
+  --title <number>               Download a single title (1-54)
+  --all                          Download all 54 titles
+  -o, --output <dir>             Output directory (default: "./fixtures/xml")
+  --release-point <point>        OLRC release point (default: current)
   -h, --help                     Display help
 ```
 
@@ -152,7 +179,7 @@ positive_law: true
 currency: "119-73"
 last_updated: "2025-12-03"
 format_version: "1.0.0"
-generator: "law2md@0.2.0"
+generator: "law2md@0.3.0"
 source_credit: "(Added Pub. L. 104-199, § 3(a), Sept. 21, 1996, ...)"
 ---
 ```
@@ -228,16 +255,11 @@ Core conversion pipeline: SAX streaming parser, AST builder with section-emit pa
 
 Content quality improvements: whitespace normalization, cross-reference link resolver (relative/canonical/plaintext), XHTML and USLM layout table conversion, notes filtering with CLI flags, `_meta.json` sidecar index generation, and chapter-level granularity mode.
 
-Verified against Title 1 (39 sections) and Title 5 (1162 sections across 63 chapters, converted in under 1 second).
+### Phase 3: Scale and Download -- Complete (v0.3.0)
 
-### Phase 3: Scale and Download -- Planned
+Built-in OLRC downloader with zip extraction (`law2md download`), dry-run mode for conversion previews, peak memory and token reporting, appendix title handling (Titles 5a, 11a, 18a, 28a), duplicate section number disambiguation, and status edge case handling (repealed, reserved, transferred sections).
 
-- Built-in OLRC download command (`law2md download`)
-- Memory profiling and optimization for large titles (Title 26, Title 42)
-- Concurrent file writes
-- Dry-run mode
-- Appendix title handling (Titles 5, 11, 18, 28)
-- Edge case handling for duplicate section numbers
+E2E verified: all 54 titles (58 files including appendices), 60,261 sections, 25 seconds total.
 
 ### Phase 4: Polish and Publish -- Planned
 
@@ -269,7 +291,7 @@ The project is structured as a monorepo managed with [pnpm](https://pnpm.io/) wo
 ```bash
 pnpm install               # Install dependencies
 pnpm turbo build            # Build all packages
-pnpm turbo test             # Run all tests (103 tests)
+pnpm turbo test             # Run all tests (121 tests)
 pnpm turbo lint             # Lint all packages
 pnpm turbo typecheck        # Type-check all packages
 ```
