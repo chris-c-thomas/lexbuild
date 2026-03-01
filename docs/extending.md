@@ -1,29 +1,47 @@
 # Extending law2md
 
-This guide explains how to add support for new legal source types beyond the U.S. Code.
+This guide describes how the `law2md` architecture could support new legal source types beyond the U.S. Code.
+
+> **Note**: The extension architecture described here is aspirational. The current codebase only supports U.S. Code (USLM 1.0). Adding a new source type would require building out the abstractions described below. The monorepo structure and `@law2md/core` package are designed to make this feasible, but no pluggable handler interfaces exist yet.
 
 ---
 
-## Planned Source Types
+## Current Architecture
+
+Today, element handling is built directly into the `ASTBuilder` class in `@law2md/core`. It maps USLM element names to AST node types using a static lookup table. The `@law2md/usc` package orchestrates the pipeline (XML stream, AST builder, renderer, file writer) but does not register custom handlers.
+
+To add a new source type, you would:
+
+1. Create a new package (e.g., `@law2md/cfr`)
+2. Implement a converter function analogous to `convertTitle()` in `@law2md/usc`
+3. Reuse `@law2md/core` for XML parsing, AST types, Markdown rendering, frontmatter, and link resolution
+4. Add a new CLI command in `packages/cli`
+5. If the source uses different XML element names or semantics, either:
+   - Extend the `ASTBuilder` to handle them, or
+   - Create a source-specific builder that produces the same AST node types
+
+---
+
+## Potential Source Types
 
 | Source | XML Format | Provider | Package |
 |--------|-----------|----------|---------|
-| U.S. Code | USLM 1.0 | OLRC (uscode.house.gov) | `@law2md/usc` (MVP) |
+| U.S. Code | USLM 1.0 | OLRC (uscode.house.gov) | `@law2md/usc` (implemented) |
 | Code of Federal Regulations | USLM 2.x | GPO (govinfo.gov) | `@law2md/cfr` |
 | Federal Register | USLM 2.x | GPO (govinfo.gov) | `@law2md/fr` |
-| State statutes (IL example) | Custom HTML/XML | State legislature sites | `@law2md/state-il` |
+| State statutes | Varies (HTML/XML) | State legislature sites | `@law2md/state-{abbr}` |
 
 ---
 
-## Step-by-Step: Adding a New Source
+## Adding a New Source: General Approach
 
 ### 1. Create the Package
 
 ```bash
-mkdir -p packages/{source}/src/elements
+mkdir -p packages/{source}/src
 ```
 
-Create `packages/{source}/package.json`:
+Create `packages/{source}/package.json` with a dependency on `@law2md/core`:
 
 ```json
 {
@@ -38,100 +56,33 @@ Create `packages/{source}/package.json`:
 }
 ```
 
-### 2. Implement the Converter
+### 2. Implement a Converter
 
-Create `packages/{source}/src/converter.ts` implementing the `SourceConverter` interface from core:
+Create a converter function that orchestrates the pipeline. The USC converter (`packages/usc/src/converter.ts`) is the reference implementation. The general pattern:
 
-```typescript
-import type { SourceConverter, ConvertOptions, ConvertResult } from "@law2md/core";
+1. Create a `ReadStream` for the input XML
+2. Configure the `XMLParser` (may need a different default namespace)
+3. Configure the `ASTBuilder` with `emitAt` set to the appropriate granularity level
+4. In the `onEmit` callback, render each emitted node to Markdown and write to disk
+5. After all nodes are emitted, generate `_meta.json` index files
 
-export class CFRConverter implements SourceConverter {
-  async convert(options: ConvertOptions): Promise<ConvertResult> {
-    // 1. Create read stream for input XML
-    // 2. Configure SAX parser (may need different namespace)
-    // 3. Configure AST builder with appropriate emit level
-    // 4. Register element handlers
-    // 5. Process stream
-    // 6. Generate metadata indexes
-  }
-}
-```
+### 3. Implement a Downloader (Optional)
 
-### 3. Implement Element Handlers
+If the source has a bulk download endpoint, implement a download function following the pattern in `packages/usc/src/downloader.ts`.
 
-The core package provides the AST node types. Your source package maps source-specific XML elements to these shared AST types.
+### 4. Register with the CLI
 
-For example, CFR uses different element names than USC:
+Add a new command in `packages/cli/src/commands/`:
 
 ```typescript
-// packages/cfr/src/elements/part.ts
-import type { LevelNode, HandlerContext } from "@law2md/core";
-
-export function handleCFRPart(node: LevelNode, ctx: HandlerContext): string {
-  // CFR parts are analogous to USC chapters
-  // Render heading, then delegate children to core renderer
-}
+// packages/cli/src/commands/convert-cfr.ts
+import { convertCFR } from "@law2md/cfr";
+// ... commander setup
 ```
 
-### 4. Implement the Downloader (Optional)
+### 5. Document the Source
 
-If the source has a bulk download endpoint:
-
-```typescript
-// packages/cfr/src/downloader.ts
-export async function downloadCFR(options: CFRDownloadOptions): Promise<DownloadResult> {
-  // CFR XML is available at:
-  // https://www.govinfo.gov/bulkdata/CFR/{year}/title-{N}/CFR-{year}-title{N}.xml
-}
-```
-
-### 5. Register with the CLI
-
-In `packages/cli/src/commands/convert.ts`, add the new source type:
-
-```typescript
-import { CFRConverter } from "@law2md/cfr";
-
-const converters: Record<string, () => SourceConverter> = {
-  usc: () => new USCConverter(),
-  cfr: () => new CFRConverter(),
-};
-```
-
-### 6. Document the Source Schema
-
-Create `packages/{source}/README.md` documenting:
-
-- The XML schema used (link to official documentation)
-- Element hierarchy specific to this source
-- Download URL patterns
-- Any source-specific CLI options
-- Known anomalies or edge cases
-
----
-
-## Core Interfaces to Implement
-
-The `@law2md/core` package exports these interfaces that source packages must implement:
-
-```typescript
-/** Main converter interface */
-interface SourceConverter {
-  convert(options: ConvertOptions): Promise<ConvertResult>;
-}
-
-/** Optional: downloader interface */
-interface SourceDownloader {
-  download(options: DownloadOptions): Promise<DownloadResult>;
-  getCurrentReleasePoint(): Promise<string>;
-}
-
-/** Element handler registration */
-interface ElementHandlerRegistry {
-  register(elementName: string, handler: ElementHandler): void;
-  get(elementName: string): ElementHandler | undefined;
-}
-```
+Create a `packages/{source}/README.md` documenting the XML schema, element hierarchy, download URLs, and known edge cases.
 
 ---
 
@@ -149,6 +100,7 @@ CFR titles are numbered 1-50. The XML is available from GPO's govinfo bulk data 
 - CFR has `<authority>` and `<source>` elements not present in USC
 - CFR sections are numbered differently (e.g., `§ 1.1`, `§ 240.10b-5`)
 - CFR has an annual revision cycle (titles are revised on a rolling quarterly basis)
+- Bulk XML download: `https://www.govinfo.gov/bulkdata/CFR/{year}/title-{N}/`
 
 ---
 
@@ -156,8 +108,22 @@ CFR titles are numbered 1-50. The XML is available from GPO's govinfo bulk data 
 
 State statutes are the most heterogeneous source. There is no universal XML schema. Common approaches:
 
-- **Illinois (ILCS)**: Available as HTML from ilga.gov. Requires HTML-to-AST parsing rather than XML-to-AST. The core Markdown renderer and frontmatter generator still apply.
+- **Illinois (ILCS)**: Available as HTML from ilga.gov. Requires HTML-to-AST parsing rather than XML-to-AST.
 - **California**: Available in XML from leginfo.legislature.ca.gov, but uses a custom schema.
 - **Uniform Law Commission**: Model acts are available in USLM-like XML.
 
-For HTML sources, consider creating a shared `@law2md/html-parser` package that converts legal HTML to the core AST, then letting source-specific packages handle the semantic interpretation.
+For HTML sources, a shared HTML-to-AST parser could convert legal HTML to the core AST types, then let source-specific packages handle semantic interpretation.
+
+---
+
+## What Core Provides
+
+Regardless of source type, `@law2md/core` provides:
+
+- `XMLParser` — SAX streaming parser with namespace normalization
+- `ASTBuilder` — Stack-based tree construction with configurable emit level
+- AST node types — `LevelNode`, `ContentNode`, `InlineNode`, `NoteNode`, `TableNode`, etc.
+- `renderDocument()` / `renderSection()` — AST-to-Markdown rendering
+- `generateFrontmatter()` — YAML frontmatter generation
+- `createLinkResolver()` — Cross-reference resolution with fallback URLs
+- `FORMAT_VERSION` / `GENERATOR` — Output format metadata constants
