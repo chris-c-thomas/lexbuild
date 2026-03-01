@@ -245,7 +245,7 @@ Each title and chapter directory includes a `_meta.json` file with structured me
 }
 ```
 
-For the complete output format specification, see [docs/OUTPUT_FORMAT.md](docs/OUTPUT_FORMAT.md).
+For the complete output format specification, see [docs/output-format.md](docs/output-format.md).
 
 ## Project Status
 
