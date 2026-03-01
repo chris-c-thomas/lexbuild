@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-`law2md` converts U.S. legislative XML (USLM schema) into structured Markdown for AI/RAG ingestion. It is a monorepo built with Turborepo, npm workspaces, TypeScript, and Node.js.
+`law2md` converts U.S. legislative XML (USLM schema) into structured Markdown for AI/RAG ingestion. It is a monorepo built with Turborepo, pnpm workspaces, TypeScript, and Node.js.
 
 ## Repository Structure
 
@@ -30,7 +30,7 @@ law2md/
 - **Validation**: `zod`
 - **YAML**: `yaml` package
 - **Zip**: `yauzl`
-- **Token Counting**: `tiktoken` (cl100k_base encoding)
+- **Token Counting**: character/4 heuristic (`tiktoken` integration deferred to Phase 4)
 - **Logging**: `pino`
 - **Testing**: `vitest`
 - **Build**: `tsup`
@@ -284,7 +284,7 @@ output/usc/title-{NN}/chapter-{NN}/section-{N}.md
 
 8. **Appendix titles**: Separate output directories (e.g., `title-05-appendix/`) for titles with appendices (5, 11, 18, 28).
 
-9. **Token estimation**: Uses `tiktoken` (`cl100k_base` encoding) for accurate token counts in `_meta.json`, added as a dependency of `@law2md/core`.
+9. **Token estimation**: Uses character/4 heuristic for token counts in `_meta.json`. `tiktoken` (`cl100k_base` encoding) integration planned for Phase 4.
 
 10. **Table of Disposition**: Excluded from section-level output. Included in title-level README.md.
 
