@@ -171,7 +171,7 @@ async function downloadAndExtractTitle(
 
   // Write zip to disk
   const fileStream = createWriteStream(zipPath);
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- ReadableStream type mismatch between DOM and Node
+  // ReadableStream type mismatch between DOM and Node — cast to `never` to bridge
   await pipeline(Readable.fromWeb(response.body as never), fileStream);
 
   // Extract XML from zip

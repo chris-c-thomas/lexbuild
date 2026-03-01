@@ -90,6 +90,8 @@ interface SectionMeta {
   identifier: string;
   number: string;
   name: string;
+  /** Filename only (e.g., "section-3598.md" or "section-3598-2.md" for duplicates) */
+  fileName: string;
   /** File path relative to the title directory (e.g., "chapter-01/section-1.md") */
   relativeFile: string;
   /** Content length in characters (for token estimation) */
@@ -171,17 +173,39 @@ export async function convertTitle(options: ConvertOptions): Promise<ConvertResu
     }
   } else {
     // Section-level: each emitted node is a single section
-    const linkResolver = createLinkResolver();
+    // Track duplicate section numbers per chapter to disambiguate filenames
+    const sectionCounts = new Map<string, number>();
+    const suffixes: (string | undefined)[] = [];
     for (const { node, context } of collected) {
       const sectionNum = node.numValue;
+      if (!sectionNum) {
+        suffixes.push(undefined);
+        continue;
+      }
+      const chapterDir = buildChapterDir(context) ?? "__root__";
+      const key = `${chapterDir}/${sectionNum}`;
+      const count = (sectionCounts.get(key) ?? 0) + 1;
+      sectionCounts.set(key, count);
+      suffixes.push(count > 1 ? `-${count}` : undefined);
+    }
+
+    const linkResolver = createLinkResolver();
+    for (const [i, { node, context }] of collected.entries()) {
+      const sectionNum = node.numValue;
       if (sectionNum && node.identifier) {
-        const filePath = buildOutputPath(context, sectionNum, opts.output);
-        linkResolver.register(node.identifier, filePath);
+        const filePath = buildOutputPath(context, sectionNum, opts.output, suffixes[i]);
+        // For duplicates, register with the XML element @id to disambiguate
+        const regId = suffixes[i] ? `${node.identifier}#${suffixes[i]}` : node.identifier;
+        linkResolver.register(regId, filePath);
+        // Always register the first occurrence under the canonical identifier
+        if (!suffixes[i]) {
+          linkResolver.register(node.identifier, filePath);
+        }
       }
     }
 
-    for (const { node, context } of collected) {
-      const result = await writeSection(node, context, opts, linkResolver);
+    for (const [i, { node, context }] of collected.entries()) {
+      const result = await writeSection(node, context, opts, linkResolver, suffixes[i]);
       if (result) {
         files.push(result.filePath);
         sectionMetas.push(result.meta);
@@ -228,12 +252,14 @@ async function writeSection(
   context: EmitContext,
   options: ConvertOptions,
   linkResolver?: LinkResolver | undefined,
+  /** Disambiguation suffix for duplicate section numbers (e.g., "-2") */
+  dupSuffix?: string | undefined,
 ): Promise<WriteSectionResult | null> {
   const sectionNum = node.numValue;
   if (!sectionNum) return null;
 
-  // Build the output file path
-  const filePath = buildOutputPath(context, sectionNum, options.output);
+  // Build the output file path (with optional duplicate suffix)
+  const filePath = buildOutputPath(context, sectionNum, options.output, dupSuffix);
 
   // Build frontmatter data
   const frontmatter = buildFrontmatter(node, context);
@@ -267,9 +293,10 @@ async function writeSection(
   const titleNum = findAncestor(context.ancestors, "title")?.numValue ?? "0";
   const chapterAncestor = findAncestor(context.ancestors, "chapter");
   const chapterDir = chapterAncestor?.numValue ? `chapter-${padTwo(chapterAncestor.numValue)}` : "";
+  const sectionFileName = `section-${sectionNum}${dupSuffix ?? ""}.md`;
   const relativeFile = chapterDir
-    ? `${chapterDir}/section-${sectionNum}.md`
-    : `section-${sectionNum}.md`;
+    ? `${chapterDir}/${sectionFileName}`
+    : sectionFileName;
 
   const hasNotes = node.children.some(
     (c) => c.type === "notesContainer" || c.type === "note",
@@ -279,6 +306,7 @@ async function writeSection(
     identifier: node.identifier ?? `/us/usc/t${titleNum}/s${sectionNum}`,
     number: sectionNum,
     name: node.heading?.trim() ?? "",
+    fileName: sectionFileName,
     relativeFile,
     contentLength: markdown.length,
     hasNotes,
@@ -352,7 +380,7 @@ async function writeMetaFiles(
       identifier: sm.identifier,
       number: sm.number,
       name: sm.name,
-      file: `section-${sm.number}.md`,
+      file: sm.fileName,
       token_estimate: Math.ceil(sm.contentLength / 4),
       has_notes: sm.hasNotes,
       status: sm.status,
@@ -487,6 +515,7 @@ async function writeChapter(
         identifier: child.identifier ?? `/us/usc/t${titleNum}/s${sectionNum}`,
         number: sectionNum,
         name: child.heading?.trim() ?? "",
+        fileName: `section-${sectionNum}.md`,
         relativeFile: chapterFile,
         contentLength: sectionMd.length,
         hasNotes,
@@ -510,10 +539,12 @@ function buildOutputPath(
   context: EmitContext,
   sectionNum: string,
   outputRoot: string,
+  /** Disambiguation suffix for duplicate section numbers (e.g., "-2") */
+  dupSuffix?: string | undefined,
 ): string {
   const titleDir = buildTitleDir(context);
   const chapterDir = buildChapterDir(context);
-  const sectionFile = `section-${sectionNum}.md`;
+  const sectionFile = `section-${sectionNum}${dupSuffix ?? ""}.md`;
 
   if (chapterDir) {
     return join(outputRoot, "usc", titleDir, chapterDir, sectionFile);
@@ -697,11 +728,13 @@ function buildSectionMetaDryRun(
   };
   walk(sectionNode as unknown as Parameters<typeof walk>[0]);
 
+  const sectionFileName = `section-${sectionNum}.md`;
   return {
     identifier: sectionNode.identifier ?? `/us/usc/t${titleNum}/s${sectionNum}`,
     number: sectionNum,
     name: sectionNode.heading?.trim() ?? "",
-    relativeFile: chapterDir ? `${chapterDir}/section-${sectionNum}.md` : `section-${sectionNum}.md`,
+    fileName: sectionFileName,
+    relativeFile: chapterDir ? `${chapterDir}/${sectionFileName}` : sectionFileName,
     contentLength,
     hasNotes,
     status: sectionNode.status ?? "current",
