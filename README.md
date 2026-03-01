@@ -1,6 +1,10 @@
 # law2md
 
 [![CI](https://github.com/chris-c-thomas/law2md/actions/workflows/ci.yml/badge.svg)](https://github.com/chris-c-thomas/law2md/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/law2md)](https://www.npmjs.com/package/law2md)
+[![license](https://img.shields.io/github/license/chris-c-thomas/law2md)](LICENSE)
+[![issues](https://img.shields.io/github/issues/chris-c-thomas/law2md)](https://github.com/chris-c-thomas/law2md/issues)
+[![pull requests](https://img.shields.io/github/issues-pr/chris-c-thomas/law2md)](https://github.com/chris-c-thomas/law2md/pulls)
 
 Convert the United States Code into structured Markdown for AI and RAG Systems.
 
