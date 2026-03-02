@@ -139,7 +139,7 @@ law2md download [options]
 Options:
   --title <number>               Download a single title (1-54)
   --all                          Download all 54 titles
-  -o, --output <dir>             Output directory (default: "./fixtures/xml")
+  -o, --output <dir>             Output directory (default: "./xml")
   --release-point <point>        OLRC release point (default: current)
   -h, --help                     Display help
 ```

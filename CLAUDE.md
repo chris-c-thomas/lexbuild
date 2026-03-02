@@ -12,8 +12,8 @@ law2md/
 │   ├── core/        # @law2md/core — XML parsing, AST, Markdown rendering, shared utilities
 │   ├── usc/         # @law2md/usc — U.S. Code-specific element handlers and downloader
 │   └── cli/         # law2md — CLI binary (the published npm package users install)
+├── xml/               # Full USC XML files (usc01.xml ... usc54.xml) — gitignored
 ├── fixtures/
-│   ├── xml/         # Full USC XML files (usc01.xml ... usc54.xml) — gitignored
 │   ├── fragments/   # Small synthetic XML snippets for unit tests
 │   └── expected/    # Expected output snapshots for integration tests
 ├── docs/            # Architecture, output format spec, extension guide
@@ -66,7 +66,7 @@ pnpm turbo lint
 pnpm turbo dev
 
 # Run the CLI locally during development
-node packages/cli/dist/index.js convert ./fixtures/xml/usc01.xml -o ./test-output
+node packages/cli/dist/index.js convert ./xml/usc01.xml -o ./test-output
 ```
 
 ## Code Conventions

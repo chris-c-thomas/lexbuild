@@ -2,5 +2,6 @@ dist
 node_modules
 pnpm-lock.yaml
 *.md
+xml
 fixtures/xml
 docs/reference

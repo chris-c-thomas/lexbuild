@@ -40,7 +40,7 @@ pnpm turbo test --filter=law2md
 
 ```bash
 node packages/cli/dist/index.js convert path/to/usc01.xml -o ./output
-node packages/cli/dist/index.js download --title 1 -o ./fixtures/xml
+node packages/cli/dist/index.js download --title 1
 ```
 
 ### Formatting
@@ -100,7 +100,7 @@ Review the diff in `fixtures/expected/` to confirm only intended changes, then c
 
 - `fixtures/fragments/` — Small synthetic XML snippets for unit tests (committed)
 - `fixtures/expected/` — Pinned expected output for snapshot tests (committed)
-- `fixtures/xml/` — Full USC XML files (gitignored, download with `law2md download`)
+- `xml/` — Full USC XML files (gitignored, download with `law2md download`)
 
 ## Submitting Changes
 
