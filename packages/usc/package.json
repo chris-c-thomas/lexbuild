@@ -1,6 +1,6 @@
 {
   "name": "@law2md/usc",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "U.S. Code-specific element handlers and downloader for law2md",
   "type": "module",
   "main": "./dist/index.js",
