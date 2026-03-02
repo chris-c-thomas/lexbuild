@@ -40,7 +40,7 @@ describe("convertTitle", () => {
 
     expect(result.sectionsWritten).toBe(1);
     expect(result.titleNumber).toBe("1");
-    expect(result.titleName).toBe("Title 1");
+    expect(result.titleName).toBe("GENERAL PROVISIONS");
     expect(result.files).toHaveLength(1);
 
     // Check the output file exists at the right path

@@ -2,6 +2,7 @@
  * `law2md convert` command — converts USC XML files to Markdown.
  */
 
+import chalk from "chalk";
 import { Command } from "commander";
 import { existsSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
@@ -9,6 +10,7 @@ import { convertTitle } from "@law2md/usc";
 import {
   createSpinner,
   summaryBlock,
+  dataTable,
   formatDuration,
   formatBytes,
   formatNumber,
@@ -67,7 +69,7 @@ export function resolveUscXmlPath(inputPath: string): string | undefined {
   const dir = dirname(inputPath);
   const base = basename(inputPath);
   const match = /^usc(\d+)\.xml$/.exec(base);
-  if (match) {
+  if (match?.[1]) {
     const padded = match[1].padStart(2, "0");
     const paddedPath = join(dir, `usc${padded}.xml`);
     if (existsSync(paddedPath)) return paddedPath;
@@ -76,7 +78,25 @@ export function resolveUscXmlPath(inputPath: string): string | undefined {
   return undefined;
 }
 
-/** Convert a single XML file and print its summary. */
+/** Result from runConversion including elapsed time. */
+interface ConversionRun {
+  result: Awaited<ReturnType<typeof convertTitle>>;
+  elapsed: number;
+}
+
+/** Run a conversion without printing output. Returns the result and elapsed time. */
+async function runConversion(
+  inputPath: string,
+  outputPath: string,
+  options: ConvertCommandOptions,
+): Promise<ConversionRun> {
+  const startTime = performance.now();
+  const result = await convertTitle(buildConvertOptions(inputPath, outputPath, options));
+  const elapsed = performance.now() - startTime;
+  return { result, elapsed };
+}
+
+/** Convert a single XML file and print its detailed summary. */
 async function convertSingleFile(
   inputPath: string,
   outputPath: string,
@@ -86,11 +106,8 @@ async function convertSingleFile(
   const spinner = createSpinner(spinnerLabel);
   spinner.start();
 
-  const startTime = performance.now();
-
   try {
-    const result = await convertTitle(buildConvertOptions(inputPath, outputPath, options));
-    const elapsed = performance.now() - startTime;
+    const { result, elapsed } = await runConversion(inputPath, outputPath, options);
 
     spinner.stop();
 
@@ -207,30 +224,85 @@ export const convertCommand = new Command("convert")
 
     const inputDir = resolve(options.inputDir);
     const totalTitles = titles.length;
-    const overallStart = performance.now();
-    let totalSections = 0;
+    const results: ConversionRun[] = [];
+
+    const spinner = createSpinner(`Converting${dryRunLabel}...`);
+    spinner.start();
 
     for (const [i, titleNum] of titles.entries()) {
       const xmlPath = titleXmlPath(inputDir, titleNum);
 
       if (!existsSync(xmlPath)) {
+        spinner.stop();
         console.error(error(`XML file not found: ${xmlPath}`));
         process.exit(1);
       }
 
-      const label = `Converting Title ${titleNum}${dryRunLabel} (${i + 1}/${totalTitles})...`;
-      const result = await convertSingleFile(xmlPath, outputPath, options, label);
-      if (result) {
-        totalSections += result.sectionsWritten;
+      spinner.text = `Converting Title ${titleNum}${dryRunLabel} (${i + 1}/${totalTitles})...`;
+
+      try {
+        const run = await runConversion(xmlPath, outputPath, options);
+        results.push(run);
+      } catch (err) {
+        spinner.fail(err instanceof Error ? err.message : String(err));
+        process.exit(1);
       }
     }
 
-    // Aggregate footer
-    const overallElapsed = performance.now() - overallStart;
+    spinner.stop();
+
+    // Summary header
+    const outputRelative = relative(process.cwd(), outputPath) || outputPath;
+    const headerTitle = options.dryRun
+      ? "law2md — Conversion Summary [dry-run]"
+      : "law2md — Conversion Summary";
+    const header = summaryBlock({
+      title: headerTitle,
+      rows: [["Output", outputRelative]],
+    });
+    process.stdout.write(header);
+
+    // Build data table rows
+    let totalSections = 0;
+    let totalChapters = 0;
+    let totalTokens = 0;
+    let totalElapsed = 0;
+
+    const tableRows = results.map(({ result, elapsed }) => {
+      totalSections += result.sectionsWritten;
+      totalChapters += result.chapterCount;
+      totalTokens += result.totalTokenEstimate;
+      totalElapsed += elapsed;
+
+      return [
+        result.titleNumber,
+        result.titleName,
+        formatNumber(result.sectionsWritten),
+        formatNumber(result.chapterCount),
+        formatNumber(result.totalTokenEstimate),
+        formatDuration(elapsed),
+      ];
+    });
+
+    // Totals row
+    tableRows.push([
+      chalk.bold("Total"),
+      "",
+      chalk.bold(formatNumber(totalSections)),
+      chalk.bold(formatNumber(totalChapters)),
+      chalk.bold(formatNumber(totalTokens)),
+      chalk.bold(formatDuration(totalElapsed)),
+    ]);
+
+    console.log(
+      dataTable(["Title", "Name", "Sections", "Chapters", "Tokens", "Duration"], tableRows),
+    );
+
+    // Footer
     const titleWord = totalTitles === 1 ? "title" : "titles";
     const sectionWord = totalSections === 1 ? "section" : "sections";
     console.log(
-      `  ${success(`Converted ${totalTitles} ${titleWord} (${formatNumber(totalSections)} ${sectionWord}) in ${formatDuration(overallElapsed)}`)}`,
+      `\n  ${success(`Converted ${totalTitles} ${titleWord} (${formatNumber(totalSections)} ${sectionWord}) in ${formatDuration(totalElapsed)}`)}`,
     );
     console.log("");
   });

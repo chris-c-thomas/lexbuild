@@ -39,6 +39,80 @@ export function formatNumber(n: number): string {
   return n.toLocaleString();
 }
 
+/** Regex matching ANSI escape sequences (SGR codes). */
+// eslint-disable-next-line no-control-regex
+const ANSI_RE = /\x1B\[[0-9;]*m/g;
+
+/** Strip ANSI escape codes and return visual string length. */
+function visualLength(s: string): number {
+  return s.replace(ANSI_RE, "").length;
+}
+
+/**
+ * Compute column widths that fill the terminal.
+ * Expands `flexCol` to absorb remaining space.
+ */
+function fillWidths(
+  columns: string[][],
+  colCount: number,
+  flexCol: number,
+): number[] | undefined {
+  const termWidth = process.stdout.columns || 80;
+  // Compute natural width per column (max visual length across all rows)
+  const natural = Array.from<number>({ length: colCount }).fill(0);
+  for (const row of columns) {
+    for (let i = 0; i < colCount; i++) {
+      natural[i] = Math.max(natural[i] ?? 0, visualLength(row[i] ?? ""));
+    }
+  }
+  // Overhead: 2 chars left pad + 2 chars per column separator (between cols)
+  const overhead = 2 + 2 * (colCount - 1);
+  const naturalTotal = overhead + natural.reduce((a, b) => a + b, 0);
+  if (naturalTotal >= termWidth) return undefined; // already fills or exceeds
+  const extra = termWidth - naturalTotal;
+  const widths = [...natural];
+  widths[flexCol] = (widths[flexCol] ?? 0) + extra;
+  return widths;
+}
+
+/**
+ * Shared cli-table3 border characters.
+ *
+ * Uses 2-char left indent ("  "), 2-char column gap ("  "), no right border.
+ * The "mid" intersection chars ("──") must match the 2-char width of "middle"
+ * so horizontal rules span the full table width.
+ */
+const TABLE_CHARS = {
+  top: "─",
+  "top-mid": "──",
+  "top-left": "  ",
+  "top-right": "",
+  bottom: "─",
+  "bottom-mid": "──",
+  "bottom-left": "  ",
+  "bottom-right": "",
+  left: "  ",
+  "left-mid": "  ",
+  right: "",
+  "right-mid": "",
+  mid: "─",
+  "mid-mid": "──",
+  middle: "  ",
+} as const;
+
+/** Shared cli-table3 style. */
+const TABLE_STYLE: {
+  head: string[];
+  border: string[];
+  "padding-left": number;
+  "padding-right": number;
+} = {
+  head: [],
+  border: [],
+  "padding-left": 0,
+  "padding-right": 0,
+};
+
 /** Render a styled heading line. */
 export function heading(text: string): string {
   return chalk.bold(text);
@@ -66,30 +140,13 @@ interface SummaryBlockOptions {
 
 /** Render a key-value summary block with horizontal rules. */
 export function summaryBlock({ title, rows, footer }: SummaryBlockOptions): string {
+  const allCells = rows.map(([l, v]) => [l, v]);
+  const colWidths = fillWidths(allCells, 2, 1);
+
   const table = new Table({
-    chars: {
-      top: "─",
-      "top-mid": "",
-      "top-left": "  ",
-      "top-right": "",
-      bottom: "─",
-      "bottom-mid": "",
-      "bottom-left": "  ",
-      "bottom-right": "",
-      left: "  ",
-      "left-mid": "  ",
-      right: "",
-      "right-mid": "",
-      mid: "─",
-      "mid-mid": "",
-      middle: "  ",
-    },
-    style: {
-      head: [],
-      border: [],
-      "padding-left": 0,
-      "padding-right": 0,
-    },
+    chars: TABLE_CHARS,
+    style: TABLE_STYLE,
+    ...(colWidths ? { colWidths } : {}),
   });
 
   for (const [label, value] of rows) {
@@ -112,29 +169,8 @@ export function summaryBlock({ title, rows, footer }: SummaryBlockOptions): stri
 export function dataTable(head: string[], rows: string[][]): string {
   const table = new Table({
     head: head.map((h) => chalk.dim(h)),
-    chars: {
-      top: "─",
-      "top-mid": "",
-      "top-left": "  ",
-      "top-right": "",
-      bottom: "─",
-      "bottom-mid": "",
-      "bottom-left": "  ",
-      "bottom-right": "",
-      left: "  ",
-      "left-mid": "  ",
-      right: "",
-      "right-mid": "",
-      mid: "─",
-      "mid-mid": "",
-      middle: "  ",
-    },
-    style: {
-      head: [],
-      border: [],
-      "padding-left": 0,
-      "padding-right": 0,
-    },
+    chars: TABLE_CHARS,
+    style: TABLE_STYLE,
   });
 
   for (const row of rows) {

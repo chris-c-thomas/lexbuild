@@ -235,7 +235,7 @@ export async function convertTitle(options: ConvertOptions): Promise<ConvertResu
     sectionsWritten: opts.dryRun ? sectionMetas.length : files.length,
     files,
     titleNumber: meta.docNumber ?? "unknown",
-    titleName: meta.dcTitle ?? "Unknown Title",
+    titleName: titleHeading ?? meta.dcTitle ?? "Unknown Title",
     dryRun: opts.dryRun,
     chapterCount: chapterIds.size,
     totalTokenEstimate: totalTokens,
