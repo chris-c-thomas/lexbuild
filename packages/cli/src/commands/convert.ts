@@ -4,8 +4,17 @@
 
 import { Command } from "commander";
 import { existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { relative, resolve } from "node:path";
 import { convertTitle } from "@law2md/usc";
+import {
+  createSpinner,
+  summaryBlock,
+  formatDuration,
+  formatBytes,
+  formatNumber,
+  success,
+  error,
+} from "../ui.js";
 
 /** Parsed options from the convert command */
 interface ConvertCommandOptions {
@@ -48,7 +57,7 @@ export const convertCommand = new Command("convert")
     const inputPath = resolve(input);
 
     if (!existsSync(inputPath)) {
-      console.error(`Error: Input file not found: ${inputPath}`);
+      console.error(error(`Input file not found: ${inputPath}`));
       process.exit(1);
     }
 
@@ -59,24 +68,9 @@ export const convertCommand = new Command("convert")
       options.includeEditorialNotes || options.includeStatutoryNotes || options.includeAmendments;
     const includeNotes = hasSelectiveFlags ? false : options.includeNotes;
 
-    if (options.verbose) {
-      console.log(`Input:  ${inputPath}`);
-      console.log(`Output: ${outputPath}`);
-      console.log(`Link style: ${options.linkStyle}`);
-      console.log(`Source credits: ${options.includeSourceCredits}`);
-      if (!includeNotes && !hasSelectiveFlags) {
-        console.log(`Notes: excluded`);
-      } else if (hasSelectiveFlags) {
-        const flags: string[] = [];
-        if (options.includeEditorialNotes) flags.push("editorial");
-        if (options.includeStatutoryNotes) flags.push("statutory");
-        if (options.includeAmendments) flags.push("amendments");
-        console.log(`Notes: ${flags.join(", ")}`);
-      } else {
-        console.log(`Notes: all`);
-      }
-      console.log("");
-    }
+    const dryRunLabel = options.dryRun ? " [dry-run]" : "";
+    const spinner = createSpinner(`Converting${dryRunLabel}...`);
+    spinner.start();
 
     const startTime = performance.now();
 
@@ -94,35 +88,51 @@ export const convertCommand = new Command("convert")
         dryRun: options.dryRun,
       });
 
-      const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
-      const memMB = (result.peakMemoryBytes / 1024 / 1024).toFixed(1);
+      const elapsed = performance.now() - startTime;
 
-      if (result.dryRun) {
-        console.log(`[dry-run] ${result.titleName} (Title ${result.titleNumber})`);
-        console.log(`  Chapters:         ${result.chapterCount}`);
-        console.log(`  Sections:         ${result.sectionsWritten}`);
-        console.log(`  Estimated tokens: ${result.totalTokenEstimate.toLocaleString()}`);
-        console.log(`  Parse time:       ${elapsed}s`);
-        console.log(`  Peak memory:      ${memMB} MB`);
-      } else {
-        console.log(
-          `Converted ${result.titleName} (Title ${result.titleNumber}): ` +
-            `${result.sectionsWritten} sections, ${result.chapterCount} chapters in ${elapsed}s`,
-        );
+      spinner.stop();
 
-        if (options.verbose) {
-          console.log(`  Estimated tokens: ${result.totalTokenEstimate.toLocaleString()}`);
-          console.log(`  Peak memory:      ${memMB} MB`);
-          if (result.files.length > 0) {
-            console.log(`\nFiles written:`);
-            for (const file of result.files) {
-              console.log(`  ${file}`);
-            }
-          }
+      // Build stats rows
+      const rows: Array<[string, string]> = [
+        ["Sections", formatNumber(result.sectionsWritten)],
+        ["Chapters", formatNumber(result.chapterCount)],
+        ["Est. Tokens", formatNumber(result.totalTokenEstimate)],
+      ];
+
+      if (!result.dryRun) {
+        rows.push(["Files Written", formatNumber(result.files.length)]);
+      }
+
+      rows.push(
+        ["Peak Memory", formatBytes(result.peakMemoryBytes)],
+        ["Duration", formatDuration(elapsed)],
+      );
+
+      const titleLabel = result.dryRun
+        ? `law2md — Title ${result.titleNumber}: ${result.titleName} [dry-run]`
+        : `law2md — Title ${result.titleNumber}: ${result.titleName}`;
+
+      const outputRelative = relative(process.cwd(), outputPath) || outputPath;
+
+      const output = summaryBlock({
+        title: titleLabel,
+        rows: [...rows, ["Output", outputRelative]],
+        footer: result.dryRun
+          ? success("Dry run complete")
+          : success("Conversion complete"),
+      });
+      process.stdout.write(output);
+
+      // Verbose: list all files written
+      if (options.verbose && !result.dryRun && result.files.length > 0) {
+        console.log("  Files written:");
+        for (const file of result.files) {
+          console.log(`    ${relative(process.cwd(), file) || file}`);
         }
+        console.log("");
       }
     } catch (err) {
-      console.error(`Error converting ${inputPath}:`, err instanceof Error ? err.message : err);
+      spinner.fail(err instanceof Error ? err.message : String(err));
       process.exit(1);
     }
   });
