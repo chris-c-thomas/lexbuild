@@ -3,6 +3,7 @@ import {
   buildDownloadUrl,
   buildAllTitlesUrl,
   releasePointToPath,
+  isAllTitles,
   CURRENT_RELEASE_POINT,
   USC_TITLE_NUMBERS,
 } from "./downloader.js";
@@ -60,6 +61,36 @@ describe("buildAllTitlesUrl", () => {
     expect(url).toBe(
       `https://uscode.house.gov/download/releasepoints/us/pl/119/73not60/xml_uscAll@119-73not60.zip`,
     );
+  });
+});
+
+describe("isAllTitles", () => {
+  it("returns true for the full set 1-54 in order", () => {
+    expect(isAllTitles(Array.from({ length: 54 }, (_, i) => i + 1))).toBe(true);
+  });
+
+  it("returns true for the full set shuffled", () => {
+    const shuffled = Array.from({ length: 54 }, (_, i) => i + 1);
+    shuffled.reverse();
+    expect(isAllTitles(shuffled)).toBe(true);
+  });
+
+  it("returns false for a subset", () => {
+    expect(isAllTitles([1, 2, 3])).toBe(false);
+  });
+
+  it("returns false for 54 elements with duplicates (missing titles)", () => {
+    const withDupes = Array.from({ length: 54 }, (_, i) => (i < 53 ? i + 1 : 1));
+    expect(isAllTitles(withDupes)).toBe(false);
+  });
+
+  it("returns true for full set with extra duplicates", () => {
+    const withExtras = [...Array.from({ length: 54 }, (_, i) => i + 1), 1, 27, 54];
+    expect(isAllTitles(withExtras)).toBe(true);
+  });
+
+  it("returns false for an empty array", () => {
+    expect(isAllTitles([])).toBe(false);
   });
 });
 

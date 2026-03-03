@@ -35,6 +35,20 @@ const OLRC_BASE_URL = "https://uscode.house.gov/download/releasepoints/us/pl";
 export const USC_TITLE_NUMBERS = Array.from({ length: 54 }, (_, i) => i + 1);
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Check whether a list of title numbers covers all 54 USC titles.
+ *
+ * Handles arbitrary ordering and duplicates.
+ */
+export function isAllTitles(titles: number[]): boolean {
+  const unique = new Set(titles);
+  return unique.size === 54 && USC_TITLE_NUMBERS.every((n) => unique.has(n));
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
@@ -78,12 +92,26 @@ export interface DownloadError {
 
 /**
  * Download USC title XML files from OLRC.
+ *
+ * When all 54 titles are requested, uses the bulk `uscAll` zip for a single
+ * HTTP round-trip instead of 54 individual requests. Falls back to per-title
+ * downloads if the bulk download fails.
  */
 export async function downloadTitles(options: DownloadOptions): Promise<DownloadResult> {
   const releasePoint = options.releasePoint ?? CURRENT_RELEASE_POINT;
   const titles = options.titles ?? USC_TITLE_NUMBERS;
 
   await mkdir(options.outputDir, { recursive: true });
+
+  // Use bulk zip when all 54 titles are requested
+  if (options.titles === undefined || isAllTitles(titles)) {
+    try {
+      const files = await downloadAndExtractAllTitles(releasePoint, options.outputDir);
+      return { releasePoint, files, errors: [] };
+    } catch {
+      // Fall back to per-title downloads
+    }
+  }
 
   const files: DownloadedFile[] = [];
   const errors: DownloadError[] = [];
@@ -264,4 +292,122 @@ function extractEntry(zipFile: ZipFile, entry: Entry, outputPath: string): Promi
       readStream.on("error", (readErr) => reject(new Error(`Read error: ${readErr.message}`)));
     });
   });
+}
+
+// ---------------------------------------------------------------------------
+// Bulk download (all titles in one zip)
+// ---------------------------------------------------------------------------
+
+/** Regex matching USC XML filenames like usc01.xml, usc54.xml */
+const USC_XML_RE = /^(?:.*\/)?usc(\d{2})\.xml$/;
+
+/**
+ * Extract all `usc{NN}.xml` files from a bulk zip archive.
+ *
+ * Returns an array of `{ titleNumber, filePath }` for each extracted file.
+ */
+function extractAllXmlFromZip(
+  zipPath: string,
+  outputDir: string,
+): Promise<{ titleNumber: number; filePath: string }[]> {
+  return new Promise((resolve, reject) => {
+    yauzlOpen(zipPath, { lazyEntries: true }, (err, zipFile) => {
+      if (err) {
+        reject(new Error(`Failed to open zip: ${err.message}`));
+        return;
+      }
+      if (!zipFile) {
+        reject(new Error("Failed to open zip: no zipFile returned"));
+        return;
+      }
+
+      const extracted: { titleNumber: number; filePath: string }[] = [];
+      let pending = 0;
+      let ended = false;
+
+      const maybeResolve = (): void => {
+        if (ended && pending === 0) {
+          resolve(extracted);
+        }
+      };
+
+      zipFile.on("entry", (entry: Entry) => {
+        const match = USC_XML_RE.exec(entry.fileName);
+        if (match) {
+          const titleNum = parseInt(match[1]!, 10);
+          const outPath = join(outputDir, `usc${match[1]!}.xml`);
+          pending++;
+
+          extractEntry(zipFile, entry, outPath)
+            .then(() => {
+              extracted.push({ titleNumber: titleNum, filePath: outPath });
+              pending--;
+              // Continue reading entries after extraction completes
+              zipFile.readEntry();
+              maybeResolve();
+            })
+            .catch((extractErr) => {
+              zipFile.close();
+              reject(extractErr);
+            });
+        } else {
+          zipFile.readEntry();
+        }
+      });
+
+      zipFile.on("end", () => {
+        ended = true;
+        maybeResolve();
+      });
+
+      zipFile.on("error", (zipErr: Error) => {
+        reject(new Error(`Zip error: ${zipErr.message}`));
+      });
+
+      zipFile.readEntry();
+    });
+  });
+}
+
+/**
+ * Download the bulk all-titles zip and extract every `usc{NN}.xml` file.
+ */
+async function downloadAndExtractAllTitles(
+  releasePoint: string,
+  outputDir: string,
+): Promise<DownloadedFile[]> {
+  const url = buildAllTitlesUrl(releasePoint);
+  const zipPath = join(outputDir, "uscAll.zip");
+
+  // Download the zip file
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${response.statusText} for ${url}`);
+  }
+
+  if (!response.body) {
+    throw new Error(`No response body for ${url}`);
+  }
+
+  // Write zip to disk
+  const fileStream = createWriteStream(zipPath);
+  await pipeline(Readable.fromWeb(response.body as never), fileStream);
+
+  // Extract all XML files from zip
+  const extracted = await extractAllXmlFromZip(zipPath, outputDir);
+
+  // Clean up zip file
+  await unlink(zipPath);
+
+  // Stat each extracted file and build results
+  const files: DownloadedFile[] = [];
+  for (const { titleNumber, filePath } of extracted) {
+    const fileStat = await stat(filePath);
+    files.push({ titleNumber, filePath, size: fileStat.size });
+  }
+
+  // Sort by title number for consistent ordering
+  files.sort((a, b) => a.titleNumber - b.titleNumber);
+
+  return files;
 }
