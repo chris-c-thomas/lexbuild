@@ -4,7 +4,7 @@
 
 import chalk from "chalk";
 import { Command } from "commander";
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { convertTitle } from "@law2md/usc";
 import {
@@ -23,6 +23,7 @@ import { parseTitles } from "../parse-titles.js";
 interface ConvertCommandOptions {
   output: string;
   titles?: string | undefined;
+  all: boolean;
   inputDir: string;
   granularity: "section" | "chapter";
   linkStyle: "relative" | "canonical" | "plaintext";
@@ -80,6 +81,22 @@ export function resolveUscXmlPath(inputPath: string): string | undefined {
   }
 
   return undefined;
+}
+
+/** Regex matching USC XML filenames like usc01.xml, usc54.xml */
+const USC_XML_RE = /^usc(\d{2})\.xml$/;
+
+/**
+ * Scan a directory for USC XML files and return their title numbers, sorted.
+ */
+export function discoverTitles(inputDir: string): number[] {
+  if (!existsSync(inputDir)) return [];
+
+  return readdirSync(inputDir)
+    .map((name) => USC_XML_RE.exec(name))
+    .filter((m): m is RegExpExecArray => m !== null)
+    .map((m) => parseInt(m[1]!, 10))
+    .sort((a, b) => a - b);
 }
 
 /** Result from runConversion including elapsed time. */
@@ -163,6 +180,7 @@ export const convertCommand = new Command("convert")
   .argument("[input]", "Path to a USC XML file")
   .option("-o, --output <dir>", "Output directory", "./output")
   .option("--titles <spec>", "Title(s) to convert (e.g. 1, 1-5, 1,3,8, 1-5,8,11)")
+  .option("--all", "Convert all downloaded titles found in --input-dir", false)
   .option("-i, --input-dir <dir>", "Directory containing USC XML files", "./downloads/usc/xml")
   .option(
     "-g, --granularity <level>",
@@ -184,14 +202,16 @@ export const convertCommand = new Command("convert")
   .option("--dry-run", "Parse and report structure without writing files", false)
   .option("-v, --verbose", "Enable verbose logging", false)
   .action(async (input: string | undefined, options: ConvertCommandOptions) => {
-    // Validate: must specify <input> or --titles
-    if (!input && !options.titles) {
-      console.error(error("Specify an input file or --titles <spec> (e.g. --titles 1-5,8,11)"));
+    // Validate: must specify exactly one of <input>, --titles, or --all
+    const modeCount = [input, options.titles, options.all].filter(Boolean).length;
+    if (modeCount === 0) {
+      console.error(
+        error("Specify an input file, --titles <spec>, or --all (e.g. --titles 1-5,8,11)"),
+      );
       process.exit(1);
     }
-
-    if (input && options.titles) {
-      console.error(error("Cannot specify both <input> file and --titles"));
+    if (modeCount > 1) {
+      console.error(error("Cannot combine <input>, --titles, and --all — use only one"));
       process.exit(1);
     }
 
@@ -210,14 +230,23 @@ export const convertCommand = new Command("convert")
       return;
     }
 
-    // Multi-title mode — options.titles is guaranteed non-undefined by the check above
-    const titlesSpec = options.titles as string;
+    // Multi-title mode
     let titles: number[];
-    try {
-      titles = parseTitles(titlesSpec);
-    } catch (err) {
-      console.error(error(err instanceof Error ? err.message : String(err)));
-      process.exit(1);
+    if (options.all) {
+      const inputDir = resolve(options.inputDir);
+      titles = discoverTitles(inputDir);
+      if (titles.length === 0) {
+        console.error(error(`No USC XML files found in ${inputDir}`));
+        process.exit(1);
+      }
+    } else {
+      const titlesSpec = options.titles as string;
+      try {
+        titles = parseTitles(titlesSpec);
+      } catch (err) {
+        console.error(error(err instanceof Error ? err.message : String(err)));
+        process.exit(1);
+      }
     }
 
     const inputDir = resolve(options.inputDir);

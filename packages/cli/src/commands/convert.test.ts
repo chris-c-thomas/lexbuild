@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { resolveUscXmlPath } from "./convert.js";
+import { resolveUscXmlPath, discoverTitles } from "./convert.js";
 
 describe("resolveUscXmlPath", () => {
   let tempDir: string;
@@ -54,5 +54,41 @@ describe("resolveUscXmlPath", () => {
     const dir = setup("usc42.xml");
     const exactPath = join(dir, "usc42.xml");
     expect(resolveUscXmlPath(exactPath)).toBe(exactPath);
+  });
+});
+
+describe("discoverTitles", () => {
+  let tempDir: string;
+
+  afterEach(() => {
+    if (tempDir) {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it("finds USC XML files and returns sorted title numbers", () => {
+    tempDir = mkdtempSync(join(tmpdir(), "law2md-test-"));
+    writeFileSync(join(tempDir, "usc26.xml"), "<xml/>");
+    writeFileSync(join(tempDir, "usc01.xml"), "<xml/>");
+    writeFileSync(join(tempDir, "usc10.xml"), "<xml/>");
+    expect(discoverTitles(tempDir)).toEqual([1, 10, 26]);
+  });
+
+  it("ignores non-USC files", () => {
+    tempDir = mkdtempSync(join(tmpdir(), "law2md-test-"));
+    writeFileSync(join(tempDir, "usc05.xml"), "<xml/>");
+    writeFileSync(join(tempDir, "readme.txt"), "hi");
+    writeFileSync(join(tempDir, "uscAll.zip"), "zip");
+    expect(discoverTitles(tempDir)).toEqual([5]);
+  });
+
+  it("returns empty array for non-existent directory", () => {
+    expect(discoverTitles("/tmp/does-not-exist-law2md")).toEqual([]);
+  });
+
+  it("returns empty array for directory with no USC XML files", () => {
+    tempDir = mkdtempSync(join(tmpdir(), "law2md-test-"));
+    writeFileSync(join(tempDir, "notes.txt"), "hi");
+    expect(discoverTitles(tempDir)).toEqual([]);
   });
 });
