@@ -45,9 +45,7 @@ describe("renderSection", () => {
       num: "§ 3.",
       numValue: "3",
       heading: '"Vessel" as including all means of water transportation',
-      children: [
-        content("The word \"vessel\" includes every description of watercraft."),
-      ],
+      children: [content('The word "vessel" includes every description of watercraft.')],
     };
     const result = renderSection(section, DEFAULT_OPTS);
     expect(result).toContain("# § 3.");
@@ -119,10 +117,7 @@ describe("renderNode — small levels", () => {
       levelType: "subsection",
       num: "(a)",
       numValue: "a",
-      children: [
-        content("Chapeau text—", "chapeau"),
-        para,
-      ],
+      children: [content("Chapeau text—", "chapeau"), para],
     };
     const result = renderNode(subsection, DEFAULT_OPTS);
     expect(result).toContain("**(a)** Chapeau text—");

@@ -56,7 +56,16 @@ const INLINE_TYPE_MAP: Readonly<Record<string, InlineType>> = {
  */
 interface StackFrame {
   /** What kind of frame this is */
-  kind: "level" | "content" | "inline" | "note" | "sourceCredit" | "notesContainer" | "quotedContent" | "meta" | "ignore";
+  kind:
+    | "level"
+    | "content"
+    | "inline"
+    | "note"
+    | "sourceCredit"
+    | "notesContainer"
+    | "quotedContent"
+    | "meta"
+    | "ignore";
   /** The AST node being constructed (null for meta/ignore frames) */
   node: ASTNode | null;
   /** The XML element name that opened this frame */
@@ -151,8 +160,14 @@ export class ASTBuilder {
 
     if (name === "xhtml:table") {
       this.tableCollector = {
-        headers: [], rows: [], currentRow: [], cellText: "",
-        inHead: false, inCell: false, isComplex: false, cellDepth: 0,
+        headers: [],
+        rows: [],
+        currentRow: [],
+        cellText: "",
+        inHead: false,
+        inCell: false,
+        isComplex: false,
+        cellDepth: 0,
       };
       return;
     }
@@ -163,8 +178,14 @@ export class ASTBuilder {
 
     if (name === "layout") {
       this.layoutCollector = {
-        headers: [], rows: [], currentRow: [], cellText: "",
-        inHead: false, inCell: false, isComplex: false, cellDepth: 0,
+        headers: [],
+        rows: [],
+        currentRow: [],
+        cellText: "",
+        inHead: false,
+        inCell: false,
+        isComplex: false,
+        cellDepth: 0,
       };
       return;
     }
@@ -207,7 +228,12 @@ export class ASTBuilder {
       return;
     }
 
-    if (name === "note" || name === "statutoryNote" || name === "editorialNote" || name === "changeNote") {
+    if (
+      name === "note" ||
+      name === "statutoryNote" ||
+      name === "editorialNote" ||
+      name === "changeNote"
+    ) {
       this.openNote(name, attrs);
       return;
     }
@@ -349,7 +375,12 @@ export class ASTBuilder {
     }
 
     // Handle note close
-    if (name === "note" || name === "statutoryNote" || name === "editorialNote" || name === "changeNote") {
+    if (
+      name === "note" ||
+      name === "statutoryNote" ||
+      name === "editorialNote" ||
+      name === "changeNote"
+    ) {
       this.closeNote();
       return;
     }
@@ -455,7 +486,11 @@ export class ASTBuilder {
       const trimmed = text.trim();
       if (trimmed) {
         const textNode: InlineNode = { type: "inline", inlineType: "text", text };
-        const contentNode: ContentNode = { type: "content", variant: "content", children: [textNode] };
+        const contentNode: ContentNode = {
+          type: "content",
+          variant: "content",
+          children: [textNode],
+        };
         const parent = frame.node;
         if (parent && "children" in parent && Array.isArray(parent.children)) {
           (parent.children as ASTNode[]).push(contentNode);
@@ -469,7 +504,11 @@ export class ASTBuilder {
       const trimmed = text.trim();
       if (trimmed) {
         const textNode: InlineNode = { type: "inline", inlineType: "text", text };
-        const contentNode: ContentNode = { type: "content", variant: "content", children: [textNode] };
+        const contentNode: ContentNode = {
+          type: "content",
+          variant: "content",
+          children: [textNode],
+        };
         (frame.node as LevelNode).children.push(contentNode);
       }
       return;
@@ -741,7 +780,12 @@ export class ASTBuilder {
     // Add as inline "quoted" node if parent is content/inline,
     // or as block node if parent is note/level
     const parentFrame = this.peekFrame();
-    if (parentFrame && (parentFrame.kind === "content" || parentFrame.kind === "inline" || parentFrame.kind === "sourceCredit")) {
+    if (
+      parentFrame &&
+      (parentFrame.kind === "content" ||
+        parentFrame.kind === "inline" ||
+        parentFrame.kind === "sourceCredit")
+    ) {
       // Flatten to inline quoted text
       const qNode: InlineNode = {
         type: "inline",
@@ -766,7 +810,11 @@ export class ASTBuilder {
     const levelFrame = this.findParentFrame("level");
 
     // Heading inside a note takes priority
-    if (name === "heading" && noteFrame && (!levelFrame || this.stack.indexOf(noteFrame) > this.stack.indexOf(levelFrame))) {
+    if (
+      name === "heading" &&
+      noteFrame &&
+      (!levelFrame || this.stack.indexOf(noteFrame) > this.stack.indexOf(levelFrame))
+    ) {
       (noteFrame.node as NoteNode).heading = text;
       return;
     }
@@ -783,7 +831,9 @@ export class ASTBuilder {
     }
 
     // Update ancestor entry if this is a big level
-    const ancestor = this.ancestors.find((a) => a.levelType === levelNode.levelType && a.identifier === levelNode.identifier);
+    const ancestor = this.ancestors.find(
+      (a) => a.levelType === levelNode.levelType && a.identifier === levelNode.identifier,
+    );
     if (ancestor) {
       if (name === "num") {
         ancestor.numValue = levelNode.numValue;
@@ -812,10 +862,18 @@ export class ASTBuilder {
         }
         children.push(textNode);
       }
-    } else if (parentFrame.kind === "note" || parentFrame.kind === "level" || parentFrame.kind === "quotedContent") {
+    } else if (
+      parentFrame.kind === "note" ||
+      parentFrame.kind === "level" ||
+      parentFrame.kind === "quotedContent"
+    ) {
       // Wrap in a ContentNode
       const textNode: InlineNode = { type: "inline", inlineType: "text", text };
-      const contentNode: ContentNode = { type: "content", variant: "content", children: [textNode] };
+      const contentNode: ContentNode = {
+        type: "content",
+        variant: "content",
+        children: [textNode],
+      };
       const parent = parentFrame.node;
       if (parent && "children" in parent && Array.isArray(parent.children)) {
         (parent.children as ASTNode[]).push(contentNode);

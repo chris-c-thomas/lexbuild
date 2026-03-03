@@ -149,8 +149,18 @@ describe("AST types", () => {
 
     it("creates valid AncestorInfo", () => {
       const ancestors: AncestorInfo[] = [
-        { levelType: "title", numValue: "1", heading: "GENERAL PROVISIONS", identifier: "/us/usc/t1" },
-        { levelType: "chapter", numValue: "1", heading: "RULES OF CONSTRUCTION", identifier: "/us/usc/t1/ch1" },
+        {
+          levelType: "title",
+          numValue: "1",
+          heading: "GENERAL PROVISIONS",
+          identifier: "/us/usc/t1",
+        },
+        {
+          levelType: "chapter",
+          numValue: "1",
+          heading: "RULES OF CONSTRUCTION",
+          identifier: "/us/usc/t1/ch1",
+        },
       ];
       expect(ancestors).toHaveLength(2);
       expect(ancestors[0]!.levelType).toBe("title");

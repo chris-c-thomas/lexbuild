@@ -52,11 +52,7 @@ function visualLength(s: string): number {
  * Compute column widths that fill the terminal.
  * Expands `flexCol` to absorb remaining space.
  */
-function fillWidths(
-  columns: string[][],
-  colCount: number,
-  flexCol: number,
-): number[] | undefined {
+function fillWidths(columns: string[][], colCount: number, flexCol: number): number[] | undefined {
   const termWidth = process.stdout.columns || 80;
   // Compute natural width per column (max visual length across all rows)
   const natural = Array.from<number>({ length: colCount }).fill(0);
