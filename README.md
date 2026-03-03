@@ -6,18 +6,30 @@
 [![issues](https://img.shields.io/github/issues/chris-c-thomas/law2md?style=flat-square)](https://github.com/chris-c-thomas/law2md/issues)
 [![pull requests](https://img.shields.io/github/issues-pr/chris-c-thomas/law2md?style=flat-square)](https://github.com/chris-c-thomas/law2md/pulls)
 
-Convert the United States Code into structured Markdown for AI and RAG Systems.
+CLI tool that converts U.S. Code XML (USLM Schema) into structured Markdown with rich YAML frontmatter and sidecar metadata, preserving legal document hierarchy for AI ingestion, RAG pipelines, and semantic search
+
+### Table of Contents
+
+- [Overview](#overview)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Usage](#usage)
+- [Output Format](#output-format)
+- [Project Structure](#project-structure)
+- [Development](#development)
+- [Documentation](#documentation)
+- [Data Sources](#data-sources)
+- [License](#license)
 
 ---
 
 ## Overview
 
-`law2md` is a command-line tool that converts the [XML files](https://uscode.house.gov/download/download.shtml) of the United States Code, published by the [Office of the Law Revision Counsel](https://uscode.house.gov/), into clean, structured Markdown optimized for AI ingestion, retrieval-augmented generation (RAG), and legal research workflows.
+`law2md` is a command-line tool that converts the [XML files](https://uscode.house.gov/download/download.shtml) of the [United States Code](https://uscode.house.gov/), published by the [Office of the Law Revision Counsel](https://uscode.house.gov/about_office.xhtml) (OLRC), into clean, structured Markdown optimized for AI ingestion, retrieval-augmented generation (RAG), and legal research workflows.
 
-The U.S. Code comprises 54 titles of federal statutory law. The official XML is deeply nested, laden with presentation markup, and difficult to work with directly. `law2md` transforms this XML into per-section, or optional per-chapter, Markdown files with YAML frontmatter, predictable file paths, and content sized for typical embedding models.
+The U.S. Code comprises 54 titles of federal statutory law. The official XML is deeply nested, laden with presentation markup, and difficult to work with directly. `law2md` transforms this XML into per-section Markdown files with YAML frontmatter, predictable file paths, and content sized for typical embedding models.
 
-The [OLRC](https://uscode.house.gov/about_office.xhtml) provides a user guide for the [United States Legislative Markup](https://uscode.house.gov/download/resources/USLM-User-Guide.pdf).
-
+The OLRC provides a user guide for the [United States Legislative Markup](https://uscode.house.gov/download/resources/USLM-User-Guide.pdf).
 
 ### Features
 
