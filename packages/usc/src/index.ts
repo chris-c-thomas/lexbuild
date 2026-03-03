@@ -11,4 +11,9 @@ export {
   CURRENT_RELEASE_POINT,
   USC_TITLE_NUMBERS,
 } from "./downloader.js";
-export type { DownloadOptions, DownloadResult, DownloadedFile, DownloadError } from "./downloader.js";
+export type {
+  DownloadOptions,
+  DownloadResult,
+  DownloadedFile,
+  DownloadError,
+} from "./downloader.js";

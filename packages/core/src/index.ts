@@ -20,11 +20,7 @@ export {
 } from "./xml/namespace.js";
 
 // AST types
-export {
-  LEVEL_TYPES,
-  BIG_LEVELS,
-  SMALL_LEVELS,
-} from "./ast/types.js";
+export { LEVEL_TYPES, BIG_LEVELS, SMALL_LEVELS } from "./ast/types.js";
 export type {
   LevelType,
   LevelNode,
@@ -56,4 +52,3 @@ export type { RenderOptions, NotesFilter } from "./markdown/renderer.js";
 export { generateFrontmatter, FORMAT_VERSION, GENERATOR } from "./markdown/frontmatter.js";
 export { createLinkResolver, parseIdentifier } from "./markdown/links.js";
 export type { LinkResolver, ParsedIdentifier } from "./markdown/links.js";
-

@@ -122,7 +122,7 @@ export async function convertTitle(options: ConvertOptions): Promise<ConvertResu
   const collected: CollectedSection[] = [];
 
   // Set up the AST builder — emit level depends on granularity
-  const emitAt = opts.granularity === "chapter" ? "chapter" as const : "section" as const;
+  const emitAt = opts.granularity === "chapter" ? ("chapter" as const) : ("section" as const);
   const builder = new ASTBuilder({
     emitAt,
     onEmit: (node, context) => {
@@ -284,9 +284,7 @@ async function writeSection(
   };
 
   // Optionally strip source credits
-  const sectionNode = options.includeSourceCredits
-    ? node
-    : stripSourceCredits(node);
+  const sectionNode = options.includeSourceCredits ? node : stripSourceCredits(node);
 
   // Render the document
   const markdown = renderDocument(sectionNode, frontmatter, renderOpts);
@@ -300,13 +298,9 @@ async function writeSection(
   const chapterAncestor = findAncestor(context.ancestors, "chapter");
   const chapterDir = chapterAncestor?.numValue ? `chapter-${padTwo(chapterAncestor.numValue)}` : "";
   const sectionFileName = `section-${sectionNum}${dupSuffix ?? ""}.md`;
-  const relativeFile = chapterDir
-    ? `${chapterDir}/${sectionFileName}`
-    : sectionFileName;
+  const relativeFile = chapterDir ? `${chapterDir}/${sectionFileName}` : sectionFileName;
 
-  const hasNotes = node.children.some(
-    (c) => c.type === "notesContainer" || c.type === "note",
-  );
+  const hasNotes = node.children.some((c) => c.type === "notesContainer" || c.type === "note");
 
   const sectionMeta: SectionMeta = {
     identifier: node.identifier ?? `/us/usc/t${titleNum}/s${sectionNum}`,
@@ -335,7 +329,14 @@ async function writeSection(
  */
 async function writeMetaFiles(
   sectionMetas: SectionMeta[],
-  docMeta: { dcTitle?: string | undefined; docNumber?: string | undefined; positivelaw?: boolean | undefined; docPublicationName?: string | undefined; created?: string | undefined; identifier?: string | undefined },
+  docMeta: {
+    dcTitle?: string | undefined;
+    docNumber?: string | undefined;
+    positivelaw?: boolean | undefined;
+    docPublicationName?: string | undefined;
+    created?: string | undefined;
+    identifier?: string | undefined;
+  },
   options: ConvertOptions,
   titleHeading?: string | undefined,
 ): Promise<void> {
@@ -497,7 +498,9 @@ function generateTitleReadme(meta: {
     const sectionCount = ch.sections.length;
     lines.push(`### Chapter ${ch.number} — ${ch.name}`);
     lines.push("");
-    lines.push(`${sectionCount} section${sectionCount !== 1 ? "s" : ""} · [${ch.directory}/](${ch.directory}/)`);
+    lines.push(
+      `${sectionCount} section${sectionCount !== 1 ? "s" : ""} · [${ch.directory}/](${ch.directory}/)`,
+    );
     lines.push("");
   }
 
@@ -581,9 +584,7 @@ async function writeChapter(
 
       // Collect section metadata
       const sectionNum = child.numValue ?? "0";
-      const hasNotes = child.children.some(
-        (c) => c.type === "notesContainer" || c.type === "note",
-      );
+      const hasNotes = child.children.some((c) => c.type === "notesContainer" || c.type === "note");
       sectionMetas.push({
         identifier: child.identifier ?? `/us/usc/t${titleNum}/s${sectionNum}`,
         number: sectionNum,
@@ -667,7 +668,11 @@ function buildChapterDir(context: EmitContext): string | undefined {
   if (compiledAct) {
     const heading = compiledAct.heading?.trim() ?? "";
     // Use a slug of the heading as directory name
-    const slug = heading.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50);
+    const slug = heading
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 50);
     return slug || "compiled-act";
   }
 
@@ -675,7 +680,11 @@ function buildChapterDir(context: EmitContext): string | undefined {
   const reorgPlan = findAncestor(context.ancestors, "reorganizationPlan");
   if (reorgPlan) {
     const heading = reorgPlan.heading?.trim() ?? "";
-    const slug = heading.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50);
+    const slug = heading
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 50);
     return slug || "reorganization-plan";
   }
 
@@ -693,10 +702,12 @@ function buildChapterDir(context: EmitContext): string | undefined {
  */
 function buildFrontmatter(node: LevelNode, context: EmitContext): FrontmatterData {
   const meta = context.documentMeta;
-  const titleAncestor = findAncestor(context.ancestors, "title") ?? findAncestor(context.ancestors, "appendix");
-  const chapterAncestor = findAncestor(context.ancestors, "chapter")
-    ?? findAncestor(context.ancestors, "compiledAct")
-    ?? findAncestor(context.ancestors, "reorganizationPlan");
+  const titleAncestor =
+    findAncestor(context.ancestors, "title") ?? findAncestor(context.ancestors, "appendix");
+  const chapterAncestor =
+    findAncestor(context.ancestors, "chapter") ??
+    findAncestor(context.ancestors, "compiledAct") ??
+    findAncestor(context.ancestors, "reorganizationPlan");
   const subchapterAncestor = findAncestor(context.ancestors, "subchapter");
   const partAncestor = findAncestor(context.ancestors, "part");
 
@@ -779,7 +790,11 @@ function buildSectionMetaDryRun(
 ): SectionMeta {
   const titleNum = findAncestor(context.ancestors, "title")?.numValue ?? "0";
   const chapterAncestor = chapterNode
-    ? { numValue: chapterNode.numValue, heading: chapterNode.heading, identifier: chapterNode.identifier }
+    ? {
+        numValue: chapterNode.numValue,
+        heading: chapterNode.heading,
+        identifier: chapterNode.identifier,
+      }
     : findAncestor(context.ancestors, "chapter");
   const sectionNum = sectionNode.numValue ?? "0";
   const chapterNum = chapterAncestor?.numValue ?? "0";
@@ -791,7 +806,10 @@ function buildSectionMetaDryRun(
 
   // Rough content length estimate from AST text nodes
   let contentLength = 0;
-  const walk = (node: { children?: readonly { text?: string | undefined; children?: readonly unknown[] }[] | undefined; text?: string | undefined }): void => {
+  const walk = (node: {
+    children?: readonly { text?: string | undefined; children?: readonly unknown[] }[] | undefined;
+    text?: string | undefined;
+  }): void => {
     if (node.text) contentLength += node.text.length;
     if (node.children) {
       for (const child of node.children) {
@@ -822,7 +840,11 @@ function buildNotesFilter(options: ConvertOptions): NotesFilter | undefined {
   if (options.includeNotes) return undefined;
 
   // No notes at all
-  if (!options.includeEditorialNotes && !options.includeStatutoryNotes && !options.includeAmendments) {
+  if (
+    !options.includeEditorialNotes &&
+    !options.includeStatutoryNotes &&
+    !options.includeAmendments
+  ) {
     return { editorial: false, statutory: false, amendments: false };
   }
 
@@ -834,7 +856,10 @@ function buildNotesFilter(options: ConvertOptions): NotesFilter | undefined {
   };
 }
 
-function findAncestor(ancestors: readonly AncestorInfo[], levelType: string): AncestorInfo | undefined {
+function findAncestor(
+  ancestors: readonly AncestorInfo[],
+  levelType: string,
+): AncestorInfo | undefined {
   return ancestors.find((a) => a.levelType === levelType);
 }
 
@@ -873,9 +898,7 @@ function parseIntSafe(s: string): number {
 function extractSourceCreditText(node: LevelNode): string | undefined {
   for (const child of node.children) {
     if (child.type === "sourceCredit") {
-      return child.children
-        .map((inline) => inlineToText(inline))
-        .join("");
+      return child.children.map((inline) => inlineToText(inline)).join("");
     }
   }
   return undefined;
@@ -884,7 +907,11 @@ function extractSourceCreditText(node: LevelNode): string | undefined {
 /**
  * Recursively extract plain text from an InlineNode.
  */
-function inlineToText(node: { readonly type: "inline"; text?: string | undefined; children?: readonly { readonly type: "inline"; text?: string | undefined }[] | undefined }): string {
+function inlineToText(node: {
+  readonly type: "inline";
+  text?: string | undefined;
+  children?: readonly { readonly type: "inline"; text?: string | undefined }[] | undefined;
+}): string {
   if (node.text) return node.text;
   if (node.children) {
     return node.children.map((c) => c.text ?? "").join("");

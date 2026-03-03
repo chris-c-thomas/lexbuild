@@ -312,9 +312,7 @@ describe("convertTitle", () => {
         sections: Array<{ number: string; file: string }>;
       };
 
-      const s3598files = meta.sections
-        .filter((s) => s.number === "3598")
-        .map((s) => s.file);
+      const s3598files = meta.sections.filter((s) => s.number === "3598").map((s) => s.file);
       expect(s3598files).toHaveLength(2);
       expect(s3598files).toContain("section-3598.md");
       expect(s3598files).toContain("section-3598-2.md");

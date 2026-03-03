@@ -51,10 +51,7 @@ describe("createLinkResolver", () => {
   describe("register and resolve", () => {
     it("resolves a registered section to a relative path", () => {
       const resolver = createLinkResolver();
-      resolver.register(
-        "/us/usc/t1/s7",
-        "output/usc/title-01/chapter-01/section-7.md",
-      );
+      resolver.register("/us/usc/t1/s7", "output/usc/title-01/chapter-01/section-7.md");
 
       const result = resolver.resolve(
         "/us/usc/t1/s7",
@@ -65,10 +62,7 @@ describe("createLinkResolver", () => {
 
     it("resolves cross-chapter references with relative path", () => {
       const resolver = createLinkResolver();
-      resolver.register(
-        "/us/usc/t1/s201",
-        "output/usc/title-01/chapter-03/section-201.md",
-      );
+      resolver.register("/us/usc/t1/s201", "output/usc/title-01/chapter-03/section-201.md");
 
       const result = resolver.resolve(
         "/us/usc/t1/s201",
@@ -79,10 +73,7 @@ describe("createLinkResolver", () => {
 
     it("resolves cross-title references", () => {
       const resolver = createLinkResolver();
-      resolver.register(
-        "/us/usc/t2/s100",
-        "output/usc/title-02/chapter-05/section-100.md",
-      );
+      resolver.register("/us/usc/t2/s100", "output/usc/title-02/chapter-05/section-100.md");
 
       const result = resolver.resolve(
         "/us/usc/t2/s100",
@@ -93,10 +84,7 @@ describe("createLinkResolver", () => {
 
     it("resolves subsection reference to its parent section file", () => {
       const resolver = createLinkResolver();
-      resolver.register(
-        "/us/usc/t1/s7",
-        "output/usc/title-01/chapter-01/section-7.md",
-      );
+      resolver.register("/us/usc/t1/s7", "output/usc/title-01/chapter-01/section-7.md");
 
       // Reference to subsection (a) should resolve to the section file
       const result = resolver.resolve(
@@ -128,9 +116,7 @@ describe("createLinkResolver", () => {
     it("generates OLRC URL for USC title", () => {
       const resolver = createLinkResolver();
       const url = resolver.fallbackUrl("/us/usc/t26");
-      expect(url).toBe(
-        "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26",
-      );
+      expect(url).toBe("https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26");
     });
 
     it("returns null for non-USC identifiers", () => {

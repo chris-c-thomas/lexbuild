@@ -63,7 +63,10 @@ export function renderDocument(
 /**
  * Render a section-level node to Markdown.
  */
-export function renderSection(node: LevelNode, options: RenderOptions = DEFAULT_RENDER_OPTIONS): string {
+export function renderSection(
+  node: LevelNode,
+  options: RenderOptions = DEFAULT_RENDER_OPTIONS,
+): string {
   const parts: string[] = [];
 
   // Section heading: # § {number}. {heading}
@@ -471,10 +474,7 @@ const AMENDMENT_TOPICS = new Set([
 ]);
 
 /** Editorial-specific topics */
-const EDITORIAL_TOPICS = new Set([
-  "codification",
-  "dispositionOfSections",
-]);
+const EDITORIAL_TOPICS = new Set(["codification", "dispositionOfSections"]);
 
 /** Statutory-specific topics */
 const STATUTORY_TOPICS = new Set([

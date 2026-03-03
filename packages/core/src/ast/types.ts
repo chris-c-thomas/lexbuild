@@ -114,7 +114,17 @@ export interface ContentNode extends BaseNode {
 }
 
 /** Discriminator for inline node types */
-export type InlineType = "text" | "bold" | "italic" | "ref" | "date" | "term" | "quoted" | "sup" | "sub" | "footnoteRef";
+export type InlineType =
+  | "text"
+  | "bold"
+  | "italic"
+  | "ref"
+  | "date"
+  | "term"
+  | "quoted"
+  | "sup"
+  | "sub"
+  | "footnoteRef";
 
 /** Inline text or formatting */
 export interface InlineNode extends BaseNode {

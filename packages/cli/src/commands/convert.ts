@@ -36,7 +36,11 @@ interface ConvertCommandOptions {
 }
 
 /** Build the shared convert options from CLI flags. */
-function buildConvertOptions(inputPath: string, outputPath: string, options: ConvertCommandOptions) {
+function buildConvertOptions(
+  inputPath: string,
+  outputPath: string,
+  options: ConvertCommandOptions,
+) {
   const hasSelectiveFlags =
     options.includeEditorialNotes || options.includeStatutoryNotes || options.includeAmendments;
   const includeNotes = hasSelectiveFlags ? false : options.includeNotes;
@@ -159,11 +163,7 @@ export const convertCommand = new Command("convert")
   .argument("[input]", "Path to a USC XML file")
   .option("-o, --output <dir>", "Output directory", "./output")
   .option("--titles <spec>", "Title(s) to convert (e.g. 1, 1-5, 1,3,8, 1-5,8,11)")
-  .option(
-    "-i, --input-dir <dir>",
-    "Directory containing USC XML files",
-    "./downloads/usc/xml",
-  )
+  .option("-i, --input-dir <dir>", "Directory containing USC XML files", "./downloads/usc/xml")
   .option(
     "-g, --granularity <level>",
     'Output granularity: "section" (one file per section) or "chapter" (sections inline)',
@@ -186,9 +186,7 @@ export const convertCommand = new Command("convert")
   .action(async (input: string | undefined, options: ConvertCommandOptions) => {
     // Validate: must specify <input> or --titles
     if (!input && !options.titles) {
-      console.error(
-        error("Specify an input file or --titles <spec> (e.g. --titles 1-5,8,11)"),
-      );
+      console.error(error("Specify an input file or --titles <spec> (e.g. --titles 1-5,8,11)"));
       process.exit(1);
     }
 

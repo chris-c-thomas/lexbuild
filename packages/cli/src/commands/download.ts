@@ -55,9 +55,7 @@ export const downloadCommand = new Command("download")
     const outputDir = resolve(options.output);
     const titleCount = titles ? titles.length : 54;
     const label =
-      titleCount === 1
-        ? `Downloading Title ${titles?.[0]}`
-        : `Downloading ${titleCount} titles`;
+      titleCount === 1 ? `Downloading Title ${titles?.[0]}` : `Downloading ${titleCount} titles`;
 
     const spinner = createSpinner(`${label}...`);
     spinner.start();
@@ -110,8 +108,7 @@ export const downloadCommand = new Command("download")
       // Footer
       const titleWord = result.files.length === 1 ? "title" : "titles";
       const summary = `Downloaded ${result.files.length} ${titleWord} (${formatBytes(totalBytes)}) in ${formatDuration(elapsed)}`;
-      const failSuffix =
-        result.errors.length > 0 ? ` (${result.errors.length} failed)` : "";
+      const failSuffix = result.errors.length > 0 ? ` (${result.errors.length} failed)` : "";
       console.log(`  ${success(summary + failSuffix)}`);
       console.log("");
     } catch (err) {
