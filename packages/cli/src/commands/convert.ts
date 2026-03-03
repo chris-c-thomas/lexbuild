@@ -285,7 +285,7 @@ export const convertCommand = new Command("convert")
       : "law2md — Conversion Summary";
     const header = summaryBlock({
       title: headerTitle,
-      rows: [["Output", outputRelative]],
+      rows: [["Directory", outputRelative]],
     });
     process.stdout.write(header);
 
@@ -304,8 +304,8 @@ export const convertCommand = new Command("convert")
       return [
         result.titleNumber,
         result.titleName,
-        formatNumber(result.sectionsWritten),
         formatNumber(result.chapterCount),
+        formatNumber(result.sectionsWritten),
         formatNumber(result.totalTokenEstimate),
         formatDuration(elapsed),
       ];
@@ -315,14 +315,14 @@ export const convertCommand = new Command("convert")
     tableRows.push([
       chalk.bold("Total"),
       "",
-      chalk.bold(formatNumber(totalSections)),
       chalk.bold(formatNumber(totalChapters)),
+      chalk.bold(formatNumber(totalSections)),
       chalk.bold(formatNumber(totalTokens)),
       chalk.bold(formatDuration(totalElapsed)),
     ]);
 
     console.log(
-      dataTable(["Title", "Name", "Sections", "Chapters", "Tokens", "Duration"], tableRows),
+      dataTable(["Title", "Name", "Chapters", "Sections", "Tokens", "Duration"], tableRows),
     );
 
     // Footer
