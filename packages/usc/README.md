@@ -1,6 +1,6 @@
 # @lexbuild/usc
 
-[![npm](https://img.shields.io/npm/v/%40lexbuild%2Fusc?style=for-the-badge)](https://www.npmjs.com/package/@lexbuild/usc)
+[![npm](https://img.shields.io/npm/v/%40lexbuild%2Fcore?style=for-the-badge)](https://www.npmjs.com/package/@lexbuild/core)
 [![license](https://img.shields.io/github/license/chris-c-thomas/lexbuild?style=for-the-badge)](https://github.com/chris-c-thomas/lexbuild)
 
 This package is part of the [LexBuild](https://github.com/chris-c-thomas/lexbuild) monorepo, a tool that converts U.S. legislative XML into structured Markdown optimized for AI, RAG pipelines, and semantic search. See the monorepo for full documentation, architecture details, and contribution guidelines.
