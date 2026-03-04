@@ -4,14 +4,14 @@
   "description": "Compiler for legal and civic texts. Converts disparate statutory data into structured formats optimized for AI, RAG, and semantic search.",
   "author": "Chris Thomas",
   "license": "MIT",
-  "homepage": "https://github.com/chris-c-thomas/lexbuild/tree/main/packages/cli#readme",
-  "bugs": {
-    "url": "https://github.com/chris-c-thomas/lexbuild/issues"
-  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chris-c-thomas/lexbuild.git",
+    "url": "https://github.com/chris-c-thomas/lexbuild.git",
     "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/chris-c-thomas/lexbuild/tree/main/packages/cli",
+  "bugs": {
+    "url": "https://github.com/chris-c-thomas/lexbuild/issues"
   },
   "keywords": [
     "lexbuild",

@@ -4,14 +4,14 @@
   "description": "Core AST definitions, parsing infrastructure, and format-agnostic renderers for the lexbuild ecosystem.",
   "author": "Chris Thomas",
   "license": "MIT",
-  "homepage": "https://github.com/chris-c-thomas/lexbuild/tree/main/packages/core#readme",
-  "bugs": {
-    "url": "https://github.com/chris-c-thomas/lexbuild/issues"
-  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chris-c-thomas/lexbuild.git",
+    "url": "https://github.com/chris-c-thomas/lexbuild.git",
     "directory": "packages/core"
+  },
+  "homepage": "https://github.com/chris-c-thomas/lexbuild/tree/main/packages/core",
+  "bugs": {
+    "url": "https://github.com/chris-c-thomas/lexbuild/issues"
   },
   "keywords": [
     "lexbuild",

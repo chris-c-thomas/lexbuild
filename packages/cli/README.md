@@ -1,8 +1,8 @@
 # @lexbuild/cli
 
-[![npm](https://img.shields.io/npm/v/%40lexbuild%2Fcli?style=flat-square)](https://www.npmjs.com/package/@lexbuild/cli)
-[![CI](https://img.shields.io/github/actions/workflow/status/chris-c-thomas/lexbuild/ci.yml?style=flat-square&label=CI)](https://github.com/chris-c-thomas/lexbuild/actions/workflows/ci.yml)
-[![license](https://img.shields.io/github/license/chris-c-thomas/lexbuild?style=flat-square)](https://github.com/chris-c-thomas/lexbuild/blob/main/LICENSE)
+[![npm](https://img.shields.io/npm/v/%40lexbuild%2Fcli?style=for-the-badge)](https://www.npmjs.com/package/@lexbuild/cli)
+[![CI](https://img.shields.io/github/actions/workflow/status/chris-c-thomas/lexbuild/ci.yml?style=for-the-badge&label=CI)](https://github.com/chris-c-thomas/lexbuild/actions/workflows/ci.yml)
+[![license](https://img.shields.io/github/license/chris-c-thomas/lexbuild?style=for-the-badge)](https://github.com/chris-c-thomas/lexbuild)
 
 This package is part of the [LexBuild](https://github.com/chris-c-thomas/lexbuild) monorepo, a tool that converts U.S. legislative XML into structured Markdown optimized for AI, RAG pipelines, and semantic search. See the monorepo for full documentation, architecture details, and contribution guidelines.
 
