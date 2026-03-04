@@ -4,7 +4,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                          law2md CLI                                 │
+│                          lexbuild CLI                                 │
 │  ┌──────────┐   ┌──────────┐                                      │
 │  │ download  │   │ convert  │                                      │
 │  └────┬─────┘   └────┬─────┘                                      │
@@ -14,7 +14,7 @@
 │  │  OLRC   │   │    Conversion Pipeline  │                         │
 │  │ Client  │   │                         │                         │
 │  └─────────┘   │  Parse → Build AST →    │                         │
-│  (@law2md/usc) │  Render → Write         │                         │
+│  (@lexbuild/usc) │  Render → Write         │                         │
 │                │                         │                         │
 │                └──────────┬──────────────┘                         │
 │                           │                                        │
@@ -26,24 +26,24 @@
 │  │ (SAX)   │     │ (section     │     │  + Frontmatter   │        │
 │  │         │     │  emit)       │     │  + Link Resolver │        │
 │  └─────────┘     └──────────────┘     └──────────────────┘        │
-│  (@law2md/core)  (@law2md/core)       (@law2md/core)              │
+│  (@lexbuild/core)  (@lexbuild/core)       (@lexbuild/core)              │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Package Dependency Graph
 
 ```
-law2md (CLI)
-  ├── @law2md/usc
-  │     └── @law2md/core
-  └── @law2md/core (direct dep for shared types)
+lexbuild (CLI)
+  ├── @lexbuild/usc
+  │     └── @lexbuild/core
+  └── @lexbuild/core (direct dep for shared types)
 ```
 
 The CLI depends on both `usc` and `core`. The `usc` package depends on `core`. `core` has no internal dependencies — only external deps (`saxes`, `yaml`, `zod`).
 
 ---
 
-## @law2md/core
+## @lexbuild/core
 
 The core package provides format-agnostic infrastructure. It knows nothing about U.S. Code-specific semantics — only about XML parsing, AST construction, Markdown rendering, and metadata generation.
 
@@ -208,11 +208,11 @@ interface FrontmatterData {
 function generateFrontmatter(data: FrontmatterData): string;
 ```
 
-Also exports `FORMAT_VERSION` (`"1.0.0"`) and `GENERATOR` (`"law2md@{version}"`).
+Also exports `FORMAT_VERSION` (`"1.0.0"`) and `GENERATOR` (`"lexbuild@{version}"`).
 
 ---
 
-## @law2md/usc
+## @lexbuild/usc
 
 The USC package implements U.S. Code-specific conversion logic.
 

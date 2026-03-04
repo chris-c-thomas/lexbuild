@@ -24,7 +24,7 @@ describe("convertTitle", () => {
   let outputDir: string;
 
   beforeEach(async () => {
-    outputDir = await mkdtemp(join(tmpdir(), "law2md-test-"));
+    outputDir = await mkdtemp(join(tmpdir(), "lexbuild-test-"));
   });
 
   afterEach(async () => {

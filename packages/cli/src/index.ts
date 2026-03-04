@@ -1,4 +1,4 @@
-/** law2md CLI — Convert U.S. legislative XML to structured Markdown */
+/** lexbuild CLI — Convert U.S. legislative XML to structured Markdown */
 
 import { createRequire } from "node:module";
 import { Command } from "commander";
@@ -11,7 +11,7 @@ const pkg = require("../package.json") as { version: string };
 const program = new Command();
 
 program
-  .name("law2md")
+  .name("lexbuild")
   .description("Convert U.S. legislative XML (USLM) to structured Markdown for AI/RAG ingestion")
   .version(pkg.version);
 

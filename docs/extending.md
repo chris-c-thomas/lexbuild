@@ -1,20 +1,20 @@
-# Extending law2md
+# Extending lexbuild
 
-This guide describes how the `law2md` architecture could support new legal source types beyond the U.S. Code.
+This guide describes how the `lexbuild` architecture could support new legal source types beyond the U.S. Code.
 
-> **Note**: The extension architecture described here is aspirational. The current codebase only supports U.S. Code (USLM 1.0). Adding a new source type would require building out the abstractions described below. The monorepo structure and `@law2md/core` package are designed to make this feasible, but no pluggable handler interfaces exist yet.
+> **Note**: The extension architecture described here is aspirational. The current codebase only supports U.S. Code (USLM 1.0). Adding a new source type would require building out the abstractions described below. The monorepo structure and `@lexbuild/core` package are designed to make this feasible, but no pluggable handler interfaces exist yet.
 
 ---
 
 ## Current Architecture
 
-Today, element handling is built directly into the `ASTBuilder` class in `@law2md/core`. It maps USLM element names to AST node types using a static lookup table. The `@law2md/usc` package orchestrates the pipeline (XML stream, AST builder, renderer, file writer) but does not register custom handlers.
+Today, element handling is built directly into the `ASTBuilder` class in `@lexbuild/core`. It maps USLM element names to AST node types using a static lookup table. The `@lexbuild/usc` package orchestrates the pipeline (XML stream, AST builder, renderer, file writer) but does not register custom handlers.
 
 To add a new source type, you would:
 
-1. Create a new package (e.g., `@law2md/cfr`)
-2. Implement a converter function analogous to `convertTitle()` in `@law2md/usc`
-3. Reuse `@law2md/core` for XML parsing, AST types, Markdown rendering, frontmatter, and link resolution
+1. Create a new package (e.g., `@lexbuild/cfr`)
+2. Implement a converter function analogous to `convertTitle()` in `@lexbuild/usc`
+3. Reuse `@lexbuild/core` for XML parsing, AST types, Markdown rendering, frontmatter, and link resolution
 4. Add a new CLI command in `packages/cli`
 5. If the source uses different XML element names or semantics, either:
    - Extend the `ASTBuilder` to handle them, or
@@ -26,10 +26,10 @@ To add a new source type, you would:
 
 | Source | XML Format | Provider | Package |
 |--------|-----------|----------|---------|
-| U.S. Code | USLM 1.0 | OLRC (uscode.house.gov) | `@law2md/usc` (implemented) |
-| Code of Federal Regulations | USLM 2.x | GPO (govinfo.gov) | `@law2md/cfr` |
-| Federal Register | USLM 2.x | GPO (govinfo.gov) | `@law2md/fr` |
-| State statutes | Varies (HTML/XML) | State legislature sites | `@law2md/state-{abbr}` |
+| U.S. Code | USLM 1.0 | OLRC (uscode.house.gov) | `@lexbuild/usc` (implemented) |
+| Code of Federal Regulations | USLM 2.x | GPO (govinfo.gov) | `@lexbuild/cfr` |
+| Federal Register | USLM 2.x | GPO (govinfo.gov) | `@lexbuild/fr` |
+| State statutes | Varies (HTML/XML) | State legislature sites | `@lexbuild/state-{abbr}` |
 
 ---
 
@@ -41,17 +41,17 @@ To add a new source type, you would:
 mkdir -p packages/{source}/src
 ```
 
-Create `packages/{source}/package.json` with a dependency on `@law2md/core`:
+Create `packages/{source}/package.json` with a dependency on `@lexbuild/core`:
 
 ```json
 {
-  "name": "@law2md/{source}",
+  "name": "@lexbuild/{source}",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@law2md/core": "workspace:*"
+    "@lexbuild/core": "workspace:*"
   }
 }
 ```
@@ -76,7 +76,7 @@ Add a new command in `packages/cli/src/commands/`:
 
 ```typescript
 // packages/cli/src/commands/convert-cfr.ts
-import { convertCFR } from "@law2md/cfr";
+import { convertCFR } from "@lexbuild/cfr";
 // ... commander setup
 ```
 
@@ -118,7 +118,7 @@ For HTML sources, a shared HTML-to-AST parser could convert legal HTML to the co
 
 ## What Core Provides
 
-Regardless of source type, `@law2md/core` provides:
+Regardless of source type, `@lexbuild/core` provides:
 
 - `XMLParser` — SAX streaming parser with namespace normalization
 - `ASTBuilder` — Stack-based tree construction with configurable emit level

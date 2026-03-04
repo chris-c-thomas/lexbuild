@@ -1,4 +1,4 @@
-# law2md Workspace Instructions
+# lexbuild Workspace Instructions
 
 ## Scope
 
@@ -6,7 +6,7 @@ These instructions apply to all work in this repository. Keep changes minimal, t
 
 ## Project Overview
 
-`law2md` converts U.S. legislative XML (USLM schema) into structured Markdown for AI/RAG ingestion. It is a monorepo built with Turborepo, pnpm workspaces, TypeScript, and Node.js.
+`lexbuild` converts U.S. legislative XML (USLM schema) into structured Markdown for AI/RAG ingestion. It is a monorepo built with Turborepo, pnpm workspaces, TypeScript, and Node.js.
 
 ## Build and Test
 
@@ -23,9 +23,9 @@ pnpm turbo lint
 Package-scoped pattern:
 
 ```bash
-pnpm turbo <task> --filter=@law2md/core
-pnpm turbo <task> --filter=@law2md/usc
-pnpm turbo <task> --filter=law2md
+pnpm turbo <task> --filter=@lexbuild/core
+pnpm turbo <task> --filter=@lexbuild/usc
+pnpm turbo <task> --filter=lexbuild
 ```
 
 Run the CLI locally during development:
@@ -40,9 +40,9 @@ node packages/cli/dist/index.js convert --titles 1-5 -o ./test-output
 
 This is a Turborepo + pnpm monorepo with three packages:
 
-- `packages/core` (`@law2md/core`): namespace-aware XML parsing (SAX via `saxes`), AST building, Markdown rendering, frontmatter generation, shared utilities.
-- `packages/usc` (`@law2md/usc`): USC-specific conversion pipeline and OLRC downloader. Contains `convertTitle()` which orchestrates ReadStream → SAX → AST → Markdown → file writer.
-- `packages/cli` (`law2md`): CLI commands (`convert`, `download`), terminal UI (`chalk`, `ora`, `cli-table3`), and user-facing command surface.
+- `packages/core` (`@lexbuild/core`): namespace-aware XML parsing (SAX via `saxes`), AST building, Markdown rendering, frontmatter generation, shared utilities.
+- `packages/usc` (`@lexbuild/usc`): USC-specific conversion pipeline and OLRC downloader. Contains `convertTitle()` which orchestrates ReadStream → SAX → AST → Markdown → file writer.
+- `packages/cli` (`lexbuild`): CLI commands (`convert`, `download`), terminal UI (`chalk`, `ora`, `cli-table3`), and user-facing command surface.
 
 Respect boundaries: keep generic parsing/rendering logic in `core`, USC-specific behavior in `usc`, and CLI orchestration in `cli`. Internal packages use `workspace:*` protocol for dependencies.
 

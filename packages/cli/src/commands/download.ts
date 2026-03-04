@@ -1,10 +1,10 @@
 /**
- * `law2md download` command — downloads USC XML from OLRC.
+ * `lexbuild download` command — downloads USC XML from OLRC.
  */
 
 import { Command } from "commander";
 import { relative, resolve } from "node:path";
-import { downloadTitles, CURRENT_RELEASE_POINT } from "@law2md/usc";
+import { downloadTitles, CURRENT_RELEASE_POINT } from "@lexbuild/usc";
 import {
   createSpinner,
   summaryBlock,
@@ -84,7 +84,7 @@ export const downloadCommand = new Command("download")
 
       // Summary header
       const output = summaryBlock({
-        title: "law2md — Download Summary",
+        title: "lexbuild — Download Summary",
         rows: [
           ["Release Point", options.releasePoint],
           ["Directory", relative(process.cwd(), outputDir) || outputDir],

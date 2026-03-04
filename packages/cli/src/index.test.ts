@@ -7,12 +7,12 @@ const CLI_PATH = resolve(import.meta.dirname, "../dist/index.js");
 const require = createRequire(import.meta.url);
 const pkg = require("../package.json") as { version: string };
 
-describe("law2md CLI", () => {
+describe("lexbuild CLI", () => {
   it("shows help text with both commands", () => {
     const output = execFileSync("node", [CLI_PATH, "--help"], {
       encoding: "utf-8",
     });
-    expect(output).toContain("law2md");
+    expect(output).toContain("lexbuild");
     expect(output).toContain("convert");
     expect(output).toContain("download");
   });

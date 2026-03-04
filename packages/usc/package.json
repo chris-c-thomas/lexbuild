@@ -1,7 +1,7 @@
 {
-  "name": "@law2md/usc",
+  "name": "@lexbuild/usc",
   "version": "0.8.0",
-  "description": "U.S. Code-specific element handlers and downloader for law2md",
+  "description": "U.S. Code-specific element handlers and downloader for lexbuild",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -24,7 +24,7 @@
     "lint:fix": "eslint src --fix"
   },
   "dependencies": {
-    "@law2md/core": "workspace:*",
+    "@lexbuild/core": "workspace:*",
     "yauzl": "^3.2.0"
   },
   "devDependencies": {

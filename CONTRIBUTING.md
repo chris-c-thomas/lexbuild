@@ -1,4 +1,4 @@
-# Contributing to law2md
+# Contributing to lexbuild
 
 Thanks for your interest in contributing! This guide covers everything you need to get set up and submit changes.
 
@@ -10,8 +10,8 @@ Thanks for your interest in contributing! This guide covers everything you need 
 ## Setup
 
 ```bash
-git clone https://github.com/chris-c-thomas/law2md.git
-cd law2md
+git clone https://github.com/chris-c-thomas/lexbuild.git
+cd lexbuild
 pnpm install
 pnpm turbo build
 ```
@@ -37,9 +37,9 @@ pnpm turbo dev          # Watch mode (rebuild on change)
 To scope commands to a single package:
 
 ```bash
-pnpm turbo build --filter=@law2md/core
-pnpm turbo test --filter=@law2md/usc
-pnpm turbo test --filter=law2md
+pnpm turbo build --filter=@lexbuild/core
+pnpm turbo test --filter=@lexbuild/usc
+pnpm turbo test --filter=lexbuild
 ```
 
 ### Running the CLI Locally
@@ -65,9 +65,9 @@ Formatting is enforced by Prettier (double quotes, trailing commas, 100 char pri
 
 ```
 packages/
-  core/    @law2md/core — XML parsing, AST, Markdown rendering, shared utilities
-  usc/    @law2md/usc — U.S. Code conversion logic and OLRC downloader
-  cli/    law2md — CLI entry point (the published npm package)
+  core/    @lexbuild/core — XML parsing, AST, Markdown rendering, shared utilities
+  usc/    @lexbuild/usc — U.S. Code conversion logic and OLRC downloader
+  cli/    lexbuild — CLI entry point (the published npm package)
 ```
 
 The `core` package provides the general-purpose XML-to-Markdown pipeline. The `usc` package adds U.S. Code-specific handling. The `cli` package wires everything together as a command-line tool. Internal packages use `workspace:*` protocol for dependencies.
@@ -103,7 +103,7 @@ Tests are co-located with source files (`parser.ts` → `parser.test.ts`).
 
 ```bash
 pnpm turbo test                          # Run all tests
-pnpm turbo test --filter=@law2md/usc     # Run one package
+pnpm turbo test --filter=@lexbuild/usc     # Run one package
 ```
 
 Name test cases descriptively:
@@ -128,7 +128,7 @@ Review the diff in `fixtures/expected/` to confirm only intended changes, then c
 
 - `fixtures/fragments/` — Small synthetic XML snippets for unit tests (committed)
 - `fixtures/expected/` — Pinned expected output for snapshot tests (committed)
-- `downloads/usc/xml/` — Full USC XML files (gitignored, download with `law2md download`)
+- `downloads/usc/xml/` — Full USC XML files (gitignored, download with `lexbuild download`)
 
 ## Submitting Changes
 

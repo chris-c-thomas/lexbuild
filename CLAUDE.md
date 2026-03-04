@@ -1,17 +1,17 @@
-# CLAUDE.md — law2md
+# CLAUDE.md — lexbuild
 
 ## Project Overview
 
-`law2md` converts U.S. legislative XML (USLM schema) into structured Markdown for AI/RAG ingestion. It is a monorepo built with Turborepo, pnpm workspaces, TypeScript, and Node.js.
+`lexbuild` converts U.S. legislative XML (USLM schema) into structured Markdown for AI/RAG ingestion. It is a monorepo built with Turborepo, pnpm workspaces, TypeScript, and Node.js.
 
 ## Repository Structure
 
 ```
-law2md/
+lexbuild/
 ├── packages/
-│   ├── core/        # @law2md/core — XML parsing, AST, Markdown rendering, shared utilities
-│   ├── usc/         # @law2md/usc — U.S. Code-specific element handlers and downloader
-│   └── cli/         # law2md — CLI binary (the published npm package users install)
+│   ├── core/        # @lexbuild/core — XML parsing, AST, Markdown rendering, shared utilities
+│   ├── usc/         # @lexbuild/usc — U.S. Code-specific element handlers and downloader
+│   └── cli/         # lexbuild — CLI binary (the published npm package users install)
 ├── downloads/
 │   └── usc/
 │       └── xml/     # Full USC XML files (usc01.xml ... usc54.xml) — gitignored
@@ -50,13 +50,13 @@ pnpm install
 pnpm turbo build
 
 # Build a specific package
-pnpm turbo build --filter=@law2md/core
+pnpm turbo build --filter=@lexbuild/core
 
 # Run all tests
 pnpm turbo test
 
 # Run tests for a specific package
-pnpm turbo test --filter=@law2md/usc
+pnpm turbo test --filter=@lexbuild/usc
 
 # Type check
 pnpm turbo typecheck
@@ -313,9 +313,9 @@ output/usc/title-{NN}/chapter-{NN}/section-{N}.md
 > **Note**: The extension architecture is aspirational. No pluggable handler interfaces exist yet — element handling is built into the `ASTBuilder` class. See `docs/extending.md` for details.
 
 1. Create a new package: `packages/cfr/` (or `packages/state-il/`, etc.)
-2. Implement a converter function analogous to `convertTitle()` in `@law2md/usc`
+2. Implement a converter function analogous to `convertTitle()` in `@lexbuild/usc`
 3. Extend or adapt the `ASTBuilder` for source-specific elements
 4. Add a new CLI command in `packages/cli`
-5. Reuse `@law2md/core` for XML parsing, AST types, Markdown rendering, and frontmatter
+5. Reuse `@lexbuild/core` for XML parsing, AST types, Markdown rendering, and frontmatter
 6. Add source-specific download logic if applicable
 7. Document the source's XML schema in the package README

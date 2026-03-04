@@ -1,4 +1,4 @@
-/** @law2md/core — XML parsing, AST, Markdown rendering, and shared utilities */
+/** @lexbuild/core — XML parsing, AST, Markdown rendering, and shared utilities */
 
 // XML parsing
 export { XMLParser } from "./xml/parser.js";

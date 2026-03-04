@@ -1,4 +1,4 @@
-# @law2md/core
+# @lexbuild/core
 
 ## 0.8.0
 
@@ -10,7 +10,7 @@
 
 ### Minor Changes
 
-- law2md convert --all now scans --input-dir for whatever usc{NN}.xml
+- lexbuild convert --all now scans --input-dir for whatever usc{NN}.xml
 
 ## 0.6.2
 
@@ -54,7 +54,7 @@
 
 - Phase 3: Scale & Download
   - feat(usc): OLRC downloader with zip extraction and release point support
-  - feat(cli): `law2md download` command with `--title`, `--all`, `--release-point`
+  - feat(cli): `lexbuild download` command with `--title`, `--all`, `--release-point`
   - feat(usc,cli): `--dry-run` mode for convert command
   - feat(usc,cli): peak memory and token reporting in convert output
   - feat(core,usc): handle appendix titles with separate output directories

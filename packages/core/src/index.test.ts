@@ -23,7 +23,7 @@ import {
   GENERATOR,
 } from "./index.js";
 
-describe("@law2md/core barrel exports", () => {
+describe("@lexbuild/core barrel exports", () => {
   it("exports XML parser and namespace constants", () => {
     expect(XMLParser).toBeDefined();
     expect(USLM_NS).toBe("http://xml.house.gov/schemas/uslm/1.0");
@@ -51,6 +51,6 @@ describe("@law2md/core barrel exports", () => {
     expect(typeof renderNode).toBe("function");
     expect(typeof generateFrontmatter).toBe("function");
     expect(FORMAT_VERSION).toBe("1.0.0");
-    expect(GENERATOR).toMatch(/^law2md@/);
+    expect(GENERATOR).toMatch(/^lexbuild@/);
   });
 });

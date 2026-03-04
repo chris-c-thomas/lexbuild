@@ -1,12 +1,12 @@
 /**
- * `law2md convert` command — converts USC XML files to Markdown.
+ * `lexbuild convert` command — converts USC XML files to Markdown.
  */
 
 import chalk from "chalk";
 import { Command } from "commander";
 import { existsSync, readdirSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
-import { convertTitle } from "@law2md/usc";
+import { convertTitle } from "@lexbuild/usc";
 import {
   createSpinner,
   summaryBlock,
@@ -148,8 +148,8 @@ async function convertSingleFile(
     );
 
     const titleLabel = result.dryRun
-      ? `law2md — Title ${result.titleNumber}: ${result.titleName} [dry-run]`
-      : `law2md — Title ${result.titleNumber}: ${result.titleName}`;
+      ? `lexbuild — Title ${result.titleNumber}: ${result.titleName} [dry-run]`
+      : `lexbuild — Title ${result.titleNumber}: ${result.titleName}`;
 
     const outputRelative = relative(process.cwd(), outputPath) || outputPath;
 
@@ -281,8 +281,8 @@ export const convertCommand = new Command("convert")
     // Summary header
     const outputRelative = relative(process.cwd(), outputPath) || outputPath;
     const headerTitle = options.dryRun
-      ? "law2md — Conversion Summary [dry-run]"
-      : "law2md — Conversion Summary";
+      ? "lexbuild — Conversion Summary [dry-run]"
+      : "lexbuild — Conversion Summary";
     const header = summaryBlock({
       title: headerTitle,
       rows: [["Directory", outputRelative]],

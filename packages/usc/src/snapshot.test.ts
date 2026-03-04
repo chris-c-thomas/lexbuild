@@ -33,7 +33,7 @@ describe("snapshot tests", () => {
   let outputDir: string;
 
   beforeEach(async () => {
-    outputDir = await mkdtemp(join(tmpdir(), "law2md-snap-"));
+    outputDir = await mkdtemp(join(tmpdir(), "lexbuild-snap-"));
   });
 
   afterEach(async () => {

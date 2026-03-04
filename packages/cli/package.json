@@ -1,12 +1,12 @@
 {
-  "name": "law2md",
+  "name": "lexbuild",
   "version": "0.8.0",
   "description": "Convert U.S. legislative XML (USLM) to structured Markdown for AI/RAG ingestion",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "law2md": "./dist/index.js"
+    "lexbuild": "./dist/index.js"
   },
   "exports": {
     ".": {
@@ -27,8 +27,8 @@
     "lint:fix": "eslint src --fix"
   },
   "dependencies": {
-    "@law2md/core": "workspace:*",
-    "@law2md/usc": "workspace:*",
+    "@lexbuild/core": "workspace:*",
+    "@lexbuild/usc": "workspace:*",
     "chalk": "^5.6.2",
     "cli-table3": "^0.6.5",
     "commander": "^13.1.0",

@@ -1,5 +1,5 @@
 /**
- * @law2md/core AST node types
+ * @lexbuild/core AST node types
  *
  * The intermediate AST is a semantic representation of parsed USLM XML.
  * It is NOT a 1:1 mapping — it has been partially interpreted to simplify rendering.

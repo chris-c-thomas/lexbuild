@@ -1,7 +1,7 @@
 {
-  "name": "@law2md/core",
+  "name": "@lexbuild/core",
   "version": "0.8.0",
-  "description": "Core XML parsing, AST, and Markdown rendering for law2md",
+  "description": "Core XML parsing, AST, and Markdown rendering for lexbuild",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -1,4 +1,4 @@
-# law2md
+# lexbuild
 
 ## 0.8.0
 
@@ -9,20 +9,20 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @law2md/core@0.8.0
-  - @law2md/usc@0.8.0
+  - @lexbuild/core@0.8.0
+  - @lexbuild/usc@0.8.0
 
 ## 0.7.0
 
 ### Minor Changes
 
-- law2md convert --all now scans --input-dir for whatever usc{NN}.xml
+- lexbuild convert --all now scans --input-dir for whatever usc{NN}.xml
 
 ### Patch Changes
 
 - Updated dependencies
-  - @law2md/core@0.7.0
-  - @law2md/usc@0.7.0
+  - @lexbuild/core@0.7.0
+  - @lexbuild/usc@0.7.0
 
 ## 0.6.2
 
@@ -30,8 +30,8 @@
 
 - Cleanup files in project
 - Updated dependencies
-  - @law2md/core@0.6.2
-  - @law2md/usc@0.6.2
+  - @lexbuild/core@0.6.2
+  - @lexbuild/usc@0.6.2
 
 ## 0.6.1
 
@@ -39,8 +39,8 @@
 
 - Enhance downloader for when all titles are downloaded
 - Updated dependencies
-  - @law2md/core@0.6.1
-  - @law2md/usc@0.6.1
+  - @lexbuild/core@0.6.1
+  - @lexbuild/usc@0.6.1
 
 ## 0.6.0
 
@@ -51,8 +51,8 @@
 ### Patch Changes
 
 - Updated dependencies [529f4bf]
-  - @law2md/usc@0.6.0
-  - @law2md/core@0.6.0
+  - @lexbuild/usc@0.6.0
+  - @lexbuild/core@0.6.0
 
 ## 0.5.0
 
@@ -63,8 +63,8 @@
 ### Patch Changes
 
 - Updated dependencies [3a29a8e]
-  - @law2md/core@0.5.0
-  - @law2md/usc@0.5.0
+  - @lexbuild/core@0.5.0
+  - @lexbuild/usc@0.5.0
 
 ## 0.4.1
 
@@ -72,8 +72,8 @@
 
 - Add chalk, ora, and cli-table3 for polished terminal output with spinners and formatted
 - Updated dependencies
-  - @law2md/core@0.4.1
-  - @law2md/usc@0.4.1
+  - @lexbuild/core@0.4.1
+  - @lexbuild/usc@0.4.1
 
 ## 0.4.0
 
@@ -84,8 +84,8 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @law2md/core@0.4.0
-  - @law2md/usc@0.4.0
+  - @lexbuild/core@0.4.0
+  - @lexbuild/usc@0.4.0
 
 ## 0.3.0
 
@@ -93,7 +93,7 @@
 
 - Phase 3: Scale & Download
   - feat(usc): OLRC downloader with zip extraction and release point support
-  - feat(cli): `law2md download` command with `--title`, `--all`, `--release-point`
+  - feat(cli): `lexbuild download` command with `--title`, `--all`, `--release-point`
   - feat(usc,cli): `--dry-run` mode for convert command
   - feat(usc,cli): peak memory and token reporting in convert output
   - feat(core,usc): handle appendix titles with separate output directories
@@ -103,8 +103,8 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @law2md/core@0.3.0
-  - @law2md/usc@0.3.0
+  - @lexbuild/core@0.3.0
+  - @lexbuild/usc@0.3.0
 
 ## 0.2.0
 
@@ -124,8 +124,8 @@
 ### Patch Changes
 
 - Updated dependencies [abf4e13]
-  - @law2md/core@0.2.0
-  - @law2md/usc@0.2.0
+  - @lexbuild/core@0.2.0
+  - @lexbuild/usc@0.2.0
 
 ## 0.1.0
 
@@ -143,5 +143,5 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @law2md/core@0.1.0
-  - @law2md/usc@0.1.0
+  - @lexbuild/core@0.1.0
+  - @lexbuild/usc@0.1.0

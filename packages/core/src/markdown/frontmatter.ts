@@ -25,7 +25,7 @@ function readPackageVersion(): string {
 export const FORMAT_VERSION = "1.0.0";
 
 /** Generator identifier (reads version from package.json) */
-export const GENERATOR = `law2md@${readPackageVersion()}`;
+export const GENERATOR = `lexbuild@${readPackageVersion()}`;
 
 /**
  * Generate a YAML frontmatter string from section metadata.

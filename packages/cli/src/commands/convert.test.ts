@@ -14,7 +14,7 @@ describe("resolveUscXmlPath", () => {
   });
 
   function setup(filename: string): string {
-    tempDir = mkdtempSync(join(tmpdir(), "law2md-test-"));
+    tempDir = mkdtempSync(join(tmpdir(), "lexbuild-test-"));
     const filePath = join(tempDir, filename);
     writeFileSync(filePath, "<xml/>");
     return tempDir;
@@ -33,13 +33,13 @@ describe("resolveUscXmlPath", () => {
   });
 
   it("returns undefined when padded file does not exist", () => {
-    tempDir = mkdtempSync(join(tmpdir(), "law2md-test-"));
+    tempDir = mkdtempSync(join(tmpdir(), "lexbuild-test-"));
     const missingPath = join(tempDir, "usc03.xml");
     expect(resolveUscXmlPath(missingPath)).toBeUndefined();
   });
 
   it("returns undefined for non-USC filename that does not exist", () => {
-    tempDir = mkdtempSync(join(tmpdir(), "law2md-test-"));
+    tempDir = mkdtempSync(join(tmpdir(), "lexbuild-test-"));
     const missingPath = join(tempDir, "report.xml");
     expect(resolveUscXmlPath(missingPath)).toBeUndefined();
   });
@@ -67,7 +67,7 @@ describe("discoverTitles", () => {
   });
 
   it("finds USC XML files and returns sorted title numbers", () => {
-    tempDir = mkdtempSync(join(tmpdir(), "law2md-test-"));
+    tempDir = mkdtempSync(join(tmpdir(), "lexbuild-test-"));
     writeFileSync(join(tempDir, "usc26.xml"), "<xml/>");
     writeFileSync(join(tempDir, "usc01.xml"), "<xml/>");
     writeFileSync(join(tempDir, "usc10.xml"), "<xml/>");
@@ -75,7 +75,7 @@ describe("discoverTitles", () => {
   });
 
   it("ignores non-USC files", () => {
-    tempDir = mkdtempSync(join(tmpdir(), "law2md-test-"));
+    tempDir = mkdtempSync(join(tmpdir(), "lexbuild-test-"));
     writeFileSync(join(tempDir, "usc05.xml"), "<xml/>");
     writeFileSync(join(tempDir, "readme.txt"), "hi");
     writeFileSync(join(tempDir, "uscAll.zip"), "zip");
@@ -83,11 +83,11 @@ describe("discoverTitles", () => {
   });
 
   it("returns empty array for non-existent directory", () => {
-    expect(discoverTitles("/tmp/does-not-exist-law2md")).toEqual([]);
+    expect(discoverTitles("/tmp/does-not-exist-lexbuild")).toEqual([]);
   });
 
   it("returns empty array for directory with no USC XML files", () => {
-    tempDir = mkdtempSync(join(tmpdir(), "law2md-test-"));
+    tempDir = mkdtempSync(join(tmpdir(), "lexbuild-test-"));
     writeFileSync(join(tempDir, "notes.txt"), "hi");
     expect(discoverTitles(tempDir)).toEqual([]);
   });

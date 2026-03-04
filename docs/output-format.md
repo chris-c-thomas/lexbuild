@@ -1,6 +1,6 @@
 # Output Format Specification
 
-This document specifies the output format of `law2md` for downstream consumers (RAG pipelines, search indexes, embedding systems).
+This document specifies the output format of `lexbuild` for downstream consumers (RAG pipelines, search indexes, embedding systems).
 
 ## Versioning
 
@@ -99,7 +99,7 @@ positive_law: true                         # Boolean
 currency: "119-73"                         # Release point identifier
 last_updated: "2025-12-03"                # ISO date from XML generation
 format_version: "1.0.0"                   # Output format version
-generator: "law2md@0.5.0"                 # Generator version
+generator: "lexbuild@0.5.0"                 # Generator version
 
 # Optional
 source_credit: "(July 30, 1947, ...)"     # Full source credit text (included by default)
@@ -212,7 +212,7 @@ Complex tables (with colspan, rowspan, or nested content) render as fenced HTML:
 ```json
 {
   "format_version": "1.0.0",
-  "generator": "law2md@0.5.0",
+  "generator": "lexbuild@0.5.0",
   "generated_at": "2025-12-03T12:00:00.000Z",
   "identifier": "/us/usc/t1",
   "title_number": 1,

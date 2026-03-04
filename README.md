@@ -1,10 +1,10 @@
-# law2md
+# lexbuild
 
-[![npm](https://img.shields.io/npm/v/law2md?style=flat-square)](https://www.npmjs.com/package/law2md)
-[![CI](https://img.shields.io/github/actions/workflow/status/chris-c-thomas/law2md/ci.yml?style=flat-square&label=CI)](https://github.com/chris-c-thomas/law2md/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/lexbuild?style=flat-square)](https://www.npmjs.com/package/lexbuild)
+[![CI](https://img.shields.io/github/actions/workflow/status/chris-c-thomas/lexbuild/ci.yml?style=flat-square&label=CI)](https://github.com/chris-c-thomas/lexbuild/actions/workflows/ci.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?style=flat-square)](https://www.typescriptlang.org/)
-[![Node](https://img.shields.io/node/v/law2md?style=flat-square)](https://nodejs.org/)
-[![license](https://img.shields.io/github/license/chris-c-thomas/law2md?style=flat-square)](LICENSE)
+[![Node](https://img.shields.io/node/v/lexbuild?style=flat-square)](https://nodejs.org/)
+[![license](https://img.shields.io/github/license/chris-c-thomas/lexbuild?style=flat-square)](LICENSE)
 
 CLI tool to download and convert the entire [United States Code](https://uscode.house.gov/) from official XML (USLM Schema) into structured Markdown that's optimized for AI ingestion, RAG pipelines, and semantic search.
 
@@ -31,7 +31,7 @@ CLI tool to download and convert the entire [United States Code](https://uscode.
 
 The U.S. Code comprises 54 titles of federal statutory law. The [Office of the Law Revision Counsel](https://uscode.house.gov/about_office.xhtml) (OLRC) publishes the official text as [deeply nested XML](https://uscode.house.gov/download/download.shtml) using the [United States Legislative Markup](https://uscode.house.gov/download/resources/USLM-User-Guide.pdf) (USLM) schema. These files are dense, laden with presentation markup, and difficult to work with directly.
 
-`law2md` transforms this XML into per-section Markdown files with YAML frontmatter, predictable file paths, and content sized for typical embedding model context windows — making the entire U.S. Code accessible to LLMs, vector databases, and legal research tools.
+`lexbuild` transforms this XML into per-section Markdown files with YAML frontmatter, predictable file paths, and content sized for typical embedding model context windows — making the entire U.S. Code accessible to LLMs, vector databases, and legal research tools.
 
 ## Features
 
@@ -55,14 +55,14 @@ The U.S. Code comprises 54 titles of federal statutory law. The [Office of the L
 ### npm
 
 ```bash
-npm install -g law2md
+npm install -g lexbuild
 ```
 
 ### npx
 
 ```bash
-npx law2md download --all
-npx law2md convert --all
+npx lexbuild download --all
+npx lexbuild convert --all
 ```
 
 ### Source
@@ -70,8 +70,8 @@ npx law2md convert --all
 Requires [Node.js](https://nodejs.org/) >= 20 and [pnpm](https://pnpm.io/) >= 10.
 
 ```bash
-git clone https://github.com/chris-c-thomas/law2md.git
-cd law2md
+git clone https://github.com/chris-c-thomas/lexbuild.git
+cd lexbuild
 pnpm install
 pnpm turbo build
 ```
@@ -82,13 +82,13 @@ pnpm turbo build
 
 ```bash
 # Download and convert all 54 titles
-law2md download --all && law2md convert --all
+lexbuild download --all && lexbuild convert --all
 
 # Or start small — download and convert Title 1
-law2md download --titles 1 && law2md convert --titles 1
+lexbuild download --titles 1 && lexbuild convert --titles 1
 
 # Download and convert a range
-law2md download --titles 1-5 && law2md convert --titles 1-5
+lexbuild download --titles 1-5 && lexbuild convert --titles 1-5
 ```
 
 ---
@@ -101,19 +101,19 @@ Fetch U.S. Code XML files directly from the OLRC:
 
 ```bash
 # Download a single title
-law2md download --titles 1
+lexbuild download --titles 1
 
 # Download multiple titles (range)
-law2md download --titles 1-5
+lexbuild download --titles 1-5
 
 # Download specific titles (mixed)
-law2md download --titles 1-5,8,11
+lexbuild download --titles 1-5,8,11
 
 # Download all 54 titles (uses a single bulk zip)
-law2md download --all
+lexbuild download --all
 
 # Use a specific release point
-law2md download --titles 26 --release-point 119-73not60
+lexbuild download --titles 26 --release-point 119-73not60
 ```
 
 Or download manually from the [OLRC download page](https://uscode.house.gov/download/download.shtml).
@@ -122,40 +122,40 @@ Or download manually from the [OLRC download page](https://uscode.house.gov/down
 
 ```bash
 # Convert all downloaded titles
-law2md convert --all
+lexbuild convert --all
 
 # Convert a single XML file
-law2md convert ./downloads/usc/xml/usc01.xml -o ./output
+lexbuild convert ./downloads/usc/xml/usc01.xml -o ./output
 
 # Convert by title number
-law2md convert --titles 1
+lexbuild convert --titles 1
 
 # Convert multiple titles
-law2md convert --titles 1-5,8,11
+lexbuild convert --titles 1-5,8,11
 
 # Convert with a custom input directory
-law2md convert --titles 1-5 -i ./my-xml-files
+lexbuild convert --titles 1-5 -i ./my-xml-files
 
 # Chapter-level output (one file per chapter)
-law2md convert --titles 1 -o ./output -g chapter
+lexbuild convert --titles 1 -o ./output -g chapter
 
 # Cross-reference links resolved to OLRC URLs
-law2md convert --titles 5 -o ./output --link-style canonical
+lexbuild convert --titles 5 -o ./output --link-style canonical
 
 # Include only amendment notes
-law2md convert --titles 1 -o ./output --include-amendments
+lexbuild convert --titles 1 -o ./output --include-amendments
 
 # Exclude all notes
-law2md convert --titles 1 -o ./output --no-include-notes
+lexbuild convert --titles 1 -o ./output --no-include-notes
 
 # Dry run — preview stats without writing files
-law2md convert --titles 42 --dry-run
+lexbuild convert --titles 42 --dry-run
 ```
 
 ### CLI Reference
 
 ```
-law2md convert [input] [options]
+lexbuild convert [input] [options]
 
 Arguments:
   input                          Path to a USC XML file (optional if --titles
@@ -183,7 +183,7 @@ Options:
 ```
 
 ```
-law2md download [options]
+lexbuild download [options]
 
 Options:
   --titles <spec>                Title(s) to download: single (1), range (1-5),
@@ -240,7 +240,7 @@ positive_law: true
 currency: "119-73"
 last_updated: "2025-12-03"
 format_version: "1.0.0"
-generator: "law2md@0.7.0"
+generator: "lexbuild@0.7.0"
 source_credit: "(Added Pub. L. 104-199, § 3(a), Sept. 21, 1996, ...)"
 ---
 ```
@@ -319,11 +319,11 @@ The full U.S. Code — all 54 titles (53 with content; Title 53 is reserved), ov
 ## Project Structure
 
 ```
-law2md/
+lexbuild/
   packages/
-    core/          @law2md/core — XML parsing, AST, Markdown rendering
-    usc/           @law2md/usc — U.S. Code downloader and conversion logic
-    cli/           law2md — CLI entry point
+    core/          @lexbuild/core — XML parsing, AST, Markdown rendering
+    usc/           @lexbuild/usc — U.S. Code downloader and conversion logic
+    cli/           lexbuild — CLI entry point
   fixtures/
     fragments/     XML snippets for unit tests
     expected/      Expected output snapshots
@@ -364,7 +364,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor guide.
 
 ## Data Sources
 
-`law2md` processes XML published by the [Office of the Law Revision Counsel](https://uscode.house.gov/) (OLRC) of the U.S. House of Representatives. The XML uses the United States Legislative Markup (USLM) 1.0 schema.
+`lexbuild` processes XML published by the [Office of the Law Revision Counsel](https://uscode.house.gov/) (OLRC) of the U.S. House of Representatives. The XML uses the United States Legislative Markup (USLM) 1.0 schema.
 
 The U.S. Code XML is **public domain** and freely available at [uscode.house.gov/download/download.shtml](https://uscode.house.gov/download/download.shtml).
 
@@ -374,7 +374,7 @@ The U.S. Code XML is **public domain** and freely available at [uscode.house.gov
 
 Features and enhancements that are currently planned.
 
-Feel free to open an [issue](https://github.com/chris-c-thomas/law2md/issues) or start a [discussion](https://github.com/chris-c-thomas/law2md/discussions) to talk about any of these. Ideas and contributions are always welcome.
+Feel free to open an [issue](https://github.com/chris-c-thomas/lexbuild/issues) or start a [discussion](https://github.com/chris-c-thomas/lexbuild/discussions) to talk about any of these. Ideas and contributions are always welcome.
 
 **Output**
 
