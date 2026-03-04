@@ -1,5 +1,13 @@
 # @lexbuild/usc
 
+## 1.0.1
+
+### Patch Changes
+
+- Add package README.md files
+- Updated dependencies
+  - @lexbuild/core@1.0.1
+
 ## 1.0.0
 
 ### Major Changes
