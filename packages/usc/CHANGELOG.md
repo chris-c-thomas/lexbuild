@@ -1,5 +1,16 @@
 # @lexbuild/usc
 
+## 1.0.0
+
+### Major Changes
+
+- First stable release. Converts all 54 titles of the U.S. Code from USLM XML to structured Markdown optimized for AI, RAG pipelines, and semantic search.
+
+### Patch Changes
+
+- Updated dependencies
+  - @lexbuild/core@1.0.0
+
 ## 0.8.0
 
 ### Minor Changes

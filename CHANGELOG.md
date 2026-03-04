@@ -5,7 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
-## [Unreleased]
+## [1.0.0]
+
+### Changed
+
+- **Stable release**: first public release of `@lexbuild/core`, `@lexbuild/usc`, and `@lexbuild/cli` to npm.
+- **Renamed project**: `law2md` → `lexbuild` with `@lexbuild/` scoped packages.
+- **Package metadata**: added `publishConfig`, `sideEffects`, per-package keywords, and repository fields.
 
 ## [0.7.1]
 
