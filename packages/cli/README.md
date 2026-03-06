@@ -6,15 +6,17 @@
 
 This package is part of the [LexBuild](https://github.com/chris-c-thomas/lexbuild) monorepo, a tool that converts U.S. legislative XML into structured Markdown optimized for AI, RAG pipelines, and semantic search. See the monorepo for full documentation, architecture details, and contribution guidelines.
 
-It provides the CLI entry point for downloading and converting legal and civic texts. Currently supports the [United States Code](https://uscode.house.gov/) via [`@lexbuild/usc`](https://www.npmjs.com/package/@lexbuild/usc), with additional sources (CFR, state statutes) planned.
+It provides the CLI entry point for downloading and converting legal and civic texts. Built on [`@lexbuild/core`](https://www.npmjs.com/package/@lexbuild/core) for shared parsing and rendering infrastructure, and also [`@lexbuild/usc`](https://www.npmjs.com/package/@lexbuild/usc) for [United States Code](https://uscode.house.gov/) support. Implementing support for additional sources (CFR, state statutes) is planned.
 
 ## Install
+
+Install globally
 
 ```bash
 npm install -g @lexbuild/cli
 ```
 
-Or run directly with npx:
+Run directly with npx:
 
 ```bash
 npx @lexbuild/cli download --all
@@ -103,7 +105,7 @@ The full U.S. Code — all 54 titles, 60,000+ sections, ~85 million estimated to
 
 ## Documentation
 
-- [Monorepo README](https://github.com/chris-c-thomas/lexbuild#readme)
+- [LexBuild Monorepo](https://github.com/chris-c-thomas/lexbuild)
 - [Architecture](https://github.com/chris-c-thomas/lexbuild/blob/main/docs/architecture.md)
 - [Output Format](https://github.com/chris-c-thomas/lexbuild/blob/main/docs/output-format.md)
 - [XML Element Reference](https://github.com/chris-c-thomas/lexbuild/blob/main/docs/xml-element-reference.md)

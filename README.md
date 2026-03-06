@@ -1,4 +1,4 @@
-# lexbuild
+# LexBuild
 
 [![npm](https://img.shields.io/npm/v/%40lexbuild%2Fcli?style=for-the-badge)](https://www.npmjs.com/package/@lexbuild/cli)
 [![CI](https://img.shields.io/github/actions/workflow/status/chris-c-thomas/lexbuild/ci.yml?style=for-the-badge&label=CI)](https://github.com/chris-c-thomas/lexbuild/actions/workflows/ci.yml)
@@ -6,18 +6,19 @@
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=for-the-badge)](https://nodejs.org/)
 [![license](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 
-CLI tool to download and convert the entire [United States Code](https://uscode.house.gov/) from official XML (USLM Schema) into structured Markdown that's optimized for AI ingestion, RAG pipelines, and semantic search.
+A compiler for legal and civic texts. Converts disparate statutory data — starting with the [United States Code](https://uscode.house.gov/) — into structured Markdown optimized for AI ingestion, RAG pipelines, and semantic search.
 
 ## Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
+- [Monorepo Architecture](#monorepo-architecture)
+- [Packages](#packages)
+- [Apps](#apps)
+- [Install](#install)
 - [Usage](#usage)
 - [Output](#output)
 - [Performance](#performance)
-- [Project Structure](#project-structure)
 - [Development](#development)
 - [Documentation](#documentation)
 - [Data Sources](#data-sources)
@@ -31,7 +32,11 @@ CLI tool to download and convert the entire [United States Code](https://uscode.
 
 The U.S. Code comprises 54 titles of federal statutory law. The [Office of the Law Revision Counsel](https://uscode.house.gov/about_office.xhtml) (OLRC) publishes the official text as [deeply nested XML](https://uscode.house.gov/download/download.shtml) using the [United States Legislative Markup](https://uscode.house.gov/download/resources/USLM-User-Guide.pdf) (USLM) schema. These files are dense, laden with presentation markup, and difficult to work with directly.
 
-`lexbuild` transforms this XML into per-section Markdown files with YAML frontmatter, predictable file paths, and content sized for typical embedding model context windows — making the entire U.S. Code accessible to LLMs, vector databases, and legal research tools.
+LexBuild transforms this XML into per-section Markdown files with YAML frontmatter, predictable file paths, and content sized for typical embedding model context windows — making the entire U.S. Code accessible to LLMs, vector databases, and legal research tools.
+
+The project is designed as an extensible platform. The U.S. Code is the first supported source, but the architecture is built to accommodate additional legal corpora — the Code of Federal Regulations, state statutes, and more — through new packages that share a common core.
+
+---
 
 ## Features
 
@@ -50,35 +55,184 @@ The U.S. Code comprises 54 titles of federal statutory law. The [Office of the L
 
 ---
 
-## Install
+## Monorepo Architecture
 
-### npm
+LexBuild is a monorepo managed with [pnpm](https://pnpm.io/) workspaces and [Turborepo](https://turbo.build/). This structure cleanly separates concerns — shared parsing infrastructure, source-specific logic, CLI tooling, and downstream applications — while keeping everything in a single repository with unified versioning.
 
-```bash
-npm install -g @lexbuild/cli
+```
+lexbuild/
+├── packages/           # Shared libraries and tools
+│   ├── core/           # @lexbuild/core — format-agnostic foundation
+│   ├── usc/            # @lexbuild/usc — U.S. Code source package
+│   └── cli/            # @lexbuild/cli — CLI binary (published to npm)
+├── apps/               # Applications built on LexBuild output (planned)
+├── fixtures/           # Test data
+│   ├── fragments/      # Small synthetic XML snippets for unit tests
+│   └── expected/       # Expected output snapshots for integration tests
+├── docs/               # Architecture, format spec, extension guide
+├── turbo.json          # Turborepo pipeline config
+├── pnpm-workspace.yaml # Workspace definitions
+└── CLAUDE.md           # AI-assisted development instructions
 ```
 
-### npx
+### Dependency Graph
+
+```
+@lexbuild/cli
+  ├── @lexbuild/usc
+  │     └── @lexbuild/core
+  └── @lexbuild/core (direct dep for shared types)
+
+Future packages (e.g., @lexbuild/cfr) follow the same pattern:
+  @lexbuild/cfr
+    └── @lexbuild/core
+```
+
+All internal dependencies use pnpm's `workspace:*` protocol, ensuring packages always resolve to the local version during development. [Changesets](https://github.com/changesets/changesets) manages versioning in lockstep across all packages — every release bumps all packages to the same version.
+
+### Build Pipeline
+
+Turborepo orchestrates the build, respecting the dependency graph:
+
+1. `@lexbuild/core` builds first (no internal deps)
+2. `@lexbuild/usc` builds next (depends on core)
+3. `@lexbuild/cli` builds last (depends on both)
+
+Tests run after builds; type-checking runs after upstream packages build; linting has no dependencies.
+
+---
+
+## Packages
+
+### @lexbuild/core
+
+**The format-agnostic foundation.** Core knows nothing about any specific legal source — it provides the infrastructure that all source packages build on.
+
+| Capability | Description |
+|------------|-------------|
+| XML Parser | SAX streaming parser (`saxes`) with namespace normalization and typed event emitter |
+| AST Types | Semantic tree representation — `LevelNode`, `ContentNode`, `InlineNode`, `NoteNode`, `TableNode`, and more |
+| AST Builder | Stack-based tree construction with configurable emit level (section, chapter, etc.) |
+| Markdown Renderer | Stateless AST-to-Markdown conversion with configurable note filtering and link styles |
+| Frontmatter Generator | YAML frontmatter from structured metadata |
+| Link Resolver | Cross-reference resolution with single-pass registration and fallback URLs |
+
+**Key design**: The AST builder uses a **section-emit pattern** — when a section close tag is encountered, the completed subtree is emitted via callback and released from memory. This keeps memory bounded even for 100MB+ XML files.
+
+**Dependencies**: `saxes`, `yaml`, `zod` (no internal deps)
+
+### @lexbuild/usc
+
+**U.S. Code source package.** Implements everything specific to USLM 1.0 XML from the OLRC.
+
+| Capability | Description |
+|------------|-------------|
+| Converter | Orchestrates the full pipeline: XML stream, SAX parse, AST build, render, write |
+| Downloader | Fetches individual or bulk title ZIP files from OLRC and extracts the XML |
+| File Writer | Writes section/chapter `.md` files, `_meta.json` indexes, and `README.md` overviews |
+| Title Metadata | Extracts Dublin Core metadata, release points, and positive law status |
+
+**Dependencies**: `@lexbuild/core`, `yauzl` (ZIP extraction)
+
+### @lexbuild/cli
+
+**The published npm package.** Provides the `lexbuild` binary that end users install. Thin orchestration layer — all heavy lifting is delegated to `usc` and `core`.
+
+| Command | Description |
+|---------|-------------|
+| `lexbuild download` | Fetch U.S. Code XML from OLRC |
+| `lexbuild convert` | Convert XML to structured Markdown |
+
+As new source packages are added, new commands will be registered here (e.g., `lexbuild download-cfr`, `lexbuild convert-cfr`).
+
+**Dependencies**: `@lexbuild/core`, `@lexbuild/usc`, `commander`, `chalk`, `ora`, `cli-table3`, `pino`
+
+### Adding a New Source Package
+
+The monorepo is designed to grow. Adding support for a new legal source (e.g., CFR, state statutes) follows a consistent pattern:
+
+1. Create `packages/{source}/` with a dependency on `@lexbuild/core`
+2. Implement a converter function analogous to `convertTitle()` in `@lexbuild/usc`
+3. Reuse core's XML parser, AST types, Markdown renderer, and frontmatter generator
+4. Add a new CLI command in `packages/cli`
+5. Document the source's XML schema in the package README
+
+See [docs/extending.md](docs/extending.md) for the full guide.
+
+---
+
+## Apps
+
+The `apps/` directory is reserved for applications that showcase or build on top of the converted Markdown output. Planned applications include:
+
+- **Web viewer** — Browse the converted U.S. Code with full-text search and cross-reference navigation
+- **RAG demo** — Reference implementation of a legal Q&A system using LexBuild output with vector embeddings
+- **MCP server** — Model Context Protocol server for AI-assisted legal research
+
+Apps consume the output of LexBuild packages but are not published to npm. They live in the same monorepo for convenience and to serve as living documentation of how to integrate with the converted data.
+
+---
+
+## Install
+
+### Run (no install needed)
+
+You can run the CLI directly using `npx` or `pnpm dlx`
+
+#### npx
 
 ```bash
 npx @lexbuild/cli download --all
 npx @lexbuild/cli convert --all
 ```
 
-### Source
+#### pnpm dlx
 
-Requires [Node.js](https://nodejs.org/) >= 20 and [pnpm](https://pnpm.io/) >= 10.
+```bash
+pnpm dlx @lexbuild/cli download --all
+pnpm dlx @lexbuild/cli convert --all
+```
+
+### Global Install
+
+Install the CLI globally using your preferred package manager.
+
+#### npm
+
+```bash
+npm install -g @lexbuild/cli
+```
+
+#### pnpm
+
+```bash
+pnpm add -g @lexbuild/cli
+```
+
+### Build From Source
+
+Requires [Node.js](https://nodejs.org/) >= 20
+and [pnpm](https://pnpm.io/) >= 10.
+
+#### Clone Repository
 
 ```bash
 git clone https://github.com/chris-c-thomas/lexbuild.git
 cd lexbuild
+```
+
+#### Install & Build
+
+```bash
 pnpm install
 pnpm turbo build
 ```
 
 ---
 
-## Quick Start
+## Usage
+
+### Quick Start Examples
 
 ```bash
 # Download and convert all 54 titles
@@ -91,11 +245,7 @@ lexbuild download --titles 1 && lexbuild convert --titles 1
 lexbuild download --titles 1-5 && lexbuild convert --titles 1-5
 ```
 
----
-
-## Usage
-
-### Download
+### Download Examples
 
 Fetch U.S. Code XML files directly from the OLRC:
 
@@ -118,7 +268,7 @@ lexbuild download --titles 26 --release-point 119-73not60
 
 Or download manually from the [OLRC download page](https://uscode.house.gov/download/download.shtml).
 
-### Convert
+### Convert Examples
 
 ```bash
 # Convert all downloaded titles
@@ -316,35 +466,54 @@ The full U.S. Code — all 54 titles (53 with content; Title 53 is reserved), ov
 
 ---
 
-## Project Structure
-
-```
-lexbuild/
-  packages/
-    core/          @lexbuild/core — XML parsing, AST, Markdown rendering
-    usc/           @lexbuild/usc — U.S. Code downloader and conversion logic
-    cli/           @lexbuild/cli — CLI entry point
-  fixtures/
-    fragments/     XML snippets for unit tests
-    expected/      Expected output snapshots
-  docs/            Architecture, XML reference, output format, exending
-```
-
-The project is a monorepo managed with [pnpm](https://pnpm.io/) workspaces and [Turborepo](https://turbo.build/).
-
-The separation into `core` and `usc` packages is designed to support additional legal source types (CFR, state statutes) in the future by adding new packages that share the core infrastructure.
-
----
-
 ## Development
 
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) >= 20
+- [pnpm](https://pnpm.io/) >= 10
+
+### Getting Started
+
 ```bash
-pnpm install               # Install dependencies
-pnpm turbo build           # Build all packages
-pnpm turbo test            # Run all 176 tests
+git clone https://github.com/chris-c-thomas/lexbuild.git
+cd lexbuild
+pnpm install
+pnpm turbo build
+```
+
+### Common Commands
+
+```bash
+pnpm turbo build           # Build all packages (respects dependency order)
+pnpm turbo test            # Run all tests
 pnpm turbo lint            # Lint all packages
 pnpm turbo typecheck       # Type-check all packages
 pnpm turbo dev             # Watch mode (rebuild on change)
+```
+
+### Working on a Specific Package
+
+```bash
+# Build only core
+pnpm turbo build --filter=@lexbuild/core
+
+# Test only usc
+pnpm turbo test --filter=@lexbuild/usc
+
+# Run the CLI locally during development
+node packages/cli/dist/index.js download --titles 1
+node packages/cli/dist/index.js convert --titles 1
+```
+
+### Versioning and Releases
+
+LexBuild uses [Changesets](https://github.com/changesets/changesets) for version management. All packages are versioned in lockstep.
+
+```bash
+pnpm changeset             # Create a changeset for your changes
+pnpm version-packages      # Apply changesets and bump versions
+pnpm release               # Build and publish all packages to npm
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor guide.
@@ -364,7 +533,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor guide.
 
 ## Data Sources
 
-`lexbuild` processes XML published by the [Office of the Law Revision Counsel](https://uscode.house.gov/) (OLRC) of the U.S. House of Representatives. The XML uses the United States Legislative Markup (USLM) 1.0 schema.
+LexBuild processes XML published by the [Office of the Law Revision Counsel](https://uscode.house.gov/) (OLRC) of the U.S. House of Representatives. The XML uses the United States Legislative Markup (USLM) 1.0 schema.
 
 The U.S. Code XML is **public domain** and freely available at [uscode.house.gov/download/download.shtml](https://uscode.house.gov/download/download.shtml).
 
@@ -384,8 +553,8 @@ Feel free to open an [issue](https://github.com/chris-c-thomas/lexbuild/issues) 
 
 **Sources**
 
-- [ ] Code of Federal Regulations (CFR)
-- [ ] State statutes
+- [ ] Code of Federal Regulations (CFR) — `@lexbuild/cfr`
+- [ ] State statutes — `@lexbuild/state-{abbr}`
 - [ ] Incremental update support for new OLRC release points
 
 **Metadata**
@@ -398,6 +567,12 @@ Feel free to open an [issue](https://github.com/chris-c-thomas/lexbuild/issues) 
 
 - [ ] MCP server for AI-assisted legal research
 - [ ] Embedding pipeline integration
+
+**Apps**
+
+- [ ] Web viewer for browsing converted output
+- [ ] RAG demo application with vector search
+- [ ] API server for programmatic access to converted data
 
 ---
 

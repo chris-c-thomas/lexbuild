@@ -5,7 +5,7 @@
 
 This package is part of the [LexBuild](https://github.com/chris-c-thomas/lexbuild) monorepo, a tool that converts U.S. legislative XML into structured Markdown optimized for AI, RAG pipelines, and semantic search. See the monorepo for full documentation, architecture details, and contribution guidelines.
 
-It converts official [USLM](https://uscode.house.gov/download/resources/USLM-User-Guide.pdf) XML from the [Office of the Law Revision Counsel](https://uscode.house.gov/) (OLRC) into structured Markdown. It also provides a downloader for fetching the XML directly from OLRC.
+It converts official [USLM XML](https://uscode.house.gov/download/resources/USLM-User-Guide.pdf) from the [Office of the Law Revision Counsel](https://uscode.house.gov/) (OLRC) into structured Markdown and is built on [`@lexbuild/core`](https://www.npmjs.com/package/@lexbuild/core) for shared parsing and rendering infrastructure. It also provides a downloader for fetching the XML directly from OLRC. End users typically interact with this package through [`@lexbuild/cli`](https://www.npmjs.com/package/@lexbuild/cli).
 
 ## Install
 
@@ -110,7 +110,7 @@ See the [output format specification](https://github.com/chris-c-thomas/lexbuild
 
 ## Documentation
 
-- [Monorepo README](https://github.com/chris-c-thomas/lexbuild#readme)
+- [LexBuild Monorepo](https://github.com/chris-c-thomas/lexbuild)
 - [Architecture](https://github.com/chris-c-thomas/lexbuild/blob/main/docs/architecture.md)
 - [Output Format](https://github.com/chris-c-thomas/lexbuild/blob/main/docs/output-format.md)
 - [XML Element Reference](https://github.com/chris-c-thomas/lexbuild/blob/main/docs/xml-element-reference.md)

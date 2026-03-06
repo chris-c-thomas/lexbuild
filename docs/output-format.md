@@ -1,6 +1,6 @@
 # Output Format Specification
 
-This document specifies the output format of `lexbuild` for downstream consumers (RAG pipelines, search indexes, embedding systems).
+This document specifies the output format of LexBuild for downstream consumers (RAG pipelines, search indexes, embedding systems).
 
 ## Versioning
 
