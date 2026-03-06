@@ -129,8 +129,6 @@ identifier: "/us/usc/t1"
 title: "Title 1 — GENERAL PROVISIONS"
 title_number: 1
 title_name: "GENERAL PROVISIONS"
-section_number: "1"
-section_name: "GENERAL PROVISIONS"
 positive_law: true
 currency: "119-73"
 last_updated: "2025-12-03"
@@ -142,7 +140,7 @@ total_token_estimate: 35000
 ---
 ```
 
-The `chapter_count`, `section_count`, and `total_token_estimate` fields are only present in title-level output.
+Title-level frontmatter omits `section_number` and `section_name` (those are section-scoped fields). The `chapter_count`, `section_count`, and `total_token_estimate` fields are only present in title-level output.
 
 ### Title-Level Heading Hierarchy
 

@@ -299,10 +299,10 @@ export interface FrontmatterData {
   part_number?: string | undefined;
   /** Part name */
   part_name?: string | undefined;
-  /** Section number (string — can be alphanumeric like "7801") */
-  section_number: string;
-  /** Section name */
-  section_name: string;
+  /** Section number (string — can be alphanumeric like "7801"). Omitted for title-level output. */
+  section_number?: string | undefined;
+  /** Section name. Omitted for title-level output. */
+  section_name?: string | undefined;
   /** Whether this title is positive law */
   positive_law: boolean;
   /** Full source credit text */

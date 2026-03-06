@@ -677,12 +677,10 @@ async function writeWholeTitle(
     title: `Title ${titleNum} — ${titleName}`,
     title_number: parseIntSafe(titleNum),
     title_name: titleName,
-    section_number: titleNum,
-    section_name: titleName,
     positive_law: meta.positivelaw ?? false,
     currency,
     last_updated: lastUpdated,
-    chapter_count: new Set(sectionMetas.map((s) => s.chapterIdentifier)).size,
+    chapter_count: new Set(sectionMetas.map((s) => s.chapterIdentifier).filter(Boolean)).size,
     section_count: sectionMetas.length,
     total_token_estimate: Math.ceil(totalContentLength / 4),
   };
@@ -795,14 +793,14 @@ function collectSectionMetasFromTree(
   node: LevelNode,
   context: EmitContext,
   sectionMetas: SectionMeta[],
+  currentChapter?: LevelNode | undefined,
 ): void {
   for (const child of node.children) {
     if (child.type === "level" && child.levelType === "section") {
-      // Find the chapter parent — use the node itself if it's a chapter
-      const chapterNode = node.levelType === "chapter" ? node : null;
-      sectionMetas.push(buildSectionMetaDryRun(child, chapterNode, context));
+      sectionMetas.push(buildSectionMetaDryRun(child, currentChapter ?? null, context));
     } else if (child.type === "level" && BIG_LEVELS.has(child.levelType)) {
-      collectSectionMetasFromTree(child, context, sectionMetas);
+      const nextChapter = child.levelType === "chapter" ? child : currentChapter;
+      collectSectionMetasFromTree(child, context, sectionMetas, nextChapter);
     }
   }
 }

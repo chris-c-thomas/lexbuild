@@ -40,9 +40,14 @@ export function generateFrontmatter(data: FrontmatterData): string {
     title: data.title,
     title_number: data.title_number,
     title_name: data.title_name,
-    section_number: data.section_number,
-    section_name: data.section_name,
   };
+
+  if (data.section_number !== undefined) {
+    fm["section_number"] = data.section_number;
+  }
+  if (data.section_name !== undefined) {
+    fm["section_name"] = data.section_name;
+  }
 
   // Context fields (only include if present)
   if (data.chapter_number !== undefined) {
