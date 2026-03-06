@@ -227,6 +227,9 @@ interface FrontmatterData {
   currency: string;            // Release point identifier
   last_updated: string;        // ISO date from XML metadata
   status?: string;             // "repealed", "transferred", etc.
+  chapter_count?: number;      // Title-level granularity only
+  section_count?: number;      // Title-level granularity only
+  total_token_estimate?: number; // Title-level granularity only
 }
 
 function generateFrontmatter(data: FrontmatterData): string;
@@ -248,7 +251,7 @@ Orchestrates the full pipeline for a single XML file:
 interface ConvertOptions {
   input: string;                   // Path to XML file
   output: string;                  // Output directory root
-  granularity: "section" | "chapter";
+  granularity: "section" | "chapter" | "title";
   linkStyle: "relative" | "canonical" | "plaintext";
   includeSourceCredits: boolean;
   includeNotes: boolean;           // True = all notes
@@ -277,10 +280,10 @@ The converter:
 1. Creates a `ReadStream` for the XML file
 2. Pipes it through the SAX parser
 3. Extracts document metadata from `<meta>`
-4. Configures the AST builder with `emitAt: "section"`
-5. For each emitted section, renders to Markdown with frontmatter and writes to disk
-6. Generates `_meta.json` index files after all sections are written
-7. Generates `README.md` overview files for title directories
+4. Configures the AST builder with `emitAt` matching the granularity (`"section"`, `"chapter"`, or `"title"`)
+5. For each emitted node, renders to Markdown with frontmatter and writes to disk
+6. Generates `_meta.json` index files after all nodes are written (section/chapter granularity only)
+7. Generates `README.md` overview files for title directories (section/chapter granularity only)
 
 ### Downloader (`src/downloader.ts`)
 

@@ -44,6 +44,7 @@ The project is designed as an extensible platform. The U.S. Code is the first su
 - **Streaming SAX parser** — handles XML files of any size (100MB+) with bounded memory
 - **Section-level output** — each section becomes its own Markdown file, sized for RAG chunk windows
 - **Chapter-level output** — optional mode that inlines all sections into per-chapter files
+- **Title-level output** — optional mode that produces a single file per title with recursive heading hierarchy
 - **YAML frontmatter** — structured metadata on every file (identifier, title, chapter, section, status, source credit)
 - **Structural fidelity** — preserves the full USLM hierarchy using bold inline numbering that mirrors legal citation conventions
 - **Cross-reference links** — resolved as relative links within the corpus, or as OLRC website URLs
@@ -289,6 +290,9 @@ lexbuild convert --titles 1-5 -i ./my-xml-files
 # Chapter-level output (one file per chapter)
 lexbuild convert --titles 1 -o ./output -g chapter
 
+# Title-level output (one file per title)
+lexbuild convert --titles 1 -o ./output -g title
+
 # Cross-reference links resolved to OLRC URLs
 lexbuild convert --titles 5 -o ./output --link-style canonical
 
@@ -319,7 +323,8 @@ Options:
   -i, --input-dir <dir>          Input directory for XML files
                                  (default: "./downloads/usc/xml")
   -o, --output <dir>             Output directory (default: "./output")
-  -g, --granularity <level>      "section" or "chapter" (default: "section")
+  -g, --granularity <level>      "section", "chapter", or "title"
+                                 (default: "section")
   --link-style <style>           "plaintext", "canonical", or "relative"
                                  (default: "plaintext")
   --no-include-source-credits    Exclude source credit annotations
@@ -353,24 +358,42 @@ When multiple `--include-*-notes` flags are specified, they combine additively.
 
 ### Directory Structure
 
+**Section granularity** (default):
+
 ```
-output/
-  usc/
-    title-01/
-      README.md
+output/usc/
+  title-01/
+    README.md
+    _meta.json
+    chapter-01/
       _meta.json
-      chapter-01/
-        _meta.json
-        section-1.md
-        section-2.md
-        ...
-      chapter-02/
-        _meta.json
-        section-101.md
-        ...
+      section-1.md
+      section-2.md
+    chapter-02/
+      _meta.json
+      section-101.md
 ```
 
-Title directories are zero-padded (`title-01` through `title-54`). Chapter directories follow the same convention. Section files use the section number as-is, which may be alphanumeric (e.g., `section-106a.md`, `section-7801.md`).
+**Chapter granularity** (`-g chapter`):
+
+```
+output/usc/
+  title-01/
+    README.md
+    _meta.json
+    chapter-01.md
+    chapter-02.md
+```
+
+**Title granularity** (`-g title`):
+
+```
+output/usc/
+  title-01.md
+  title-26.md
+```
+
+Title directories are zero-padded (`title-01` through `title-54`). Chapter directories follow the same convention. Section files use the section number as-is, which may be alphanumeric (e.g., `section-106a.md`, `section-7801.md`). Title-level output produces flat files with no subdirectories or sidecar metadata — all metadata is in enriched YAML frontmatter.
 
 ### Markdown Structure
 

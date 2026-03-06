@@ -64,6 +64,7 @@ lexbuild convert --titles 1                          # By title number
 lexbuild convert --all                               # All downloaded titles
 lexbuild convert ./downloads/usc/xml/usc01.xml       # Direct file path
 lexbuild convert --titles 1 -g chapter               # Chapter-level output
+lexbuild convert --titles 1 -g title                 # Title-level output (single file)
 lexbuild convert --titles 1 --link-style canonical   # OLRC website links
 lexbuild convert --titles 42 --dry-run               # Preview without writing
 ```
@@ -74,7 +75,7 @@ lexbuild convert --titles 42 --dry-run               # Preview without writing
 | `--all` | — | Convert all titles in input directory |
 | `-i, --input-dir <dir>` | `./downloads/usc/xml` | Input directory for XML files |
 | `-o, --output <dir>` | `./output` | Output directory |
-| `-g, --granularity <level>` | `section` | `section` or `chapter` |
+| `-g, --granularity <level>` | `section` | `section`, `chapter`, or `title` |
 | `--link-style <style>` | `plaintext` | `plaintext`, `canonical`, or `relative` |
 | `--no-include-source-credits` | — | Exclude source credits |
 | `--no-include-notes` | — | Exclude all notes |
@@ -86,18 +87,25 @@ lexbuild convert --titles 42 --dry-run               # Preview without writing
 
 ## Output
 
+**Section granularity** (default):
+
 ```
-output/usc/
-  title-01/
-    README.md
-    _meta.json
-    chapter-01/
-      _meta.json
-      section-1.md
-      section-2.md
+output/usc/title-01/chapter-01/section-1.md
 ```
 
-Each section file includes YAML frontmatter (identifier, title, chapter, section, status, source credit) followed by the statutory text with bold inline numbering.
+**Chapter granularity** (`-g chapter`):
+
+```
+output/usc/title-01/chapter-01.md
+```
+
+**Title granularity** (`-g title`):
+
+```
+output/usc/title-01.md
+```
+
+Each file includes YAML frontmatter (identifier, title, chapter, section, status, source credit) followed by the statutory text with bold inline numbering. Title-level output includes enriched frontmatter with `chapter_count`, `section_count`, and `total_token_estimate`.
 
 ## Performance
 
