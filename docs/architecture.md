@@ -2,35 +2,41 @@
 
 ## System Overview
 
+LexBuild is a monorepo containing packages that form a pipeline for converting legislative XML into structured Markdown. The architecture separates format-agnostic infrastructure (`core`) from source-specific logic (`usc` and future packages), with a thin CLI layer on top.
+
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                          lexbuild CLI                                 │
-│  ┌──────────┐   ┌──────────┐                                      │
-│  │ download  │   │ convert  │                                      │
-│  └────┬─────┘   └────┬─────┘                                      │
+│                          @lexbuild/cli                              │
+│  ┌──────────┐   ┌──────────┐                                        │
+│  │ download  │   │ convert  │   (future: download-cfr, convert-cfr) │
+│  └────┬─────┘   └────┬─────┘                                        │
 │       │               │                                             │
 │       ▼               ▼                                             │
-│  ┌─────────┐   ┌─────────────────────────┐                         │
-│  │  OLRC   │   │    Conversion Pipeline  │                         │
-│  │ Client  │   │                         │                         │
-│  └─────────┘   │  Parse → Build AST →    │                         │
-│  (@lexbuild/usc) │  Render → Write         │                         │
-│                │                         │                         │
-│                └──────────┬──────────────┘                         │
-│                           │                                        │
-│       ┌───────────────────┼──────────────────────┐                 │
-│       ▼                   ▼                      ▼                 │
-│  ┌─────────┐     ┌──────────────┐     ┌──────────────────┐        │
-│  │   XML   │     │     AST      │     │    Markdown      │        │
-│  │  Parser │     │   Builder    │     │    Renderer      │        │
-│  │ (SAX)   │     │ (section     │     │  + Frontmatter   │        │
-│  │         │     │  emit)       │     │  + Link Resolver │        │
-│  └─────────┘     └──────────────┘     └──────────────────┘        │
-│  (@lexbuild/core)  (@lexbuild/core)       (@lexbuild/core)              │
+│  ┌─────────┐   ┌─────────────────────────┐                          │
+│  │  OLRC   │   │    Conversion Pipeline  │                          │
+│  │ Client  │   │                         │                          │
+│  └─────────┘   │  Parse → Build AST →    │                          │
+│  (@lexbuild/   │  Render → Write         │                          │
+│    usc)        │                         │                          │
+│                └──────────┬──────────────┘                          │
+│                           │                                         │
+│       ┌───────────────────┼──────────────────────┐                  │
+│       ▼                   ▼                      ▼                  │
+│  ┌─────────┐     ┌──────────────┐     ┌──────────────────┐          │
+│  │   XML   │     │     AST      │     │    Markdown      │          │
+│  │  Parser │     │   Builder    │     │    Renderer      │          │
+│  │ (SAX)   │     │ (section     │     │  + Frontmatter   │          │
+│  │         │     │  emit)       │     │  + Link Resolver │          │
+│  └─────────┘     └──────────────┘     └──────────────────┘          │
+│  (@lexbuild/core)  (@lexbuild/core)       (@lexbuild/core)          │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-## Package Dependency Graph
+---
+
+## Monorepo Structure
+
+### Package Dependency Graph
 
 ```
 @lexbuild/cli
@@ -39,7 +45,25 @@
   └── @lexbuild/core (direct dep for shared types)
 ```
 
-The CLI depends on both `usc` and `core`. The `usc` package depends on `core`. `core` has no internal dependencies — only external deps (`saxes`, `yaml`, `zod`).
+Each source package (currently `usc`, eventually `cfr`, `state-*`, etc.) depends on `core` and is independent of other source packages. The CLI depends on all source packages it supports.
+
+### Build Order
+
+Turborepo resolves the dependency graph and builds in order:
+
+1. `@lexbuild/core` — no internal deps, builds first
+2. `@lexbuild/usc` — depends on core
+3. `@lexbuild/cli` — depends on core and usc
+
+Tests run after their package's build completes. Type-checking depends on upstream builds being available.
+
+### Workspace Protocol
+
+All internal dependencies use pnpm's `workspace:*` protocol. During development, packages resolve to local source. On publish, pnpm replaces `workspace:*` with the actual version number.
+
+### Versioning
+
+All packages are versioned in lockstep using [Changesets](https://github.com/changesets/changesets). A single changeset can bump all packages simultaneously, ensuring consumers always get compatible versions.
 
 ---
 
@@ -274,6 +298,19 @@ The downloader fetches zip files from OLRC, extracts the XML, and writes to the 
 
 ---
 
+## @lexbuild/cli
+
+The CLI package is a thin orchestration layer. It:
+
+- Parses command-line arguments with `commander`
+- Delegates to `@lexbuild/usc` for download and conversion
+- Provides user-facing output with `chalk`, `ora` (spinners), and `cli-table3` (result tables)
+- Logs via `pino` with optional verbose mode
+
+As new source packages are added, new commands are registered here. The CLI itself contains no conversion logic.
+
+---
+
 ## Data Flow: Section-Level Conversion
 
 ```
@@ -355,3 +392,38 @@ The link resolver uses single-pass registration during conversion:
 ### Token Estimation
 
 Token counts in `_meta.json` use a character/4 heuristic (`Math.ceil(contentLength / 4)`). This provides a reasonable approximation for RAG chunk planning without requiring a tokenizer dependency.
+
+---
+
+## Future Architecture: Multiple Source Packages
+
+The monorepo is designed to grow horizontally. Each new legal source becomes its own package:
+
+```
+@lexbuild/cli
+  ├── @lexbuild/usc        (U.S. Code — USLM 1.0)
+  ├── @lexbuild/cfr         (Code of Federal Regulations — USLM 2.x)
+  ├── @lexbuild/state-il    (Illinois Compiled Statutes — HTML)
+  └── @lexbuild/core        (shared by all)
+```
+
+Each source package implements:
+
+1. A **converter** function that orchestrates the pipeline for its XML/HTML format
+2. An optional **downloader** for fetching bulk data from the source's website
+3. Source-specific **element handling** (either extending `ASTBuilder` or creating a custom builder that produces the same AST node types)
+
+All source packages share core's AST types, Markdown renderer, frontmatter generator, and link resolver. This means output format is consistent across sources — downstream consumers (RAG pipelines, search indexes, apps) work identically regardless of which legal source produced the Markdown.
+
+### Apps Layer
+
+The `apps/` directory hosts applications that consume LexBuild output:
+
+```
+apps/
+  ├── web/              # Web viewer for browsing converted Markdown
+  ├── rag-demo/         # Reference RAG implementation
+  └── mcp-server/       # MCP server for AI-assisted legal research
+```
+
+Apps are not published to npm. They depend on the converted output files, not on the packages directly. They serve as both useful tools and living documentation of integration patterns.

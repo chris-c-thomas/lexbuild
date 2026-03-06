@@ -1,4 +1,4 @@
-# lexbuild Workspace Instructions
+# LexBuild Workspace Instructions
 
 ## Scope
 
@@ -6,7 +6,7 @@ These instructions apply to all work in this repository. Keep changes minimal, t
 
 ## Project Overview
 
-`lexbuild` converts U.S. legislative XML (USLM schema) into structured Markdown for AI/RAG ingestion. It is a monorepo built with Turborepo, pnpm workspaces, TypeScript, and Node.js.
+LexBuild converts U.S. legislative XML (USLM schema) into structured Markdown for AI/RAG ingestion. It is a monorepo built with Turborepo, pnpm workspaces, TypeScript, and Node.js.
 
 ## Build and Test
 

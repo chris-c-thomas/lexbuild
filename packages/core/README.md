@@ -91,7 +91,7 @@ import { USLM_NS, XHTML_NS, LEVEL_ELEMENTS, CONTENT_ELEMENTS } from "@lexbuild/c
 
 ## Documentation
 
-- [Monorepo README](https://github.com/chris-c-thomas/lexbuild#readme)
+- [LexBuild Monorepo](https://github.com/chris-c-thomas/lexbuild)
 - [Architecture](https://github.com/chris-c-thomas/lexbuild/blob/main/docs/architecture.md)
 - [Output Format](https://github.com/chris-c-thomas/lexbuild/blob/main/docs/output-format.md)
 - [XML Element Reference](https://github.com/chris-c-thomas/lexbuild/blob/main/docs/xml-element-reference.md)

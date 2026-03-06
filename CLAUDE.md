@@ -1,8 +1,8 @@
-# CLAUDE.md — lexbuild
+# CLAUDE.md — LexBuild
 
 ## Project Overview
 
-`lexbuild` converts U.S. legislative XML (USLM schema) into structured Markdown for AI/RAG ingestion. It is a monorepo built with Turborepo, pnpm workspaces, TypeScript, and Node.js.
+LexBuild converts U.S. legislative XML (USLM schema) into structured Markdown for AI/RAG ingestion. It is a monorepo built with Turborepo, pnpm workspaces, TypeScript, and Node.js.
 
 ## Repository Structure
 
@@ -90,6 +90,7 @@ node packages/cli/dist/index.js convert ./downloads/usc/xml/usc01.xml -o ./test-
 
 ### Naming
 
+- Project name: "LexBuild" in prose/descriptions/titles. Lowercase `lexbuild` only for package names (`@lexbuild/*`), CLI commands (`lexbuild convert`), URLs, directory paths, and code identifiers.
 - Files: `kebab-case.ts`
 - Types/Interfaces: `PascalCase` (e.g., `SectionNode`, `ConvertOptions`)
 - Functions: `camelCase` (e.g., `parseIdentifier`, `renderSection`)

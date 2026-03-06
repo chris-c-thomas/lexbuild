@@ -52,7 +52,8 @@
     "dev": "turbo dev",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "turbo build && changeset publish"
+    "release": "changeset publish",
+    "release:local": "turbo build && changeset publish"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.2",

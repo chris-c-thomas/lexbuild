@@ -1,6 +1,6 @@
 # USLM XML Element Reference
 
-Quick reference for USLM 1.0 (patch 1.0.15) elements encountered in U.S. Code XML files, their semantic meaning, and how `lexbuild` converts them to Markdown.
+Quick reference for USLM 1.0 (patch 1.0.15) elements encountered in U.S. Code XML files, their semantic meaning, and how LexBuild converts them to Markdown.
 
 **Source**: USLM-1.0.15.xsd schema and USLM User Guide (v0.1.4, Oct 2013)
 
