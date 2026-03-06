@@ -338,7 +338,9 @@ describe("convertTitle", () => {
       const content = await readFile(filePath, "utf-8");
       expect(content).toContain("# Title 1");
       expect(content).toContain("## CHAPTER 1");
-      expect(content).toContain("### §");
+      // Section should be H3 (one level below the H2 chapter), not H4
+      expect(content).toMatch(/^### §/m);
+      expect(content).not.toMatch(/^#### §/m);
     });
 
     it("does not create _meta.json or README.md for title granularity", async () => {
