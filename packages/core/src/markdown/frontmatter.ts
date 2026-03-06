@@ -78,6 +78,15 @@ export function generateFrontmatter(data: FrontmatterData): string {
   if (data.status !== undefined) {
     fm["status"] = data.status;
   }
+  if (data.chapter_count !== undefined) {
+    fm["chapter_count"] = data.chapter_count;
+  }
+  if (data.section_count !== undefined) {
+    fm["section_count"] = data.section_count;
+  }
+  if (data.total_token_estimate !== undefined) {
+    fm["total_token_estimate"] = data.total_token_estimate;
+  }
 
   const yamlStr = stringify(fm, {
     lineWidth: 0, // Don't wrap long lines

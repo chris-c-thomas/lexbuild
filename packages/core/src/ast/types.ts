@@ -313,4 +313,10 @@ export interface FrontmatterData {
   last_updated: string;
   /** Section status (e.g., "repealed", "transferred") */
   status?: string | undefined;
+  /** Number of chapters (title-level granularity only) */
+  chapter_count?: number | undefined;
+  /** Number of sections (title-level granularity only) */
+  section_count?: number | undefined;
+  /** Total estimated tokens (title-level granularity only) */
+  total_token_estimate?: number | undefined;
 }
