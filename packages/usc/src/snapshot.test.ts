@@ -166,6 +166,22 @@ describe("snapshot tests", () => {
   });
 
   // ---------------------------------------------------------------------------
+  // Title granularity (simple-section as whole title)
+  // ---------------------------------------------------------------------------
+
+  it("title-granularity", async () => {
+    const result = await convertTitle({
+      ...DEFAULTS,
+      input: resolve(FIXTURES_DIR, "simple-section.xml"),
+      output: outputDir,
+      granularity: "title",
+    });
+
+    const content = await readFile(result.files[0]!, "utf-8");
+    await expect(content).toMatchFileSnapshot(join(EXPECTED_DIR, "title-granularity.md"));
+  });
+
+  // ---------------------------------------------------------------------------
   // Duplicate sections (Title 5, §3598 ×2 + §3599)
   // ---------------------------------------------------------------------------
 
