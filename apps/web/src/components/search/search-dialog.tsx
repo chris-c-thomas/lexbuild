@@ -195,47 +195,24 @@ export function SearchDialog() {
   );
 }
 
-/** Strip all HTML except <mark> tags used by Pagefind for highlighting. */
+/**
+ * Sanitize Pagefind excerpt HTML — allow only <mark> tags for highlighting.
+ * Uses DOMParser for safe parsing (always available in "use client" components).
+ */
 function sanitizeExcerpt(html: string): string {
-  if (typeof DOMParser === "undefined") {
-    // Fallback: strip all tags except <mark> using a conservative approach.
-    // This is only expected to run in environments without DOM APIs.
-    // Apply the replacement repeatedly to avoid incomplete multi-character sanitization.
-    let previous: string;
-    let current = html;
-    const tagRegex = /<\/?(?!mark\b)[a-z][^>]*>/gi;
-    do {
-      previous = current;
-      current = current.replace(tagRegex, "");
-    } while (current !== previous);
-    // As an additional safeguard, ensure no <script tags remain.
-    current = current.replace(/<script[\s\S]*?>/gi, "");
-    return current;
-  }
-
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, "text/html");
-
+  const doc = new DOMParser().parseFromString(html, "text/html");
   const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_ELEMENT);
-  const toRemove: Element[] = [];
+  const toUnwrap: Element[] = [];
 
-  // Collect all elements that are not <mark> for removal
-  // (tagName is always uppercase in HTML documents).
   while (walker.nextNode()) {
     const el = walker.currentNode as Element;
     if (el.tagName !== "MARK") {
-      toRemove.push(el);
+      toUnwrap.push(el);
     }
   }
 
-  // Remove unwanted elements but keep their text content by lifting children up.
-  for (const el of toRemove) {
-    const parent = el.parentNode;
-    if (!parent) continue;
-    while (el.firstChild) {
-      parent.insertBefore(el.firstChild, el);
-    }
-    parent.removeChild(el);
+  for (const el of toUnwrap) {
+    el.replaceWith(...Array.from(el.childNodes));
   }
 
   return doc.body.innerHTML;
