@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.1.0]
+
+### Added
+
+#### Title-Level Output Granularity
+
+- **`--granularity title`** (`-g title`): new output mode that produces a single Markdown file per title (`output/usc/title-NN.md`) containing the entire title with recursive heading hierarchy. Suitable for feeding a whole title to an LLM context window. ([`0968b27`](../../commit/0968b27))
+- **Recursive heading hierarchy**: big levels (subtitle, chapter, subchapter, part, etc.) render as Markdown headings H2–H5. Structural headings beyond H5 fall back to bold text, reserving H6 exclusively for sections — ensuring sections are always visually distinct from their containing levels. ([`0968b27`](../../commit/0968b27), [`18578e8`](../../commit/18578e8))
+- **Enriched title-level frontmatter**: title-mode files include `chapter_count`, `section_count`, and `total_token_estimate` fields. No sidecar `_meta.json` or `README.md` files are produced — all metadata is self-contained in YAML frontmatter. ([`0968b27`](../../commit/0968b27))
+- **`FrontmatterData` extended**: `section_number` and `section_name` made optional; added optional `chapter_count`, `section_count`, `total_token_estimate` fields to `@lexbuild/core` for title-level output. ([`0968b27`](../../commit/0968b27))
+
+#### CLI Improvements
+
+- **Enhanced `--help` output**: all three commands (`lexbuild`, `lexbuild download`, `lexbuild convert`) now display usage examples, granularity/input-mode descriptions, and documentation links via Commander's `addHelpText()`. ([`b60c8a5`](../../commit/b60c8a5))
+- **Runtime validation for `--granularity` and `--link-style`**: Commander `.choices()` now rejects invalid values at parse time with a clear error message (e.g., `argument 'foo' is invalid. Allowed choices are section, chapter, title.`). ([`18578e8`](../../commit/18578e8))
+
+#### Testing
+
+- **Title-granularity snapshot test**: pinned expected output in `fixtures/expected/title-granularity.md` covering frontmatter, heading hierarchy, and content rendering for title-level mode. ([`6a06243`](../../commit/6a06243))
+
+### Fixed
+
+- **Heading level off-by-one at depth 5**: `renderSection` adds 1 to `headingOffset`, so passing `headingOffset: headingLevel` produced H4 instead of H3 for sections inside chapters. Fixed formula to `Math.min(headingLevel - 1, 5)`. Tightened test assertions to use `toMatch(/^### §/m)` instead of `toContain`. ([`bd0ac38`](../../commit/bd0ac38))
+- **Heading collision at depth 6**: structural headings (e.g., Subpart) and sibling sections both rendered at H6. Fixed by capping structural headings at H5 with bold text fallback, reserving H6 for sections. ([`18578e8`](../../commit/18578e8))
+- **Shallow chapter lookup in title-level rendering**: `findChapterInParent` only checked the immediate parent, missing chapters for sections nested inside subchapters/parts. Replaced with `currentChapter` parameter threaded through recursion. Same fix applied to dry-run path in `collectSectionMetasFromTree`. ([`45007c1`](../../commit/45007c1))
+- **`chapter_count` overcount**: empty `chapterIdentifier` strings counted as a distinct chapter in the Set. Fixed with `.filter(Boolean)` in both `ConvertResult` and frontmatter construction. ([`45007c1`](../../commit/45007c1), [`9643e25`](../../commit/9643e25))
+- **`section_number`/`section_name` semantic confusion**: title-level output was stuffing title number/name into section-scoped frontmatter fields. Made both optional on `FrontmatterData` and omitted from title-level frontmatter. ([`45007c1`](../../commit/45007c1))
+- **Appendix title naming collision**: both Title 5 and Title 5 appendix produced `title-05.md`. Fixed by using `buildTitleDirFromDocNumber()` which produces `title-05-appendix.md` for appendix documents. ([`db9bf75`](../../commit/db9bf75))
+- **Token estimate inconsistency**: `ConvertResult.totalTokenEstimate` was based on per-section content lengths (excluding structural headings), while `total_token_estimate` in frontmatter used the full body. Both now use the accurate full-body estimate for title granularity. ([`08053cc`](../../commit/08053cc), [`18578e8`](../../commit/18578e8))
+- **`writeWholeTitle` null return type**: function always returns a result but was typed `Promise<WriteTitleResult | null>` with an unnecessary null guard at the call site. Removed the dead `| null`. ([`0672a8b`](../../commit/0672a8b))
+- **Orphaned JSDoc blocks**: removed 3 stale JSDoc comments left behind during refactoring. ([`1faf32a`](../../commit/1faf32a))
+
+### Changed
+
+- **Documentation updates**: updated root `README.md` (title-level examples, consolidated CLI reference tables), package READMEs, `docs/output-format.md` (title-level directory layout, frontmatter schema, heading hierarchy examples with bold text fallback, memory note), `docs/architecture.md`, and `CLAUDE.md` (streaming output caveat for title mode). ([`78d437f`](../../commit/78d437f), [`6e50a6f`](../../commit/6e50a6f), [`f33a033`](../../commit/f33a033))
+- **Publish workflow**: disabled automatic GitHub Releases creation in changeset action. ([`e15fea5`](../../commit/e15fea5))
+
+---
+
 ## [1.0.5]
 
 ### Fixed
