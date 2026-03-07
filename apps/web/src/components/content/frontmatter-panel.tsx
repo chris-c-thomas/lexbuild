@@ -68,8 +68,8 @@ function MetaItem({
 }) {
   return (
     <div className={className}>
-      <dt className="font-medium text-muted-foreground">{label}</dt>
-      <dd className="mt-0.5 text-foreground">{value}</dd>
+      <dt className="text-xs font-semibold uppercase tracking-wider text-slate-blue-600 dark:text-slate-blue-400">{label}</dt>
+      <dd className="mt-1 text-sm text-foreground">{value}</dd>
     </div>
   );
 }

@@ -34,7 +34,7 @@ export function ContentViewer({
             className={cn(
               "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
               view === "source"
-                ? "bg-background text-foreground shadow-sm"
+                ? "bg-background text-slate-blue-700 shadow-sm dark:text-slate-blue-300"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
@@ -45,7 +45,7 @@ export function ContentViewer({
             className={cn(
               "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
               view === "rendered"
-                ? "bg-background text-foreground shadow-sm"
+                ? "bg-background text-slate-blue-700 shadow-sm dark:text-slate-blue-300"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
@@ -65,7 +65,7 @@ export function ContentViewer({
         />
       ) : (
         <div
-          className="overflow-x-auto rounded-lg text-sm [&_pre]:!rounded-lg [&_pre]:!p-4"
+          className="rounded-lg border border-border bg-muted/30 text-sm [&_pre]:!rounded-lg [&_pre]:!bg-transparent [&_pre]:!p-4 [&_code]:!whitespace-pre-wrap [&_code]:!break-words"
           dangerouslySetInnerHTML={{ __html: highlightedSource }}
         />
       )}

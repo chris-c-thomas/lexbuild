@@ -123,7 +123,7 @@ function SectionItem({
       className={cn(
         "block truncate rounded-md px-2 py-0.5 text-xs transition-colors",
         isActive
-          ? "bg-accent font-medium text-accent-foreground"
+          ? "bg-slate-blue-100 font-medium text-slate-blue-900 dark:bg-slate-blue-950 dark:text-slate-blue-200"
           : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
       )}
       title={`§ ${section.number} — ${section.name}`}
