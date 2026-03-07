@@ -20,7 +20,14 @@ async function main() {
   }
 
   const uscDir = join(CONTENT_ROOT, "section", "usc");
-  const titleDirs = (await readdir(uscDir, { withFileTypes: true }))
+  let entries: Awaited<ReturnType<typeof readdir>>;
+  try {
+    entries = await readdir(uscDir, { withFileTypes: true });
+  } catch {
+    console.error(`Content directory not found: ${uscDir}\nRun generate-content.sh first.`);
+    process.exit(1);
+  }
+  const titleDirs = entries
     .filter((e) => e.isDirectory() && e.name.startsWith("title-"))
     .sort((a, b) => a.name.localeCompare(b.name));
 
