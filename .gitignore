@@ -141,6 +141,7 @@ output/
 apps/web/content/
 apps/web/public/nav/
 apps/web/public/_pagefind/
+apps/web/public/sitemap.xml
 apps/web/.next/
 
 # Test output from local development runs

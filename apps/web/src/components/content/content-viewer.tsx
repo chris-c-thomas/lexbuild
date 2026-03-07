@@ -19,7 +19,7 @@ export function ContentViewer({
   granularity,
   downloadFilename,
 }: ContentViewerProps) {
-  const [view, setView] = useState<"rendered" | "source">("rendered");
+  const [view, setView] = useState<"source" | "rendered">("source");
 
   return (
     <div className="flex flex-col gap-6">
@@ -31,17 +31,6 @@ export function ContentViewer({
       <div className="flex items-center gap-2 border-b border-border pb-2">
         <div className="flex gap-1 rounded-lg bg-muted p-1">
           <button
-            onClick={() => setView("rendered")}
-            className={cn(
-              "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-              view === "rendered"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            Rendered
-          </button>
-          <button
             onClick={() => setView("source")}
             className={cn(
               "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
@@ -50,7 +39,18 @@ export function ContentViewer({
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
-            Source
+            Markdown
+          </button>
+          <button
+            onClick={() => setView("rendered")}
+            className={cn(
+              "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+              view === "rendered"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            Preview
           </button>
         </div>
         <div className="ml-auto flex gap-2">

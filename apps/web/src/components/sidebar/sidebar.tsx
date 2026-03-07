@@ -8,6 +8,8 @@ import type { TitleSummary } from "@/lib/types";
 import { TitleList } from "./title-list";
 import { parseUscPath } from "@/lib/nav";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { SearchTrigger } from "@/components/search/search-dialog";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -66,15 +68,19 @@ export function Sidebar() {
             <Scale className="h-5 w-5" />
             U.S. Code
           </Link>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={closeMobile}
-            className="lg:hidden"
-            aria-label="Close navigation"
-          >
-            <X className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <SearchTrigger />
+            <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={closeMobile}
+              className="lg:hidden"
+              aria-label="Close navigation"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
 
         {/* Scrollable title list */}

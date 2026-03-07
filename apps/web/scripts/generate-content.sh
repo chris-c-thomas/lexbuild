@@ -27,4 +27,10 @@ node "$CLI" convert $TITLES -g title -o "$WEB_DIR/content/title"
 echo "=== Generating navigation JSON ==="
 cd "$WEB_DIR" && npx tsx scripts/generate-nav.ts
 
+echo "=== Generating search index ==="
+cd "$WEB_DIR" && npx tsx scripts/generate-search-index.ts
+
+echo "=== Generating sitemap ==="
+cd "$WEB_DIR" && npx tsx scripts/generate-sitemap.ts
+
 echo "=== Done ==="

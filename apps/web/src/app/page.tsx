@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getNavProvider } from "@/lib/content";
 import { Scale, FileText, BookOpen } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
+
 export default async function HomePage() {
   const nav = getNavProvider();
   const titles = await nav.getTitles();
@@ -14,7 +16,10 @@ export default async function HomePage() {
       <div className="flex flex-col gap-12">
         {/* Hero */}
         <div className="flex flex-col gap-4">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">LexBuild</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">LexBuild</h1>
+            <ThemeToggle />
+          </div>
           <p className="max-w-2xl text-lg text-muted-foreground">
             The complete U.S. Code as structured Markdown — built for AI and RAG ingestion.
             Browse every title, chapter, and section with syntax-highlighted source and rendered

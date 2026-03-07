@@ -11,11 +11,22 @@ export const metadata: Metadata = {
   },
   description:
     "Browse the complete U.S. Code as structured Markdown. Built by LexBuild for AI/RAG ingestion.",
+  icons: { icon: "/icon.svg" },
+  openGraph: {
+    siteName: "LexBuild",
+    type: "website",
+  },
 };
+
+/** Inline script to apply theme before first paint — prevents flash. */
+const themeScript = `(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches))document.documentElement.classList.add("dark")}catch(e){}})()`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={geist.variable}>
+    <html lang="en" className={geist.variable} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="antialiased">{children}</body>
     </html>
   );
