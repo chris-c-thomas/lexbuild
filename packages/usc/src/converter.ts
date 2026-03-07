@@ -347,11 +347,6 @@ async function writeSection(
 }
 
 /**
- * Build the output file path for a section.
- *
- * Format: {output}/usc/title-{NN}/chapter-{NN}/section-{N}.md
- */
-/**
  * Generate _meta.json files at title and chapter levels.
  */
 async function writeMetaFiles(
@@ -670,8 +665,16 @@ async function writeWholeTitle(
   const sectionMetas: SectionMeta[] = [];
   const bodyParts = renderTitleChildren(titleNode, 2, options, renderOpts, sectionMetas, titleNum);
 
+  // Build the title Markdown body first so we can measure its total length
+  const bodyMarkdownParts: string[] = [];
+  const numDisplay = titleNode.num ?? "";
+  const headingText = titleNode.heading ? ` ${titleNode.heading}` : "";
+  bodyMarkdownParts.push(`# ${numDisplay}${headingText}`);
+  bodyMarkdownParts.push(...bodyParts);
+  const bodyMarkdown = bodyMarkdownParts.join("\n");
+
   // Build enriched frontmatter for title-level output
-  const totalContentLength = sectionMetas.reduce((sum, s) => sum + s.contentLength, 0);
+  // Use full body length (not just section content) for accurate token estimate
   const fmData: FrontmatterData = {
     identifier: titleNode.identifier ?? meta.identifier ?? `/us/usc/t${titleNum}`,
     title: `Title ${titleNum} — ${titleName}`,
@@ -682,19 +685,11 @@ async function writeWholeTitle(
     last_updated: lastUpdated,
     chapter_count: new Set(sectionMetas.map((s) => s.chapterIdentifier).filter(Boolean)).size,
     section_count: sectionMetas.length,
-    total_token_estimate: Math.ceil(totalContentLength / 4),
+    total_token_estimate: Math.ceil(bodyMarkdown.length / 4),
   };
 
-  // Build the title Markdown
-  const parts: string[] = [];
-  parts.push(generateFrontmatter(fmData));
-  parts.push("");
-  const numDisplay = titleNode.num ?? "";
-  const headingText = titleNode.heading ? ` ${titleNode.heading}` : "";
-  parts.push(`# ${numDisplay}${headingText}`);
-  parts.push(...bodyParts);
-
-  const markdown = parts.join("\n") + "\n";
+  // Assemble final Markdown: frontmatter + body
+  const markdown = generateFrontmatter(fmData) + "\n\n" + bodyMarkdown + "\n";
 
   // Output path: output/usc/title-NN.md (or title-NN-appendix.md for appendix titles)
   const titleFile = `${buildTitleDirFromDocNumber(docNum)}.md`;
@@ -970,13 +965,6 @@ function buildFrontmatter(node: LevelNode, context: EmitContext): FrontmatterDat
 // ---------------------------------------------------------------------------
 
 /**
- * Find an ancestor by level type.
- */
-/**
- * Build a NotesFilter from convert options.
- * Returns undefined if all notes should be included (default).
- */
-/**
  * Build SectionMeta from AST node without rendering (for dry-run mode).
  */
 function buildSectionMetaDryRun(
@@ -1059,9 +1047,6 @@ function findAncestor(
   return ancestors.find((a) => a.levelType === levelType);
 }
 
-/**
- * Zero-pad a number string to 2 digits.
- */
 /**
  * Build title directory name from docNumber.
  * "5" → "title-05", "5a" → "title-05-appendix"
