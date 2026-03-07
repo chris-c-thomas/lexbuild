@@ -39,17 +39,21 @@ async function main() {
       const files = (await readdir(chapterPath)).filter((f) => f.endsWith(".md")).sort();
 
       for (const file of files) {
-        const raw = await readFile(join(chapterPath, file), "utf-8");
-        const { title, body } = parseFrontmatter(raw);
-        const slug = file.replace(/\.md$/, "");
+        try {
+          const raw = await readFile(join(chapterPath, file), "utf-8");
+          const { title, body } = parseFrontmatter(raw);
+          const slug = file.replace(/\.md$/, "");
 
-        await index.addCustomRecord({
-          url: `/usc/${titleDir}/${chapterDir}/${slug}/`,
-          content: body,
-          meta: { title: title || `${titleDir} ${chapterDir} ${slug}` },
-          language: "en",
-        });
-        count++;
+          await index.addCustomRecord({
+            url: `/usc/${titleDir}/${chapterDir}/${slug}/`,
+            content: body,
+            meta: { title: title || `${titleDir} ${chapterDir} ${slug}` },
+            language: "en",
+          });
+          count++;
+        } catch (err) {
+          console.warn(`  skipping ${titleDir}/${chapterDir}/${file}: ${err}`);
+        }
       }
     }
   }

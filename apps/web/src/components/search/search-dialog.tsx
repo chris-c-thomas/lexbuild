@@ -86,19 +86,26 @@ export function SearchDialog() {
 
     const timeout = setTimeout(() => {
       (async () => {
-        const pf = await loadPagefind();
-        if (!pf || controller.signal.aborted) {
-          setLoading(false);
-          return;
-        }
+        try {
+          const pf = await loadPagefind();
+          if (!pf || controller.signal.aborted) {
+            setLoading(false);
+            return;
+          }
 
-        const response = await pf.search(query);
-        if (controller.signal.aborted) return;
+          const response = await pf.search(query);
+          if (controller.signal.aborted) return;
 
-        const items = await Promise.all(response.results.slice(0, 10).map((r) => r.data()));
-        if (!controller.signal.aborted) {
-          setResults(items);
-          setLoading(false);
+          const items = await Promise.all(response.results.slice(0, 10).map((r) => r.data()));
+          if (!controller.signal.aborted) {
+            setResults(items);
+            setLoading(false);
+          }
+        } catch {
+          if (!controller.signal.aborted) {
+            setResults([]);
+            setLoading(false);
+          }
         }
       })();
     }, 200);
