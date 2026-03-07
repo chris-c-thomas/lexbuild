@@ -137,6 +137,13 @@ docs/transcripts/
 # Converted Markdown output (regenerable from source XML)
 output/
 
+# Web app generated artifacts
+apps/web/content/
+apps/web/public/nav/
+apps/web/public/_pagefind/
+apps/web/public/sitemap.xml
+apps/web/.next/
+
 # Test output from local development runs
 test-output/
 

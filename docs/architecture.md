@@ -424,9 +424,7 @@ The `apps/` directory hosts applications that consume LexBuild output:
 
 ```
 apps/
-  ├── web/              # Web viewer for browsing converted Markdown
-  ├── rag-demo/         # Reference RAG implementation
-  └── mcp-server/       # MCP server for AI-assisted legal research
+  └── web/              # Documentation site — browse U.S. Code as Markdown (Next.js 15, SSR)
 ```
 
-Apps are not published to npm. They depend on the converted output files, not on the packages directly. They serve as both useful tools and living documentation of integration patterns.
+Apps are not published to npm. They depend on the converted output files, not on the packages directly. The web app (`apps/web/`) is the first — a server-rendered documentation site with sidebar navigation, full-text search, and dark mode. See [apps/web/README.md](../apps/web/README.md) for details.

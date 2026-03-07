@@ -1,0 +1,15 @@
+# Vercel deploy ignore — overrides .gitignore entirely.
+# content/ is intentionally NOT listed so it deploys with the app.
+
+node_modules/
+.turbo/
+.next/
+*.tsbuildinfo
+
+# Dev-only scripts (not needed at runtime)
+scripts/
+
+# Dev config
+.env.local
+CLAUDE.md
+components.json
