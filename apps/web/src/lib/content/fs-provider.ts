@@ -42,7 +42,13 @@ export class FsContentProvider implements ContentProvider {
 export class FsNavProvider implements NavProvider {
   async getTitles(): Promise<TitleSummary[]> {
     const uscDir = join(CONTENT_ROOT, "section", "usc");
-    const entries = await readdir(uscDir, { withFileTypes: true });
+    let entries: Awaited<ReturnType<typeof readdir<{ withFileTypes: true }>>>;
+    try {
+      entries = await readdir(uscDir, { withFileTypes: true });
+    } catch {
+      // Content not yet generated — return empty list instead of crashing
+      return [];
+    }
     const titleDirs = entries
       .filter((e) => e.isDirectory() && e.name.startsWith("title-"))
       .sort((a, b) => a.name.localeCompare(b.name));
