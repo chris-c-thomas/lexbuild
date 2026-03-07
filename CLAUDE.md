@@ -73,6 +73,7 @@ node packages/cli/dist/index.js download --titles 1
 node packages/cli/dist/index.js convert --all
 node packages/cli/dist/index.js convert --titles 1-5 -o ./test-output
 node packages/cli/dist/index.js convert ./downloads/usc/xml/usc01.xml -o ./test-output
+node packages/cli/dist/index.js convert --titles 1 -g title -o ./test-output
 ```
 
 ## Code Conventions
@@ -262,9 +263,9 @@ The zip contains a single XML file named like `usc01.xml`.
 
 ## Output File Naming
 
-```
-output/usc/title-{NN}/chapter-{NN}/section-{N}.md
-```
+**Section granularity** (default): `output/usc/title-{NN}/chapter-{NN}/section-{N}.md`
+**Chapter granularity**: `output/usc/title-{NN}/chapter-{NN}.md`
+**Title granularity**: `output/usc/title-{NN}.md`
 
 - Title dirs: `title-01` through `title-54` (zero-padded to 2 digits)
 - Chapter dirs: `chapter-01`, `chapter-02`, etc. (zero-padded to 2 digits)
@@ -272,6 +273,7 @@ output/usc/title-{NN}/chapter-{NN}/section-{N}.md
 - Subchapter dirs nest inside chapter dirs when present
 - Appendix titles: separate directories (e.g., `title-05-appendix/`) for titles 5, 11, 18, 28
 - Duplicate sections: disambiguated with `-2`, `-3` suffix (e.g., `section-3598.md`, `section-3598-2.md`)
+- Title granularity: flat files with no subdirectories, no `_meta.json` or `README.md` — enriched frontmatter only
 
 ## Key Design Decisions
 
@@ -285,7 +287,7 @@ output/usc/title-{NN}/chapter-{NN}/section-{N}.md
 
 5. **Notes are opt-in**: By default, only the core statutory text and source credits are included. Notes (editorial, statutory, amendments) require explicit CLI flags. This keeps default output lean for RAG.
 
-6. **Streaming output**: Sections are written to disk as they are parsed. The converter never holds an entire title's worth of AST in memory simultaneously.
+6. **Streaming output**: For section and chapter granularity, the converter writes output as sections/chapters are collected, avoiding holding the full title AST in memory. **Title granularity is the exception** — it holds the entire title AST and rendered Markdown in memory. Large titles (26, 42) may require 500MB+ RSS in title mode.
 
 7. **Footnotes**: Rendered as Markdown footnotes (`[^N]` at reference site, `[^N]: text` at bottom of section file).
 

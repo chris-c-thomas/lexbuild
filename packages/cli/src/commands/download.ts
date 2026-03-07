@@ -27,12 +27,19 @@ interface DownloadCommandOptions {
 export const downloadCommand = new Command("download")
   .description("Download U.S. Code XML from OLRC")
   .option("-o, --output <dir>", "Download directory", "./downloads/usc/xml")
-  .option("--titles <spec>", "Title(s) to download (e.g. 1, 1-5, 1,3,8, 1-5,8,11)")
-  .option("--all", "Download all 54 titles", false)
-  .option(
-    "--release-point <id>",
-    `Release point identifier (default: ${CURRENT_RELEASE_POINT})`,
-    CURRENT_RELEASE_POINT,
+  .option("--titles <spec>", "Title(s) to download: 1, 1-5, or 1-5,8,11")
+  .option("--all", "Download all 54 titles (single bulk zip)", false)
+  .option("--release-point <id>", "OLRC release point identifier", CURRENT_RELEASE_POINT)
+  .addHelpText(
+    "after",
+    `
+Examples:
+  $ lexbuild download --all                      Download all 54 titles
+  $ lexbuild download --titles 1                 Download Title 1 only
+  $ lexbuild download --titles 1-5,8,11          Download specific titles
+  $ lexbuild download --all -o ./my-xml          Custom output directory
+
+Source: https://uscode.house.gov/download/download.shtml`,
   )
   .action(async (options: DownloadCommandOptions) => {
     // Validate: must specify --titles or --all

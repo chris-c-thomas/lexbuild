@@ -12,7 +12,7 @@ A compiler for legal and civic texts. Converts disparate statutory data — star
 
 - [Overview](#overview)
 - [Features](#features)
-- [Monorepo Architecture](#monorepo-architecture)
+- [Monorepo](#monorepo)
 - [Packages](#packages)
 - [Apps](#apps)
 - [Install](#install)
@@ -44,6 +44,7 @@ The project is designed as an extensible platform. The U.S. Code is the first su
 - **Streaming SAX parser** — handles XML files of any size (100MB+) with bounded memory
 - **Section-level output** — each section becomes its own Markdown file, sized for RAG chunk windows
 - **Chapter-level output** — optional mode that inlines all sections into per-chapter files
+- **Title-level output** — optional mode that produces a single file per title with recursive heading hierarchy
 - **YAML frontmatter** — structured metadata on every file (identifier, title, chapter, section, status, source credit)
 - **Structural fidelity** — preserves the full USLM hierarchy using bold inline numbering that mirrors legal citation conventions
 - **Cross-reference links** — resolved as relative links within the corpus, or as OLRC website URLs
@@ -55,7 +56,7 @@ The project is designed as an extensible platform. The U.S. Code is the first su
 
 ---
 
-## Monorepo Architecture
+## Monorepo
 
 LexBuild is a monorepo managed with [pnpm](https://pnpm.io/) workspaces and [Turborepo](https://turbo.build/). This structure cleanly separates concerns — shared parsing infrastructure, source-specific logic, CLI tooling, and downstream applications — while keeping everything in a single repository with unified versioning.
 
@@ -289,6 +290,9 @@ lexbuild convert --titles 1-5 -i ./my-xml-files
 # Chapter-level output (one file per chapter)
 lexbuild convert --titles 1 -o ./output -g chapter
 
+# Title-level output (one file per title)
+lexbuild convert --titles 1 -o ./output -g title
+
 # Cross-reference links resolved to OLRC URLs
 lexbuild convert --titles 5 -o ./output --link-style canonical
 
@@ -304,48 +308,43 @@ lexbuild convert --titles 42 --dry-run
 
 ### CLI Reference
 
-```
-lexbuild convert [input] [options]
+#### `lexbuild download [options]`
 
-Arguments:
-  input                          Path to a USC XML file (optional if --titles
-                                 or --all is used)
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--titles <spec>` | — | Title(s) to download: `1`, `1-5`, or `1-5,8,11` |
+| `--all` | — | Download all 54 titles (single bulk zip) |
+| `-o, --output <dir>` | `./downloads/usc/xml` | Download directory |
+| `--release-point <id>` | latest bundled (e.g. `119-73not60`) | OLRC release point identifier |
 
-Options:
-  --titles <spec>                Title(s) to convert: single (1), range (1-5),
-                                 or mixed (1-5,8,11)
-  --all                          Convert all downloaded titles found in
-                                 --input-dir
-  -i, --input-dir <dir>          Input directory for XML files
-                                 (default: "./downloads/usc/xml")
-  -o, --output <dir>             Output directory (default: "./output")
-  -g, --granularity <level>      "section" or "chapter" (default: "section")
-  --link-style <style>           "plaintext", "canonical", or "relative"
-                                 (default: "plaintext")
-  --no-include-source-credits    Exclude source credit annotations
-  --no-include-notes             Exclude all notes
-  --include-editorial-notes      Include editorial notes only
-  --include-statutory-notes      Include statutory notes only
-  --include-amendments           Include amendment history notes only
-  --dry-run                      Parse and report without writing files
-  -v, --verbose                  Enable verbose logging
-  -h, --help                     Display help
-```
+#### `lexbuild convert [options] [input]`
 
-```
-lexbuild download [options]
+Specify input as a file path, `--titles`, or `--all` (exactly one). When multiple `--include-*-notes` flags are used, they combine additively.
 
-Options:
-  --titles <spec>                Title(s) to download: single (1), range (1-5),
-                                 or mixed (1-5,8,11)
-  --all                          Download all 54 titles
-  -o, --output <dir>             Output directory
-                                 (default: "./downloads/usc/xml")
-  --release-point <point>        OLRC release point (default: current)
-  -h, --help                     Display help
-```
+| Option | Default | Description |
+|--------|---------|-------------|
+| `[input]` | — | Path to a USC XML file |
+| `--titles <spec>` | — | Title(s) to convert: `1`, `1-5`, or `1-5,8,11` |
+| `--all` | — | Convert all downloaded titles in `--input-dir` |
+| `-o, --output <dir>` | `./output` | Output directory |
+| `-i, --input-dir <dir>` | `./downloads/usc/xml` | Input directory for XML files |
+| `-g, --granularity <level>` | `section` | `section`, `chapter`, or `title` (see below) |
+| `--link-style <style>` | `plaintext` | `plaintext`, `canonical`, or `relative` |
+| `--no-include-source-credits` | — | Exclude source credit annotations |
+| `--no-include-notes` | — | Exclude all notes |
+| `--include-editorial-notes` | — | Include editorial notes only |
+| `--include-statutory-notes` | — | Include statutory notes only |
+| `--include-amendments` | — | Include amendment history notes only |
+| `--dry-run` | — | Parse and report without writing files |
+| `-v, --verbose` | — | Enable verbose logging |
 
-When multiple `--include-*-notes` flags are specified, they combine additively.
+**Granularity Modes:** `-g, --granularity <level>`
+
+| Mode | Output | Description |
+|--------|---------|-------------|
+| `section` | `title-NN/chapter-NN/section-N.md` | One file per section (default) |
+| `chapter` | `title-NN/chapter-NN.md` | One file per chapter, sections inlined |
+| `title` | `title-NN.md` | One file per title, entire hierarchy inlined |
 
 ---
 
@@ -353,24 +352,42 @@ When multiple `--include-*-notes` flags are specified, they combine additively.
 
 ### Directory Structure
 
+**Section granularity** (default):
+
 ```
-output/
-  usc/
-    title-01/
-      README.md
+output/usc/
+  title-01/
+    README.md
+    _meta.json
+    chapter-01/
       _meta.json
-      chapter-01/
-        _meta.json
-        section-1.md
-        section-2.md
-        ...
-      chapter-02/
-        _meta.json
-        section-101.md
-        ...
+      section-1.md
+      section-2.md
+    chapter-02/
+      _meta.json
+      section-101.md
 ```
 
-Title directories are zero-padded (`title-01` through `title-54`). Chapter directories follow the same convention. Section files use the section number as-is, which may be alphanumeric (e.g., `section-106a.md`, `section-7801.md`).
+**Chapter granularity** (`-g chapter`):
+
+```
+output/usc/
+  title-01/
+    README.md
+    _meta.json
+    chapter-01.md
+    chapter-02.md
+```
+
+**Title granularity** (`-g title`):
+
+```
+output/usc/
+  title-01.md
+  title-26.md
+```
+
+Title directories are zero-padded (`title-01` through `title-54`). Chapter directories follow the same convention. Section files use the section number as-is, which may be alphanumeric (e.g., `section-106a.md`, `section-7801.md`). Title-level output produces flat files with no subdirectories or sidecar metadata — all metadata is in enriched YAML frontmatter.
 
 ### Markdown Structure
 

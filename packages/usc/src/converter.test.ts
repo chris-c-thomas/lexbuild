@@ -319,6 +319,91 @@ describe("convertTitle", () => {
     });
   });
 
+  describe("title granularity", () => {
+    it("outputs title-level file when granularity is title", async () => {
+      const result = await convertTitle({
+        ...DEFAULTS,
+        input: resolve(FIXTURES_DIR, "simple-section.xml"),
+        output: outputDir,
+        granularity: "title",
+      });
+
+      expect(result.sectionsWritten).toBeGreaterThan(0);
+      expect(result.files).toHaveLength(1);
+
+      const filePath = result.files[0]!;
+      expect(filePath).toContain("title-01.md");
+      expect(filePath).not.toContain("title-01/");
+
+      const content = await readFile(filePath, "utf-8");
+      expect(content).toContain("# Title 1");
+      expect(content).toContain("## CHAPTER 1");
+      // Section should be H3 (one level below the H2 chapter), not H4
+      expect(content).toMatch(/^### §/m);
+      expect(content).not.toMatch(/^#### §/m);
+    });
+
+    it("does not create _meta.json or README.md for title granularity", async () => {
+      await convertTitle({
+        ...DEFAULTS,
+        input: resolve(FIXTURES_DIR, "simple-section.xml"),
+        output: outputDir,
+        granularity: "title",
+      });
+
+      // Should not have title subdirectory at all
+      const uscDir = join(outputDir, "usc");
+      const contents = await readdir(uscDir);
+      expect(contents).toEqual(["title-01.md"]);
+    });
+
+    it("includes enriched frontmatter fields for title granularity", async () => {
+      const result = await convertTitle({
+        ...DEFAULTS,
+        input: resolve(FIXTURES_DIR, "simple-section.xml"),
+        output: outputDir,
+        granularity: "title",
+      });
+
+      const content = await readFile(result.files[0]!, "utf-8");
+      const fmMatch = /^---\n([\s\S]*?)\n---/.exec(content);
+      expect(fmMatch).not.toBeNull();
+
+      const fmText = fmMatch![1]!;
+      expect(fmText).toContain("chapter_count:");
+      expect(fmText).toContain("section_count:");
+      expect(fmText).toContain("total_token_estimate:");
+    });
+
+    it("reports correct stats in dry-run mode for title granularity", async () => {
+      // Run a real conversion to get the accurate token estimate for comparison
+      const realResult = await convertTitle({
+        ...DEFAULTS,
+        input: resolve(FIXTURES_DIR, "simple-section.xml"),
+        output: outputDir,
+        granularity: "title",
+      });
+
+      const dryResult = await convertTitle({
+        ...DEFAULTS,
+        input: resolve(FIXTURES_DIR, "simple-section.xml"),
+        output: outputDir,
+        granularity: "title",
+        dryRun: true,
+      });
+
+      expect(dryResult.dryRun).toBe(true);
+      expect(dryResult.sectionsWritten).toBe(1);
+      expect(dryResult.chapterCount).toBe(1);
+      expect(dryResult.files).toHaveLength(0);
+
+      // Dry-run estimate is based on raw AST text lengths (no structural headings),
+      // so it underestimates slightly compared to the real conversion
+      expect(dryResult.totalTokenEstimate).toBeGreaterThan(0);
+      expect(dryResult.totalTokenEstimate).toBeLessThanOrEqual(realResult.totalTokenEstimate);
+    });
+  });
+
   describe("status handling", () => {
     it("includes status in frontmatter for sections with status", async () => {
       const result = await convertTitle({
