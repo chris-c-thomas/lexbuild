@@ -176,7 +176,7 @@ export function SearchDialog() {
               {r.excerpt && (
                 <div
                   className="mt-0.5 line-clamp-2 text-xs text-muted-foreground"
-                  dangerouslySetInnerHTML={{ __html: r.excerpt }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeExcerpt(r.excerpt) }}
                 />
               )}
             </button>
@@ -193,6 +193,11 @@ export function SearchDialog() {
       </div>
     </>
   );
+}
+
+/** Strip all HTML except <mark> tags used by Pagefind for highlighting. */
+function sanitizeExcerpt(html: string): string {
+  return html.replace(/<\/?(?!mark\b)[a-z][^>]*>/gi, "");
 }
 
 /** Small trigger button for the sidebar header. */
