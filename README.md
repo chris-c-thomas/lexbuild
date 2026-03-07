@@ -6,7 +6,7 @@
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=for-the-badge)](https://nodejs.org/)
 [![license](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 
-A compiler for legal and civic texts. Converts disparate statutory data — starting with the [United States Code](https://uscode.house.gov/) — into structured Markdown optimized for AI ingestion, RAG pipelines, and semantic search.
+LexBuild is an open-source toolchain for legal and civic texts. It transforms legislative source data, starting with the [U.S. Code](https://uscode.house.gov/) into structured Markdown with rich metadata, optimized for LLMs, RAG pipelines, and semantic search.
 
 ## Table of Contents
 
@@ -32,9 +32,9 @@ A compiler for legal and civic texts. Converts disparate statutory data — star
 
 The U.S. Code comprises 54 titles of federal statutory law. The [Office of the Law Revision Counsel](https://uscode.house.gov/about_office.xhtml) (OLRC) publishes the official text as [deeply nested XML](https://uscode.house.gov/download/download.shtml) using the [United States Legislative Markup](https://uscode.house.gov/download/resources/USLM-User-Guide.pdf) (USLM) schema. These files are dense, laden with presentation markup, and difficult to work with directly.
 
-LexBuild transforms this XML into per-section Markdown files with YAML frontmatter, predictable file paths, and content sized for typical embedding model context windows — making the entire U.S. Code accessible to LLMs, vector databases, and legal research tools.
+LexBuild transforms this XML into per-section Markdown files with YAML frontmatter, predictable file paths, and content sized for typical embedding model context windows, making the entire U.S. Code accessible to LLMs, vector databases, and legal research tools.
 
-The project is designed as an extensible platform. The U.S. Code is the first supported source, but the architecture is built to accommodate additional legal corpora — the Code of Federal Regulations, state statutes, and more — through new packages that share a common core.
+The project is designed as an extensible platform. The U.S. Code is the first supported source, but the architecture is designed to accommodate additional legal corpora such as the Code of Federal Regulations, state statutes, and others, through new packages that share a common core.
 
 ---
 
