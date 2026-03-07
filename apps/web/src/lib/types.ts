@@ -37,6 +37,7 @@ export interface TitleSummary {
   number: number;
   name: string;
   directory: string;
+  positiveLaw: boolean;
   chapterCount: number;
   sectionCount: number;
   tokenEstimate: number;

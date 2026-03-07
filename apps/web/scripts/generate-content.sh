@@ -13,11 +13,7 @@ if [ ! -f "$CLI" ]; then
   exit 1
 fi
 
-# Default to --all if no argument provided
-TITLES="${1}"
-if [ -z "$TITLES" ]; then
-  TITLES="--all"
-fi
+TITLES="${1:---all}"
 
 echo "=== Generating section-level content ==="
 node "$CLI" convert $TITLES -g section -o "$WEB_DIR/content/section" --link-style canonical

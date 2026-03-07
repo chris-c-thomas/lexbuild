@@ -64,6 +64,7 @@ export class FsNavProvider implements NavProvider {
           number: meta.title_number as number,
           name: meta.title_name as string,
           directory: dir.name,
+          positiveLaw: (meta.positive_law as boolean) ?? false,
           chapterCount: (stats?.chapter_count as number) ?? 0,
           sectionCount: (stats?.section_count as number) ?? 0,
           tokenEstimate: (stats?.total_tokens_estimate as number) ?? 0,

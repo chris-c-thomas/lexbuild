@@ -3,6 +3,7 @@ import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import rehypeSlug from "rehype-slug";
 import rehypeStringify from "rehype-stringify";
 import type { ContentFrontmatter } from "./types";
@@ -25,13 +26,23 @@ export function parseFrontmatter(raw: string): ParsedContent {
   };
 }
 
+// Extend default sanitize schema to allow id attributes (for rehype-slug anchors)
+const sanitizeSchema = {
+  ...defaultSchema,
+  attributes: {
+    ...defaultSchema.attributes,
+    "*": [...(defaultSchema.attributes?.["*"] ?? []), "id"],
+  },
+};
+
 // Module-level singleton processor — reused across requests
 const processor = unified()
   .use(remarkParse)
   .use(remarkGfm)
   .use(remarkRehype, { allowDangerousHtml: true })
+  .use(rehypeSanitize, sanitizeSchema)
   .use(rehypeSlug)
-  .use(rehypeStringify, { allowDangerousHtml: true });
+  .use(rehypeStringify);
 
 /**
  * Render a Markdown string (without frontmatter) to HTML.
