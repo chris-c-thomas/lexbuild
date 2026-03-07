@@ -1,3 +1,4 @@
+import type { Dirent } from "node:fs";
 import { readFile, readdir, access } from "node:fs/promises";
 import { join, resolve, relative } from "node:path";
 import type { ContentProvider, NavProvider } from "./types";
@@ -42,7 +43,7 @@ export class FsContentProvider implements ContentProvider {
 export class FsNavProvider implements NavProvider {
   async getTitles(): Promise<TitleSummary[]> {
     const uscDir = join(CONTENT_ROOT, "section", "usc");
-    let entries: Awaited<ReturnType<typeof readdir<{ withFileTypes: true }>>>;
+    let entries: Dirent[];
     try {
       entries = await readdir(uscDir, { withFileTypes: true });
     } catch {
@@ -50,8 +51,8 @@ export class FsNavProvider implements NavProvider {
       return [];
     }
     const titleDirs = entries
-      .filter((e) => e.isDirectory() && e.name.startsWith("title-"))
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .filter((e: Dirent) => e.isDirectory() && e.name.startsWith("title-"))
+      .sort((a: Dirent, b: Dirent) => a.name.localeCompare(b.name));
 
     const titles: TitleSummary[] = [];
     for (const dir of titleDirs) {
