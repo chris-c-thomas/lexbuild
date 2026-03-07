@@ -109,6 +109,29 @@ async function main() {
     console.log(`  wrote ${dir.name}.json (${titleNav.chapters.length} chapters)`);
   }
 
+  // Inject Title 53 (Reserved) if not present — it has no content but is part of the USC structure
+  if (!titles.some((t) => t.number === 53)) {
+    titles.push({
+      number: 53,
+      name: "RESERVED",
+      directory: "title-53",
+      positiveLaw: false,
+      chapterCount: 0,
+      sectionCount: 0,
+      tokenEstimate: 0,
+    });
+    titles.sort((a, b) => a.number - b.number);
+
+    const reservedNav: TitleNav = {
+      number: 53,
+      name: "RESERVED",
+      positiveLaw: false,
+      chapters: [],
+    };
+    await writeFile(join(OUTPUT_DIR, "title-53.json"), JSON.stringify(reservedNav), "utf-8");
+    console.log("  wrote title-53.json (reserved)");
+  }
+
   await writeFile(join(OUTPUT_DIR, "titles.json"), JSON.stringify(titles), "utf-8");
   console.log(`wrote titles.json (${titles.length} titles)`);
 }

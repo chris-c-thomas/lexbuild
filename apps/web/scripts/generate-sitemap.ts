@@ -61,6 +61,11 @@ async function main() {
     }
   }
 
+  // Include reserved titles that have no content directory
+  if (!titleDirs.some((d) => d.name === "title-53")) {
+    urls.push(url("/usc/title-53/"));
+  }
+
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.join("\n")}
