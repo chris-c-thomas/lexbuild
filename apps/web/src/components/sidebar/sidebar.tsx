@@ -16,6 +16,7 @@ import Link from "next/link";
 /** Sidebar container — loads titles on mount, manages mobile open/close. */
 export function Sidebar() {
   const [titles, setTitles] = useState<TitleSummary[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState<string | null>(null);
   const pathname = usePathname();
@@ -23,9 +24,12 @@ export function Sidebar() {
 
   useEffect(() => {
     fetchTitles()
-      .then(setTitles)
+      .then((data) => {
+        setTitles(data);
+        setLoaded(true);
+      })
       .catch(() => {
-        // Nav JSON may not be generated yet in dev — sidebar stays empty
+        setLoaded(true);
       });
   }, []);
 
@@ -87,8 +91,10 @@ export function Sidebar() {
 
         {/* Scrollable title list */}
         <nav className="flex-1 overflow-y-auto px-2 py-2">
-          {titles.length === 0 ? (
+          {!loaded ? (
             <div className="px-2 py-4 text-sm text-muted-foreground">Loading...</div>
+          ) : titles.length === 0 ? (
+            <div className="px-2 py-4 text-sm text-muted-foreground">No titles available.</div>
           ) : (
             <TitleList titles={titles} activeTitleDir={titleDir} />
           )}
