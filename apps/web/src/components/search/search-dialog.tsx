@@ -197,7 +197,38 @@ export function SearchDialog() {
 
 /** Strip all HTML except <mark> tags used by Pagefind for highlighting. */
 function sanitizeExcerpt(html: string): string {
-  return html.replace(/<\/?(?!mark\b)[a-z][^>]*>/gi, "");
+  if (typeof DOMParser === "undefined") {
+    // Fallback: strip all tags except <mark> using a conservative approach.
+    // This is only expected to run in environments without DOM APIs.
+    return html.replace(/<\/?(?!mark\b)[a-z][^>]*>/gi, "");
+  }
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, "text/html");
+
+  const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_ELEMENT);
+  const toRemove: Element[] = [];
+
+  // Collect all elements that are not <mark> for removal
+  // (tagName is always uppercase in HTML documents).
+  while (walker.nextNode()) {
+    const el = walker.currentNode as Element;
+    if (el.tagName !== "MARK") {
+      toRemove.push(el);
+    }
+  }
+
+  // Remove unwanted elements but keep their text content by lifting children up.
+  for (const el of toRemove) {
+    const parent = el.parentNode;
+    if (!parent) continue;
+    while (el.firstChild) {
+      parent.insertBefore(el.firstChild, el);
+    }
+    parent.removeChild(el);
+  }
+
+  return doc.body.innerHTML;
 }
 
 /** Small trigger button for the sidebar header. */
