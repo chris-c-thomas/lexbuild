@@ -200,7 +200,17 @@ function sanitizeExcerpt(html: string): string {
   if (typeof DOMParser === "undefined") {
     // Fallback: strip all tags except <mark> using a conservative approach.
     // This is only expected to run in environments without DOM APIs.
-    return html.replace(/<\/?(?!mark\b)[a-z][^>]*>/gi, "");
+    // Apply the replacement repeatedly to avoid incomplete multi-character sanitization.
+    let previous: string;
+    let current = html;
+    const tagRegex = /<\/?(?!mark\b)[a-z][^>]*>/gi;
+    do {
+      previous = current;
+      current = current.replace(tagRegex, "");
+    } while (current !== previous);
+    // As an additional safeguard, ensure no <script tags remain.
+    current = current.replace(/<script[\s\S]*?>/gi, "");
+    return current;
   }
 
   const parser = new DOMParser();
