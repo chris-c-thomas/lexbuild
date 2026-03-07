@@ -157,7 +157,7 @@ Title-level output renders each big level as a Markdown heading, with sections o
 
 Big-level headings reproduce the `<num>` and `<heading>` text from the source XML verbatim (e.g., `CHAPTER 1—`).
 
-For deeply nested titles, headings are capped at H6. Sections always render one heading level below their containing big level:
+For deeply nested titles, structural headings cap at H5 and sections cap at H6. This keeps sections visually distinct from their containing levels. Structural levels beyond H5 fall back to bold text:
 
 ```markdown
 # Title 26— INTERNAL REVENUE CODE
@@ -167,6 +167,14 @@ For deeply nested titles, headings are capped at H6. Sections always render one 
 ##### PART I— TAX ON INDIVIDUALS
 ###### § 1. Tax imposed
 **(a)** Married individuals filing joint returns...
+```
+
+If a title has more than 5 structural levels above a section (e.g., Subpart under Part), the deeper levels use bold text:
+
+```markdown
+##### PART I— TAX ON INDIVIDUALS
+**Subpart A— Changes in Rates**
+###### § 1. Tax imposed
 ```
 
 ### Content Structure

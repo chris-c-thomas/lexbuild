@@ -376,7 +376,15 @@ describe("convertTitle", () => {
     });
 
     it("reports correct stats in dry-run mode for title granularity", async () => {
-      const result = await convertTitle({
+      // Run a real conversion to get the accurate token estimate for comparison
+      const realResult = await convertTitle({
+        ...DEFAULTS,
+        input: resolve(FIXTURES_DIR, "simple-section.xml"),
+        output: outputDir,
+        granularity: "title",
+      });
+
+      const dryResult = await convertTitle({
         ...DEFAULTS,
         input: resolve(FIXTURES_DIR, "simple-section.xml"),
         output: outputDir,
@@ -384,11 +392,15 @@ describe("convertTitle", () => {
         dryRun: true,
       });
 
-      expect(result.dryRun).toBe(true);
-      expect(result.sectionsWritten).toBe(1);
-      expect(result.chapterCount).toBe(1);
-      expect(result.totalTokenEstimate).toBeGreaterThan(0);
-      expect(result.files).toHaveLength(0);
+      expect(dryResult.dryRun).toBe(true);
+      expect(dryResult.sectionsWritten).toBe(1);
+      expect(dryResult.chapterCount).toBe(1);
+      expect(dryResult.files).toHaveLength(0);
+
+      // Dry-run estimate is based on raw AST text lengths (no structural headings),
+      // so it underestimates slightly compared to the real conversion
+      expect(dryResult.totalTokenEstimate).toBeGreaterThan(0);
+      expect(dryResult.totalTokenEstimate).toBeLessThanOrEqual(realResult.totalTokenEstimate);
     });
   });
 

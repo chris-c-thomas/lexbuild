@@ -758,11 +758,12 @@ function renderTitleChildren(
       });
     } else if (child.type === "level" && BIG_LEVELS.has(child.levelType)) {
       // Big-level child: emit heading, then recurse
-      // Cap at H6; beyond that, fall back to bold text so sections keep their H6 heading
+      // Structural headings cap at H5; H6 is reserved for sections.
+      // Beyond H5, fall back to bold text so sections remain visually distinct.
       const numDisplay = child.num ?? "";
       const heading = child.heading ? ` ${child.heading}` : "";
       parts.push("");
-      if (headingLevel <= 6) {
+      if (headingLevel <= 5) {
         const prefix = "#".repeat(headingLevel);
         parts.push(`${prefix} ${numDisplay}${heading}`);
       } else {
