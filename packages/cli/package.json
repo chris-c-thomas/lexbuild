@@ -1,6 +1,6 @@
 {
   "name": "@lexbuild/cli",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Compiler for legal and civic texts. Converts disparate statutory data into structured formats optimized for AI, RAG, and semantic search.",
   "author": "Chris Thomas",
   "license": "MIT",

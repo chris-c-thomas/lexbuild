@@ -1,5 +1,14 @@
 # @lexbuild/usc
 
+## 1.1.1
+
+### Patch Changes
+
+- [#18](https://github.com/chris-c-thomas/lexbuild/pull/18) [`e216a97`](https://github.com/chris-c-thomas/lexbuild/commit/e216a972696de25726029e87f5cf6b754180bdd6) Thanks [@chris-c-thomas](https://github.com/chris-c-thomas)! - Fix backslash escaping vulnerability; add permissions to ci.yml
+
+- Updated dependencies [[`e216a97`](https://github.com/chris-c-thomas/lexbuild/commit/e216a972696de25726029e87f5cf6b754180bdd6)]:
+  - @lexbuild/core@1.1.1
+
 ## 1.1.0
 
 ### Minor Changes
