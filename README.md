@@ -66,7 +66,8 @@ lexbuild/
 │   ├── core/           # @lexbuild/core — format-agnostic foundation
 │   ├── usc/            # @lexbuild/usc — U.S. Code source package
 │   └── cli/            # @lexbuild/cli — CLI binary (published to npm)
-├── apps/               # Applications built on LexBuild output (planned)
+├── apps/
+│   └── web/            # Documentation site — browse U.S. Code as Markdown
 ├── fixtures/           # Test data
 │   ├── fragments/      # Small synthetic XML snippets for unit tests
 │   └── expected/       # Expected output snapshots for integration tests
@@ -164,13 +165,20 @@ See [docs/extending.md](docs/extending.md) for the full guide.
 
 ## Apps
 
-The `apps/` directory is reserved for applications that showcase or build on top of the converted Markdown output. Planned applications include:
+### Web
 
-- **Web viewer** — Browse the converted U.S. Code with full-text search and cross-reference navigation
-- **RAG demo** — Reference implementation of a legal Q&A system using LexBuild output with vector embeddings
-- **MCP server** — Model Context Protocol server for AI-assisted legal research
+A server-rendered documentation site for browsing the entire U.S. Code as structured Markdown. Built with Next.js, TypeScript, React, Tailwind CSS, Shiki and shadcn/ui.
 
-Apps consume the output of LexBuild packages but are not published to npm. They live in the same monorepo for convenience and to serve as living documentation of how to integrate with the converted data.
+- **60,000+ section pages** served via SSR with CDN caching (1-year `s-maxage`)
+- **Three granularity levels** — view any title, chapter, or section with Markdown source and rendered HTML preview
+- **Sidebar navigation** — lazy-loaded per-title JSON, virtualized section lists for large chapters
+- **Full-text search** — Pagefind-powered Cmd+K search across all sections
+- **Dark mode** — class-based theme toggle with system preference detection
+- **SEO** — unique `<title>`, Open Graph metadata, sitemap with 63k+ URLs
+
+The site consumes LexBuild's *output* (`.md` files and `_meta.json` sidecars), not its code so it has no dependency on `@lexbuild/core`, `@lexbuild/usc`, or `@lexbuild/cli`.
+
+See [apps/web/README.md](apps/web/README.md) for setup and development instructions.
 
 ---
 
@@ -564,7 +572,7 @@ Feel free to open an [issue](https://github.com/chris-c-thomas/lexbuild/issues) 
 
 **Output**
 
-- [ ] Additional output formats — plain text, JSON, and JSONL
+- [ ] Additional output formats (plain text, JSON, and JSONL)
 - [ ] Precise token counting via `tiktoken` (`--precise-tokens`)
 - [ ] Section diff between OLRC release points
 
@@ -587,9 +595,9 @@ Feel free to open an [issue](https://github.com/chris-c-thomas/lexbuild/issues) 
 
 **Apps**
 
-- [ ] Web viewer for browsing converted output
-- [ ] RAG demo application with vector search
+- [x] Web app for browsing converted output
 - [ ] API server for programmatic access to converted data
+- [ ] RAG demo application with vector search
 
 ---
 

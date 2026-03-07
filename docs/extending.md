@@ -181,11 +181,16 @@ Apps typically:
 3. **Use `_meta.json` indexes** for directory-level metadata without parsing individual files
 4. **Follow the output format spec** documented in [output-format.md](output-format.md)
 
+### Existing Apps
+
+| App | Description | Status |
+|-----|-------------|--------|
+| [Web](../apps/web/) | Documentation site — browse U.S. Code with search and navigation | Complete |
+
 ### App Ideas
 
 | App | Description | Stack |
 |-----|-------------|-------|
-| Web viewer | Browse converted U.S. Code with search and cross-reference navigation | Next.js, full-text search |
 | RAG demo | Legal Q&A system using vector embeddings of LexBuild output | LangChain/LlamaIndex, vector DB |
 | MCP server | Model Context Protocol server exposing legal text to AI assistants | Node.js, MCP SDK |
 | API server | REST/GraphQL API for programmatic access to converted data | Express/Fastify |
