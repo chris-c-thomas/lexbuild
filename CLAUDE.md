@@ -12,6 +12,8 @@ lexbuild/
 │   ├── core/        # @lexbuild/core — XML parsing, AST, Markdown rendering, shared utilities
 │   ├── usc/         # @lexbuild/usc — U.S. Code-specific element handlers and downloader
 │   └── cli/         # @lexbuild/cli — CLI binary (the published npm package users install)
+├── apps/
+│   └── web/         # Documentation site — Next.js 15, SSR, browse U.S. Code as Markdown
 ├── downloads/
 │   └── usc/
 │       └── xml/     # Full USC XML files (usc01.xml ... usc54.xml) — gitignored
@@ -74,7 +76,24 @@ node packages/cli/dist/index.js convert --all
 node packages/cli/dist/index.js convert --titles 1-5 -o ./test-output
 node packages/cli/dist/index.js convert ./downloads/usc/xml/usc01.xml -o ./test-output
 node packages/cli/dist/index.js convert --titles 1 -g title -o ./test-output
+
+# Web app (apps/web/) — NOT included in default `pnpm turbo build`
+pnpm turbo dev:web                    # Dev server (http://localhost:3000)
+pnpm turbo build:web                  # Production build
+cd apps/web && bash scripts/generate-content.sh   # Generate all content + nav + search + sitemap
 ```
+
+### Web App Notes
+
+The web app (`apps/web/`) is a Next.js 15 SSR site that consumes LexBuild's output files. It has **no code dependency** on `@lexbuild/core`, `@lexbuild/usc`, or `@lexbuild/cli`.
+
+Key points:
+- **Excluded from `pnpm turbo build`** — no `build` script in its `package.json` (only `build:web`). This prevents CI failures since the app requires content files that aren't in git.
+- **Excluded from changesets** — `"private": true` and listed in `.changeset/config.json` `ignore`.
+- **Content is gitignored** — `apps/web/content/`, `public/nav/`, `public/_pagefind/`, `public/sitemap.xml` are all generated artifacts.
+- **Tailwind CSS v4 requires `@tailwindcss/postcss`** and `postcss.config.mjs`. Without these, no styles are generated.
+- **Deploy via `vercel --prod`** from local filesystem (not GitHub-triggered). `.vercelignore` overrides `.gitignore` to include content in deploys.
+- See `apps/web/CLAUDE.md` for the full web app spec and `apps/web/README.md` for setup instructions.
 
 ## Code Conventions
 
