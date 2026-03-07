@@ -348,6 +348,12 @@ function buildOlrcUrl(identifier: string): string {
  * Simple tables (no colspan/rowspan) → Markdown pipe table.
  * Complex tables → skipped with a placeholder comment.
  */
+function escapeTableCell(cell: string): string {
+  // First escape backslashes, then escape pipe characters.
+  // This ensures that user-supplied backslashes do not affect how pipes are escaped.
+  return cell.replace(/\\/g, "\\\\").replace(/\|/g, "\\|");
+}
+
 function renderTable(node: TableNode): string {
   // Determine column count from the widest row
   const allRows = [...node.headers, ...node.rows];
@@ -380,7 +386,7 @@ function renderTable(node: TableNode): string {
   }
 
   // Header line
-  lines.push(`| ${headerRow.map((cell) => cell.replace(/\|/g, "\\|")).join(" | ")} |`);
+  lines.push(`| ${headerRow.map((cell) => escapeTableCell(cell)).join(" | ")} |`);
 
   // Separator line
   lines.push(`| ${Array.from({ length: colCount }, () => "---").join(" | ")} |`);
@@ -389,7 +395,7 @@ function renderTable(node: TableNode): string {
   for (const row of node.rows) {
     // Pad row to column count if needed
     const paddedRow = Array.from({ length: colCount }, (_, i) => row[i] ?? "");
-    lines.push(`| ${paddedRow.map((cell) => cell.replace(/\|/g, "\\|")).join(" | ")} |`);
+    lines.push(`| ${paddedRow.map((cell) => escapeTableCell(cell)).join(" | ")} |`);
   }
 
   return lines.join("\n");
