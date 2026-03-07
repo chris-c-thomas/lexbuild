@@ -3,7 +3,7 @@
  */
 
 import chalk from "chalk";
-import { Command } from "commander";
+import { Command, Option } from "commander";
 import { existsSync, readdirSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { convertTitle } from "@lexbuild/usc";
@@ -182,12 +182,16 @@ export const convertCommand = new Command("convert")
   .option("--titles <spec>", "Title(s) to convert: 1, 1-5, or 1-5,8,11")
   .option("--all", "Convert all downloaded titles found in --input-dir", false)
   .option("-i, --input-dir <dir>", "Directory containing USC XML files", "./downloads/usc/xml")
-  .option(
-    "-g, --granularity <level>",
-    "Output granularity: section, chapter, or title",
-    "section",
+  .addOption(
+    new Option("-g, --granularity <level>", "Output granularity: section, chapter, or title")
+      .choices(["section", "chapter", "title"])
+      .default("section"),
   )
-  .option("--link-style <style>", "Link style: relative, canonical, or plaintext", "plaintext")
+  .addOption(
+    new Option("--link-style <style>", "Link style: relative, canonical, or plaintext")
+      .choices(["relative", "canonical", "plaintext"])
+      .default("plaintext"),
+  )
   .option("--include-source-credits", "Include source credit annotations", true)
   .option("--no-include-source-credits", "Exclude source credit annotations")
   .option("--include-notes", "Include all notes (default)", true)

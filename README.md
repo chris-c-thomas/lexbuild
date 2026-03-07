@@ -338,7 +338,7 @@ Specify input as a file path, `--titles`, or `--all` (exactly one). When multipl
 | `--dry-run` | — | Parse and report without writing files |
 | `-v, --verbose` | — | Enable verbose logging |
 
-**Granularity modes:**
+**Granularity Modes:** `-g, --granularity <level>`
 
 | Mode | Output | Description |
 |--------|---------|-------------|

@@ -120,6 +120,7 @@ export async function convertTitle(options: ConvertOptions): Promise<ConvertResu
   const opts = { ...DEFAULTS, ...options };
   const files: string[] = [];
   let peakMemory = process.memoryUsage.rss();
+  let titleLevelTokenEstimate: number | undefined;
 
   // Collect emitted nodes during parsing (synchronous), write after parsing completes
   const collected: CollectedSection[] = [];
@@ -173,13 +174,17 @@ export async function convertTitle(options: ConvertOptions): Promise<ConvertResu
     }
   } else if (opts.granularity === "title") {
     // Title-level: each emitted node is an entire title
+    let titleTokenEstimate = 0;
     for (const { node, context } of collected) {
       const result = await writeWholeTitle(node, context, opts);
       files.push(result.filePath);
+      titleTokenEstimate += result.totalTokenEstimate;
       for (const m of result.sectionMetas) {
         sectionMetas.push(m);
       }
     }
+    // Store the accurate title-level estimate for use in ConvertResult
+    titleLevelTokenEstimate = titleTokenEstimate;
   } else if (opts.granularity === "chapter") {
     // Chapter-level: each emitted node is a chapter containing sections
     for (const { node, context } of collected) {
@@ -251,7 +256,11 @@ export async function convertTitle(options: ConvertOptions): Promise<ConvertResu
 
   // Compute stats
   const chapterIds = new Set(sectionMetas.map((s) => s.chapterIdentifier).filter(Boolean));
-  const totalTokens = sectionMetas.reduce((sum, s) => sum + Math.ceil(s.contentLength / 4), 0);
+  // For title granularity, use the accurate estimate from the full rendered body
+  // (includes structural headings); for other modes, sum per-section content lengths
+  const totalTokens =
+    titleLevelTokenEstimate ??
+    sectionMetas.reduce((sum, s) => sum + Math.ceil(s.contentLength / 4), 0);
 
   return {
     sectionsWritten:
@@ -634,6 +643,8 @@ async function writeChapter(
 interface WriteTitleResult {
   filePath: string;
   sectionMetas: SectionMeta[];
+  /** Token estimate based on full rendered body (including structural headings) */
+  totalTokenEstimate: number;
 }
 
 /**
@@ -696,7 +707,8 @@ async function writeWholeTitle(
   await mkdir(dirname(filePath), { recursive: true });
   await writeFile(filePath, markdown, "utf-8");
 
-  return { filePath, sectionMetas };
+  const totalTokenEstimate = Math.ceil(bodyMarkdown.length / 4);
+  return { filePath, sectionMetas, totalTokenEstimate };
 }
 
 /**
@@ -746,12 +758,16 @@ function renderTitleChildren(
       });
     } else if (child.type === "level" && BIG_LEVELS.has(child.levelType)) {
       // Big-level child: emit heading, then recurse
-      const hLevel = Math.min(headingLevel, 6);
-      const prefix = "#".repeat(hLevel);
+      // Cap at H6; beyond that, fall back to bold text so sections keep their H6 heading
       const numDisplay = child.num ?? "";
       const heading = child.heading ? ` ${child.heading}` : "";
       parts.push("");
-      parts.push(`${prefix} ${numDisplay}${heading}`);
+      if (headingLevel <= 6) {
+        const prefix = "#".repeat(headingLevel);
+        parts.push(`${prefix} ${numDisplay}${heading}`);
+      } else {
+        parts.push(`**${numDisplay}${heading}**`);
+      }
 
       // Track the chapter ancestor for section metadata
       const nextChapter = child.levelType === "chapter" ? child : currentChapter;
