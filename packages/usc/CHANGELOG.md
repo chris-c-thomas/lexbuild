@@ -1,5 +1,16 @@
 # @lexbuild/usc
 
+## 1.2.0
+
+### Minor Changes
+
+- [#21](https://github.com/chris-c-thomas/lexbuild/pull/21) [`e42b53b`](https://github.com/chris-c-thomas/lexbuild/commit/e42b53b29cace56c4631a929ca0102828ca02229) Thanks [@chris-c-thomas](https://github.com/chris-c-thomas)! - Bump to v1.2.0
+
+### Patch Changes
+
+- Updated dependencies [[`e42b53b`](https://github.com/chris-c-thomas/lexbuild/commit/e42b53b29cace56c4631a929ca0102828ca02229)]:
+  - @lexbuild/core@1.2.0
+
 ## 1.1.1
 
 ### Patch Changes
