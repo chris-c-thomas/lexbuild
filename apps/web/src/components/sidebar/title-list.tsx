@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
@@ -18,7 +18,7 @@ interface TitleListProps {
 export function TitleList({ titles, activeTitleDir }: TitleListProps) {
   const [expandedTitle, setExpandedTitle] = useState<string | null>(activeTitleDir ?? null);
   const [prevActiveTitleDir, setPrevActiveTitleDir] = useState(activeTitleDir);
-  const [navCache, setNavCache] = useState<Record<string, TitleNav>>({});
+  const [navCache, setNavCache] = useState<Record<string, TitleNav | null>>({});
   const pathname = usePathname();
   const { chapterDir, sectionSlug } = parseUscPath(pathname);
 
@@ -34,14 +34,23 @@ export function TitleList({ titles, activeTitleDir }: TitleListProps) {
     setExpandedTitle((prev) => (prev === dir ? null : dir));
   }, []);
 
-  // Fetch nav data when a title is expanded and not yet cached
+  // Track in-flight fetches to prevent retry storms (ref avoids setState in effect)
+  const fetchingRef = useRef<Set<string>>(new Set());
+
   useEffect(() => {
-    if (expandedTitle && !navCache[expandedTitle]) {
-      fetchTitleNav(expandedTitle).then((nav) => {
-        if (nav) {
+    if (
+      expandedTitle &&
+      navCache[expandedTitle] === undefined &&
+      !fetchingRef.current.has(expandedTitle)
+    ) {
+      fetchingRef.current.add(expandedTitle);
+      fetchTitleNav(expandedTitle)
+        .then((nav) => {
           setNavCache((prev) => ({ ...prev, [expandedTitle]: nav }));
-        }
-      });
+        })
+        .catch(() => {
+          setNavCache((prev) => ({ ...prev, [expandedTitle]: null }));
+        });
     }
   }, [expandedTitle, navCache]);
 
@@ -50,7 +59,8 @@ export function TitleList({ titles, activeTitleDir }: TitleListProps) {
       {titles.map((t) => {
         const isExpanded = expandedTitle === t.directory;
         const isActive = activeTitleDir === t.directory;
-        const nav = navCache[t.directory];
+        const navEntry = navCache[t.directory];
+        const nav = navEntry ?? undefined;
 
         return (
           <li key={t.directory}>
@@ -87,6 +97,10 @@ export function TitleList({ titles, activeTitleDir }: TitleListProps) {
                     activeChapterDir={isActive ? chapterDir : undefined}
                     activeSectionSlug={isActive ? sectionSlug : undefined}
                   />
+                ) : navEntry === null ? (
+                  <div className="px-2 py-2 text-xs text-muted-foreground">
+                    Failed to load.
+                  </div>
                 ) : (
                   <div className="px-2 py-2 text-xs text-muted-foreground">Loading...</div>
                 )}

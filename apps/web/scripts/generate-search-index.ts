@@ -29,14 +29,27 @@ async function main() {
   for (const titleEntry of titleDirs) {
     const titleDir = titleEntry.name;
     const titlePath = join(uscDir, titleDir);
-    const chapterDirs = (await readdir(titlePath, { withFileTypes: true }))
-      .filter((e) => e.isDirectory() && e.name.startsWith("chapter-"))
-      .sort((a, b) => a.name.localeCompare(b.name));
+    let chapterNames: string[];
+    try {
+      const dirents = await readdir(titlePath, { withFileTypes: true });
+      chapterNames = dirents
+        .filter((e) => e.isDirectory() && e.name.startsWith("chapter-"))
+        .map((e) => e.name)
+        .sort();
+    } catch {
+      console.warn(`  skipping ${titleDir}: cannot read directory`);
+      continue;
+    }
 
-    for (const chapterEntry of chapterDirs) {
-      const chapterDir = chapterEntry.name;
+    for (const chapterDir of chapterNames) {
       const chapterPath = join(titlePath, chapterDir);
-      const files = (await readdir(chapterPath)).filter((f) => f.endsWith(".md")).sort();
+      let files: string[];
+      try {
+        files = (await readdir(chapterPath)).filter((f) => f.endsWith(".md")).sort();
+      } catch {
+        console.warn(`  skipping ${titleDir}/${chapterDir}: cannot read directory`);
+        continue;
+      }
 
       for (const file of files) {
         try {
