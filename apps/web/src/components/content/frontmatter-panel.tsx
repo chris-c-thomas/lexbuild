@@ -1,11 +1,10 @@
-import type { ContentFrontmatter, Granularity } from "@/lib/types";
+import type { ContentFrontmatter } from "@/lib/types";
 
 interface FrontmatterPanelProps {
   frontmatter: ContentFrontmatter;
-  granularity: Granularity;
 }
 
-/** Displays metadata from frontmatter, adapting fields based on granularity. */
+/** Displays metadata from frontmatter, adapting fields based on field presence. */
 export function FrontmatterPanel({ frontmatter }: FrontmatterPanelProps) {
   const isTitle = frontmatter.chapter_count !== undefined;
   const isSection = frontmatter.section_number !== undefined;

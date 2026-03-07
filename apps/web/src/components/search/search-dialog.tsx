@@ -85,7 +85,10 @@ export function SearchDialog() {
 
     (async () => {
       const pf = await loadPagefind();
-      if (!pf || controller.signal.aborted) return;
+      if (!pf || controller.signal.aborted) {
+        setLoading(false);
+        return;
+      }
 
       const response = await pf.search(query);
       if (controller.signal.aborted) return;

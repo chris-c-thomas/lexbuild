@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import { getContentProvider } from "@/lib/content";
 import { parseFrontmatter, renderMarkdownToHtml } from "@/lib/markdown";
@@ -8,11 +9,15 @@ interface Props {
   params: Promise<{ title: string; chapter: string }>;
 }
 
+const getContent = cache(async (title: string, chapter: string) => {
+  const content = getContentProvider();
+  return content.getFile(`chapter/usc/${title}/${chapter}.md`);
+});
+
 export default async function ChapterPage({ params }: Props) {
   const { title, chapter } = await params;
-  const content = getContentProvider();
 
-  const raw = await content.getFile(`chapter/usc/${title}/${chapter}.md`);
+  const raw = await getContent(title, chapter);
   if (!raw) notFound();
 
   const { frontmatter, body } = parseFrontmatter(raw);
@@ -35,8 +40,7 @@ export default async function ChapterPage({ params }: Props) {
 
 export async function generateMetadata({ params }: Props) {
   const { title, chapter } = await params;
-  const content = getContentProvider();
-  const raw = await content.getFile(`chapter/usc/${title}/${chapter}.md`);
+  const raw = await getContent(title, chapter);
   if (!raw) return { title: "Not found" };
   const { frontmatter } = parseFrontmatter(raw);
   return {

@@ -1,15 +1,28 @@
 import { readFile, readdir, access } from "node:fs/promises";
-import { join } from "node:path";
+import { join, resolve, relative } from "node:path";
 import type { ContentProvider, NavProvider } from "./types";
 import type { ChapterNav, SectionNavEntry, TitleSummary } from "../types";
 
-const CONTENT_ROOT = process.env.CONTENT_DIR ?? "./content";
+const CONTENT_ROOT = resolve(process.env.CONTENT_DIR ?? "./content");
+
+/**
+ * Validate that a resolved path stays within CONTENT_ROOT.
+ * Prevents path traversal attacks via crafted URL segments.
+ */
+function safePath(subpath: string): string {
+  const resolved = resolve(CONTENT_ROOT, subpath);
+  const rel = relative(CONTENT_ROOT, resolved);
+  if (rel.startsWith("..") || resolve(resolved) !== resolved) {
+    throw new Error(`Path traversal blocked: ${subpath}`);
+  }
+  return resolved;
+}
 
 /** Filesystem-backed content provider. Reads .md files from local disk. */
 export class FsContentProvider implements ContentProvider {
   async getFile(path: string): Promise<string | null> {
     try {
-      return await readFile(join(CONTENT_ROOT, path), "utf-8");
+      return await readFile(safePath(path), "utf-8");
     } catch {
       return null;
     }
@@ -17,7 +30,7 @@ export class FsContentProvider implements ContentProvider {
 
   async exists(path: string): Promise<boolean> {
     try {
-      await access(join(CONTENT_ROOT, path));
+      await access(safePath(path));
       return true;
     } catch {
       return false;

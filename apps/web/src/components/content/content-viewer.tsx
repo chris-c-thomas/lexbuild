@@ -16,7 +16,6 @@ export function ContentViewer({
   highlightedSource,
   renderedHtml,
   frontmatter,
-  granularity,
   downloadFilename,
 }: ContentViewerProps) {
   const [view, setView] = useState<"source" | "rendered">("source");
@@ -25,7 +24,7 @@ export function ContentViewer({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4">
         <h1 className="text-2xl font-bold text-foreground">{frontmatter.title}</h1>
-        <FrontmatterPanel frontmatter={frontmatter} granularity={granularity} />
+        <FrontmatterPanel frontmatter={frontmatter} />
       </div>
 
       <div className="flex items-center gap-2 border-b border-border pb-2">
