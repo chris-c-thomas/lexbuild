@@ -40,9 +40,14 @@ export function generateFrontmatter(data: FrontmatterData): string {
     title: data.title,
     title_number: data.title_number,
     title_name: data.title_name,
-    section_number: data.section_number,
-    section_name: data.section_name,
   };
+
+  if (data.section_number !== undefined) {
+    fm["section_number"] = data.section_number;
+  }
+  if (data.section_name !== undefined) {
+    fm["section_name"] = data.section_name;
+  }
 
   // Context fields (only include if present)
   if (data.chapter_number !== undefined) {
@@ -77,6 +82,15 @@ export function generateFrontmatter(data: FrontmatterData): string {
   }
   if (data.status !== undefined) {
     fm["status"] = data.status;
+  }
+  if (data.chapter_count !== undefined) {
+    fm["chapter_count"] = data.chapter_count;
+  }
+  if (data.section_count !== undefined) {
+    fm["section_count"] = data.section_count;
+  }
+  if (data.total_token_estimate !== undefined) {
+    fm["total_token_estimate"] = data.total_token_estimate;
   }
 
   const yamlStr = stringify(fm, {

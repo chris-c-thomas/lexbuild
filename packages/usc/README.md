@@ -23,7 +23,7 @@ import { convertTitle } from "@lexbuild/usc";
 const result = await convertTitle({
   input: "./downloads/usc/xml/usc01.xml",
   output: "./output",
-  granularity: "section",
+  granularity: "section", // or "chapter" or "title"
   linkStyle: "plaintext",
   includeSourceCredits: true,
   includeNotes: true,
@@ -91,20 +91,13 @@ console.log(`Release point: ${result.releasePoint}`);
 
 ## Output
 
-Each title produces a directory tree of Markdown files with YAML frontmatter and JSON metadata indexes:
+Each title produces Markdown files with YAML frontmatter. The output structure depends on the granularity setting:
 
-```
-output/usc/title-01/
-  README.md
-  _meta.json
-  chapter-01/
-    _meta.json
-    section-1.md
-    section-2.md
-  chapter-02/
-    _meta.json
-    section-101.md
-```
+| Granularity | Output | Metadata |
+|---|---|---|
+| `section` (default) | `title-NN/chapter-NN/section-N.md` | `_meta.json` per chapter + title, `README.md` per title |
+| `chapter` | `title-NN/chapter-NN.md` | `_meta.json` per title, `README.md` per title |
+| `title` | `title-NN.md` | Enriched frontmatter only (no sidecar files) |
 
 See the [output format specification](https://github.com/chris-c-thomas/lexbuild/blob/main/docs/output-format.md) for details.
 

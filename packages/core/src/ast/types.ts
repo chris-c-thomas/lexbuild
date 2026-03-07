@@ -299,10 +299,10 @@ export interface FrontmatterData {
   part_number?: string | undefined;
   /** Part name */
   part_name?: string | undefined;
-  /** Section number (string — can be alphanumeric like "7801") */
-  section_number: string;
-  /** Section name */
-  section_name: string;
+  /** Section number (string — can be alphanumeric like "7801"). Omitted for title-level output. */
+  section_number?: string | undefined;
+  /** Section name. Omitted for title-level output. */
+  section_name?: string | undefined;
   /** Whether this title is positive law */
   positive_law: boolean;
   /** Full source credit text */
@@ -313,4 +313,10 @@ export interface FrontmatterData {
   last_updated: string;
   /** Section status (e.g., "repealed", "transferred") */
   status?: string | undefined;
+  /** Number of chapters (title-level granularity only) */
+  chapter_count?: number | undefined;
+  /** Number of sections (title-level granularity only) */
+  section_count?: number | undefined;
+  /** Total estimated tokens (title-level granularity only) */
+  total_token_estimate?: number | undefined;
 }

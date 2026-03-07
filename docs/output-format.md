@@ -40,6 +40,18 @@ This specification is versioned independently of the CLI. The current version is
         └── ...
 ```
 
+### Title-Level Granularity
+
+```
+{output_root}/
+└── usc/
+    ├── title-{NN}.md
+    ├── title-{NN}.md
+    └── ...
+```
+
+No `_meta.json` or `README.md` sidecar files are produced in title-level mode. All metadata is embedded in enriched YAML frontmatter (see [Title-Level Frontmatter](#title-level-frontmatter) below). This makes each file fully self-contained — suitable for feeding a whole title to an LLM context window.
+
 ### Naming Conventions
 
 | Component | Pattern | Examples |
@@ -105,6 +117,54 @@ generator: "lexbuild@0.5.0"                 # Generator version
 source_credit: "(July 30, 1947, ...)"     # Full source credit text (included by default)
 status: "repealed"                         # Only present for non-current sections
 ---
+```
+
+### Title-Level Frontmatter
+
+When using `--granularity title`, the frontmatter includes additional enriched fields:
+
+```yaml
+---
+identifier: "/us/usc/t1"
+title: "Title 1 — GENERAL PROVISIONS"
+title_number: 1
+title_name: "GENERAL PROVISIONS"
+positive_law: true
+currency: "119-73"
+last_updated: "2025-12-03"
+format_version: "1.0.0"
+generator: "lexbuild@1.0.6"
+chapter_count: 3
+section_count: 39
+total_token_estimate: 35000
+---
+```
+
+Title-level frontmatter omits `section_number` and `section_name` (those are section-scoped fields). The `chapter_count`, `section_count`, and `total_token_estimate` fields are only present in title-level output.
+
+### Title-Level Heading Hierarchy
+
+Title-level output renders each big level as a Markdown heading, with sections one level below their containing big level:
+
+```markdown
+# Title 1— GENERAL PROVISIONS
+## CHAPTER 1— RULES OF CONSTRUCTION
+### § 1. Words denoting number, gender, and so forth
+**(a)** In determining the meaning...
+```
+
+Big-level headings reproduce the `<num>` and `<heading>` text from the source XML verbatim (e.g., `CHAPTER 1—`).
+
+For deeply nested titles, headings are capped at H6. Sections always render one heading level below their containing big level:
+
+```markdown
+# Title 26— INTERNAL REVENUE CODE
+## Subtitle A— Income Taxes
+### CHAPTER 1— NORMAL TAXES AND SURTAXES
+#### Subchapter A— Determination of Tax Liability
+##### PART I— TAX ON INDIVIDUALS
+###### § 1. Tax imposed
+**(a)** Married individuals filing joint returns...
 ```
 
 ### Content Structure

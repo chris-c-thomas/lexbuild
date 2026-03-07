@@ -25,7 +25,7 @@ interface ConvertCommandOptions {
   titles?: string | undefined;
   all: boolean;
   inputDir: string;
-  granularity: "section" | "chapter";
+  granularity: "section" | "chapter" | "title";
   linkStyle: "relative" | "canonical" | "plaintext";
   includeSourceCredits: boolean;
   includeNotes: boolean;
@@ -184,7 +184,7 @@ export const convertCommand = new Command("convert")
   .option("-i, --input-dir <dir>", "Directory containing USC XML files", "./downloads/usc/xml")
   .option(
     "-g, --granularity <level>",
-    'Output granularity: "section" (one file per section) or "chapter" (sections inline)',
+    'Output granularity: "section" (one file per section), "chapter" (one file per chapter), or "title" (one file per title)',
     "section",
   )
   .option(
