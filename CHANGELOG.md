@@ -5,6 +5,55 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.2.0]
+
+### Added
+
+#### Web App (`apps/web/`)
+
+- **Documentation site for the U.S. Code** — a server-rendered Next.js 15 application for browsing all 54 titles of the U.S. Code as structured Markdown. The site consumes LexBuild's output files (`.md` and `_meta.json`) — it has no code dependency on `@lexbuild/core`, `@lexbuild/usc`, or `@lexbuild/cli`.
+
+- **Three granularity levels** — title, chapter, and section viewer pages served via SSR with CDN caching (`s-maxage=31536000`). Three dynamic route templates handle all 63,000+ URLs.
+
+- **Markdown / Preview toggle** — syntax-highlighted Markdown source (Shiki with `github-light`/`github-dark` dual themes) and rendered HTML preview (unified + remark + rehype pipeline with `rehype-sanitize` for defence-in-depth).
+
+- **Sidebar navigation** — lazy-loaded per-title JSON from pre-built static files, accordion expand/collapse for titles and chapters, virtualized section lists for large chapters (> 100 entries via `@tanstack/react-virtual`).
+
+- **Full-text search** — Pagefind-powered Cmd+K dialog indexing all 60,000+ sections via the Pagefind Node API (`addCustomRecord`). Search excerpts sanitized with DOMParser (allow `<mark>` only).
+
+- **Dark mode** — class-based toggle using `useSyncExternalStore`, persists to `localStorage`, respects `prefers-color-scheme`. Inline `<head>` script prevents flash of wrong theme.
+
+- **SEO** — unique `<title>` and Open Graph metadata per page, SVG favicon, `robots.txt`, sitemap with 63,000+ URLs generated from `_meta.json`.
+
+- **shadcn/ui integration** — base-nova style, zinc theme, Geist font, CSS variables via Tailwind CSS v4. Button, theme toggle, and content viewer use shadcn primitives.
+
+- **Content provider abstraction** — `ContentProvider` interface decouples page components from storage backend. Default `FsContentProvider` reads from local filesystem with path traversal protection (`safePath`). Swappable to S3, R2, or Vercel Blob.
+
+- **Build scripts** — `generate-content.sh` (full pipeline: convert + nav + search + sitemap), `generate-nav.ts`, `generate-search-index.ts`, `generate-sitemap.ts`.
+
+- **Title 53 (Reserved)** — placeholder page and nav entry for the reserved title, consistent with the OLRC website.
+
+- **Loading skeletons** — shared `ContentSkeleton` component for title, chapter, and section route transitions.
+
+- **Custom 404 page** — styled error page with dark mode support.
+
+- **ESLint config** — `typescript-eslint` strict + `@next/eslint-plugin-next` + `eslint-plugin-react-hooks` (React 19 strict rules).
+
+- **Production deployment** — `.vercelignore` for filesystem deploys, deployment guide in `.claude/deployment-guide.md`.
+
+### Changed
+
+- **Root `README.md`** — updated monorepo tree, replaced planned Apps section with web app description, checked off web viewer in roadmap.
+- **`docs/architecture.md`** — updated Apps Layer section with web app details.
+- **`docs/extending.md`** — added Existing Apps table, removed web viewer from App Ideas.
+- **`apps/web/CLAUDE.md`** — trimmed completed development phases, added deployment reference and pitfalls for Tailwind v4 PostCSS, `.next` cache, and `buttonVariants` server component limitation.
+- **`.changeset/config.json`** — added `web` to ignore list (private, not published).
+- **`pnpm-workspace.yaml`** — added `apps/*` to workspace packages.
+- **`turbo.json`** — added `build:web` and `dev:web` tasks; web app excluded from default `build` task for CI compatibility.
+- **`.gitignore`** — added `apps/web/content/`, `apps/web/public/nav/`, `apps/web/public/_pagefind/`, `apps/web/public/sitemap.xml`, `apps/web/.next/`.
+
+---
+
 ## [1.1.1]
 
 ### Fixed
