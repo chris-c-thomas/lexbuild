@@ -1,5 +1,14 @@
 # @lexbuild/usc
 
+## 1.4.2
+
+### Patch Changes
+
+- [`a0b59f6`](https://github.com/chris-c-thomas/LexBuild/commit/a0b59f618f2fb1fd225ac4b09f0b113455cb7af9) Thanks [@chris-c-thomas](https://github.com/chris-c-thomas)! - Update additional references of lexbuild to LexBuild where appropriate
+
+- Updated dependencies [[`a0b59f6`](https://github.com/chris-c-thomas/LexBuild/commit/a0b59f618f2fb1fd225ac4b09f0b113455cb7af9)]:
+  - @lexbuild/core@1.4.2
+
 ## 1.4.1
 
 ### Patch Changes
