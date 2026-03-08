@@ -160,12 +160,8 @@ export async function convertTitle(options: ConvertOptions): Promise<ConvertResu
         // Walk title tree → chapters → sections
         collectSectionMetasFromTree(node, context, sectionMetas);
       } else if (opts.granularity === "chapter") {
-        // Extract section metadata from chapter children
-        for (const child of node.children) {
-          if (child.type === "level" && child.levelType === "section") {
-            sectionMetas.push(buildSectionMetaDryRun(child, node, context));
-          }
-        }
+        // Recursively extract section metadata from chapter children (including nested big levels)
+        collectChapterSectionsDryRun(node, node, context, sectionMetas);
       } else {
         if (node.numValue) {
           sectionMetas.push(buildSectionMetaDryRun(node, null, context));
@@ -664,7 +660,7 @@ function renderChapterChildren(
         number: sectionNum,
         name: child.heading?.trim() ?? "",
         fileName: `section-${sectionNum}.md`,
-        relativeFile: chapterFile,
+        relativeFile: `chapter-${padTwo(chapterNum)}/${chapterFile}`,
         contentLength: sectionMd.length,
         hasNotes,
         status: child.status ?? "current",
@@ -868,6 +864,25 @@ function renderTitleChildren(
 /**
  * Recursively walk a title-level AST tree and collect SectionMeta for dry-run.
  */
+/**
+ * Recursively collect SectionMeta from a chapter node for dry-run,
+ * traversing intermediate big levels (subchapter, part, etc.).
+ */
+function collectChapterSectionsDryRun(
+  node: LevelNode,
+  chapterNode: LevelNode,
+  context: EmitContext,
+  sectionMetas: SectionMeta[],
+): void {
+  for (const child of node.children) {
+    if (child.type === "level" && child.levelType === "section") {
+      sectionMetas.push(buildSectionMetaDryRun(child, chapterNode, context));
+    } else if (child.type === "level" && BIG_LEVELS.has(child.levelType)) {
+      collectChapterSectionsDryRun(child, chapterNode, context, sectionMetas);
+    }
+  }
+}
+
 function collectSectionMetasFromTree(
   node: LevelNode,
   context: EmitContext,
