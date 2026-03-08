@@ -1,5 +1,11 @@
 # @lexbuild/core
 
+## 1.3.0
+
+### Minor Changes
+
+- [#23](https://github.com/chris-c-thomas/lexbuild/pull/23) [`6ed94e2`](https://github.com/chris-c-thomas/lexbuild/commit/6ed94e2714b7855a11e7234f72466ce7f8eaca7d) Thanks [@chris-c-thomas](https://github.com/chris-c-thomas)! - Fix incorrect output structure for chapter conversions, update web app, and modify convert command's summary stats.
+
 ## 1.2.0
 
 ### Minor Changes
