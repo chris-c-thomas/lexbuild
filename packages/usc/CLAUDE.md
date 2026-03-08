@@ -30,6 +30,10 @@ src/
 | `USC_TITLE_NUMBERS` | Constant | Array `[1, 2, ..., 54]` |
 | `ConvertOptions` | Type | Input options for `convertTitle()` |
 | `ConvertResult` | Type | Conversion result (sections written, files, tokens, memory) |
+| `DownloadOptions` | Type | Input options for `downloadTitles()` |
+| `DownloadResult` | Type | Download result (titles downloaded, files, bytes, stats) |
+| `DownloadedFile` | Type | Metadata for a single downloaded file (path, title, size, release point) |
+| `DownloadError` | Type | Error type for download failures (wraps underlying I/O/network errors) |
 
 ## Conversion Pipeline
 

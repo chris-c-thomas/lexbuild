@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.4.0]
+
+### Changed
+
+#### Web App (`apps/web/`)
+
+- **Next.js 15 → 16.1.6**: upgraded framework from Next.js 15.3.3 to 16.1.6. Turbopack is now the default bundler for both `next dev` and `next build`. No breaking changes affected the app — async `params` were already in use, no middleware, no parallel routes, no custom webpack config.
+- **React 19.1 → 19.2.4**: upgraded React and React DOM to 19.2.4 (includes View Transitions, `useEffectEvent`, `<Activity>` component).
+- **`@types/react` → 19.2.14, `@types/react-dom` → 19.2.3**: updated type definitions to match React 19.2.
+- **`next-env.d.ts` updated**: Next.js 16 auto-regenerated this file, switching from triple-slash reference to bare `import` for route types.
+- **`tsconfig.json` updated**: Next.js 16 auto-set `jsx: "react-jsx"` and added `.next/dev/types/**/*.ts` to `include` (dev types now output to `.next/dev/`).
+- **`CONTENT_DIR` pinned to absolute path**: changed `.env.local` from relative `./content` to absolute path to suppress Turbopack's overly broad file pattern warnings during build. Added `.env.example` for reference.
+
+#### Documentation
+
+- **Package-level `CLAUDE.md` files**: added `CLAUDE.md` to `packages/core/`, `packages/usc/`, and `packages/cli/` with architecture details, module structure, and package-specific conventions.
+- **Root `CLAUDE.md`**: added "Package-Level Documentation" section linking to all four package/app `CLAUDE.md` files. Updated Next.js version reference from 15 to 16.
+- **`apps/web/CLAUDE.md`**: updated framework version from "Next.js 15.x" to "Next.js 16.x".
+- **Root `README.md`**: updated web app description to specify "Next.js 16, React 19, Tailwind CSS 4".
+- **`apps/web/README.md`**: updated tech stack table to "Next.js 16 (App Router, SSR, Turbopack)" and "React 19.2".
+
+---
+
 ## [1.3.0]
 
 ### Fixed
