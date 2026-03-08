@@ -132,7 +132,7 @@ xml/
 fixtures/xml/
 
 # USLM reference materials (PDF, XSD, CSS — available from OLRC)
-docs/reference/
+docs/reference/uslm/
 
 # AI agent transcripts
 docs/transcripts/
