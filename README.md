@@ -167,7 +167,7 @@ See [docs/extending.md](docs/extending.md) for the full guide.
 
 ### Web
 
-A server-rendered documentation site for browsing the entire U.S. Code as structured Markdown. Built with Next.js, TypeScript, React, Tailwind CSS, Shiki and shadcn/ui.
+A server-rendered documentation site for browsing the entire U.S. Code as structured Markdown. Built with Next.js 16, TypeScript, React 19, Tailwind CSS 4, Shiki, and shadcn/ui.
 
 - **60,000+ section pages** served via SSR with CDN caching (1-year `s-maxage`)
 - **Three granularity levels** — view any title, chapter, or section with Markdown source and rendered HTML preview

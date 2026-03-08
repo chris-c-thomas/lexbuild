@@ -73,7 +73,7 @@ packages:
 
 ## Tech Stack
 
-- **Framework**: Next.js 15.x (App Router, SSR with CDN caching — NOT `output: 'export'`)
+- **Framework**: Next.js 16.x (App Router, SSR with CDN caching — NOT `output: 'export'`)
 - **Language**: TypeScript 5.x, strict mode
 - **Runtime**: Node.js >= 20 LTS (ESM)
 - **UI**: React 19.x
