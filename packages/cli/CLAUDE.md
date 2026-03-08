@@ -1,0 +1,107 @@
+# CLAUDE.md — @lexbuild/cli
+
+## Package Overview
+
+`@lexbuild/cli` is the published npm package that users install (`npm install -g @lexbuild/cli`). It provides the `lexbuild` binary with `download` and `convert` commands. The CLI is a thin orchestration layer over `@lexbuild/usc` — all conversion and download logic lives in that package.
+
+## Module Structure
+
+```
+src/
+├── index.ts                    # Entry point — Commander program setup, registers commands
+├── ui.ts                       # Terminal UI utilities (spinners, tables, formatters)
+├── parse-titles.ts             # Title specification parser ("1-5,8,11" → number[])
+└── commands/
+    ├── download.ts             # lexbuild download command
+    └── convert.ts              # lexbuild convert command
+```
+
+## Commands
+
+### `lexbuild download`
+
+Downloads USC XML from OLRC. Calls `downloadTitles()` from `@lexbuild/usc`.
+
+```
+Options:
+  --output <dir>           Default: "./downloads/usc/xml"
+  --titles <spec>          Title selection: "1", "1-5", "1-5,8,11"
+  --all                    Download all 54 titles (single bulk zip)
+  --release-point <id>     Default: CURRENT_RELEASE_POINT
+```
+
+Requires either `--titles` or `--all`. Renders summary table with file sizes on completion.
+
+### `lexbuild convert`
+
+Converts USC XML to Markdown. Calls `convertTitle()` from `@lexbuild/usc`.
+
+```
+Arguments:
+  [input]                  Path to single USC XML file (optional)
+
+Options:
+  --output <dir>           Default: "./output"
+  --titles <spec>          Title selection
+  --all                    Discover & convert all titles in --input-dir
+  --input-dir <dir>        Default: "./downloads/usc/xml"
+  -g, --granularity        section | chapter | title (default: section)
+  --link-style             relative | canonical | plaintext (default: plaintext)
+  --include-source-credits Default: true
+  --include-notes          Default: true (all notes)
+  --include-editorial-notes
+  --include-statutory-notes
+  --include-amendments
+  --dry-run                Parse only, no files written
+  -v, --verbose            Print detailed file output
+```
+
+Three input modes (mutually exclusive): `<input>` positional arg, `--titles`, or `--all`.
+
+**Note flag logic**: If any selective note flag is set (`--include-editorial-notes`, etc.), the broad `--include-notes` flag is automatically disabled to prevent conflicts.
+
+## UI Module (`ui.ts`)
+
+Provides consistent terminal output:
+
+- **`createSpinner(text)`** — Ora spinner with "dots" animation
+- **`formatDuration(ms)`** — `"1.5s"` or `"1m 23s"`
+- **`formatBytes(bytes)`** — `"11.0 MB"`
+- **`formatNumber(n)`** — Locale-aware: `"1,234,567"`
+- **`success(text)` / `error(text)`** — Green check / red X prefix
+- **`heading(text)`** — Bold text
+- **`summaryBlock({ title, rows, footer })`** — Key-value table with borders
+- **`dataTable(headings, rows)`** — Multi-column data table
+
+Tables use `cli-table3` with custom border characters. `visualLength()` strips ANSI escape codes for accurate column width calculations. Columns expand to fill terminal width.
+
+## Title Parser (`parse-titles.ts`)
+
+`parseTitles(input: string): number[]`
+
+Accepts: `"29"`, `"1,3,8,11"`, `"1-5"`, `"1-5,8,11"` (mixed ranges and lists).
+
+Validates range 1-54, rejects floats/letters, deduplicates, returns sorted ascending.
+
+## Build Configuration
+
+- **tsup**: ESM output with `#!/usr/bin/env node` shebang banner injected at build time
+- **Binary**: `"lexbuild": "./dist/index.js"` in package.json `bin` field
+- **Dependencies**: `commander`, `chalk`, `ora`, `cli-table3` for CLI; `@lexbuild/core` and `@lexbuild/usc` via `workspace:*`
+
+## Error Handling
+
+All errors call `process.exit(1)`:
+
+- **Validation errors**: Missing/conflicting options → `console.error()` + exit
+- **File not found**: `existsSync()` check → error message + exit
+- **Conversion/download failures**: `try-catch` → `spinner.fail()` + exit
+- **Partial failures** (some downloads fail): Success summary + individual error messages
+
+## Key Design Choices
+
+- **No global middleware**: All logic is self-contained in command `.action()` handlers
+- **Spinner text mutation**: Multi-title loops update spinner text in-place rather than creating new spinners
+- **Dynamic table columns**: Summary tables adapt columns based on granularity (section shows chapters + sections, title shows only tokens)
+- **Relative path reporting**: File paths in output use `relative(cwd, absolutePath)` for readability
+- **Performance timing**: Uses `performance.now()` for high-resolution elapsed time

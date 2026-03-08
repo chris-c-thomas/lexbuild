@@ -13,7 +13,7 @@ lexbuild/
 │   ├── usc/         # @lexbuild/usc — U.S. Code-specific element handlers and downloader
 │   └── cli/         # @lexbuild/cli — CLI binary (the published npm package users install)
 ├── apps/
-│   └── web/         # Documentation site — Next.js 15, SSR, browse U.S. Code as Markdown
+│   └── web/         # Documentation site — Next.js 16, SSR, browse U.S. Code as Markdown
 ├── downloads/
 │   └── usc/
 │       └── xml/     # Full USC XML files (usc01.xml ... usc54.xml) — gitignored
@@ -24,6 +24,15 @@ lexbuild/
 ├── turbo.json       # Turborepo pipeline config
 └── CLAUDE.md        # This file
 ```
+
+## Package-Level Documentation
+
+Each package and app has its own `CLAUDE.md` with architecture details, module structure, and package-specific conventions:
+
+- [`packages/core/CLAUDE.md`](packages/core/CLAUDE.md) — XML→AST→Markdown pipeline, emit-at-level streaming, AST node types, rendering, link resolution
+- [`packages/usc/CLAUDE.md`](packages/usc/CLAUDE.md) — Collect-then-write pattern, granularity output, edge cases (duplicates, appendices), downloader
+- [`packages/cli/CLAUDE.md`](packages/cli/CLAUDE.md) — Commands, options, UI module, title parser, build config
+- [`apps/web/CLAUDE.md`](apps/web/CLAUDE.md) — Next.js 16 SSR site, content provider abstraction, routes, sidebar, search, deployment
 
 ## Tech Stack
 

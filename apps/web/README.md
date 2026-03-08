@@ -182,9 +182,9 @@ The default implementation (`FsContentProvider`) reads from the local filesystem
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 15 (App Router, SSR) |
+| Framework | Next.js 16 (App Router, SSR, Turbopack) |
 | Language | TypeScript 5, strict mode |
-| UI | React 19, Tailwind CSS 4, shadcn/ui (base-nova, zinc) |
+| UI | React 19.2, Tailwind CSS 4, shadcn/ui (base-nova, zinc) |
 | Syntax Highlighting | Shiki (github-light / github-dark dual themes) |
 | Markdown Rendering | unified + remark-parse + remark-gfm + remark-rehype + rehype-stringify |
 | Search | Pagefind (client-side, static index from .md source files) |
