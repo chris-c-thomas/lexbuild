@@ -94,7 +94,7 @@ packages:
 The site uses server-side rendering with aggressive CDN caching. Three dynamic route templates handle all ~61,500 unique URLs:
 
 1. **Title viewer** (`/usc/title-01/`) — reads `content/title/usc/title-01.md`
-2. **Chapter viewer** (`/usc/title-01/chapter-01/`) — reads `content/chapter/usc/title-01/chapter-01.md`
+2. **Chapter viewer** (`/usc/title-01/chapter-01/`) — reads `content/chapter/usc/title-01/chapter-01/chapter-01.md`
 3. **Section viewer** (`/usc/title-01/chapter-01/section-1/`) — reads `content/section/usc/title-01/chapter-01/section-1.md`
 
 On first request, the Server Component fetches the `.md` file from the content provider, parses frontmatter, highlights with Shiki, renders with remark, and returns complete HTML. The response includes `Cache-Control: public, s-maxage=31536000, stale-while-revalidate=86400` — the CDN caches it for 1 year. All subsequent requests are served from cache at < 50ms.
@@ -606,7 +606,7 @@ export async function generateMetadata({ params }: Props) {
 
 ### `/usc/[title]/[chapter]/page.tsx` — Chapter Viewer
 
-Same pattern. Reads from `content/chapter/usc/{title}/{chapter}.md`. `granularity="chapter"`.
+Same pattern. Reads from `content/chapter/usc/{title}/{chapter}/{chapter}.md`. `granularity="chapter"`.
 
 ### `/usc/[title]/page.tsx` — Title Viewer
 

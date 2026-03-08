@@ -283,7 +283,7 @@ The zip contains a single XML file named like `usc01.xml`.
 ## Output File Naming
 
 **Section granularity** (default): `output/usc/title-{NN}/chapter-{NN}/section-{N}.md`
-**Chapter granularity**: `output/usc/title-{NN}/chapter-{NN}.md`
+**Chapter granularity**: `output/usc/title-{NN}/chapter-{NN}/chapter-{NN}.md`
 **Title granularity**: `output/usc/title-{NN}.md`
 
 - Title dirs: `title-01` through `title-54` (zero-padded to 2 digits)

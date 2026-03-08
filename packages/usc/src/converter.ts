@@ -160,12 +160,8 @@ export async function convertTitle(options: ConvertOptions): Promise<ConvertResu
         // Walk title tree → chapters → sections
         collectSectionMetasFromTree(node, context, sectionMetas);
       } else if (opts.granularity === "chapter") {
-        // Extract section metadata from chapter children
-        for (const child of node.children) {
-          if (child.type === "level" && child.levelType === "section") {
-            sectionMetas.push(buildSectionMetaDryRun(child, node, context));
-          }
-        }
+        // Recursively extract section metadata from chapter children (including nested big levels)
+        collectChapterSectionsDryRun(node, node, context, sectionMetas);
       } else {
         if (node.numValue) {
           sectionMetas.push(buildSectionMetaDryRun(node, null, context));
@@ -563,8 +559,9 @@ async function writeChapter(
 
   const titleNum = findAncestor(context.ancestors, "title")?.numValue ?? "0";
   const titleDir = `title-${padTwo(titleNum)}`;
+  const chapterDir = `chapter-${padTwo(chapterNum)}`;
   const chapterFile = `chapter-${padTwo(chapterNum)}.md`;
-  const filePath = join(options.output, "usc", titleDir, chapterFile);
+  const filePath = join(options.output, "usc", titleDir, chapterDir, chapterFile);
 
   // Build chapter-level frontmatter
   const titleAncestor = findAncestor(context.ancestors, "title");
@@ -601,35 +598,22 @@ async function writeChapter(
   parts.push("");
   parts.push(`# Chapter ${chapterNum} — ${chapterName}`);
 
-  // Collect section metas and render each section
+  // Collect section metas and render chapter children recursively
   const sectionMetas: SectionMeta[] = [];
 
-  for (const child of chapterNode.children) {
-    if (child.type === "level" && child.levelType === "section") {
-      const sectionOpts: RenderOptions = { ...renderOpts, headingOffset: 1 };
-      const sectionNode = options.includeSourceCredits ? child : stripSourceCredits(child);
-      const sectionMd = renderSection(sectionNode, sectionOpts);
-      parts.push("");
-      parts.push(sectionMd);
-
-      // Collect section metadata
-      const sectionNum = child.numValue ?? "0";
-      const hasNotes = child.children.some((c) => c.type === "notesContainer" || c.type === "note");
-      sectionMetas.push({
-        identifier: child.identifier ?? `/us/usc/t${titleNum}/s${sectionNum}`,
-        number: sectionNum,
-        name: child.heading?.trim() ?? "",
-        fileName: `section-${sectionNum}.md`,
-        relativeFile: chapterFile,
-        contentLength: sectionMd.length,
-        hasNotes,
-        status: child.status ?? "current",
-        chapterIdentifier: chapterNode.identifier ?? "",
-        chapterNumber: chapterNum,
-        chapterName,
-      });
-    }
-  }
+  renderChapterChildren(
+    chapterNode,
+    2,
+    options,
+    renderOpts,
+    parts,
+    sectionMetas,
+    titleNum,
+    chapterNode.identifier ?? "",
+    chapterNum,
+    chapterName,
+    chapterFile,
+  );
 
   const markdown = parts.join("\n") + "\n";
 
@@ -637,6 +621,87 @@ async function writeChapter(
   await writeFile(filePath, markdown, "utf-8");
 
   return { filePath, sectionMetas };
+}
+
+/**
+ * Recursively render children of a chapter node, traversing intermediate big levels
+ * (subchapter, part, etc.) to find and render all nested sections.
+ */
+function renderChapterChildren(
+  node: LevelNode,
+  headingLevel: number,
+  options: ConvertOptions,
+  renderOpts: RenderOptions,
+  parts: string[],
+  sectionMetas: SectionMeta[],
+  titleNum: string,
+  chapterIdentifier: string,
+  chapterNum: string,
+  chapterName: string,
+  chapterFile: string,
+): void {
+  for (const child of node.children) {
+    if (child.type === "level" && child.levelType === "section") {
+      const sectionOpts: RenderOptions = {
+        ...renderOpts,
+        headingOffset: Math.min(headingLevel - 1, 5),
+      };
+      const sectionNode = options.includeSourceCredits ? child : stripSourceCredits(child);
+      const sectionMd = renderSection(sectionNode, sectionOpts);
+      parts.push("");
+      parts.push(sectionMd);
+
+      const sectionNum = child.numValue ?? "0";
+      const hasNotes = child.children.some(
+        (c) => c.type === "notesContainer" || c.type === "note",
+      );
+      sectionMetas.push({
+        identifier: child.identifier ?? `/us/usc/t${titleNum}/s${sectionNum}`,
+        number: sectionNum,
+        name: child.heading?.trim() ?? "",
+        fileName: `section-${sectionNum}.md`,
+        relativeFile: `chapter-${padTwo(chapterNum)}/${chapterFile}`,
+        contentLength: sectionMd.length,
+        hasNotes,
+        status: child.status ?? "current",
+        chapterIdentifier,
+        chapterNumber: chapterNum,
+        chapterName,
+      });
+    } else if (child.type === "level" && BIG_LEVELS.has(child.levelType)) {
+      // Intermediate big level (subchapter, part, etc.) — emit heading and recurse
+      const numDisplay = child.num ?? "";
+      const heading = child.heading ? ` ${child.heading}` : "";
+      parts.push("");
+      if (headingLevel <= 5) {
+        const prefix = "#".repeat(headingLevel);
+        parts.push(`${prefix} ${numDisplay}${heading}`);
+      } else {
+        parts.push(`**${numDisplay}${heading}**`);
+      }
+
+      renderChapterChildren(
+        child,
+        headingLevel + 1,
+        options,
+        renderOpts,
+        parts,
+        sectionMetas,
+        titleNum,
+        chapterIdentifier,
+        chapterNum,
+        chapterName,
+        chapterFile,
+      );
+    } else {
+      // Content, notes, toc, etc. — render inline
+      const rendered = renderNode(child as ASTNode, renderOpts);
+      if (rendered) {
+        parts.push("");
+        parts.push(rendered);
+      }
+    }
+  }
 }
 
 /** Result of writing a title-level file */
@@ -799,6 +864,25 @@ function renderTitleChildren(
 /**
  * Recursively walk a title-level AST tree and collect SectionMeta for dry-run.
  */
+/**
+ * Recursively collect SectionMeta from a chapter node for dry-run,
+ * traversing intermediate big levels (subchapter, part, etc.).
+ */
+function collectChapterSectionsDryRun(
+  node: LevelNode,
+  chapterNode: LevelNode,
+  context: EmitContext,
+  sectionMetas: SectionMeta[],
+): void {
+  for (const child of node.children) {
+    if (child.type === "level" && child.levelType === "section") {
+      sectionMetas.push(buildSectionMetaDryRun(child, chapterNode, context));
+    } else if (child.type === "level" && BIG_LEVELS.has(child.levelType)) {
+      collectChapterSectionsDryRun(child, chapterNode, context, sectionMetas);
+    }
+  }
+}
+
 function collectSectionMetasFromTree(
   node: LevelNode,
   context: EmitContext,

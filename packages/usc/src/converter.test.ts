@@ -233,10 +233,9 @@ describe("convertTitle", () => {
     expect(result.sectionsWritten).toBeGreaterThan(0);
     expect(result.files).toHaveLength(1);
 
-    // Should be a chapter file, not a section file in a subdirectory
+    // Should be a chapter file inside the chapter directory
     const filePath = result.files[0]!;
-    expect(filePath).toContain("chapter-01.md");
-    expect(filePath).not.toContain("chapter-01/");
+    expect(filePath).toContain("chapter-01/chapter-01.md");
 
     // Content should have chapter heading and section as H2
     const content = await readFile(filePath, "utf-8");

@@ -11,7 +11,7 @@ interface Props {
 
 const getContent = cache(async (title: string, chapter: string) => {
   const content = getContentProvider();
-  return content.getFile(`chapter/usc/${title}/${chapter}.md`);
+  return content.getFile(`chapter/usc/${title}/${chapter}/${chapter}.md`);
 });
 
 export default async function ChapterPage({ params }: Props) {

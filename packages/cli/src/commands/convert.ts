@@ -132,11 +132,14 @@ async function convertSingleFile(
 
     spinner.stop();
 
-    const rows: Array<[string, string]> = [
-      ["Sections", formatNumber(result.sectionsWritten)],
-      ["Chapters", formatNumber(result.chapterCount)],
-      ["Est. Tokens", formatNumber(result.totalTokenEstimate)],
-    ];
+    const rows: Array<[string, string]> = [];
+    if (options.granularity === "section") {
+      rows.push(["Sections", formatNumber(result.sectionsWritten)]);
+      rows.push(["Chapters", formatNumber(result.chapterCount)]);
+    } else if (options.granularity === "chapter") {
+      rows.push(["Chapters", formatNumber(result.chapterCount)]);
+    }
+    rows.push(["Est. Tokens", formatNumber(result.totalTokenEstimate)]);
 
     if (!result.dryRun) {
       rows.push(["Files Written", formatNumber(result.files.length)]);
@@ -310,7 +313,8 @@ Examples:
     });
     process.stdout.write(header);
 
-    // Build data table rows
+    // Build data table rows — adapt columns to granularity
+    const granularity = options.granularity;
     let totalSections = 0;
     let totalChapters = 0;
     let totalTokens = 0;
@@ -322,35 +326,84 @@ Examples:
       totalTokens += result.totalTokenEstimate;
       totalElapsed += elapsed;
 
-      return [
-        result.titleNumber,
-        result.titleName,
-        formatNumber(result.chapterCount),
-        formatNumber(result.sectionsWritten),
-        formatNumber(result.totalTokenEstimate),
-        formatDuration(elapsed),
-      ];
+      if (granularity === "title") {
+        return [
+          result.titleNumber,
+          result.titleName,
+          formatNumber(result.totalTokenEstimate),
+          formatDuration(elapsed),
+        ];
+      } else if (granularity === "chapter") {
+        return [
+          result.titleNumber,
+          result.titleName,
+          formatNumber(result.chapterCount),
+          formatNumber(result.totalTokenEstimate),
+          formatDuration(elapsed),
+        ];
+      } else {
+        return [
+          result.titleNumber,
+          result.titleName,
+          formatNumber(result.chapterCount),
+          formatNumber(result.sectionsWritten),
+          formatNumber(result.totalTokenEstimate),
+          formatDuration(elapsed),
+        ];
+      }
     });
 
     // Totals row
-    tableRows.push([
-      chalk.bold("Total"),
-      "",
-      chalk.bold(formatNumber(totalChapters)),
-      chalk.bold(formatNumber(totalSections)),
-      chalk.bold(formatNumber(totalTokens)),
-      chalk.bold(formatDuration(totalElapsed)),
-    ]);
+    if (granularity === "title") {
+      tableRows.push([
+        chalk.bold("Total"),
+        "",
+        chalk.bold(formatNumber(totalTokens)),
+        chalk.bold(formatDuration(totalElapsed)),
+      ]);
+    } else if (granularity === "chapter") {
+      tableRows.push([
+        chalk.bold("Total"),
+        "",
+        chalk.bold(formatNumber(totalChapters)),
+        chalk.bold(formatNumber(totalTokens)),
+        chalk.bold(formatDuration(totalElapsed)),
+      ]);
+    } else {
+      tableRows.push([
+        chalk.bold("Total"),
+        "",
+        chalk.bold(formatNumber(totalChapters)),
+        chalk.bold(formatNumber(totalSections)),
+        chalk.bold(formatNumber(totalTokens)),
+        chalk.bold(formatDuration(totalElapsed)),
+      ]);
+    }
 
-    console.log(
-      dataTable(["Title", "Name", "Chapters", "Sections", "Tokens", "Duration"], tableRows),
-    );
+    // Table headers and footer — adapt to granularity
+    const tableHeaders =
+      granularity === "title"
+        ? ["Title", "Name", "Tokens", "Duration"]
+        : granularity === "chapter"
+          ? ["Title", "Name", "Chapters", "Tokens", "Duration"]
+          : ["Title", "Name", "Chapters", "Sections", "Tokens", "Duration"];
 
-    // Footer
+    console.log(dataTable(tableHeaders, tableRows));
+
+    // Footer — show the primary unit for the chosen granularity
     const titleWord = totalTitles === 1 ? "title" : "titles";
-    const sectionWord = totalSections === 1 ? "section" : "sections";
+    let countLabel: string;
+    if (granularity === "title") {
+      countLabel = `${totalTitles} ${titleWord}`;
+    } else if (granularity === "chapter") {
+      const chapterWord = totalChapters === 1 ? "chapter" : "chapters";
+      countLabel = `${totalTitles} ${titleWord} (${formatNumber(totalChapters)} ${chapterWord})`;
+    } else {
+      const sectionWord = totalSections === 1 ? "section" : "sections";
+      countLabel = `${totalTitles} ${titleWord} (${formatNumber(totalSections)} ${sectionWord})`;
+    }
     console.log(
-      `\n  ${success(`Converted ${totalTitles} ${titleWord} (${formatNumber(totalSections)} ${sectionWord}) in ${formatDuration(totalElapsed)}`)}`,
+      `\n  ${success(`Converted ${countLabel} in ${formatDuration(totalElapsed)}`)}`,
     );
     console.log("");
   });
