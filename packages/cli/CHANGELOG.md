@@ -1,5 +1,17 @@
 # @lexbuild/cli
 
+## 1.4.0
+
+### Minor Changes
+
+- [#25](https://github.com/chris-c-thomas/lexbuild/pull/25) [`8c294fb`](https://github.com/chris-c-thomas/lexbuild/commit/8c294fba20996fe6436dd08df10afec64a2a3480) Thanks [@chris-c-thomas](https://github.com/chris-c-thomas)! - Version bump v1.4.0
+
+### Patch Changes
+
+- Updated dependencies [[`8c294fb`](https://github.com/chris-c-thomas/lexbuild/commit/8c294fba20996fe6436dd08df10afec64a2a3480)]:
+  - @lexbuild/core@1.4.0
+  - @lexbuild/usc@1.4.0
+
 ## 1.3.0
 
 ### Minor Changes
