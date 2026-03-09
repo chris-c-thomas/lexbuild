@@ -74,7 +74,7 @@ The architecture is designed to grow horizontally. Adding a new source (e.g., Co
 The top layer contains user-facing tools that consume source packages:
 
 - **`@lexbuild/cli`** -- command-line interface built with `commander`. Parses arguments, delegates to source packages, and provides user-facing output (`chalk`, `ora`, `cli-table3`). Contains no conversion logic. As new source packages are added, new commands are registered here.
-- **`apps/web`** -- a Next.js SSR documentation site that renders converted Markdown files with sidebar navigation, full-text search, and dark mode. It has no code dependency on any LexBuild package; it consumes only the output files.
+- **`apps/web`** -- a Next.js based web app that renders converted Markdown files with sidebar navigation, full-text search, and dark mode. It has no code dependency on any LexBuild package; it consumes only the output files.
 
 ## Package Dependency Graph
 
@@ -97,14 +97,14 @@ lexbuild/
 ├── packages/
 │   ├── core/        # @lexbuild/core — XML parsing, AST, Markdown rendering
 │   ├── usc/         # @lexbuild/usc — U.S. Code converter and downloader
-│   └── cli/         # @lexbuild/cli — CLI binary (published npm package)
+│   └── cli/         # @lexbuild/cli — CLI binary
 ├── apps/
-│   └── web/         # Documentation site — Next.js, SSR, browse output as Markdown
+│   └── web/         # LexBuild web app
 ├── downloads/
 │   └── usc/xml/     # Downloaded USC XML files (gitignored)
 ├── fixtures/
 │   ├── fragments/   # Synthetic XML snippets for unit tests
 │   └── expected/    # Expected output snapshots for integration tests
 ├── docs/            # This documentation
-└── turbo.json       # Turborepo pipeline config
+└── turbo.json       # Turborepo config
 ```
