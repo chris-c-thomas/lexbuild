@@ -1,5 +1,11 @@
 # @lexbuild/core
 
+## 1.5.0
+
+### Minor Changes
+
+- [#29](https://github.com/chris-c-thomas/LexBuild/pull/29) [`ccae93b`](https://github.com/chris-c-thomas/LexBuild/commit/ccae93bd42f98cadc5c09f2cffaebe1ab353385c) Thanks [@chris-c-thomas](https://github.com/chris-c-thomas)! - Refactor and enhance documentation
+
 ## 1.4.2
 
 ### Patch Changes
