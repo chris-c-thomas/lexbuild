@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.5.0]
+
+### Fixed
+
+- **Notes default behavior**: documentation across 6 files incorrectly stated notes were "opt-in" / "excluded by default", but the CLI defaults `--include-notes` to `true`. Updated `docs/reference/output-format.md`, `docs/reference/cli-reference.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, and `docs/architecture/ast-model.md` to reflect the actual default.
+- **Broken doc links**: docs were reorganized into subdirectories (`docs/reference/`, `docs/development/`, `docs/architecture/`) but `README.md`, `CLAUDE.md`, and `.github/copilot-instructions.md` still referenced the old flat paths (`docs/extending.md`, `docs/output-format.md`, etc.). Updated all links to the new locations.
+- **Next.js version inconsistency**: `CLAUDE.md` referenced "Next.js 15" in the Web App Notes section despite the upgrade to Next.js 16 in v1.4.0. Updated to "Next.js 16".
+- **README.md docs link**: `docs/README.md` link pointed to a file that doesn't exist at that path. Changed to `docs/`.
+
+---
+
 ## [1.4.2]
 
 ### Changed
