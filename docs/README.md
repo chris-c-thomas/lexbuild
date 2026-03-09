@@ -4,8 +4,6 @@ This directory contains the full documentation for LexBuild — an open-source t
 
 ## Architecture
 
-How LexBuild is designed and built.
-
 - [Overview](architecture/overview.md) — System architecture and the three-layer design
 - [Conversion Pipeline](architecture/conversion-pipeline.md) — XML-to-Markdown data flow and the section-emit pattern
 - [AST Model](architecture/ast-model.md) — Intermediate representation and node types
@@ -19,8 +17,6 @@ How LexBuild is designed and built.
 
 ## Development
 
-Getting started as a contributor.
-
 - [Getting Started](development/getting-started.md) — Prerequisites, setup, and first build
 - [Testing](development/testing.md) — Test framework, fixtures, snapshots, and conventions
 - [Release Process](development/release-process.md) — Changesets, versioning, and npm publishing
@@ -30,21 +26,15 @@ Getting started as a contributor.
 
 ## Packages
 
-Deep-dive documentation for each published package.
-
 - [@lexbuild/core](packages/core.md) — Format-agnostic XML parsing, AST, and rendering infrastructure
 - [@lexbuild/usc](packages/usc.md) — U.S. Code conversion and OLRC downloader
 - [@lexbuild/cli](packages/cli.md) — CLI binary and command registration
 
 ## Apps
 
-Applications that consume LexBuild output.
-
-- [Web App](apps/web.md) — Next.js documentation site for browsing converted output
+- [LexBuild Web App](apps/web.md) — Next.js documentation site for browsing converted output
 
 ## Reference
-
-Specifications and lookup tables.
 
 - [Output Format](reference/output-format.md) — Directory layout, frontmatter schema, metadata indexes, RAG guidance
 - [XML Element Reference](reference/xml-element-reference.md) — USLM element mapping and Markdown output

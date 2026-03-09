@@ -118,18 +118,4 @@ The publish pipeline requires elevated permissions:
 
 ---
 
-## Release Flow Summary
-
-The end-to-end release process:
-
-1. A contributor creates a changeset (`pnpm changeset`) describing their changes
-2. The changeset is committed alongside the code changes in a PR
-3. CI validates the PR (build, lint, typecheck, test on Node 20 and 22)
-4. The PR is merged to `main`
-5. The publish pipeline detects unreleased changesets and opens a release PR
-6. A maintainer reviews and merges the release PR
-7. The publish pipeline detects no remaining changesets and publishes to npm
-
 All packages are versioned in lockstep, so every release bumps `@lexbuild/core`, `@lexbuild/usc`, and `@lexbuild/cli` to the same version number.
-
-For the full release workflow and changeset conventions, see [../development/release-process.md](../development/release-process.md).

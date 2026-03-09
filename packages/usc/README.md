@@ -99,16 +99,6 @@ Each title produces Markdown files with YAML frontmatter. The output structure d
 | `chapter` | `title-NN/chapter-NN/chapter-NN.md` | `_meta.json` per title, `README.md` per title |
 | `title` | `title-NN.md` | Enriched frontmatter only (no sidecar files) |
 
-See the [output format specification](https://github.com/chris-c-thomas/LexBuild/blob/main/docs/output-format.md) for details.
-
-## Documentation
-
-- [LexBuild Monorepo](https://github.com/chris-c-thomas/LexBuild)
-- [Architecture](https://github.com/chris-c-thomas/LexBuild/blob/main/docs/architecture.md)
-- [Output Format](https://github.com/chris-c-thomas/LexBuild/blob/main/docs/output-format.md)
-- [XML Element Reference](https://github.com/chris-c-thomas/LexBuild/blob/main/docs/xml-element-reference.md)
-- [Extending](https://github.com/chris-c-thomas/LexBuild/blob/main/docs/extending.md)
-
 ## License
 
 [MIT](https://github.com/chris-c-thomas/LexBuild/blob/main/LICENSE)

@@ -1,6 +1,6 @@
-# Contributing to LexBuild
+# Contributing
 
-Thanks for your interest in contributing! This guide covers everything you need to get set up and submit changes.
+This guide covers everything you need to get set up and submit changes.
 
 ## Prerequisites
 
