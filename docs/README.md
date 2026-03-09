@@ -4,39 +4,39 @@ This directory contains the full documentation for LexBuild — an open-source t
 
 ## Architecture
 
-- [Overview](architecture/overview.md) — System architecture and the three-layer design
-- [Conversion Pipeline](architecture/conversion-pipeline.md) — XML-to-Markdown data flow and the section-emit pattern
-- [AST Model](architecture/ast-model.md) — Intermediate representation and node types
-- [Monorepo Structure](architecture/monorepo-structure.md) — Directory layout and workspace conventions
-- [Dependency Graph](architecture/dependency-graph.md) — Package relationships and how new sources plug in
-- [Build Pipeline](architecture/build-pipeline.md) — Turborepo orchestration and build order
-- [CI/CD](architecture/ci-cd.md) — GitHub Actions workflows for testing and publishing
-- [Link Resolution](architecture/link-resolution.md) — Cross-reference resolution strategy
-- [Performance](architecture/performance.md) — Benchmarks, memory profile, and streaming design
-- [Future Sources](architecture/future-sources.md) — Roadmap for CFR, state statutes, and beyond
+- [Overview](architecture/overview.md)
+- [Conversion Pipeline](architecture/conversion-pipeline.md)
+- [AST Model](architecture/ast-model.md)
+- [Monorepo Structure](architecture/monorepo-structure.md)
+- [Dependency Graph](architecture/dependency-graph.md)
+- [Build Pipeline](architecture/build-pipeline.md)
+- [CI/CD](architecture/ci-cd.md)
+- [Link Resolution](architecture/link-resolution.md)
+- [Performance](architecture/performance.md)
+- [Future Sources](architecture/future-sources.md)
 
 ## Development
 
-- [Getting Started](development/getting-started.md) — Prerequisites, setup, and first build
-- [Testing](development/testing.md) — Test framework, fixtures, snapshots, and conventions
-- [Release Process](development/release-process.md) — Changesets, versioning, and npm publishing
-- [Extending LexBuild](development/extending.md) — Adding new legal source packages
-- [Coding Standards](development/coding-standards.md) — TypeScript conventions, naming, and error handling
-- [Debugging](development/debugging.md) — Common issues, XML debugging, and memory profiling
+- [Getting Started](development/getting-started.md)
+- [Testing](development/testing.md)
+- [Release Process](development/release-process.md)
+- [Extending LexBuild](development/extending.md)
+- [Coding Standards](development/coding-standards.md)
+- [Debugging](development/debugging.md)
 
 ## Packages
 
-- [@lexbuild/core](packages/core.md) — Format-agnostic XML parsing, AST, and rendering infrastructure
-- [@lexbuild/usc](packages/usc.md) — U.S. Code conversion and OLRC downloader
-- [@lexbuild/cli](packages/cli.md) — CLI binary and command registration
+- [@lexbuild/core](packages/core.md)
+- [@lexbuild/usc](packages/usc.md)
+- [@lexbuild/cli](packages/cli.md)
 
 ## Apps
 
-- [LexBuild Web App](apps/web.md) — Next.js documentation site for browsing converted output
+- [LexBuild Web App](apps/web.md)
 
 ## Reference
 
-- [Output Format](reference/output-format.md) — Directory layout, frontmatter schema, metadata indexes, RAG guidance
-- [XML Element Reference](reference/xml-element-reference.md) — USLM element mapping and Markdown output
-- [CLI Reference](reference/cli-reference.md) — Complete command and option reference
-- [Glossary](reference/glossary.md) — Legal and technical terms used throughout this project
+- [Output Format](reference/output-format.md)
+- [XML Element Reference](reference/xml-element-reference.md)
+- [CLI Reference](reference/cli-reference.md)
+- [Glossary](reference/glossary.md)

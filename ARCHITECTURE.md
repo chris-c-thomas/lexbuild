@@ -46,13 +46,4 @@ LexBuild is a layered monorepo that separates format-agnostic infrastructure fro
 
 3. **Applications & CLI** (`@lexbuild/cli`, `apps/web/`) — User-facing tools. The CLI delegates all heavy lifting to source packages. The web app consumes the converted output files directly.
 
-For the full architecture documentation, see [`docs/architecture/`](docs/architecture/):
-
-- [Overview](docs/architecture/overview.md)
-- [Conversion Pipeline](docs/architecture/conversion-pipeline.md)
-- [AST Model](docs/architecture/ast-model.md)
-- [Monorepo Structure](docs/architecture/monorepo-structure.md)
-- [Dependency Graph](docs/architecture/dependency-graph.md)
-- [Build Pipeline](docs/architecture/build-pipeline.md)
-- [Performance](docs/architecture/performance.md)
-- [Future Sources](docs/architecture/future-sources.md)
+For the full architecture documentation, see [`docs/architecture/`](docs/architecture/)
