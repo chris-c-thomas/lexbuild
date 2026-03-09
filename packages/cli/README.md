@@ -4,7 +4,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/chris-c-thomas/LexBuild/ci.yml?style=for-the-badge&label=CI)](https://github.com/chris-c-thomas/LexBuild/actions/workflows/ci.yml)
 [![license](https://img.shields.io/github/license/chris-c-thomas/LexBuild?style=for-the-badge)](https://github.com/chris-c-thomas/LexBuild)
 
-This package is part of the [LexBuild monorepo](https://github.com/chris-c-thomas/LexBuild) monorepo, a tool that converts U.S. legislative XML into structured Markdown optimized for AI, RAG pipelines, and semantic search. See the monorepo for full documentation, architecture details, and contribution guidelines.
+This package is part of the [LexBuild monorepo](https://github.com/chris-c-thomas/LexBuild), a tool that converts U.S. legislative XML into structured Markdown optimized for AI, RAG pipelines, and semantic search. See the monorepo for full documentation, architecture details, and contribution guidelines.
 
 It provides the CLI entry point for downloading and converting legal and civic texts. Built on [`@lexbuild/core`](https://www.npmjs.com/package/@lexbuild/core) for shared parsing and rendering infrastructure, and also [`@lexbuild/usc`](https://www.npmjs.com/package/@lexbuild/usc) for [United States Code](https://uscode.house.gov/) support. Implementing support for additional sources (CFR, state statutes) is planned.
 
