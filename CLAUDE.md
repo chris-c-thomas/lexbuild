@@ -94,7 +94,7 @@ cd apps/web && bash scripts/generate-content.sh   # Generate all content + nav +
 
 ### Web App Notes
 
-The web app (`apps/web/`) is a Next.js 15 SSR site that consumes LexBuild's output files. It has **no code dependency** on `@lexbuild/core`, `@lexbuild/usc`, or `@lexbuild/cli`.
+The web app (`apps/web/`) is a Next.js 16 SSR site that consumes LexBuild's output files. It has **no code dependency** on `@lexbuild/core`, `@lexbuild/usc`, or `@lexbuild/cli`.
 
 Key points:
 - **Excluded from `pnpm turbo build`** — no `build` script in its `package.json` (only `build:web`). This prevents CI failures since the app requires content files that aren't in git.
@@ -313,7 +313,7 @@ The zip contains a single XML file named like `usc01.xml`.
 
 4. **Relative cross-reference links**: Cross-refs within the converted corpus use relative markdown links. Refs to unconverted titles fall back to OLRC website URLs.
 
-5. **Notes are opt-in**: By default, only the core statutory text and source credits are included. Notes (editorial, statutory, amendments) require explicit CLI flags. This keeps default output lean for RAG.
+5. **Notes included by default**: By default, all notes (editorial, statutory, amendments) are included alongside the core statutory text and source credits. Notes can be disabled with `--no-include-notes` or selectively filtered with `--include-editorial-notes`, `--include-statutory-notes`, `--include-amendments`.
 
 6. **Streaming output**: For section and chapter granularity, the converter writes output as sections/chapters are collected, avoiding holding the full title AST in memory. **Title granularity is the exception** — it holds the entire title AST and rendered Markdown in memory. Large titles (26, 42) may require 500MB+ RSS in title mode.
 
@@ -341,7 +341,7 @@ The zip contains a single XML file named like `usc01.xml`.
 
 ## When Adding New Source Types (CFR, State Statutes)
 
-> **Note**: The extension architecture is aspirational. No pluggable handler interfaces exist yet — element handling is built into the `ASTBuilder` class. See `docs/extending.md` for details.
+> **Note**: The extension architecture is aspirational. No pluggable handler interfaces exist yet — element handling is built into the `ASTBuilder` class. See `docs/development/extending.md` for details.
 
 1. Create a new package: `packages/cfr/` (or `packages/state-il/`, etc.)
 2. Implement a converter function analogous to `convertTitle()` in `@lexbuild/usc`

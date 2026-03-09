@@ -47,7 +47,13 @@ coverage/
 # AI coding agents
 # -----------------------------------------------------------------------------
 
-# Claude Code runtime state (personal MCP config, settings, local overrides)
+# Agents
+/.agents/
+
+# Skills
+skills-lock.json
+
+# Claude Code
 /.claude/
 .mcp.json
 
@@ -55,11 +61,8 @@ coverage/
 .cursorignore
 .cursorindexingignore
 
-# Aider
-.aider*
-
 # Codex / OpenAI
-.codex/
+/.codex/
 
 # -----------------------------------------------------------------------------
 # OS metadata
@@ -129,7 +132,7 @@ xml/
 fixtures/xml/
 
 # USLM reference materials (PDF, XSD, CSS — available from OLRC)
-docs/reference/
+docs/reference/uslm/
 
 # AI agent transcripts
 docs/transcripts/

@@ -109,7 +109,7 @@ Respect boundaries: keep generic parsing/rendering logic in `core`, USC-specific
 - **Section as atomic unit**: Each section is its own Markdown file. Subsections render inline, not as separate files.
 - **Collect-then-write**: Sections are collected during SAX streaming and written after the stream completes.
 - **Frontmatter + sidecar**: YAML frontmatter on every .md file AND `_meta.json` per directory.
-- **Notes are opt-in**: Default output includes only statutory text and source credits. Notes require CLI flags.
+- **Notes included by default**: All notes are included. Disable with `--no-include-notes` or selectively filter with `--include-editorial-notes`, `--include-statutory-notes`, `--include-amendments`.
 - **Token estimation**: character/4 heuristic in `_meta.json`.
 
 ## XML/USLM Pitfalls
@@ -139,7 +139,7 @@ See these docs for deeper detail:
 
 - `CLAUDE.md` — Full USLM schema reference, identifier format, namespaces, notes taxonomy, status values, download URLs
 - `CONTRIBUTING.md` — Setup, workflow, PR checklist, changesets
-- `docs/architecture.md` — System overview, package design, data flow
-- `docs/output-format.md` — Directory layout, frontmatter schema, metadata indexes, RAG guidance
-- `docs/xml-element-reference.md` — Element-by-element conversion reference
-- `docs/extending.md` — Guide for adding new legal source types
+- `docs/architecture/overview.md` — System overview, package design, data flow
+- `docs/reference/output-format.md` — Directory layout, frontmatter schema, metadata indexes, RAG guidance
+- `docs/reference/xml-element-reference.md` — Element-by-element conversion reference
+- `docs/development/extending.md` — Guide for adding new legal source types

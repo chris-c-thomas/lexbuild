@@ -22,7 +22,6 @@ LexBuild is an open-source toolchain for legal and civic texts. It transforms le
 - [Development](#development)
 - [Documentation](#documentation)
 - [Data Sources](#data-sources)
-- [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -67,14 +66,14 @@ lexbuild/
 │   ├── usc/            # @lexbuild/usc — U.S. Code source package
 │   └── cli/            # @lexbuild/cli — CLI binary (published to npm)
 ├── apps/
-│   └── web/            # Documentation site — browse U.S. Code as Markdown
+│   └── web/            # LexBuild web app
 ├── fixtures/           # Test data
 │   ├── fragments/      # Small synthetic XML snippets for unit tests
 │   └── expected/       # Expected output snapshots for integration tests
 ├── docs/               # Architecture, format spec, extension guide
-├── turbo.json          # Turborepo pipeline config
-├── pnpm-workspace.yaml # Workspace definitions
-└── CLAUDE.md           # AI-assisted development instructions
+├── turbo.json          # Turborepo config
+└── pnpm-workspace.yaml # Workspace definitions
+
 ```
 
 ### Dependency Graph
@@ -159,7 +158,7 @@ The monorepo is designed to grow. Adding support for a new legal source (e.g., C
 4. Add a new CLI command in `packages/cli`
 5. Document the source's XML schema in the package README
 
-See [docs/extending.md](docs/extending.md) for the full guide.
+See [docs/development/extending.md](docs/development/extending.md) for the full guide.
 
 ---
 
@@ -475,7 +474,7 @@ Each directory includes a `_meta.json` sidecar file for programmatic access:
 }
 ```
 
-For the complete output format specification, see [docs/output-format.md](docs/output-format.md).
+For the complete output format specification, see [docs/reference/output-format.md](docs/reference/output-format.md).
 
 ---
 
@@ -549,12 +548,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor guide.
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [Output Format](docs/output-format.md) | Directory layout, frontmatter schema, metadata indexes, RAG guidance |
-| [Architecture](docs/architecture.md) | System overview, package design, data flow, memory profile |
-| [XML Element Reference](docs/xml-element-reference.md) | USLM element mapping and Markdown output |
-| [Extending](docs/extending.md) | Guide for adding new legal source types |
+Full documentation in the `docs/` directory [here](docs/)
 
 ---
 
@@ -563,43 +557,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor guide.
 LexBuild processes XML published by the [Office of the Law Revision Counsel](https://uscode.house.gov/) (OLRC) of the U.S. House of Representatives. The XML uses the United States Legislative Markup (USLM) 1.0 schema.
 
 The U.S. Code XML is **public domain** and freely available at [uscode.house.gov/download/download.shtml](https://uscode.house.gov/download/download.shtml).
-
----
-
-## Roadmap
-
-Features and enhancements that are currently planned.
-
-Feel free to open an [issue](https://github.com/chris-c-thomas/LexBuild/issues) or start a [discussion](https://github.com/chris-c-thomas/LexBuild/discussions) to talk about any of these. Ideas and contributions are always welcome.
-
-**Output**
-
-- [ ] Additional output formats (plain text, JSON, and JSONL)
-- [ ] Precise token counting via `tiktoken` (`--precise-tokens`)
-- [ ] Section diff between OLRC release points
-
-**Sources**
-
-- [ ] Code of Federal Regulations (CFR) — `@lexbuild/cfr`
-- [ ] State statutes — `@lexbuild/state-{abbr}`
-- [ ] Incremental update support for new OLRC release points
-
-**Metadata**
-
-- [ ] Parent path metadata — full structural ancestry per section
-- [ ] Related sections — sibling references for contextual RAG retrieval
-- [ ] Cross-reference graph export (JSON/GraphML)
-
-**Tooling**
-
-- [ ] MCP server for AI-assisted legal research
-- [ ] Embedding pipeline integration
-
-**Apps**
-
-- [x] Web app for browsing converted output
-- [ ] API server for programmatic access to converted data
-- [ ] RAG demo application with vector search
 
 ---
 
