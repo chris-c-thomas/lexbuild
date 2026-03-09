@@ -430,12 +430,3 @@ The schema defines 18 status values. Multiple versions of the same element may c
 | `http://purl.org/dc/terms/` | `dcterms` | DC Terms metadata (`dcterms:created`) |
 | `http://www.w3.org/1999/xhtml` | *(varies)* | XHTML tables within content |
 | `http://www.w3.org/2001/XMLSchema-instance` | `xsi` | Schema instance attributes |
-
----
-
-## Related Documentation
-
-- [AST Model](../architecture/ast-model.md) -- how XML elements map to AST node types
-- [Core Package](../packages/core.md) -- XML parser, AST builder, and renderer implementation
-- [Output Format](output-format.md) -- the Markdown output these elements produce
-- [CLI Reference](cli-reference.md) -- flags that control note inclusion and link resolution

@@ -114,6 +114,7 @@ bash scripts/generate-content.sh
 ```
 
 This runs:
+
 1. `lexbuild convert --all -g section -o ./content/section --link-style canonical`
 2. `lexbuild convert --all -g chapter -o ./content/chapter --link-style canonical`
 3. `lexbuild convert --all -g title -o ./content/title --link-style canonical`
@@ -478,5 +479,3 @@ No automatic revalidation timers are used.
 - **CDN cache is one year.** After content updates, you must purge the CDN cache.
 - **`content/`, `public/nav/`, and `public/_pagefind/` are gitignored.**
 - **Clear `.next/` cache after CSS config changes.** Stale cache can mask PostCSS fixes.
-
-See [Monorepo Structure](../architecture/monorepo-structure.md) for how the web app fits into the broader LexBuild project, and [Output Format](../reference/output-format.md) for the specification of the `.md` and `_meta.json` files that the web app consumes.

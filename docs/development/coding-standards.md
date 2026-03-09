@@ -253,9 +253,3 @@ Internal packages reference each other using pnpm's `workspace:*` protocol:
 ```
 
 This always resolves to the local version during development. When packages are published, `workspace:*` is automatically replaced with the concrete version number.
-
-## Further Reading
-
-- [Testing](testing.md) -- Test structure, fixtures, snapshots, and naming conventions
-- [Getting Started](getting-started.md) -- Development environment setup and common commands
-- [Release Process](release-process.md) -- Changeset workflow and version bump conventions

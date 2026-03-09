@@ -137,5 +137,3 @@ Cross-source linking (e.g., a U.S. Code section referencing a CFR regulation) wo
 3. Identifier prefix routing (`/us/usc/...` vs. `/us/cfr/...`)
 
 The current resolver interface (`register`, `resolve`, `fallbackUrl`) supports all three without modification.
-
-For details on the core link resolver API, see [../packages/core.md](../packages/core.md). For output format details including link rendering, see [../reference/output-format.md](../reference/output-format.md).

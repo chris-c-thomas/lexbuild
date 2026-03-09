@@ -133,48 +133,42 @@ All source packages share core's AST types, Markdown renderer, and frontmatter g
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
-│                              CLI Layer                                  │
-│                                                                        │
-│   @lexbuild/cli                                                        │
-│   Argument parsing, progress UI, result formatting                     │
-│   Delegates all domain logic to source packages                        │
-│                                                                        │
+│                              CLI Layer                                   │
+│                                                                          │
+│   @lexbuild/cli                                                          │
+│   Argument parsing, progress UI, result formatting                       │
+│   Delegates all domain logic to source packages                          │
+│                                                                          │
 ├──────────────────────────────────────────────────────────────────────────┤
-│                           Source Layer                                  │
-│                                                                        │
-│   @lexbuild/usc       @lexbuild/cfr (future)     @lexbuild/state-il    │
-│   USC converter        CFR converter              (future)             │
-│   OLRC downloader      eCFR downloader            IL statutes          │
-│   File writer          File writer                converter            │
-│                                                                        │
-│   Each source package is independent — no cross-dependencies           │
-│                                                                        │
+│                           Source Layer                                   │
+│                                                                          │
+│   @lexbuild/usc       @lexbuild/cfr (future)     @lexbuild/state-il      │
+│   USC converter        CFR converter              (future)               │
+│   OLRC downloader      eCFR downloader            IL statutes            │
+│   File writer          File writer                converter              │
+│                                                                          │
+│   Each source package is independent — no cross-dependencies             │
+│                                                                          │
 ├──────────────────────────────────────────────────────────────────────────┤
-│                           Core Layer                                   │
-│                                                                        │
-│   @lexbuild/core                                                       │
-│   XML parser, AST types & builder, Markdown renderer                   │
-│   Frontmatter generator, link resolver                                 │
-│   No internal dependencies — builds first, changes carefully           │
-│                                                                        │
+│                           Core Layer                                     │
+│                                                                          │
+│   @lexbuild/core                                                         │
+│   XML parser, AST types & builder, Markdown renderer                     │
+│   Frontmatter generator, link resolver                                   │
+│   No internal dependencies — builds first, changes carefully             │
+│                                                                          │
 └──────────────────────────────────────────────────────────────────────────┘
 
                          ╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│                            Apps Layer                                   │
-│                                                                        │
-│   apps/web/                                                            │
-│   Consumes output files (.md + _meta.json), not package code           │
-│   No workspace:* dependency on any @lexbuild package                   │
-│                                                                        │
+│                            Apps Layer                                    │
+│                                                                          │
+│   apps/web/                                                              │
+│   Consumes output files (.md + _meta.json), not package code             │
+│   No workspace:* dependency on any @lexbuild package                     │
+│                                                                          │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 The apps layer is separated by a dotted line because it has no code dependency on the package layers. It consumes the *output* of the platform, not its API. This decoupling means the web app (or any future app) works with any content that conforms to the output format, regardless of which source package produced it.
-
-## Further Reading
-
-- [Monorepo Structure](monorepo-structure.md) -- directory layout, workspace protocol, what lives where
-- [Build Pipeline](build-pipeline.md) -- how Turborepo respects the dependency graph during builds
-- [Extending LexBuild](../development/extending.md) -- step-by-step guide for adding a new source package

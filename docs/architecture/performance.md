@@ -96,5 +96,3 @@ token_estimate = Math.ceil(characterCount / 4)
 This provides a reasonable approximation for English legal text with common tokenizers (GPT-3.5/4, Claude). The heuristic avoids adding a tokenizer dependency (e.g., `tiktoken`) to the runtime, keeping the package lightweight.
 
 Precise token counting with configurable tokenizer support is a planned enhancement.
-
-For details on the conversion pipeline stages, see [conversion-pipeline.md](conversion-pipeline.md). For the output format specification including `_meta.json` schema, see [../reference/output-format.md](../reference/output-format.md).

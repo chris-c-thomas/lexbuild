@@ -312,9 +312,3 @@ For LexBuild's typical development loop:
 - Linting caches are independent of build caches (linting has no `dependsOn`).
 
 This caching behavior means that after the first full build, incremental builds during development are fast -- typically under 1 second for a single-package change.
-
-## Further Reading
-
-- [Monorepo Structure](monorepo-structure.md) -- directory layout and workspace configuration
-- [Dependency Graph](dependency-graph.md) -- package relationships and the rules governing them
-- [CI/CD](ci-cd.md) -- how the build pipeline runs in GitHub Actions

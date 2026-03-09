@@ -167,9 +167,3 @@ A new source package follows the established pattern:
 5. Register new CLI commands in `packages/cli/` (e.g., `lexbuild download-cfr`, `lexbuild convert-cfr`)
 
 Source packages are independent of each other. `@lexbuild/usc` and a future `@lexbuild/cfr` would both depend on `@lexbuild/core` but never on each other. This independence means new sources can be developed in parallel without risk of cross-contamination. See [../development/extending.md](../development/extending.md) for the full guide.
-
-## Further Reading
-
-- [Dependency Graph](dependency-graph.md) -- package relationships, dependency rules, and what each edge means
-- [Build Pipeline](build-pipeline.md) -- how Turborepo orchestrates builds, tests, and type-checking
-- [Getting Started](../development/getting-started.md) -- setting up the development environment

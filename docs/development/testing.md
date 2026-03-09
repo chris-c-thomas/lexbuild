@@ -268,9 +268,3 @@ pnpm turbo test && pnpm turbo lint && pnpm turbo typecheck
 - **One behavior per test.** Each `it()` block should test one thing. If you are testing how notes are filtered under different configurations, write a separate test for each configuration (as the existing notes snapshot tests demonstrate).
 - **Use temp directories.** Snapshot tests create temporary output directories with `mkdtemp` and clean them up in `afterEach`. Follow the same pattern for any test that writes files.
 - **Test edge cases explicitly.** The U.S. Code XML contains many anomalous structures (duplicate sections, missing headings, non-standard nesting). If you encounter a new edge case, add a fixture and test for it so it stays covered.
-
-## Related Documentation
-
-- [Coding Standards](coding-standards.md) -- TypeScript conventions, naming, error handling, and formatting rules.
-- [AST Model](../architecture/ast-model.md) -- Understanding the intermediate representation that tests operate on.
-- [Conversion Pipeline](../architecture/conversion-pipeline.md) -- How XML flows through parsing, AST building, and rendering.

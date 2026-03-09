@@ -272,9 +272,3 @@ interface AncestorInfo {
 `EmitContext` provides the ancestor chain (e.g., title > chapter > subchapter) and document-level metadata (title number, release point, positive-law status). Source packages use this context to determine output paths, populate frontmatter fields, and resolve cross-references. The ancestor chain is a lightweight summary -- it does not contain the full AST of parent levels, only enough to reconstruct hierarchy information.
 
 `DocumentMeta` captures metadata extracted from the XML `<meta>` block: document title, type, number, release point, positive-law status, and publication timestamps. It is held in memory for the full duration of parsing and passed with every emitted node.
-
-## Further Reading
-
-- [Conversion Pipeline](./conversion-pipeline.md) -- how AST nodes flow through building, rendering, and writing
-- [Architecture Overview](./overview.md) -- where the AST model fits in the three-layer architecture
-- [Core Package](../packages/core.md) -- API reference for AST types, builder, and renderer

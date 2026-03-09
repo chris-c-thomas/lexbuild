@@ -269,11 +269,3 @@ lexbuild convert --titles 1 -g title -o ./llm-input
 | `1` | Error (invalid arguments, missing files, conversion failure) |
 
 Errors are printed to stderr. When `--verbose` is enabled, additional diagnostic information is included.
-
----
-
-## Related Documentation
-
-- [CLI Package](../packages/cli.md) -- implementation details, command registration, UI module
-- [Output Format](output-format.md) -- directory layout and file format produced by `convert`
-- [U.S. Code Package](../packages/usc.md) -- converter and downloader implementation

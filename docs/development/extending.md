@@ -294,10 +294,3 @@ lexbuild convert --all -o ./data
 | State statutes | Varies (HTML/XML) | State legislature sites | `@lexbuild/state-{abbr}` |
 
 For HTML-based sources (like Illinois Compiled Statutes), a shared HTML-to-AST parser could convert legal HTML into core AST types, letting source-specific packages handle semantic interpretation.
-
-## Further Reading
-
-- [Dependency Graph](../architecture/dependency-graph.md) -- Package relationships, dependency rules, and how new sources plug in
-- [Conversion Pipeline](../architecture/conversion-pipeline.md) -- XML-to-Markdown data flow and the emit-at-level pattern
-- [Testing](testing.md) -- Test framework, fixtures, snapshots, and conventions
-- [Release Process](release-process.md) -- How to add a new package to lockstep versioning

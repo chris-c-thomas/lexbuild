@@ -12,12 +12,12 @@ LexBuild separates concerns into three layers. Each layer depends only on the la
 │                                                                       │
 │  @lexbuild/cli                         apps/web                       │
 │  ┌───────────┐  ┌───────────┐          ┌──────────────────────┐       │
-│  │ download   │  │ convert   │          │ Next.js SSR site     │       │
+│  │ download   │  │ convert   │          │ Next.js SSR site     │      │
 │  └─────┬─────┘  └─────┬─────┘          │ (consumes output     │       │
-│        │               │                │  files, not packages) │       │
-│        │               │                └──────────────────────┘       │
+│        │               │                │  files, not packages) │     │
+│        │               │                └──────────────────────┘      │
 ├────────┼───────────────┼──────────────────────────────────────────────┤
-│        │          Source Packages                                      │
+│        │          Source Packages                                     │
 │        │               │                                              │
 │        ▼               ▼                                              │
 │  ┌──────────┐   ┌─────────────────────────────┐                       │
@@ -108,11 +108,3 @@ lexbuild/
 ├── docs/            # This documentation
 └── turbo.json       # Turborepo pipeline config
 ```
-
-## Further Reading
-
-- [Conversion Pipeline](./conversion-pipeline.md) -- end-to-end data flow from XML to Markdown
-- [AST Model](./ast-model.md) -- the intermediate representation and its node types
-- [Output Format Reference](../reference/output-format.md) -- file structure, frontmatter schema, and sidecar metadata
-- [Core Package](../packages/core.md) -- `@lexbuild/core` API reference
-- [USC Package](../packages/usc.md) -- `@lexbuild/usc` converter and downloader

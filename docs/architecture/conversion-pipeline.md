@@ -162,9 +162,3 @@ The pipeline is designed so that new source packages can reuse core infrastructu
 
 The key contract is the AST type system: as long as a source package produces `LevelNode`, `ContentNode`, `InlineNode`, and the other node types defined in `@lexbuild/core`, it can use the full rendering pipeline. Output format remains consistent across sources, so downstream consumers (RAG pipelines, search indexes, the web app) work identically regardless of which legal source produced the Markdown.
 
-## Further Reading
-
-- [AST Model](./ast-model.md) -- the node types that flow through the pipeline
-- [Architecture Overview](./overview.md) -- how the pipeline fits into the three-layer architecture
-- [Output Format Reference](../reference/output-format.md) -- file structure, frontmatter schema, and naming conventions
-- [Core Package](../packages/core.md) -- API reference for parser, builder, and renderer

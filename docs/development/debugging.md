@@ -239,10 +239,3 @@ When investigating an issue, work through this checklist:
 4. **Check the rendered Markdown.** If the AST is correct but the output is wrong, the issue is in the renderer.
 5. **Verify namespace handling.** XHTML tables, Dublin Core metadata, and inline formatting elements all use different namespace handling.
 6. **Rebuild all packages.** Stale builds cause many confusing issues. When in doubt, `pnpm turbo build` from the root.
-
-## Further Reading
-
-- [Testing](testing.md) -- Snapshot tests, fixtures, and test conventions
-- [Conversion Pipeline](../architecture/conversion-pipeline.md) -- Full pipeline architecture and the emit-at-level pattern
-- [AST Model](../architecture/ast-model.md) -- Node types and tree structure
-- [Performance](../architecture/performance.md) -- Benchmarks and memory profile

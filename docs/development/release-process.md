@@ -129,9 +129,3 @@ pnpm release
 # Build and publish locally (skips CI)
 pnpm release:local
 ```
-
-## Further Reading
-
-- [CI/CD](../architecture/ci-cd.md) -- Full details on both CI and publish GitHub Actions workflows
-- [Coding Standards](coding-standards.md) -- Commit message conventions (conventional commits)
-- [Getting Started](getting-started.md) -- Development environment setup
