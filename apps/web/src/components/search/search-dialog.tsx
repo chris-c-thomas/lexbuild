@@ -60,10 +60,11 @@ export function SearchDialog() {
   const loadPagefind = useCallback(async () => {
     if (pagefindRef.current) return pagefindRef.current;
     try {
-      // Pagefind generates this file at build time
+      // Pagefind generates this file at build time; in production it may be served from R2
+      const baseUrl = process.env.NEXT_PUBLIC_PAGEFIND_BASE_URL ?? "/_pagefind";
       const pf = await import(
         // @ts-expect-error — Pagefind is a generated asset, not a typed module
-        /* webpackIgnore: true */ "/_pagefind/pagefind.js"
+        /* webpackIgnore: true */ `${baseUrl}/pagefind.js`
       );
       await pf.init();
       pagefindRef.current = pf as Pagefind;

@@ -681,7 +681,7 @@ Adapts based on field presence (not a `granularity` prop):
 
 ## Deployment
 
-See `.claude/deployment-guide.md` for the complete production deployment checklist.
+See `.claude/deployment.md` for the complete production deployment guide.
 
 ### Future Work
 

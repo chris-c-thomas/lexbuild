@@ -13,6 +13,9 @@ downloads/
 # Dev-only scripts (not needed at runtime)
 scripts/
 
+# PageFind index (served from R2, too large for Vercel static hosting)
+public/_pagefind/
+
 # Dev config
 .env.local
 CLAUDE.md
