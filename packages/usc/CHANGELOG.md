@@ -1,5 +1,16 @@
 # @lexbuild/usc
 
+## 1.7.0
+
+### Minor Changes
+
+- [#35](https://github.com/chris-c-thomas/LexBuild/pull/35) [`9e4a623`](https://github.com/chris-c-thomas/LexBuild/commit/9e4a623556cb90b45a739c7a4be9133298a3e18f) Thanks [@chris-c-thomas](https://github.com/chris-c-thomas)! - Update for LexBuild deployment
+
+### Patch Changes
+
+- Updated dependencies [[`9e4a623`](https://github.com/chris-c-thomas/LexBuild/commit/9e4a623556cb90b45a739c7a4be9133298a3e18f)]:
+  - @lexbuild/core@1.7.0
+
 ## 1.6.0
 
 ### Minor Changes
