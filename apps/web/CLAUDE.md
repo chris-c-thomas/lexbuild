@@ -85,8 +85,8 @@ packages:
 - **Sidebar Virtualization**: @tanstack/react-virtual
 - **Search**: Pagefind (client-side, static index from source `.md` files)
 - **Icons**: lucide-react
-- **Deployment**: Vercel (SSR + edge caching) — portable to Cloudflare Workers, AWS, etc.
-- **Content Storage**: Filesystem (default), portable to S3, R2, or Vercel Blob via provider abstraction
+- **Deployment**: Vercel (SSR + edge caching)
+- **Content Storage**: Cloudflare R2 (production) via S3-compatible API, filesystem (local dev)
 - **Monorepo**: Turborepo + pnpm workspaces
 
 ## Architecture Summary
@@ -152,7 +152,7 @@ apps/web/
 │   │   ├── content/
 │   │   │   ├── types.ts              # ContentProvider + NavProvider interfaces
 │   │   │   ├── fs-provider.ts        # Filesystem implementation
-│   │   │   ├── s3-provider.ts        # S3 implementation (future)
+│   │   │   ├── s3-provider.ts        # S3/R2 implementation (production)
 │   │   │   └── index.ts             # Provider factory (env-based selection)
 │   │   ├── markdown.ts               # parseFrontmatter() + renderMarkdownToHtml()
 │   │   ├── shiki.ts                  # Shiki highlighter singleton
@@ -201,128 +201,44 @@ export interface NavProvider {
 }
 ```
 
-### Filesystem Provider (Default)
+### Filesystem Provider (Local Development)
 
-```typescript
-// src/lib/content/fs-provider.ts
-import { readFile, readdir, access } from "node:fs/promises";
-import { join } from "node:path";
-import type { ContentProvider, NavProvider } from "./types";
+**File**: `src/lib/content/fs-provider.ts`
 
-const CONTENT_ROOT = process.env.CONTENT_DIR ?? "./content";
+The `FsContentProvider` reads files from the local filesystem using `node:fs/promises`. The content root defaults to `./content` and can be overridden via the `CONTENT_DIR` environment variable. Includes `safePath()` validation to prevent path traversal attacks.
 
-export class FsContentProvider implements ContentProvider {
-  async getFile(path: string): Promise<string | null> {
-    try {
-      return await readFile(join(CONTENT_ROOT, path), "utf-8");
-    } catch {
-      return null;
-    }
-  }
+The `FsNavProvider` reads `_meta.json` files from the section-level content directory. It scans title directories, parses hierarchical metadata, and injects Title 53 (Reserved) if not present.
 
-  async exists(path: string): Promise<boolean> {
-    try {
-      await access(join(CONTENT_ROOT, path));
-      return true;
-    } catch {
-      return false;
-    }
-  }
-}
+### S3/R2 Provider (Production)
 
-export class FsNavProvider implements NavProvider {
-  async getTitles(): Promise<TitleSummary[]> {
-    // Read all section-level title _meta.json files
-    const uscDir = join(CONTENT_ROOT, "section", "usc");
-    const entries = await readdir(uscDir, { withFileTypes: true });
-    const titleDirs = entries
-      .filter((e) => e.isDirectory() && e.name.startsWith("title-"))
-      .sort((a, b) => a.name.localeCompare(b.name));
+**File**: `src/lib/content/s3-provider.ts`
 
-    const titles: TitleSummary[] = [];
-    for (const dir of titleDirs) {
-      const meta = JSON.parse(
-        await readFile(join(uscDir, dir.name, "_meta.json"), "utf-8")
-      );
-      titles.push({
-        number: meta.title_number,
-        name: meta.title_name,
-        directory: dir.name,
-        chapterCount: meta.stats?.chapter_count ?? 0,
-        sectionCount: meta.stats?.section_count ?? 0,
-        tokenEstimate: meta.stats?.total_tokens_estimate ?? 0,
-      });
-    }
-    return titles;
-  }
+The `S3ContentProvider` reads content from a Cloudflare R2 bucket (or any S3-compatible store) using `@aws-sdk/client-s3`. It uses `GetObjectCommand` for file reads and `HeadObjectCommand` for existence checks. Returns `null` on `NoSuchKey` errors (same contract as the filesystem provider).
 
-  async getChapters(titleDir: string): Promise<ChapterNav[]> {
-    const metaPath = join(CONTENT_ROOT, "section", "usc", titleDir, "_meta.json");
-    const meta = JSON.parse(await readFile(metaPath, "utf-8"));
-    return (meta.chapters ?? []).map((ch: any) => ({
-      number: ch.number,
-      name: ch.name,
-      directory: ch.directory,
-      sections: (ch.sections ?? []).map((s: any) => ({
-        number: s.number,
-        name: s.name,
-        file: s.file.replace(/\.md$/, ""),
-        status: s.status ?? "current",
-        hasNotes: s.has_notes ?? false,
-      })),
-    }));
-  }
+The `S3NavProvider` discovers title directories via `ListObjectsV2Command` on the `section/usc/` prefix, then fetches and parses `_meta.json` files. Parsed metadata is cached in a module-level `Map` that persists across requests within the same serverless function instance.
 
-  async getSections(titleDir: string, chapterDir: string): Promise<SectionNavEntry[]> {
-    const chapters = await this.getChapters(titleDir);
-    const chapter = chapters.find((ch) => ch.directory === chapterDir);
-    return chapter?.sections ?? [];
-  }
-}
-```
+Configuration via environment variables:
+
+| Variable | Description |
+|---|---|
+| `R2_ENDPOINT` | `https://<ACCOUNT_ID>.r2.cloudflarestorage.com` |
+| `R2_BUCKET` | Bucket name (default: `lexbuild-content`) |
+| `R2_ACCESS_KEY_ID` | R2 API token access key |
+| `R2_SECRET_ACCESS_KEY` | R2 API token secret key |
+| `R2_REGION` | Region (default: `auto`) |
 
 ### Provider Factory
 
-```typescript
-// src/lib/content/index.ts
-import type { ContentProvider, NavProvider } from "./types";
+**File**: `src/lib/content/index.ts`
 
-let _content: ContentProvider | null = null;
-let _nav: NavProvider | null = null;
+The factory uses the `CONTENT_STORAGE` environment variable to select the provider:
 
-export function getContentProvider(): ContentProvider {
-  if (!_content) {
-    const storage = process.env.CONTENT_STORAGE ?? "fs";
-    switch (storage) {
-      case "fs": {
-        const { FsContentProvider } = require("./fs-provider");
-        _content = new FsContentProvider();
-        break;
-      }
-      // Future: case "s3", case "r2", case "blob"
-      default:
-        throw new Error(`Unknown CONTENT_STORAGE: ${storage}`);
-    }
-  }
-  return _content;
-}
+| Value | Provider | Use Case |
+|---|---|---|
+| `fs` (default) | `FsContentProvider` / `FsNavProvider` | Local development |
+| `s3` | `S3ContentProvider` / `S3NavProvider` | Production (Cloudflare R2) |
 
-export function getNavProvider(): NavProvider {
-  if (!_nav) {
-    const storage = process.env.CONTENT_STORAGE ?? "fs";
-    switch (storage) {
-      case "fs": {
-        const { FsNavProvider } = require("./fs-provider");
-        _nav = new FsNavProvider();
-        break;
-      }
-      default:
-        throw new Error(`Unknown CONTENT_STORAGE: ${storage}`);
-    }
-  }
-  return _nav;
-}
-```
+Singletons are cached for the lifetime of the process.
 
 ## Content Data Model
 
@@ -755,8 +671,8 @@ Adapts based on field presence (not a `granularity` prop):
 - **Do NOT add the site to the default `build` task in turbo.json.**
 - **The app build is fast (seconds).** If build takes minutes, something is wrong — you may have accidentally enabled static generation.
 - **Shiki singleton persists across requests** within a serverless function instance. Do NOT reinitialize per request.
-- **`process.env.CONTENT_DIR` defaults to `./content`.** Override via `.env.local` for custom paths.
-- **`process.env.CONTENT_STORAGE` defaults to `fs`.** Future values: `s3`, `r2`, `blob`.
+- **`process.env.CONTENT_DIR` defaults to `./content`.** Override via `.env.local` for custom paths (filesystem provider only).
+- **`process.env.CONTENT_STORAGE` defaults to `fs`.** Set to `s3` for production (Cloudflare R2).
 - **Tailwind CSS v4 requires `@tailwindcss/postcss` and a `postcss.config.mjs`.** Without these, no utility classes or `@theme inline` mappings are generated. Next.js does NOT auto-detect Tailwind v4 — you must configure PostCSS explicitly.
 - **Clear `.next/` cache after CSS config changes.** Stale cache can mask PostCSS fixes. Run `rm -rf .next` and restart dev server.
 - **shadcn/ui `buttonVariants` is `"use client"`.** Cannot call it in Server Components. Use inline Tailwind classes or a client wrapper for styled links in server pages.
@@ -770,6 +686,5 @@ See `.claude/deployment-guide.md` for the complete production deployment checkli
 ### Future Work
 
 - Additional corpora (CFR, Federal Register) — new content dirs, new route trees, same viewer
-- Migrate content storage to S3/R2/Blob if filesystem becomes unwieldy
 - Cross-reference link resolution between sections
 - Analytics (Vercel Web Analytics, Plausible, or Cloudflare Web Analytics)

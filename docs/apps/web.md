@@ -42,7 +42,7 @@ The response includes `Cache-Control: public, s-maxage=31536000, stale-while-rev
 
 3. **Full SEO.** Server-rendered HTML means crawlers see complete content with unique `<title>`, meta description, and Open Graph tags -- identical to static pages.
 
-4. **Content storage is abstracted.** A `ContentProvider` interface decouples the application from the storage backend. Filesystem for development and initial production; S3, R2, or Vercel Blob later.
+4. **Content storage is abstracted.** A `ContentProvider` interface decouples the application from the storage backend. Filesystem for local development, Cloudflare R2 for production.
 
 5. **Navigation is lazy-loaded from pre-built JSON.** A build-time script generates per-title JSON files from section-level `_meta.json`. These are static assets in `public/nav/`.
 
@@ -79,13 +79,31 @@ interface NavProvider {
 
 Navigation data comes exclusively from section-level `_meta.json` files. Chapter and title content directories provide only their `.md` files, not navigation data.
 
-### Filesystem Provider (Default)
+### Filesystem Provider (Local Development)
 
 **File**: `apps/web/src/lib/content/fs-provider.ts`
 
 The `FsContentProvider` reads files from the local filesystem using `node:fs/promises`. The content root defaults to `./content` and can be overridden via the `CONTENT_DIR` environment variable.
 
 The `FsNavProvider` reads `_meta.json` files from the section-level content directory to build navigation structures. It extracts title summaries by scanning title directories, and chapter/section lists by parsing the hierarchical `_meta.json` data.
+
+### S3/R2 Provider (Production)
+
+**File**: `apps/web/src/lib/content/s3-provider.ts`
+
+The `S3ContentProvider` reads content from a Cloudflare R2 bucket (or any S3-compatible store) using `@aws-sdk/client-s3`. It uses `GetObjectCommand` for file reads and `HeadObjectCommand` for existence checks. Returns `null` on `NoSuchKey` errors (same contract as the filesystem provider).
+
+The `S3NavProvider` discovers title directories via `ListObjectsV2Command` on the `section/usc/` prefix, then fetches and parses `_meta.json` files. Parsed metadata is cached in a module-level `Map` that persists across requests within the same serverless function instance.
+
+Configuration via environment variables:
+
+| Variable | Description |
+|---|---|
+| `R2_ENDPOINT` | `https://<ACCOUNT_ID>.r2.cloudflarestorage.com` |
+| `R2_BUCKET` | Bucket name (default: `lexbuild-content`) |
+| `R2_ACCESS_KEY_ID` | R2 API token access key |
+| `R2_SECRET_ACCESS_KEY` | R2 API token secret key |
+| `R2_REGION` | Region (default: `auto`) |
 
 ### Provider Factory
 
@@ -98,7 +116,10 @@ function getNavProvider(): NavProvider;
 
 The factory uses the `CONTENT_STORAGE` environment variable (default: `"fs"`) to select the provider implementation. Singletons are cached for the lifetime of the process.
 
-Future providers (S3, R2, Vercel Blob) would implement the same interfaces and be selected via the environment variable. No page code changes are needed.
+| Value | Provider | Use Case |
+|---|---|---|
+| `fs` (default) | `FsContentProvider` / `FsNavProvider` | Local development |
+| `s3` | `S3ContentProvider` / `S3NavProvider` | Production (Cloudflare R2) |
 
 ---
 
@@ -147,7 +168,7 @@ apps/web/content/
     title-01.md
 ```
 
-All content directories are gitignored. The `.vercelignore` file overrides `.gitignore` to include content in Vercel deployments.
+All content directories are gitignored. The `.vercelignore` excludes `content/` and `downloads/` from Vercel deployments (content is served from R2 in production).
 
 ### Directory Naming Conventions
 
@@ -437,8 +458,13 @@ No automatic revalidation timers are used.
 
 | Variable | Default | Description |
 |---|---|---|
-| `CONTENT_STORAGE` | `fs` | Content backend: `fs`, `s3`, `r2`, `blob` |
-| `CONTENT_DIR` | `./content` | Path to content directory (filesystem backend) |
+| `CONTENT_STORAGE` | `fs` | Content backend: `fs` or `s3` |
+| `CONTENT_DIR` | `./content` | Path to content directory (filesystem provider only) |
+| `R2_ENDPOINT` | — | R2/S3 endpoint URL (S3 provider only) |
+| `R2_BUCKET` | `lexbuild-content` | R2/S3 bucket name (S3 provider only) |
+| `R2_ACCESS_KEY_ID` | — | R2/S3 access key ID (S3 provider only) |
+| `R2_SECRET_ACCESS_KEY` | — | R2/S3 secret access key (S3 provider only) |
+| `R2_REGION` | `auto` | R2/S3 region (S3 provider only) |
 | `SITE_URL` | `https://lexbuild.dev` | Base URL for sitemap generation |
 
 ---
