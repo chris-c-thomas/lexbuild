@@ -6,7 +6,7 @@ LexBuild uses two GitHub Actions workflows to ensure code quality and automate r
 
 **Workflow file**: `.github/workflows/ci.yml`
 
-The CI pipeline runs on every push to `main` and on every pull request targeting `main`. It uses a matrix strategy to test against Node.js 20 and 22, ensuring compatibility across supported LTS versions.
+The CI pipeline runs on every push to `main` and on every pull request targeting `main`. It uses a matrix strategy to test against Node.js 22 and 24, ensuring compatibility across supported LTS versions.
 
 ### Triggers
 

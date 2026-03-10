@@ -48,7 +48,7 @@ The end-to-end release process has seven steps:
 
 1. **Create a changeset** -- A contributor runs `pnpm changeset` and commits the resulting `.changeset/*.md` file alongside their code changes in a PR.
 
-2. **CI validates the PR** -- The CI pipeline runs build, lint, typecheck, and tests on Node.js 20 and 22. All checks must pass before merging.
+2. **CI validates the PR** -- The CI pipeline runs build, lint, typecheck, and tests on Node.js 22 and 24. All checks must pass before merging.
 
 3. **Merge the PR to `main`** -- The changeset file lands on `main` along with the code change.
 

@@ -60,7 +60,7 @@ Respect boundaries: keep generic parsing/rendering logic in `core`, USC-specific
 
 ## Tech Stack
 
-- **Runtime**: Node.js >= 20 LTS (ESM only)
+- **Runtime**: Node.js >= 22 LTS (ESM only)
 - **Language**: TypeScript 5.x, strict mode
 - **XML Parsing**: `saxes` (SAX streaming)
 - **CLI**: `commander`, `chalk`, `ora`, `cli-table3`

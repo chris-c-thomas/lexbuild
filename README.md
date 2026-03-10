@@ -219,7 +219,7 @@ pnpm add -g @lexbuild/cli
 
 ### Build From Source
 
-Requires [Node.js](https://nodejs.org/) >= 20
+Requires [Node.js](https://nodejs.org/) >= 22
 and [pnpm](https://pnpm.io/) >= 10.
 
 #### Clone Repository
@@ -496,7 +496,7 @@ The full U.S. Code — all 54 titles (53 with content; Title 53 is reserved), ov
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) >= 20
+- [Node.js](https://nodejs.org/) >= 22
 - [pnpm](https://pnpm.io/) >= 10
 
 ### Getting Started
