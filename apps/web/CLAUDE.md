@@ -75,7 +75,7 @@ packages:
 
 - **Framework**: Next.js 16.x (App Router, SSR with CDN caching — NOT `output: 'export'`)
 - **Language**: TypeScript 5.x, strict mode
-- **Runtime**: Node.js >= 20 LTS (ESM)
+- **Runtime**: Node.js >= 22 LTS (ESM)
 - **UI**: React 19.x
 - **Styling**: Tailwind CSS 4.x + `@tailwindcss/typography`
 - **Components**: shadcn/ui (Radix primitives)

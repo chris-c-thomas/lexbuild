@@ -18,7 +18,7 @@ npm install -g @lexbuild/cli
 pnpm add -g @lexbuild/cli
 ```
 
-**Requires:** Node.js >= 20
+**Requires:** Node.js >= 22
 
 ---
 

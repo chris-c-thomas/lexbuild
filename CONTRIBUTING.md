@@ -4,7 +4,7 @@ This guide covers everything you need to get set up and submit changes.
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) >= 20 LTS
+- [Node.js](https://nodejs.org/) >= 22 LTS
 - [pnpm](https://pnpm.io/) >= 10
 
 ## Setup

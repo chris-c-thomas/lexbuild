@@ -36,7 +36,7 @@ Each package and app has its own `CLAUDE.md` with architecture details, module s
 
 ## Tech Stack
 
-- **Runtime**: Node.js >= 20 LTS (ESM)
+- **Runtime**: Node.js >= 22 LTS (ESM)
 - **Language**: TypeScript 5.x, strict mode, no `any` unless explicitly justified
 - **XML Parsing**: `saxes` (SAX streaming)
 - **CLI**: `commander`

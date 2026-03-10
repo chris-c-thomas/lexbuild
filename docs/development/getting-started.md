@@ -6,7 +6,7 @@ LexBuild is a monorepo that converts legislative XML into structured Markdown fo
 
 You need two tools installed before cloning the repository:
 
-- **[Node.js](https://nodejs.org/) >= 20 LTS** -- LexBuild uses ESM modules and Node.js APIs that require v20 or later. Run `node --version` to check.
+- **[Node.js](https://nodejs.org/) >= 22 LTS** -- LexBuild uses ESM modules and Node.js APIs that require v22 or later. Run `node --version` to check.
 - **[pnpm](https://pnpm.io/) >= 10** -- The monorepo uses pnpm workspaces for dependency management. Install it with `npm install -g pnpm` or [follow the pnpm docs](https://pnpm.io/installation). Run `pnpm --version` to check.
 
 ## Clone, Install, and Build
