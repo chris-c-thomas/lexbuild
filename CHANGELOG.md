@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.5.1]
+
+### Added
+
+#### Web App — Cloudflare R2 Content Provider (`apps/web/`)
+
+- **`S3ContentProvider`** (`s3-provider.ts`): production content provider backed by Cloudflare R2 (or any S3-compatible store) via `@aws-sdk/client-s3`. Uses `GetObjectCommand` for file reads and `HeadObjectCommand` for existence checks, with the same `null`/`false` return contract as `FsContentProvider`.
+- **`S3NavProvider`** (`s3-provider.ts`): navigation provider that discovers title directories via `ListObjectsV2Command` and fetches `_meta.json` sidecars. Title metadata fetches run in parallel via `Promise.all` to minimize cold-start latency. Both the directory listing and parsed metadata are cached at the module level for the lifetime of the serverless function instance.
+- **`safeKey()` path validation**: rejects S3 keys containing `..` or not starting with an allowed prefix (`section/`, `chapter/`, `title/`), preventing path traversal via crafted URL segments. Mirrors `safePath()` in the filesystem provider.
+- **Dynamic provider imports** (`index.ts`): factory functions use `await import()` so `@aws-sdk/client-s3` (~3 MB) is only loaded when `CONTENT_STORAGE=s3`, avoiding bundle size regression for local development.
+- **Promise-cached singleton**: provider factory caches the initialization `Promise` itself (not the resolved value) to prevent race conditions where concurrent requests could each spawn their own provider instance.
+
+### Changed
+
+- **`.vercelignore`**: excludes `content/` and `downloads/` from Vercel deployments (content is now served from R2 in production).
+- **`.env.example`**: added R2 configuration variables (`R2_ENDPOINT`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_REGION`).
+- **Documentation**: updated `apps/web/CLAUDE.md`, `apps/web/README.md`, `docs/apps/web.md`, and `.claude/deployment-guide.md` to reflect the new S3/R2 content provider, environment variables, and deployment workflow.
+
+### Fixed
+
+- **`workspace:*` in published packages**: all prior published versions of `@lexbuild/cli`, `@lexbuild/core`, and `@lexbuild/usc` contained literal `workspace:*` dependencies, making them uninstallable via npm. Fixed by ensuring `pnpm publish` (not `npm publish`) resolves workspace references to real version numbers.
+- **Publish workflow OIDC**: switched to Node 24 and removed `registry-url` from `actions/setup-node` to enable npm OIDC trusted publishing without requiring an `NPM_TOKEN` secret.
+- **`generate-content.sh` input path**: script was not passing `--input-dir` to the CLI, causing it to look for XML files relative to CWD instead of the monorepo `downloads/` directory.
+
+---
+
 ## [1.5.0]
 
 ### Fixed
