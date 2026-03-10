@@ -1,5 +1,11 @@
 # @lexbuild/core
 
+## 1.6.0
+
+### Minor Changes
+
+- [#33](https://github.com/chris-c-thomas/LexBuild/pull/33) [`69b95ea`](https://github.com/chris-c-thomas/LexBuild/commit/69b95ea59ea434607fca80671f96559da5789462) Thanks [@chris-c-thomas](https://github.com/chris-c-thomas)! - Change GitHub Actions to drop Node 20, keep 22, and add 24; Update documentation files to reflect those changes.
+
 ## 1.5.1
 
 ### Patch Changes
