@@ -101,8 +101,12 @@ Key points:
 - **Excluded from changesets** — `"private": true` and listed in `.changeset/config.json` `ignore`.
 - **Content is gitignored** — `apps/web/content/`, `public/nav/`, `public/_pagefind/`, `public/sitemap.xml` are all generated artifacts.
 - **Tailwind CSS v4 requires `@tailwindcss/postcss`** and `postcss.config.mjs`. Without these, no styles are generated.
-- **Deploy via `vercel --prod`** from local filesystem (not GitHub-triggered). `.vercelignore` overrides `.gitignore` to include content in deploys.
-- See `apps/web/CLAUDE.md` for the full web app spec and `apps/web/README.md` for setup instructions.
+- **Production URL**: `https://lexbuild.dev` (`www` redirects to apex via Vercel 308).
+- **Deploy via `vercel deploy --prod`** from the **monorepo root** (not `apps/web/`). Vercel needs the full repo for `pnpm-lock.yaml`. Root Directory is set to `apps/web` in Vercel dashboard. Build Command is overridden to `next build`.
+- **Content served from Cloudflare R2** in production (`CONTENT_STORAGE=s3` in `.env.production`). PageFind index (~61k files) also served from R2 via `NEXT_PUBLIC_PAGEFIND_BASE_URL`.
+- **Root `.vercelignore`** excludes `downloads/`, `output/`, `apps/web/content/`, `apps/web/public/_pagefind/` to stay under Vercel's 10 MB upload limit. `apps/web/public/nav/` is NOT excluded (small static JSON needed for sidebar).
+- **On-demand ISR** — pages use empty `generateStaticParams()` + `revalidate = false` so Vercel caches at the edge. Without this, Vercel forces `max-age=0` on dynamic routes.
+- See `.claude/deployment.md` for the complete deployment guide, `apps/web/CLAUDE.md` for the full web app spec.
 
 ## Code Conventions
 
