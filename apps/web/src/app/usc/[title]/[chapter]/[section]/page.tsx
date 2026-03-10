@@ -5,8 +5,15 @@ import { parseFrontmatter, renderMarkdownToHtml } from "@/lib/markdown";
 import { highlightMarkdown } from "@/lib/shiki";
 import { ContentViewer } from "@/components/content/content-viewer";
 
-/** Cache indefinitely at the edge — purge manually after content updates. */
+/**
+ * On-demand ISR: no pages pre-built, generated on first request, cached indefinitely.
+ * Purge manually after content updates.
+ */
 export const revalidate = false;
+export const dynamicParams = true;
+export async function generateStaticParams() {
+  return [];
+}
 
 interface Props {
   params: Promise<{ title: string; chapter: string; section: string }>;
