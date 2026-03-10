@@ -180,3 +180,4 @@ bun.lock
 # Verdaccio local registry (if used for testing publishes locally)
 .verdaccio/
 storage/
+.vercel
