@@ -188,22 +188,26 @@ export class S3NavProvider implements NavProvider {
   }
 
   async getChapters(titleDir: string): Promise<ChapterNav[]> {
-    const meta = await getMeta(`section/usc/${titleDir}/_meta.json`);
-    if (!meta) return [];
+    try {
+      const meta = await getMeta(`section/usc/${titleDir}/_meta.json`);
+      if (!meta) return [];
 
-    const chapters = meta.chapters as Record<string, unknown>[] | undefined;
-    return (chapters ?? []).map((ch) => ({
-      number: ch.number as number,
-      name: ch.name as string,
-      directory: ch.directory as string,
-      sections: ((ch.sections as Record<string, unknown>[] | undefined) ?? []).map((s) => ({
-        number: s.number as string,
-        name: s.name as string,
-        file: (s.file as string).replace(/\.md$/, ""),
-        status: (s.status as string) ?? "current",
-        hasNotes: (s.has_notes as boolean) ?? false,
-      })),
-    }));
+      const chapters = meta.chapters as Record<string, unknown>[] | undefined;
+      return (chapters ?? []).map((ch) => ({
+        number: ch.number as number,
+        name: ch.name as string,
+        directory: ch.directory as string,
+        sections: ((ch.sections as Record<string, unknown>[] | undefined) ?? []).map((s) => ({
+          number: s.number as string,
+          name: s.name as string,
+          file: (s.file as string).replace(/\.md$/, ""),
+          status: (s.status as string) ?? "current",
+          hasNotes: (s.has_notes as boolean) ?? false,
+        })),
+      }));
+    } catch {
+      return [];
+    }
   }
 
   async getSections(titleDir: string, chapterDir: string): Promise<SectionNavEntry[]> {
