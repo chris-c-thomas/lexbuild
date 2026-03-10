@@ -348,14 +348,14 @@ npx tsx scripts/generate-nav.ts
 npx pagefind --source ./content/section/usc --glob "**/*.md" --output-path ./public/_pagefind
 ```
 
-### Deployment (from apps/web/)
+### Deployment (from monorepo root)
 
 ```bash
-# Deploy app (fast — seconds, not minutes)
+# Deploy app — must run from monorepo root (Vercel needs pnpm-lock.yaml)
 vercel deploy --prod
 
 # Or run full pipeline
-bash scripts/deploy.sh
+cd apps/web && bash scripts/deploy.sh
 ```
 
 ### Dev Content Subsets
@@ -458,15 +458,17 @@ export interface ContentViewerProps {
 
 ## Route Details
 
-### Key Difference from Static Export
+### On-Demand ISR (Not Static Export, Not Fully Dynamic)
 
-Routes do NOT use `generateStaticParams()`. They are dynamic Server Components that:
+Routes use `generateStaticParams()` returning an empty array with `revalidate = false` and `dynamicParams = true`. This enables **on-demand ISR**: no pages are pre-built, each page is generated on first request and cached indefinitely at the edge. This is critical for Vercel to return proper `s-maxage` cache headers — without `generateStaticParams`, Vercel treats routes as fully dynamic and forces `max-age=0`.
 
-1. Extract route params
-2. Read the `.md` file from the content provider
-3. Parse frontmatter, highlight with Shiki, render with remark
-4. Return HTML with CDN cache headers
-5. Return SEO metadata via `generateMetadata()`
+Each page:
+
+1. Extracts route params
+2. Reads the `.md` file from the content provider (R2 in production)
+3. Parses frontmatter, highlights with Shiki, renders with remark
+4. Returns HTML cached at the CDN edge for 1 year
+5. Returns SEO metadata via `generateMetadata()`
 
 ### `/usc/[title]/[chapter]/[section]/page.tsx` — Section Viewer
 
@@ -538,26 +540,12 @@ Project introduction + title index grid.
 
 ### Cache Headers
 
-Every viewer page should set CDN cache headers. In Next.js, this can be configured in `next.config.ts` via the `headers()` function, or in the route handler:
+CDN caching is achieved through two mechanisms:
 
-```typescript
-// In next.config.ts
-async headers() {
-  return [
-    {
-      source: "/usc/:path*",
-      headers: [
-        {
-          key: "Cache-Control",
-          value: "public, s-maxage=31536000, stale-while-revalidate=86400",
-        },
-      ],
-    },
-  ];
-}
-```
+1. **`next.config.ts` `headers()`** — sets `Cache-Control: public, s-maxage=31536000, stale-while-revalidate=86400` on `/usc/:path*` routes.
+2. **On-demand ISR** (`generateStaticParams` + `revalidate = false`) — required for Vercel to actually respect the cache headers. Without ISR, Vercel overrides them with `max-age=0` on dynamic routes.
 
-This tells the CDN to cache viewer pages for 1 year (safe because content updates are explicit + cache purge).
+Content updates quarterly. After a content refresh, purge the CDN cache from Vercel dashboard.
 
 ## Key Implementation Notes
 
@@ -565,9 +553,9 @@ This tells the CDN to cache viewer pages for 1 year (safe because content update
 
 This site is NOT statically exported. Do NOT set `output: 'export'` in `next.config.ts`. The site requires a server runtime (Vercel Serverless Functions or similar) for on-demand rendering.
 
-### NO `generateStaticParams`
+### `generateStaticParams` Returns Empty Array
 
-Dynamic routes do NOT use `generateStaticParams()`. Every request is handled by a Server Component at runtime. Pages that don't exist in the content store return 404 via `notFound()`.
+Dynamic routes export `generateStaticParams()` returning `[]` with `dynamicParams = true` and `revalidate = false`. This enables on-demand ISR — pages are generated on first request and cached indefinitely. Do NOT populate `generateStaticParams` with actual params (that would pre-render 60k+ pages at build time). Pages that don't exist in the content store return 404 via `notFound()`.
 
 ### Content Provider — Not Direct `fs` Reads
 
@@ -601,7 +589,7 @@ Pagefind indexes the `.md` source files directly (not rendered HTML, since there
 npx pagefind --source ./content/section/usc --glob "**/*.md" --output-path ./public/_pagefind
 ```
 
-The index is committed to `public/_pagefind/` or generated at deploy time. The client loads it from `/_pagefind/pagefind.js`.
+The index is generated locally and uploaded to R2 under the `_pagefind/` prefix (~61k files, ~400 MB — too large for Vercel static hosting). The client loads it from a configurable base URL via `NEXT_PUBLIC_PAGEFIND_BASE_URL` (defaults to `/_pagefind` for local dev, set to the R2 public URL in production).
 
 ### Navigation: Pre-Built Static JSON + API Route
 
@@ -660,7 +648,7 @@ Adapts based on field presence (not a `granularity` prop):
 ## Common Pitfalls
 
 - **Do NOT set `output: 'export'` in next.config.ts.** This site uses SSR, not static export.
-- **Do NOT use `generateStaticParams()`.** Routes are dynamic, rendered on-demand, cached at CDN.
+- **`generateStaticParams()` must return `[]`.** Do NOT populate it with actual params — that pre-renders 60k+ pages. Empty array + `dynamicParams = true` + `revalidate = false` enables on-demand ISR.
 - **Do NOT import `node:fs` in page components.** Use the content provider. Only build scripts use `node:fs` directly.
 - **Section numbers are strings.** `"202a"`, `"7701-1"`, `"3598-2"` are valid. Do not parse as integers.
 - **Title-level files can be large.** Title 26 is ~10 MB. Test Shiki performance during Phase 1.
