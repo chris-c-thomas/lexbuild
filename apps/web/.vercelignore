@@ -1,10 +1,14 @@
 # Vercel deploy ignore — overrides .gitignore entirely.
-# content/ is intentionally NOT listed so it deploys with the app.
+# Content is served from R2, not the filesystem.
 
 node_modules/
 .turbo/
 .next/
 *.tsbuildinfo
+
+# Content (served from R2 in production)
+content/
+downloads/
 
 # Dev-only scripts (not needed at runtime)
 scripts/

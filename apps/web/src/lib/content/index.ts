@@ -1,5 +1,6 @@
 import type { ContentProvider, NavProvider } from "./types";
 import { FsContentProvider, FsNavProvider } from "./fs-provider";
+import { S3ContentProvider, S3NavProvider } from "./s3-provider";
 
 let _content: ContentProvider | null = null;
 let _nav: NavProvider | null = null;
@@ -12,7 +13,9 @@ export function getContentProvider(): ContentProvider {
       case "fs":
         _content = new FsContentProvider();
         break;
-      // Future: case "s3", case "r2", case "blob"
+      case "s3":
+        _content = new S3ContentProvider();
+        break;
       default:
         throw new Error(`Unknown CONTENT_STORAGE: ${storage}`);
     }
@@ -27,6 +30,9 @@ export function getNavProvider(): NavProvider {
     switch (storage) {
       case "fs":
         _nav = new FsNavProvider();
+        break;
+      case "s3":
+        _nav = new S3NavProvider();
         break;
       default:
         throw new Error(`Unknown CONTENT_STORAGE: ${storage}`);
