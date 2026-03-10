@@ -14,7 +14,7 @@ const RESERVED_TITLES: Record<string, string> = {
 };
 
 const getContent = cache(async (title: string) => {
-  const content = getContentProvider();
+  const content = await getContentProvider();
   return content.getFile(`title/usc/${title}.md`);
 });
 

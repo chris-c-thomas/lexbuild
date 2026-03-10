@@ -135,7 +135,7 @@ apps/web/
 │   │   ├── breadcrumbs.tsx
 │   │   └── theme-toggle.tsx
 │   ├── lib/
-│   │   ├── content/                  # ContentProvider abstraction (fs-provider)
+│   │   ├── content/                  # ContentProvider abstraction (fs + s3 providers)
 │   │   ├── markdown.ts               # Frontmatter parsing + remark rendering
 │   │   ├── shiki.ts                  # Shiki highlighter singleton (dual themes)
 │   │   ├── nav.ts                    # Client-side nav JSON fetching
@@ -150,7 +150,7 @@ apps/web/
 │   ├── _pagefind/                    # Generated search index (gitignored)
 │   ├── icon.svg                      # Favicon
 │   └── robots.txt
-├── .vercelignore                     # Includes content/ in deploys
+├── .vercelignore                     # Excludes content/ from deploys (served from R2)
 ├── next.config.ts
 ├── postcss.config.mjs
 ├── eslint.config.js
@@ -159,24 +159,27 @@ apps/web/
 
 ## Content Provider
 
-All content access goes through a `ContentProvider` interface. Page components never import `node:fs` directly.
+All content access goes through `ContentProvider` and `NavProvider` interfaces. Page components never import `node:fs` directly.
 
-```typescript
-interface ContentProvider {
-  getFile(path: string): Promise<string | null>;
-  exists(path: string): Promise<boolean>;
-}
-```
+Two implementations are available:
 
-The default implementation (`FsContentProvider`) reads from the local filesystem. The storage backend can be swapped to AWS S3, Cloudeflare R2, Vercel Blob, etc by implementing the same interface and changing the `CONTENT_STORAGE` environment variable.
+- **`FsContentProvider`** — reads from the local filesystem (`CONTENT_DIR`, default `./content`). Used for local development.
+- **`S3ContentProvider`** — reads from a Cloudflare R2 bucket (or any S3-compatible store) via `@aws-sdk/client-s3`. Used in production.
+
+Set `CONTENT_STORAGE=fs` (default) or `CONTENT_STORAGE=s3` to select the provider.
 
 ## Environment Variables
 
 | Variable | Default | Description |
 |---|---|---|
-| `CONTENT_STORAGE` | `fs` | Content backend: `fs` (or: `s3`, `r2`, `blob`) |
-| `CONTENT_DIR` | `./content` | Path to content directory (filesystem backend) |
-| `SITE_URL` | `https://lexbuild.dev` | Base URL for sitemap generation | 
+| `CONTENT_STORAGE` | `fs` | Content backend: `fs` or `s3` |
+| `CONTENT_DIR` | `./content` | Path to content directory (filesystem provider only) |
+| `R2_ENDPOINT` | — | R2/S3 endpoint URL (S3 provider only) |
+| `R2_BUCKET` | `lexbuild-content` | R2/S3 bucket name (S3 provider only) |
+| `R2_ACCESS_KEY_ID` | — | R2/S3 access key ID (S3 provider only) |
+| `R2_SECRET_ACCESS_KEY` | — | R2/S3 secret access key (S3 provider only) |
+| `R2_REGION` | `auto` | R2/S3 region (S3 provider only) |
+| `SITE_URL` | `https://lexbuild.dev` | Base URL for sitemap generation |
 
 ## Tech Stack
 

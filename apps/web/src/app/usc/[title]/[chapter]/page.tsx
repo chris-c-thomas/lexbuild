@@ -10,7 +10,7 @@ interface Props {
 }
 
 const getContent = cache(async (title: string, chapter: string) => {
-  const content = getContentProvider();
+  const content = await getContentProvider();
   return content.getFile(`chapter/usc/${title}/${chapter}/${chapter}.md`);
 });
 

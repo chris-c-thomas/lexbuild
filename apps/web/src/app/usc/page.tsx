@@ -7,7 +7,7 @@ export const metadata = {
 };
 
 export default async function UscIndexPage() {
-  const nav = getNavProvider();
+  const nav = await getNavProvider();
   const titles = await nav.getTitles();
 
   return (

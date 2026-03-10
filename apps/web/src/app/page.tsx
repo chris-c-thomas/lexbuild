@@ -4,7 +4,7 @@ import { Scale, FileText, BookOpen } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export default async function HomePage() {
-  const nav = getNavProvider();
+  const nav = await getNavProvider();
   const titles = await nav.getTitles();
 
   const totalSections = titles.reduce((sum, t) => sum + t.sectionCount, 0);
