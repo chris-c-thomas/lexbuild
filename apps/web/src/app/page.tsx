@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { getNavProvider } from "@/lib/content";
 import { Scale, FileText, BookOpen } from "lucide-react";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { toTitleCase } from "@/lib/utils";
 
 export default async function HomePage() {
@@ -17,10 +16,7 @@ export default async function HomePage() {
       <div className="flex flex-col gap-12">
         {/* Hero */}
         <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">LexBuild</h1>
-            <ThemeToggle />
-          </div>
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">LexBuild</h1>
           <p className="max-w-2xl text-lg text-muted-foreground">
             The complete U.S. Code as structured Markdown — built for AI and RAG ingestion. Browse
             every title, chapter, and section with syntax-highlighted source and rendered HTML.
@@ -69,7 +65,7 @@ export default async function HomePage() {
               <Link
                 key={t.directory}
                 href={`/usc/${t.directory}/`}
-                className="rounded-lg border border-border p-4 transition-colors hover:border-ring hover:bg-accent"
+                className="rounded-lg border border-border p-4 transition-colors hover:border-slate-blue-400 hover:bg-slate-blue-50"
               >
                 <div className="text-sm font-medium text-muted-foreground">Title {t.number}</div>
                 <div className="mt-1 font-semibold text-foreground">{toTitleCase(t.name)}</div>
@@ -87,8 +83,8 @@ export default async function HomePage() {
 
 function StatCard({ label, value, icon }: { label: string; value: number; icon: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-border px-4 py-3">
-      <div className="text-muted-foreground">{icon}</div>
+    <div className="flex items-center gap-3 rounded-lg border border-border bg-slate-blue-50/50 px-4 py-3">
+      <div className="text-slate-blue-600">{icon}</div>
       <div>
         <div className="text-lg font-semibold text-foreground">{value.toLocaleString()}</div>
         <div className="text-xs text-muted-foreground">{label}</div>

@@ -8,7 +8,6 @@ import type { TitleSummary } from "@/lib/types";
 import { TitleList } from "./title-list";
 import { parseUscPath } from "@/lib/nav";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { SearchTrigger } from "@/components/search/search-dialog";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -87,16 +86,16 @@ export function Sidebar() {
           <div className="flex min-w-0 items-center gap-2">
             <Link
               href="/"
-              className="flex shrink-0 items-center gap-1.5 font-semibold text-foreground"
+              className="flex shrink-0 items-center gap-1.5 text-lg font-bold text-foreground"
             >
-              <Scale className="h-5 w-5 shrink-0" />
+              <Scale className="h-6 w-6 shrink-0" />
               LexBuild
             </Link>
             <span className="text-muted-foreground/40">/</span>
             <div ref={corpusRef} className="relative">
               <button
                 onClick={() => setCorpusOpen((prev) => !prev)}
-                className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
               >
                 U.S. Code
                 <ChevronDown
@@ -124,7 +123,6 @@ export function Sidebar() {
           </div>
           <div className="flex items-center gap-1">
             <SearchTrigger />
-            <ThemeToggle />
             <Button
               variant="ghost"
               size="icon-sm"

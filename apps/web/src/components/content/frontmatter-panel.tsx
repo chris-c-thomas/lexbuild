@@ -11,7 +11,7 @@ export function FrontmatterPanel({ frontmatter }: FrontmatterPanelProps) {
   const isSection = frontmatter.section_number !== undefined;
 
   return (
-    <div className="rounded-lg border border-border bg-muted/50 p-4">
+    <div className="rounded-lg border border-border bg-slate-blue-50/50 p-4">
       <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-3 lg:grid-cols-4">
         <MetaItem label="Identifier" value={frontmatter.identifier} />
         <MetaItem label="Currency" value={frontmatter.currency} />
@@ -69,7 +69,7 @@ function MetaItem({
 }) {
   return (
     <div className={className}>
-      <dt className="text-xs font-semibold uppercase tracking-wider text-slate-blue-600 dark:text-slate-blue-400">
+      <dt className="text-xs font-semibold uppercase tracking-wider text-slate-blue-700">
         {label}
       </dt>
       <dd className="mt-1 text-sm text-foreground">{value}</dd>

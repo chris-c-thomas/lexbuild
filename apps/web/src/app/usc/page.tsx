@@ -27,7 +27,7 @@ export default async function UscIndexPage() {
           <Link
             key={t.directory}
             href={`/usc/${t.directory}/`}
-            className="rounded-lg border border-border p-4 transition-colors hover:border-ring hover:bg-accent"
+            className="rounded-lg border border-border p-4 transition-colors hover:border-slate-blue-400 hover:bg-slate-blue-50"
           >
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-muted-foreground">Title {t.number}</span>

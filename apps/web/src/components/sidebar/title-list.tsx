@@ -79,7 +79,7 @@ export function TitleList({ titles, activeTitleDir }: TitleListProps) {
                 className={cn(
                   "flex-1 truncate rounded-md px-2 py-1.5 text-sm transition-colors",
                   isActive && !chapterDir
-                    ? "bg-slate-blue-100 font-medium text-slate-blue-900 dark:bg-slate-blue-950 dark:text-slate-blue-200"
+                    ? "bg-slate-blue-100 font-medium text-slate-blue-900"
                     : "text-foreground/80 hover:bg-accent hover:text-accent-foreground",
                 )}
                 title={`Title ${t.number} — ${toTitleCase(t.name)}`}

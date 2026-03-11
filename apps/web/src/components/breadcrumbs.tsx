@@ -44,7 +44,7 @@ export function Breadcrumbs() {
               ) : (
                 <Link
                   href={crumb.href}
-                  className="hover:text-slate-blue-600 dark:hover:text-slate-blue-400"
+                  className="hover:text-slate-blue-600"
                 >
                   {crumb.label}
                 </Link>

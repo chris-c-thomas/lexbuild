@@ -59,7 +59,7 @@ export function ChapterList({
                 className={cn(
                   "flex-1 truncate rounded-md px-2 py-1 text-xs transition-colors",
                   isActive && !activeSectionSlug
-                    ? "bg-slate-blue-100 font-medium text-slate-blue-900 dark:bg-slate-blue-950 dark:text-slate-blue-200"
+                    ? "bg-slate-blue-100 font-medium text-slate-blue-900"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}
                 title={`Chapter ${ch.number} — ${toTitleCase(ch.name)}`}

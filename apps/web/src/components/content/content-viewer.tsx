@@ -34,7 +34,7 @@ export function ContentViewer({
             className={cn(
               "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
               view === "source"
-                ? "bg-background text-slate-blue-700 shadow-sm dark:text-slate-blue-300"
+                ? "bg-background text-slate-blue-700 shadow-sm"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
@@ -45,7 +45,7 @@ export function ContentViewer({
             className={cn(
               "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
               view === "rendered"
-                ? "bg-background text-slate-blue-700 shadow-sm dark:text-slate-blue-300"
+                ? "bg-background text-slate-blue-700 shadow-sm"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
@@ -60,7 +60,7 @@ export function ContentViewer({
 
       {view === "rendered" ? (
         <article
-          className="prose prose-zinc max-w-none dark:prose-invert"
+          className="prose prose-zinc max-w-none"
           dangerouslySetInnerHTML={{ __html: renderedHtml }}
         />
       ) : (

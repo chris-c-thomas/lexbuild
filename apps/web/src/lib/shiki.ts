@@ -7,7 +7,7 @@ let highlighterPromise: Promise<HighlighterGeneric<BundledLanguage, BundledTheme
 function getHighlighter(): Promise<HighlighterGeneric<BundledLanguage, BundledTheme>> {
   if (!highlighterPromise) {
     highlighterPromise = createHighlighter({
-      themes: ["github-light", "github-dark"],
+      themes: ["github-light-default"],
       langs: ["markdown", "yaml"],
     });
   }
@@ -22,9 +22,6 @@ export async function highlightMarkdown(code: string): Promise<string> {
   const hl = await getHighlighter();
   return hl.codeToHtml(code, {
     lang: "markdown",
-    themes: {
-      light: "github-light",
-      dark: "github-dark",
-    },
+    theme: "github-light-default",
   });
 }

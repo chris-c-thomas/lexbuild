@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
 import "@/styles/globals.css";
-
-const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
   title: {
@@ -18,14 +15,16 @@ export const metadata: Metadata = {
   },
 };
 
-/** Inline script to apply theme before first paint — prevents flash. */
-const themeScript = `(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches))document.documentElement.classList.add("dark")}catch(e){}})()`;
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={geist.variable} suppressHydrationWarning>
+    <html lang="en">
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;500;600;700&family=Google+Sans+Mono:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
       </head>
       <body className="antialiased">{children}</body>
     </html>
