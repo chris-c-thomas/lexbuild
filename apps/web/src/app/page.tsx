@@ -67,7 +67,7 @@ export default async function HomePage() {
                 href={`/usc/${t.directory}/`}
                 className="rounded-lg border border-border p-4 transition-colors hover:border-slate-blue-400 hover:bg-slate-blue-50"
               >
-                <div className="text-sm font-medium text-muted-foreground">Title {t.number}</div>
+                <div className="text-sm font-medium text-slate-blue-800">Title {t.number}</div>
                 <div className="mt-1 font-semibold text-foreground">{toTitleCase(t.name)}</div>
                 <div className="mt-2 text-xs text-muted-foreground">
                   {t.chapterCount} chapters · {t.sectionCount} sections
@@ -83,11 +83,11 @@ export default async function HomePage() {
 
 function StatCard({ label, value, icon }: { label: string; value: number; icon: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-border bg-slate-blue-50/50 px-4 py-3">
+    <div className="flex items-center gap-3 rounded-lg border border-slate-blue-400 bg-slate-blue-50 px-4 py-3">
       <div className="text-slate-blue-600">{icon}</div>
       <div>
         <div className="text-lg font-semibold text-foreground">{value.toLocaleString()}</div>
-        <div className="text-xs text-muted-foreground">{label}</div>
+        <div className="text-sm text-muted-foreground">{label}</div>
       </div>
     </div>
   );
