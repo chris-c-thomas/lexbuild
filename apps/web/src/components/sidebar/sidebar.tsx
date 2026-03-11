@@ -88,7 +88,7 @@ export function Sidebar() {
               href="/"
               className="flex shrink-0 items-center gap-1.5 text-lg font-bold text-foreground"
             >
-              <Scale className="h-6 w-6 shrink-0" />
+              {/* <Scale className="h-6 w-6 shrink-0" /> */}
               LexBuild
             </Link>
             <span className="text-muted-foreground/40">/</span>
