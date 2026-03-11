@@ -84,7 +84,8 @@ export function TitleList({ titles, activeTitleDir }: TitleListProps) {
                 )}
                 title={`Title ${t.number} — ${toTitleCase(t.name)}`}
               >
-                <span className="font-medium text-muted-foreground">{t.number}.</span> {toTitleCase(t.name)}
+                <span className="font-medium text-muted-foreground">{t.number}.</span>{" "}
+                {toTitleCase(t.name)}
               </Link>
             </div>
 

@@ -42,10 +42,7 @@ export function Breadcrumbs() {
               {isLast ? (
                 <span className="font-medium text-foreground">{crumb.label}</span>
               ) : (
-                <Link
-                  href={crumb.href}
-                  className="hover:text-slate-blue-600"
-                >
+                <Link href={crumb.href} className="hover:text-slate-blue-600">
                   {crumb.label}
                 </Link>
               )}
