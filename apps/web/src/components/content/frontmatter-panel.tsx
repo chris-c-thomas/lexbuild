@@ -1,4 +1,5 @@
 import type { ContentFrontmatter } from "@/lib/types";
+import { toTitleCase } from "@/lib/utils";
 
 interface FrontmatterPanelProps {
   frontmatter: ContentFrontmatter;
@@ -33,7 +34,7 @@ export function FrontmatterPanel({ frontmatter }: FrontmatterPanelProps) {
             {frontmatter.chapter_name && (
               <MetaItem
                 label="Chapter"
-                value={`${frontmatter.chapter_number} — ${frontmatter.chapter_name}`}
+                value={`${frontmatter.chapter_number} — ${toTitleCase(frontmatter.chapter_name)}`}
               />
             )}
             {frontmatter.source_credit && (
@@ -49,7 +50,7 @@ export function FrontmatterPanel({ frontmatter }: FrontmatterPanelProps) {
         {!isTitle && !isSection && frontmatter.chapter_name && (
           <MetaItem
             label="Chapter"
-            value={`${frontmatter.chapter_number} — ${frontmatter.chapter_name}`}
+            value={`${frontmatter.chapter_number} — ${toTitleCase(frontmatter.chapter_name)}`}
           />
         )}
       </dl>

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { ContentViewerProps } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, toTitleCase } from "@/lib/utils";
 import { CopyButton } from "./copy-button";
 import { DownloadButton } from "./download-button";
 import { FrontmatterPanel } from "./frontmatter-panel";
@@ -23,7 +23,7 @@ export function ContentViewer({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4">
-        <h1 className="text-2xl font-bold text-foreground">{frontmatter.title}</h1>
+        <h1 className="text-2xl font-bold text-foreground">{toTitleCase(frontmatter.title)}</h1>
         <FrontmatterPanel frontmatter={frontmatter} />
       </div>
 

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, toTitleCase } from "@/lib/utils";
 import { fetchTitleNav, parseUscPath } from "@/lib/nav";
 import type { TitleSummary, TitleNav } from "@/lib/types";
 import { ChapterList } from "./chapter-list";
@@ -82,9 +82,9 @@ export function TitleList({ titles, activeTitleDir }: TitleListProps) {
                     ? "bg-slate-blue-100 font-medium text-slate-blue-900 dark:bg-slate-blue-950 dark:text-slate-blue-200"
                     : "text-foreground/80 hover:bg-accent hover:text-accent-foreground",
                 )}
-                title={`Title ${t.number} — ${t.name}`}
+                title={`Title ${t.number} — ${toTitleCase(t.name)}`}
               >
-                <span className="font-medium text-muted-foreground">{t.number}.</span> {t.name}
+                <span className="font-medium text-muted-foreground">{t.number}.</span> {toTitleCase(t.name)}
               </Link>
             </div>
 

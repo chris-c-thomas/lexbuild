@@ -4,6 +4,7 @@ import { getContentProvider } from "@/lib/content";
 import { parseFrontmatter, renderMarkdownToHtml } from "@/lib/markdown";
 import { highlightMarkdown } from "@/lib/shiki";
 import { ContentViewer } from "@/components/content/content-viewer";
+import { toTitleCase } from "@/lib/utils";
 
 /**
  * On-demand ISR: no pages pre-built, generated on first request, cached indefinitely.
@@ -52,9 +53,10 @@ export async function generateMetadata({ params }: Props) {
   const raw = await getContent(title, chapter);
   if (!raw) return { title: "Not found" };
   const { frontmatter } = parseFrontmatter(raw);
+  const displayTitle = toTitleCase(frontmatter.title);
   return {
-    title: frontmatter.title,
-    description: `${frontmatter.title} — Structured Markdown from LexBuild.`,
-    openGraph: { title: frontmatter.title, type: "article" },
+    title: displayTitle,
+    description: `${displayTitle} — Structured Markdown from LexBuild.`,
+    openGraph: { title: displayTitle, type: "article" },
   };
 }

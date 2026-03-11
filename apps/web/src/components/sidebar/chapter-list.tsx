@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, toTitleCase } from "@/lib/utils";
 import type { ChapterNav } from "@/lib/types";
 import { SectionList } from "./section-list";
 
@@ -62,9 +62,9 @@ export function ChapterList({
                     ? "bg-slate-blue-100 font-medium text-slate-blue-900 dark:bg-slate-blue-950 dark:text-slate-blue-200"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}
-                title={`Chapter ${ch.number} — ${ch.name}`}
+                title={`Chapter ${ch.number} — ${toTitleCase(ch.name)}`}
               >
-                <span className="font-medium">Ch. {ch.number}</span> {ch.name}
+                <span className="font-medium">Ch. {ch.number}</span> {toTitleCase(ch.name)}
               </Link>
             </div>
 

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getNavProvider } from "@/lib/content";
 import { Scale, FileText, BookOpen } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { toTitleCase } from "@/lib/utils";
 
 export default async function HomePage() {
   const nav = await getNavProvider();
@@ -71,7 +72,7 @@ export default async function HomePage() {
                 className="rounded-lg border border-border p-4 transition-colors hover:border-ring hover:bg-accent"
               >
                 <div className="text-sm font-medium text-muted-foreground">Title {t.number}</div>
-                <div className="mt-1 font-semibold text-foreground">{t.name}</div>
+                <div className="mt-1 font-semibold text-foreground">{toTitleCase(t.name)}</div>
                 <div className="mt-2 text-xs text-muted-foreground">
                   {t.chapterCount} chapters · {t.sectionCount} sections
                 </div>
