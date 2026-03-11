@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.7.0]
+
+### Added
+
+#### Web App — Vercel Production Deployment (`apps/web/`)
+
+- **Production deployment to Vercel** at `https://lexbuild.dev` with content served from Cloudflare R2. The site is live with all 54 USC titles, 60k+ sections, sidebar navigation, full-text search, and dark mode.
+- **On-demand ISR caching** — viewer pages use empty `generateStaticParams()` + `revalidate = false` + `dynamicParams = true` for Vercel edge caching (`s-maxage=31536000`). Without this pattern, Vercel forces `max-age=0` on dynamic routes.
+- **PageFind served from R2** — the search index (~61k files, ~400 MB) is too large for Vercel's static file hosting. Uploaded to R2 under `_pagefind/` prefix and loaded client-side via configurable `NEXT_PUBLIC_PAGEFIND_BASE_URL` env var (defaults to `/_pagefind` for local dev).
+- **`.env.production`** (`apps/web/`): sets `CONTENT_STORAGE=s3` — committed to repo, documents production intent. No secrets.
+- **Root `.vercelignore`**: excludes `downloads/`, `output/`, `apps/web/content/`, `apps/web/public/_pagefind/` to keep Vercel upload under 10 MB limit. `apps/web/public/nav/` is NOT excluded (sidebar navigation JSON is small and served directly by Vercel).
+- **Deployment guide** (`.claude/deployment.md`): complete guide covering R2 public access, CORS, Vercel project setup, env vars, deploy workflow, content refresh, verification checklist, and troubleshooting.
+
+### Changed
+
+- **`search-dialog.tsx`**: PageFind base URL now configurable via `NEXT_PUBLIC_PAGEFIND_BASE_URL` env var instead of hardcoded `/_pagefind`.
+- **`apps/web/.vercelignore`**: added `public/_pagefind/` exclusion.
+- **`apps/web/.env.example`**: added `NEXT_PUBLIC_PAGEFIND_BASE_URL` entry and clarified that `CONTENT_STORAGE` is set via `.env.production`, not Vercel dashboard.
+- **Viewer pages** (`usc/[title]/*`): added `generateStaticParams`, `revalidate`, and `dynamicParams` exports for on-demand ISR.
+- **Documentation**: updated `CLAUDE.md`, `apps/web/CLAUDE.md` with deployment workflow, ISR caching strategy, and corrected route classification docs.
+
+### Fixed
+
+- **Vercel cache headers**: viewer pages returned `cache-control: max-age=0` because Vercel treated them as fully dynamic. Fixed by adding empty `generateStaticParams()` to enable ISR, which allows Vercel to respect `s-maxage` headers.
+- **TypeScript build error**: `@ts-expect-error` on PageFind import became unused after switching to template literal URL. Removed the directive.
+
+---
+
 ## [1.5.1]
 
 ### Added
