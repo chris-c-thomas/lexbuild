@@ -21,7 +21,10 @@ import { put } from "@vercel/blob";
 const CONTENT_DIR = join(import.meta.dirname, "..", "content");
 const PAGEFIND_DIR = join(import.meta.dirname, "..", "public", "_pagefind");
 
-const CONCURRENCY = 20;
+const CONCURRENCY = 5;
+const MAX_RETRIES = 5;
+const BASE_DELAY_MS = 2000;
+
 const args = process.argv.slice(2);
 const includePagfind = args.includes("--include-pagefind");
 const dryRun = args.includes("--dry-run");
@@ -31,6 +34,7 @@ interface UploadStats {
   skipped: number;
   errors: number;
   bytes: number;
+  retries: number;
 }
 
 /** Recursively collect all file paths under a directory. */
@@ -58,29 +62,51 @@ async function collectFiles(dir: string): Promise<string[]> {
   return files;
 }
 
-/** Upload a single file to Vercel Blob. */
-async function uploadFile(filePath: string, pathname: string, stats: UploadStats): Promise<void> {
-  try {
-    const content = await readFile(filePath);
-    const fileStat = await stat(filePath);
+/** Sleep for a given number of milliseconds. */
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
-    if (dryRun) {
+/** Check if an error is a rate limit error. */
+function isRateLimitError(err: unknown): boolean {
+  if (typeof err !== "object" || err === null) return false;
+  const message = (err as { message?: string }).message ?? "";
+  return message.includes("Too many req") || message.includes("rate limit");
+}
+
+/** Upload a single file to Vercel Blob with retry on rate limits. */
+async function uploadFile(filePath: string, pathname: string, stats: UploadStats): Promise<void> {
+  const content = await readFile(filePath);
+  const fileStat = await stat(filePath);
+
+  if (dryRun) {
+    stats.uploaded++;
+    stats.bytes += fileStat.size;
+    return;
+  }
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      await put(pathname, content, {
+        access: "public",
+        addRandomSuffix: false,
+        allowOverwrite: true,
+      });
+
       stats.uploaded++;
       stats.bytes += fileStat.size;
       return;
+    } catch (err) {
+      if (isRateLimitError(err) && attempt < MAX_RETRIES) {
+        stats.retries++;
+        const delay = BASE_DELAY_MS * Math.pow(2, attempt);
+        await sleep(delay);
+        continue;
+      }
+      stats.errors++;
+      console.error(`  ERROR: ${pathname} — ${err instanceof Error ? err.message : err}`);
+      return;
     }
-
-    await put(pathname, content, {
-      access: "public",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-    });
-
-    stats.uploaded++;
-    stats.bytes += fileStat.size;
-  } catch (err) {
-    stats.errors++;
-    console.error(`  ERROR: ${pathname} — ${err instanceof Error ? err.message : err}`);
   }
 }
 
@@ -90,6 +116,7 @@ async function uploadBatch(
   stats: UploadStats,
 ): Promise<void> {
   let index = 0;
+  const total = files.length;
 
   async function worker(): Promise<void> {
     while (index < files.length) {
@@ -97,10 +124,10 @@ async function uploadBatch(
       const file = files[i]!;
       await uploadFile(file.filePath, file.pathname, stats);
 
-      // Progress update every 500 files
-      if (stats.uploaded % 500 === 0 && stats.uploaded > 0) {
-        const pct = ((stats.uploaded / files.length) * 100).toFixed(1);
-        console.log(`  ${stats.uploaded}/${files.length} (${pct}%)`);
+      const done = stats.uploaded + stats.errors;
+      if (done % 1000 === 0 && done > 0) {
+        const pct = ((done / total) * 100).toFixed(1);
+        console.log(`  ${done}/${total} (${pct}%) — ${stats.retries} retries`);
       }
     }
   }
@@ -117,6 +144,7 @@ async function main(): Promise<void> {
   }
 
   console.log(dryRun ? "=== DRY RUN ===" : "=== Uploading to Vercel Blob ===");
+  console.log(`  Concurrency: ${CONCURRENCY}, Max retries: ${MAX_RETRIES}`);
   console.log();
 
   const allFiles: Array<{ filePath: string; pathname: string }> = [];
@@ -146,7 +174,7 @@ async function main(): Promise<void> {
   console.log(`Total: ${allFiles.length} files`);
   console.log();
 
-  const stats: UploadStats = { uploaded: 0, skipped: 0, errors: 0, bytes: 0 };
+  const stats: UploadStats = { uploaded: 0, skipped: 0, errors: 0, bytes: 0, retries: 0 };
   const start = Date.now();
 
   await uploadBatch(allFiles, stats);
@@ -157,6 +185,7 @@ async function main(): Promise<void> {
   console.log();
   console.log(dryRun ? "=== DRY RUN COMPLETE ===" : "=== Upload Complete ===");
   console.log(`  Uploaded: ${stats.uploaded} files (${mb} MB)`);
+  if (stats.retries > 0) console.log(`  Retries:  ${stats.retries}`);
   if (stats.errors > 0) console.log(`  Errors:   ${stats.errors}`);
   console.log(`  Time:     ${elapsed}s`);
 }
