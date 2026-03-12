@@ -103,7 +103,7 @@ Key points:
 - **Tailwind CSS v4 requires `@tailwindcss/postcss`** and `postcss.config.mjs`. Without these, no styles are generated.
 - **Production URL**: `https://lexbuild.dev` (`www` redirects to apex via Vercel 308).
 - **Deploy via `vercel deploy --prod`** from the **monorepo root** (not `apps/web/`). Vercel needs the full repo for `pnpm-lock.yaml`. Root Directory is set to `apps/web` in Vercel dashboard. Build Command is overridden to `next build`.
-- **Content served from Cloudflare R2** in production (`CONTENT_STORAGE=s3` in `.env.production`). PageFind index (~61k files) also served from R2 via `NEXT_PUBLIC_PAGEFIND_BASE_URL`.
+- **Content served from Vercel Blob** in production (`CONTENT_STORAGE=blob` in `.env.production`). `BLOB_READ_WRITE_TOKEN` is auto-injected by Vercel when a Blob store is connected to the project. Cloudflare R2 (`CONTENT_STORAGE=s3`) is retained as a legacy option. PageFind index (~61k files) served from R2 via `NEXT_PUBLIC_PAGEFIND_BASE_URL`.
 - **Root `.vercelignore`** excludes `downloads/`, `output/`, `apps/web/content/`, `apps/web/public/_pagefind/` to stay under Vercel's 10 MB upload limit. `apps/web/public/nav/` is NOT excluded (small static JSON needed for sidebar).
 - **On-demand ISR** — pages use empty `generateStaticParams()` + `revalidate = false` so Vercel caches at the edge. Without this, Vercel forces `max-age=0` on dynamic routes.
 - See `.claude/deployment.md` for the complete deployment guide, `apps/web/CLAUDE.md` for the full web app spec.

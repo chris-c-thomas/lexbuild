@@ -86,7 +86,7 @@ packages:
 - **Search**: Pagefind (client-side, static index from source `.md` files)
 - **Icons**: lucide-react
 - **Deployment**: Vercel (SSR + edge caching)
-- **Content Storage**: Cloudflare R2 (production) via S3-compatible API, filesystem (local dev)
+- **Content Storage**: Vercel Blob (production), Cloudflare R2 (legacy) via S3-compatible API, filesystem (local dev)
 - **Monorepo**: Turborepo + pnpm workspaces
 
 ## Architecture Summary
@@ -104,7 +104,7 @@ Key design properties:
 1. **Three granularity levels, one shared viewer.** The `ContentViewer` client component handles all three. The server component passes `granularity`, `rawMarkdown`, `highlightedSource`, `renderedHtml`, and `frontmatter` as props.
 2. **Content is NOT embedded in the build.** It's fetched at request time from the content provider. The app build produces ~10 pages of template code, not 60k pre-rendered pages.
 3. **Full SEO.** Server-rendered HTML means crawlers see complete content, unique `<title>`, meta description, and Open Graph tags — identical to static pages.
-4. **Content storage is abstracted.** A `ContentProvider` interface decouples the application from the storage backend. Filesystem for dev/initial production; S3, R2, or Vercel Blob later.
+4. **Content storage is abstracted.** A `ContentProvider` interface decouples the application from the storage backend. Three implementations: filesystem (local dev), Vercel Blob (production), and S3/R2 (legacy).
 5. **Navigation is lazy-loaded from pre-built JSON.** A build-time script generates per-title JSON files from section-level `_meta.json`. These are static assets in `public/nav/`.
 6. **Cache invalidation is explicit.** Content changes quarterly (OLRC release points). Purge CDN cache after uploading new content. No automatic revalidation timers.
 
@@ -152,7 +152,8 @@ apps/web/
 │   │   ├── content/
 │   │   │   ├── types.ts              # ContentProvider + NavProvider interfaces
 │   │   │   ├── fs-provider.ts        # Filesystem implementation
-│   │   │   ├── s3-provider.ts        # S3/R2 implementation (production)
+│   │   │   ├── s3-provider.ts        # S3/R2 implementation (legacy)
+│   │   │   ├── blob-provider.ts      # Vercel Blob implementation (production)
 │   │   │   └── index.ts             # Provider factory (env-based selection)
 │   │   ├── markdown.ts               # parseFrontmatter() + renderMarkdownToHtml()
 │   │   ├── shiki.ts                  # Shiki highlighter singleton
@@ -165,6 +166,7 @@ apps/web/
 │   ├── generate-content.sh           # Run all three lexbuild convert commands
 │   ├── generate-sitemap.ts           # Generate sitemap from _meta.json
 │   ├── validate-content.ts           # Verify content directory integrity
+│   ├── upload-to-blob.ts             # Upload content directory to Vercel Blob
 │   └── deploy.sh                     # Full pipeline
 ├── content/                          # LexBuild output — git-ignored
 │   ├── section/usc/                  # Section-level (60k files + _meta.json)
@@ -209,7 +211,17 @@ The `FsContentProvider` reads files from the local filesystem using `node:fs/pro
 
 The `FsNavProvider` reads `_meta.json` files from the section-level content directory. It scans title directories, parses hierarchical metadata, and injects Title 53 (Reserved) if not present.
 
-### S3/R2 Provider (Production)
+### Vercel Blob Provider (Production)
+
+**File**: `src/lib/content/blob-provider.ts`
+
+The `BlobContentProvider` reads content from a public Vercel Blob store using the `@vercel/blob` package. The store is public, so reads do not require authentication. Uses `BLOB_READ_WRITE_TOKEN` which is auto-injected by Vercel when a Blob store is connected to the project.
+
+The `BlobNavProvider` discovers title directories by listing blobs under the `section/usc/` prefix, then fetches and parses `_meta.json` files. Parsed metadata is cached in a module-level `Map` that persists across requests within the same serverless function instance.
+
+Content is uploaded to the Blob store using the `scripts/upload-to-blob.ts` script.
+
+### S3/R2 Provider (Legacy)
 
 **File**: `src/lib/content/s3-provider.ts`
 
@@ -236,7 +248,8 @@ The factory uses the `CONTENT_STORAGE` environment variable to select the provid
 | Value | Provider | Use Case |
 |---|---|---|
 | `fs` (default) | `FsContentProvider` / `FsNavProvider` | Local development |
-| `s3` | `S3ContentProvider` / `S3NavProvider` | Production (Cloudflare R2) |
+| `blob` | `BlobContentProvider` / `BlobNavProvider` | Production (Vercel Blob) |
+| `s3` | `S3ContentProvider` / `S3NavProvider` | Legacy (Cloudflare R2) |
 
 Singletons are cached for the lifetime of the process.
 
@@ -465,7 +478,7 @@ Routes use `generateStaticParams()` returning an empty array with `revalidate = 
 Each page:
 
 1. Extracts route params
-2. Reads the `.md` file from the content provider (R2 in production)
+2. Reads the `.md` file from the content provider (Vercel Blob in production)
 3. Parses frontmatter, highlights with Shiki, renders with remark
 4. Returns HTML cached at the CDN edge for 1 year
 5. Returns SEO metadata via `generateMetadata()`
@@ -660,7 +673,9 @@ Adapts based on field presence (not a `granularity` prop):
 - **The app build is fast (seconds).** If build takes minutes, something is wrong — you may have accidentally enabled static generation.
 - **Shiki singleton persists across requests** within a serverless function instance. Do NOT reinitialize per request.
 - **`process.env.CONTENT_DIR` defaults to `./content`.** Override via `.env.local` for custom paths (filesystem provider only).
-- **`process.env.CONTENT_STORAGE` defaults to `fs`.** Set to `s3` for production (Cloudflare R2).
+- **`process.env.CONTENT_STORAGE` defaults to `fs`.** Set to `blob` for production (Vercel Blob) or `s3` for legacy (Cloudflare R2).
+- **`BLOB_READ_WRITE_TOKEN` is auto-injected by Vercel** when a Blob store is connected to the project. Do not set it manually in `.env.production`.
+- **Content Link components use `prefetch={false}`.** This avoids unnecessary RSC prefetch requests for content pages. Without this, Next.js eagerly prefetches linked pages, generating excessive requests to the content store.
 - **Tailwind CSS v4 requires `@tailwindcss/postcss` and a `postcss.config.mjs`.** Without these, no utility classes or `@theme inline` mappings are generated. Next.js does NOT auto-detect Tailwind v4 — you must configure PostCSS explicitly.
 - **Clear `.next/` cache after CSS config changes.** Stale cache can mask PostCSS fixes. Run `rm -rf .next` and restart dev server.
 - **shadcn/ui `buttonVariants` is `"use client"`.** Cannot call it in Server Components. Use inline Tailwind classes or a client wrapper for styled links in server pages.
