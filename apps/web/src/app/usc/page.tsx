@@ -37,7 +37,12 @@ export default async function UscIndexPage() {
     <div className="flex flex-col gap-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">U.S. Code</h1>
-        <h2 className="mt-1 text-xl font-normal">Sourced from the <a href="https://uscode.house.gov/" target="_blank" rel="noopener noreferrer"><span className="text-slate-blue-600">Office of the Law Revision Counsel</span></a></h2>
+        <h2 className="mt-1 text-xl font-normal">
+          Sourced from the{" "}
+          <a href="https://uscode.house.gov/" target="_blank" rel="noopener noreferrer">
+            <span className="text-slate-blue-600">Office of the Law Revision Counsel</span>
+          </a>
+        </h2>
         {releasePoint && (
           <p className="mt-2 text-muted-foreground">{formatReleasePoint(releasePoint)}.</p>
         )}
