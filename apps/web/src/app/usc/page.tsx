@@ -16,9 +16,9 @@ export const metadata = {
  */
 function formatReleasePoint(releasePoint: string): string {
   const match = /^(\d+-\d+)(?:not(\d+))?$/.exec(releasePoint);
-  if (!match) return `Release point ${releasePoint}`;
-  const base = match[1]!;
-  const congress = base.split("-")[0]!;
+  if (!match?.[1]) return `Release point ${releasePoint}`;
+  const base = match[1];
+  const [congress] = base.split("-");
   const excluded = match[2];
   if (excluded) {
     return `Current through Public Law ${base}, except ${congress}-${excluded}`;

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { Menu, X, Scale, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { fetchTitles } from "@/lib/nav";
 import type { TitleSummary } from "@/lib/types";
 import { TitleList } from "./title-list";
