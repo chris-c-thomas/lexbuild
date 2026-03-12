@@ -65,6 +65,7 @@ export default async function HomePage() {
               <Link
                 key={t.directory}
                 href={`/usc/${t.directory}/`}
+                prefetch={false}
                 className="rounded-lg border border-border p-4 transition-colors hover:border-slate-blue-400 hover:bg-slate-blue-50"
               >
                 <div className="text-sm font-medium text-slate-blue-800">Title {t.number}</div>

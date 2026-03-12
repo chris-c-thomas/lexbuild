@@ -120,6 +120,7 @@ function SectionItem({
   return (
     <Link
       href={`/usc/${titleDir}/${chapterDir}/${section.file}/`}
+      prefetch={false}
       className={cn(
         "block truncate rounded-md px-2 py-0.5 text-xs transition-colors",
         isActive

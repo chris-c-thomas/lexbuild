@@ -56,6 +56,7 @@ export function ChapterList({
               </button>
               <Link
                 href={`/usc/${titleDir}/${ch.directory}/`}
+                prefetch={false}
                 className={cn(
                   "flex-1 truncate rounded-md px-2 py-1 text-xs transition-colors",
                   isActive && !activeSectionSlug

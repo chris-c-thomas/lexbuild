@@ -76,6 +76,7 @@ export function TitleList({ titles, activeTitleDir }: TitleListProps) {
               </button>
               <Link
                 href={`/usc/${t.directory}/`}
+                prefetch={false}
                 className={cn(
                   "flex-1 truncate rounded-md px-2 py-1.5 text-sm transition-colors",
                   isActive && !chapterDir
