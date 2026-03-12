@@ -1,5 +1,11 @@
 # @lexbuild/core
 
+## 1.8.0
+
+### Minor Changes
+
+- [#37](https://github.com/chris-c-thomas/LexBuild/pull/37) [`f1fc762`](https://github.com/chris-c-thomas/LexBuild/commit/f1fc762b0bea2a15fc6de8e88c67ed5b59612825) Thanks [@chris-c-thomas](https://github.com/chris-c-thomas)! - Bump v1.8.0
+
 ## 1.7.0
 
 ### Minor Changes
