@@ -17,6 +17,10 @@ export function getContentProvider(): Promise<ContentProvider> {
           const { S3ContentProvider } = await import("./s3-provider");
           return new S3ContentProvider();
         }
+        case "blob": {
+          const { BlobContentProvider } = await import("./blob-provider");
+          return new BlobContentProvider();
+        }
         default:
           throw new Error(`Unknown CONTENT_STORAGE: ${storage}`);
       }
@@ -38,6 +42,10 @@ export function getNavProvider(): Promise<NavProvider> {
         case "s3": {
           const { S3NavProvider } = await import("./s3-provider");
           return new S3NavProvider();
+        }
+        case "blob": {
+          const { BlobNavProvider } = await import("./blob-provider");
+          return new BlobNavProvider();
         }
         default:
           throw new Error(`Unknown CONTENT_STORAGE: ${storage}`);

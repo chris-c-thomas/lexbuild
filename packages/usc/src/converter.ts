@@ -446,6 +446,8 @@ async function writeMetaFiles(
   // Write title-level _meta.json
   const totalTokens = sectionMetas.reduce((sum, sm) => sum + Math.ceil(sm.contentLength / 4), 0);
 
+  const releasePoint = parseFullReleasePoint(docMeta.docPublicationName ?? "");
+
   const titleMeta = {
     format_version: FORMAT_VERSION,
     generator: GENERATOR,
@@ -455,6 +457,7 @@ async function writeMetaFiles(
     title_name: titleHeading ?? docMeta.dcTitle ?? "",
     positive_law: docMeta.positivelaw ?? false,
     currency,
+    release_point: releasePoint,
     source_xml: basename(options.input),
     granularity: options.granularity,
     stats: {
@@ -1204,6 +1207,16 @@ function inlineToText(node: {
 function parseCurrency(pubName: string): string {
   // Try to extract the release point pattern (e.g., "119-73")
   const match = /(\d+-\d+)/.exec(pubName);
+  if (match?.[1]) return match[1];
+  return pubName || "unknown";
+}
+
+/**
+ * Parse the full release point string from docPublicationName, including exclusion suffix.
+ * Example: "Online@119-73not60" → "119-73not60"
+ */
+function parseFullReleasePoint(pubName: string): string {
+  const match = /(\d+-\d+(?:not\d+)?)/.exec(pubName);
   if (match?.[1]) return match[1];
   return pubName || "unknown";
 }

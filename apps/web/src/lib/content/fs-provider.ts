@@ -60,7 +60,7 @@ export class FsNavProvider implements NavProvider {
         const raw = await readFile(join(uscDir, dir.name, "_meta.json"), "utf-8");
         const meta = JSON.parse(raw) as Record<string, unknown>;
         const stats = meta.stats as Record<string, unknown> | undefined;
-        titles.push({
+        const summary: TitleSummary = {
           number: meta.title_number as number,
           name: meta.title_name as string,
           directory: dir.name,
@@ -68,7 +68,11 @@ export class FsNavProvider implements NavProvider {
           chapterCount: (stats?.chapter_count as number) ?? 0,
           sectionCount: (stats?.section_count as number) ?? 0,
           tokenEstimate: (stats?.total_tokens_estimate as number) ?? 0,
-        });
+        };
+        if (typeof meta.release_point === "string") {
+          summary.releasePoint = meta.release_point;
+        }
+        titles.push(summary);
       } catch {
         // Skip titles with missing or malformed _meta.json
       }

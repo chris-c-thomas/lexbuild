@@ -41,6 +41,8 @@ export interface TitleSummary {
   chapterCount: number;
   sectionCount: number;
   tokenEstimate: number;
+  /** Full OLRC release point (e.g., "119-73not60") */
+  releasePoint?: string;
 }
 
 /** Full navigation data for a single title. */
