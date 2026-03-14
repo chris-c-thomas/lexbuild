@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.9.1]
+
+### Fixed
+
+eCFR npm publish issue via changeset and publish.yml
+
 ## [1.9.0]
 
 ### Added
