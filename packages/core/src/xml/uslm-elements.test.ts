@@ -9,7 +9,7 @@ import {
   CONTENT_ELEMENTS,
   INLINE_ELEMENTS,
   NOTE_ELEMENTS,
-} from "./namespace.js";
+} from "./uslm-elements.js";
 
 describe("namespace constants", () => {
   it("defines correct USLM namespace", () => {

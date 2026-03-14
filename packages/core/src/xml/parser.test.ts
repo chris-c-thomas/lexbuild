@@ -3,7 +3,7 @@ import { createReadStream } from "node:fs";
 import { resolve } from "node:path";
 import { XMLParser } from "./parser.js";
 import type { Attributes } from "./parser.js";
-import { XHTML_NS, DC_NS, DCTERMS_NS } from "./namespace.js";
+import { XHTML_NS, DC_NS, DCTERMS_NS } from "./uslm-elements.js";
 
 const FIXTURES_DIR = resolve(import.meta.dirname, "../../../../fixtures/fragments");
 

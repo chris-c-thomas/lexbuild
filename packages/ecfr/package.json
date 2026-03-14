@@ -1,0 +1,68 @@
+{
+  "name": "@lexbuild/ecfr",
+  "version": "1.8.0",
+  "description": "Electronic Code of Federal Regulations (eCFR) to Markdown converter for LexBuild",
+  "author": "Chris Thomas",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chris-c-thomas/LexBuild.git",
+    "directory": "packages/ecfr"
+  },
+  "homepage": "https://github.com/chris-c-thomas/LexBuild/tree/main/packages/ecfr",
+  "bugs": {
+    "url": "https://github.com/chris-c-thomas/LexBuild/issues"
+  },
+  "keywords": [
+    "lexbuild",
+    "legal-tech",
+    "law",
+    "rag",
+    "llm",
+    "xml",
+    "parser",
+    "cfr",
+    "ecfr",
+    "regulations",
+    "federal-regulations",
+    "govinfo",
+    "typescript"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix"
+  },
+  "dependencies": {
+    "@lexbuild/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.2",
+    "tsup": "^8",
+    "typescript": "^5.8",
+    "vitest": "^3"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -7,7 +7,7 @@
  */
 
 import type { Attributes } from "../xml/parser.js";
-import { LEVEL_ELEMENTS, CONTENT_ELEMENTS, INLINE_ELEMENTS } from "../xml/namespace.js";
+import { LEVEL_ELEMENTS, CONTENT_ELEMENTS, INLINE_ELEMENTS } from "../xml/uslm-elements.js";
 import { LEVEL_TYPES } from "./types.js";
 import type {
   LevelType,

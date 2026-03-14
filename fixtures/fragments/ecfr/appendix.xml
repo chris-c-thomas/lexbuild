@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<DLPSTEXTCLASS>
+<HEADER>
+<FILEDESC>
+<TITLESTMT><TITLE>Title 17: Commodity and Securities Exchanges</TITLE></TITLESTMT>
+<PUBLICATIONSTMT><IDNO TYPE="title">17</IDNO></PUBLICATIONSTMT>
+</FILEDESC>
+</HEADER>
+<TEXT><BODY><ECFRBRWS>
+<DIV1 N="17" NODE="17:1" TYPE="TITLE">
+<HEAD>Title 17—Commodity and Securities Exchanges</HEAD>
+<DIV3 N="I" NODE="17:1.0.1" TYPE="CHAPTER">
+<HEAD>CHAPTER I—COMMODITY FUTURES TRADING COMMISSION</HEAD>
+<DIV5 N="1" NODE="17:1.0.1.1.1" TYPE="PART">
+<HEAD>PART 1—GENERAL REGULATIONS</HEAD>
+<DIV8 N="§ 1.1" NODE="17:1.0.1.1.1.0.1.1" TYPE="SECTION">
+<HEAD>§ 1.1   Definitions.</HEAD>
+<P>(a) <I>Act</I> means the Commodity Exchange Act.</P>
+</DIV8>
+<DIV9 N="Appendix A" NODE="17:1.0.1.1.1.0.7.72.1" TYPE="APPENDIX">
+<HEAD>Appendix A to Part 1—Treatment of Certain Foreign Currencies</HEAD>
+<P>Payment of margin in currencies listed in this Appendix A shall be considered in compliance with the requirements of Regulation 1.44(f).</P>
+<HD1>Currency</HD1>
+<FP-1>Australian dollar (AUD)</FP-1>
+<FP-1>Canadian dollar (CAD)</FP-1>
+<FP-1>Euro (EUR)</FP-1>
+</DIV9>
+</DIV5>
+</DIV3>
+</DIV1>
+</ECFRBRWS></BODY></TEXT>
+</DLPSTEXTCLASS>

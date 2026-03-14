@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<DLPSTEXTCLASS>
+<HEADER>
+<FILEDESC>
+<TITLESTMT><TITLE>Title 1: General Provisions</TITLE></TITLESTMT>
+<PUBLICATIONSTMT><IDNO TYPE="title">1</IDNO></PUBLICATIONSTMT>
+</FILEDESC>
+</HEADER>
+<TEXT><BODY><ECFRBRWS>
+<DIV1 N="1" NODE="1:1" TYPE="TITLE">
+<HEAD>Title 1—General Provisions</HEAD>
+<DIV3 N="I" NODE="1:1.0.1" TYPE="CHAPTER">
+<HEAD>CHAPTER I—ADMINISTRATIVE COMMITTEE OF THE FEDERAL REGISTER</HEAD>
+<DIV4 N="A" NODE="1:1.0.1.1" TYPE="SUBCHAP">
+<HEAD>SUBCHAPTER A—GENERAL</HEAD>
+<DIV5 N="1" NODE="1:1.0.1.1.1" TYPE="PART">
+<HEAD>PART 1—DEFINITIONS</HEAD>
+<DIV8 N="§ 1.1" NODE="1:1.0.1.1.1.0.1.1" TYPE="SECTION">
+<HEAD>§ 1.1   Definitions.</HEAD>
+<P>As used in this chapter, unless the context requires otherwise—</P>
+<P><I>Administrative Committee</I> means the Administrative Committee of the Federal Register established under section 1506 of title 44, United States Code;</P>
+<P><I>Document</I> includes any Presidential proclamation or Executive order, and any rule, regulation, order, certificate, code of fair competition, license, notice, or similar instrument issued, prescribed, or promulgated by an agency;</P>
+</DIV8>
+</DIV5>
+</DIV4>
+</DIV3>
+</DIV1>
+</ECFRBRWS></BODY></TEXT>
+</DLPSTEXTCLASS>

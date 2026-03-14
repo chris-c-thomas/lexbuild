@@ -50,7 +50,7 @@ describe("@lexbuild/core barrel exports", () => {
     expect(typeof renderSection).toBe("function");
     expect(typeof renderNode).toBe("function");
     expect(typeof generateFrontmatter).toBe("function");
-    expect(FORMAT_VERSION).toBe("1.0.0");
+    expect(FORMAT_VERSION).toBe("1.1.0");
     expect(GENERATOR).toMatch(/^lexbuild@/);
   });
 });

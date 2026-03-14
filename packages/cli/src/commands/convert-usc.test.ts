@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { resolveUscXmlPath, discoverTitles } from "./convert.js";
+import { resolveUscXmlPath, discoverTitles } from "./convert-usc.js";
 
 describe("resolveUscXmlPath", () => {
   let tempDir: string;

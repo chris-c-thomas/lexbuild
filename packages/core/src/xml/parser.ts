@@ -5,7 +5,7 @@
 import { SaxesParser } from "saxes";
 import type { SaxesAttributeNS, SaxesOptions } from "saxes";
 import type { Readable } from "node:stream";
-import { USLM_NS, NAMESPACE_PREFIXES } from "./namespace.js";
+import { USLM_NS, NAMESPACE_PREFIXES } from "./uslm-elements.js";
 
 /** saxes options type for namespace-aware parsing */
 type NSParserOptions = SaxesOptions & { xmlns: true };

@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-LexBuild converts U.S. legislative XML (USLM schema) into structured Markdown for AI/RAG ingestion. It is a monorepo built with Turborepo, pnpm workspaces, TypeScript, and Node.js.
+LexBuild converts U.S. legal XML into structured Markdown for AI/RAG ingestion. It supports multiple source formats: U.S. Code (USLM schema) and eCFR (GPO/SGML-derived XML), with an architecture designed for additional sources (annual CFR, Federal Register, state statutes). It is a monorepo built with Turborepo, pnpm workspaces, TypeScript, and Node.js.
 
 ## Repository Structure
 
@@ -11,12 +11,15 @@ lexbuild/
 ├── packages/
 │   ├── core/        # @lexbuild/core — XML parsing, AST, Markdown rendering, shared utilities
 │   ├── usc/         # @lexbuild/usc — U.S. Code-specific element handlers and downloader
+│   ├── ecfr/        # @lexbuild/ecfr — eCFR (Code of Federal Regulations) converter and downloader
 │   └── cli/         # @lexbuild/cli — CLI binary (the published npm package users install)
 ├── apps/
 │   └── web/         # Documentation site — Next.js 16, SSR, browse U.S. Code as Markdown
 ├── downloads/
-│   └── usc/
-│       └── xml/     # Full USC XML files (usc01.xml ... usc54.xml) — gitignored
+│   ├── usc/
+│   │   └── xml/     # Full USC XML files (usc01.xml ... usc54.xml) — gitignored
+│   └── ecfr/
+│       └── xml/     # Full eCFR XML files (ECFR-title1.xml ... ECFR-title50.xml) — gitignored
 ├── fixtures/
 │   ├── fragments/   # Small synthetic XML snippets for unit tests
 │   └── expected/    # Expected output snapshots for integration tests
@@ -31,6 +34,7 @@ Each package and app has its own `CLAUDE.md` with architecture details, module s
 
 - [`packages/core/CLAUDE.md`](packages/core/CLAUDE.md) — XML→AST→Markdown pipeline, emit-at-level streaming, AST node types, rendering, link resolution
 - [`packages/usc/CLAUDE.md`](packages/usc/CLAUDE.md) — Collect-then-write pattern, granularity output, edge cases (duplicates, appendices), downloader
+- [`packages/ecfr/CLAUDE.md`](packages/ecfr/CLAUDE.md) — eCFR GPO/SGML XML→AST→Markdown, DIV-based hierarchy, element classification, downloader
 - [`packages/cli/CLAUDE.md`](packages/cli/CLAUDE.md) — Commands, options, UI module, title parser, build config
 - [`apps/web/CLAUDE.md`](apps/web/CLAUDE.md) — Next.js 16 SSR site, content provider abstraction, routes, sidebar, search, deployment
 
@@ -79,12 +83,20 @@ pnpm turbo lint
 pnpm turbo dev
 
 # Run the CLI locally during development
-node packages/cli/dist/index.js download --all
-node packages/cli/dist/index.js download --titles 1
-node packages/cli/dist/index.js convert --all
-node packages/cli/dist/index.js convert --titles 1-5 -o ./test-output
-node packages/cli/dist/index.js convert ./downloads/usc/xml/usc01.xml -o ./test-output
-node packages/cli/dist/index.js convert --titles 1 -g title -o ./test-output
+node packages/cli/dist/index.js download-usc --all
+node packages/cli/dist/index.js download-usc --titles 1
+node packages/cli/dist/index.js convert-usc --all
+node packages/cli/dist/index.js convert-usc --titles 1-5 -o ./test-output
+node packages/cli/dist/index.js convert-usc ./downloads/usc/xml/usc01.xml -o ./test-output
+node packages/cli/dist/index.js convert-usc --titles 1 -g title -o ./test-output
+
+# eCFR commands
+node packages/cli/dist/index.js download-ecfr --all
+node packages/cli/dist/index.js download-ecfr --titles 1,17
+node packages/cli/dist/index.js convert-ecfr --all
+node packages/cli/dist/index.js convert-ecfr --titles 1 -o ./test-output
+node packages/cli/dist/index.js convert-ecfr ./downloads/ecfr/xml/ECFR-title1.xml -o ./test-output
+node packages/cli/dist/index.js convert-ecfr --titles 17 -g part -o ./test-output
 
 # Web app (apps/web/) — NOT included in default `pnpm turbo build`
 pnpm turbo dev:web                    # Dev server (http://localhost:3000)
@@ -123,7 +135,8 @@ Key points:
 
 ### Naming
 
-- Project name: "LexBuild" in prose/descriptions/titles. Lowercase `lexbuild` only for package names (`@lexbuild/*`), CLI commands (`lexbuild convert`), URLs, directory paths, and code identifiers.
+- Project name: "LexBuild" in prose/descriptions/titles. Lowercase `lexbuild` only for package names (`@lexbuild/*`), CLI commands (`lexbuild convert-usc`), URLs, directory paths, and code identifiers.
+- CLI commands follow `{action}-{source}` pattern: `download-usc`, `convert-usc`, `download-ecfr`, `convert-ecfr`. Bare `download`/`convert` commands show a source selection error.
 - Files: `kebab-case.ts`
 - Types/Interfaces: `PascalCase` (e.g., `SectionNode`, `ConvertOptions`)
 - Functions: `camelCase` (e.g., `parseIdentifier`, `renderSection`)
@@ -224,7 +237,9 @@ Additional level elements: `<preliminary>` (outside main hierarchy), `<compiledA
 
 ### Identifier / Reference Format
 
-USLM uses canonical URI paths as identifiers:
+LexBuild uses canonical URI paths as identifiers for all sources:
+
+**USC identifiers** (from USLM `identifier` attributes):
 
 ```
 /us/usc/t{title}/s{section}/{subsection}/{paragraph}
@@ -234,15 +249,28 @@ Examples:
 /us/usc/t1/ch1      — Chapter 1 of Title 1
 /us/usc/t1/s1       — Section 1 of Title 1
 /us/usc/t1/s1/a     — Subsection (a) of Section 1
-/us/usc/t1/s1/a/2   — Paragraph (2) of Subsection (a)
 ```
 
 Reference prefixes (big levels): `t` = title, `st` = subtitle, `ch` = chapter, `sch` = subchapter, `art` = article, `p` = part, `sp` = subpart, `d` = division, `sd` = subdivision, `s` = section. Small levels (subsection and below) use their number directly without a prefix.
 
-Full reference URL structure: `[item][work][!lang][/portion][@temporal][.manifestation]`
-- Only `/us/usc/...` references are converted to relative Markdown links
-- `/us/stat/...` (Statutes at Large), `/us/pl/...` (Public Law) render as plain text citations
-- `@portion` on `<ref>` extends a reference established via `@idref` (composable)
+**CFR identifiers** (constructed by the eCFR builder from `NODE` and `N` attributes):
+
+```
+/us/cfr/t{title}/s{section}
+
+Examples:
+/us/cfr/t17             — CFR Title 17
+/us/cfr/t17/ch1         — Chapter I of Title 17
+/us/cfr/t17/pt240       — Part 240 of Title 17
+/us/cfr/t17/s240.10b-5  — Section 240.10b-5
+```
+
+Note: identifiers use `/us/cfr/` (content type) not `/us/ecfr/` (data source). Both eCFR and future annual CFR use the same identifier space.
+
+**Link resolution**:
+- `/us/usc/...` references → relative Markdown links within corpus, or OLRC fallback URLs
+- `/us/cfr/...` references → relative Markdown links within corpus, or ecfr.gov fallback URLs
+- `/us/stat/...` (Statutes at Large), `/us/pl/...` (Public Law) → plain text citations
 
 ### Namespaces in Use
 
@@ -293,7 +321,24 @@ Note: Release points can include exclusion suffixes (e.g., `119-73not60` means "
 
 The zip contains a single XML file named like `usc01.xml`.
 
+## eCFR Download URLs
+
+Bulk data page: `https://www.govinfo.gov/bulkdata/ECFR`
+
+Individual title XML (no zip — plain XML):
+```
+https://www.govinfo.gov/bulkdata/ECFR/title-{N}/ECFR-title{N}.xml
+```
+
+Where `{N}` is the title number (1-50, not zero-padded). Example: `ECFR-title17.xml`
+
+**Reserved titles**: Title 35 (Panama Canal) is reserved — govinfo does not publish bulk XML for it. The downloader silently skips reserved titles during `--all` downloads. The `RESERVED_TITLES` set in `packages/ecfr/src/downloader.ts` tracks which titles to skip.
+
+50 titles total, 49 with content.
+
 ## Output File Naming
+
+### USC Output
 
 **Section granularity** (default): `output/usc/title-{NN}/chapter-{NN}/section-{N}.md`
 **Chapter granularity**: `output/usc/title-{NN}/chapter-{NN}/chapter-{NN}.md`
@@ -307,27 +352,44 @@ The zip contains a single XML file named like `usc01.xml`.
 - Duplicate sections: disambiguated with `-2`, `-3` suffix (e.g., `section-3598.md`, `section-3598-2.md`)
 - Title granularity: flat files with no subdirectories, no `_meta.json` or `README.md` — enriched frontmatter only
 
+### eCFR Output
+
+**Section granularity** (default): `output/ecfr/title-{NN}/chapter-{X}/part-{N}/section-{N.N}.md`
+**Part granularity**: `output/ecfr/title-{NN}/chapter-{X}/part-{N}.md`
+**Chapter granularity**: `output/ecfr/title-{NN}/chapter-{X}/chapter-{X}.md`
+**Title granularity**: `output/ecfr/title-{NN}.md`
+
+- Title dirs: `title-01` through `title-50` (zero-padded to 2 digits)
+- Chapter dirs: `chapter-{X}` where X is a Roman numeral (e.g., `chapter-I`, `chapter-IV`)
+- Part dirs: `part-{N}` where N is the part number (e.g., `part-240`)
+- Section files: `section-{N.N}.md` where N.N is the part-prefixed section number (e.g., `section-240.10b-5.md`)
+- Section granularity generates `_meta.json` per part and title, plus `README.md` per title
+
 ## Key Design Decisions
 
 1. **SAX over DOM**: Large titles (26, 42) can exceed 100MB XML. SAX streaming keeps memory bounded. DOM is not used.
 
-2. **Section as the atomic unit**: A section is the smallest citable legal unit in the U.S. Code. Subsections, paragraphs, etc. are rendered within the section file, not as separate files.
+2. **Section as the atomic unit**: A section is the smallest citable legal unit in both USC and CFR. Subsections, paragraphs, etc. are rendered within the section file, not as separate files.
 
 3. **Frontmatter + sidecar index**: Both YAML frontmatter on every .md file AND `_meta.json` per directory. Frontmatter enables file-level RAG ingestion. Sidecar enables index-based retrieval without parsing every file.
 
-4. **Relative cross-reference links**: Cross-refs within the converted corpus use relative markdown links. Refs to unconverted titles fall back to OLRC website URLs.
+4. **Multi-source frontmatter**: Every file includes `source` (`"usc"` or `"ecfr"`) and `legal_status` (`"official_legal_evidence"`, `"official_prima_facie"`, or `"authoritative_unofficial"`) fields. Source-specific optional fields (e.g., `authority`, `cfr_part`) are included when relevant. The `source` discriminator lets consumers know which fields to expect.
 
-5. **Notes included by default**: By default, all notes (editorial, statutory, amendments) are included alongside the core statutory text and source credits. Notes can be disabled with `--no-include-notes` or selectively filtered with `--include-editorial-notes`, `--include-statutory-notes`, `--include-amendments`.
+5. **Relative cross-reference links**: Cross-refs within the converted corpus use relative Markdown links. USC refs fall back to OLRC website URLs; CFR refs fall back to ecfr.gov URLs.
 
-6. **Streaming output**: For section and chapter granularity, the converter writes output as sections/chapters are collected, avoiding holding the full title AST in memory. **Title granularity is the exception** — it holds the entire title AST and rendered Markdown in memory. Large titles (26, 42) may require 500MB+ RSS in title mode.
+6. **Notes included by default**: By default, all notes (editorial, statutory, amendments) are included alongside the core text and source credits. Notes can be disabled with `--no-include-notes` or selectively filtered with `--include-editorial-notes`, `--include-statutory-notes`, `--include-amendments`.
 
-7. **Footnotes**: Rendered as Markdown footnotes (`[^N]` at reference site, `[^N]: text` at bottom of section file).
+7. **Streaming output**: For section and chapter/part granularity, the converter writes output as sections are collected, avoiding holding the full title AST in memory. **Title granularity is the exception** — it holds the entire title AST and rendered Markdown in memory.
 
-8. **Token estimation**: Uses character/4 heuristic for token counts in `_meta.json`. Precise `tiktoken`-based counting is a planned enhancement.
+8. **Collect-then-write pattern**: Sections are collected during SAX streaming and written after the stream completes, avoiding async issues during SAX event processing.
 
-9. **Table of Disposition**: Excluded from section-level output. Included in title-level README.md.
+9. **Source-specific AST builders**: Each XML format gets its own builder (`ASTBuilder` for USLM, `EcfrASTBuilder` for GPO/SGML). Builders are source-specific but produce the same AST node types, so the rendering pipeline is shared. Builders live in their source package, not in core.
 
-10. **Collect-then-write pattern**: Sections are collected during SAX streaming and written after the stream completes, avoiding async issues during SAX event processing.
+10. **Token estimation**: Uses character/4 heuristic for token counts in `_meta.json` and frontmatter.
+
+11. **Footnotes**: Rendered as Markdown footnotes (`[^N]` at reference site, `[^N]: text` at bottom of section file).
+
+12. **Identifier scheme**: USC uses `/us/usc/` identifiers from USLM `identifier` attributes. CFR uses `/us/cfr/` identifiers constructed from the eCFR `NODE` and `N` attributes. Both eCFR and future annual CFR share the `/us/cfr/` space since they represent the same content.
 
 ## Common Pitfalls
 
@@ -343,14 +405,18 @@ The zip contains a single XML file named like `usc01.xml`.
 - **Quoted content sections**: `<section>` elements inside `<quotedContent>` (quoted bills in statutory notes) must not be emitted as standalone files. Track `quotedContentDepth` to suppress emission.
 - **Duplicate section numbers**: Some titles have multiple sections with the same number within a chapter (e.g., Title 5). Output files are disambiguated with `-2` suffixes.
 
-## When Adding New Source Types (CFR, State Statutes)
+## When Adding New Source Types
 
-> **Note**: The extension architecture is aspirational. No pluggable handler interfaces exist yet — element handling is built into the `ASTBuilder` class. See `docs/development/extending.md` for details.
+The multi-source architecture is proven — `@lexbuild/ecfr` validates the pattern with a completely different XML schema. Adding a new source follows the established pattern:
 
-1. Create a new package: `packages/cfr/` (or `packages/state-il/`, etc.)
-2. Implement a converter function analogous to `convertTitle()` in `@lexbuild/usc`
-3. Extend or adapt the `ASTBuilder` for source-specific elements
-4. Add a new CLI command in `packages/cli`
-5. Reuse `@lexbuild/core` for XML parsing, AST types, Markdown rendering, and frontmatter
-6. Add source-specific download logic if applicable
-7. Document the source's XML schema in the package README
+1. Create `packages/{source}/` with a dependency on `@lexbuild/core`
+2. Implement a source-specific AST builder (SAX events → LexBuild AST nodes) in the source package
+3. Implement a converter function (collect-then-write) analogous to `convertTitle()` or `convertEcfrTitle()`
+4. Implement a downloader if the source has bulk data available
+5. Add `download-{source}` and `convert-{source}` CLI commands in `packages/cli`
+6. Reuse `@lexbuild/core` for XML parsing, AST types, Markdown rendering, frontmatter, and link resolution
+7. Add new `SourceType` value to `packages/core/src/ast/types.ts` and any source-specific optional fields to `FrontmatterData`
+8. Add the package to the `fixed` array in `.changeset/config.json`
+9. Document the source's XML schema in the package's `CLAUDE.md`
+
+Source packages must be independent — they depend only on core, never on each other.

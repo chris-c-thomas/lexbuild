@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<DLPSTEXTCLASS>
+<HEADER>
+<FILEDESC>
+<TITLESTMT><TITLE>Title 17: Commodity and Securities Exchanges</TITLE></TITLESTMT>
+<PUBLICATIONSTMT><IDNO TYPE="title">17</IDNO></PUBLICATIONSTMT>
+</FILEDESC>
+</HEADER>
+<TEXT><BODY><ECFRBRWS>
+<DIV1 N="17" NODE="17:1" TYPE="TITLE">
+<HEAD>Title 17—Commodity and Securities Exchanges</HEAD>
+<DIV3 N="I" NODE="17:1.0.1" TYPE="CHAPTER">
+<HEAD>CHAPTER I—COMMODITY FUTURES TRADING COMMISSION</HEAD>
+<DIV5 N="1" NODE="17:1.0.1.1.1" TYPE="PART">
+<HEAD>PART 1—GENERAL REGULATIONS UNDER THE COMMODITY EXCHANGE ACT</HEAD>
+<AUTH>
+<HED>Authority:</HED><PSPACE>7 U.S.C. 1a, 2, 5, 6, 6a, 6b, 6c, 6d, 6e, 6f, 6g, 6h, 6i, 6k, 6m, 6n, 6o, 6p, 6r, 6s, 7, 7a-2, 7b-3, 8, 9, 9a, 12, 12a, 13b, 13c, 16a, 18, 19, 21, 23, 24, 24a.</PSPACE></AUTH>
+<SOURCE>
+<HED>Source:</HED><PSPACE>41 FR 3194, Jan. 21, 1976, unless otherwise noted.</PSPACE></SOURCE>
+<EDNOTE>
+<HED>Editorial Note:</HED><PSPACE>Nomenclature changes to part 1 appear at 89 FR 71805, Sept. 4, 2024.</PSPACE></EDNOTE>
+<DIV8 N="§ 1.1" NODE="17:1.0.1.1.1.0.1.1" TYPE="SECTION">
+<HEAD>§ 1.1   Definitions.</HEAD>
+<P>(a) <I>Act</I> means the Commodity Exchange Act, as amended.</P>
+<P>(b) <I>Commission</I> means the Commodity Futures Trading Commission.</P>
+<SECAUTH TYPE="N">(Secs. 4g, 5, 42 Stat. 1000, 49 Stat. 1496; 7 U.S.C. 6g, 7; secs. 4g, 5, 8a; 7 U.S.C. 6g, 7, 12a)</SECAUTH>
+<CITA TYPE="N">[41 FR 3194, Jan. 21, 1976]</CITA>
+</DIV8>
+</DIV5>
+</DIV3>
+</DIV1>
+</ECFRBRWS></BODY></TEXT>
+</DLPSTEXTCLASS>

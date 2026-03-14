@@ -277,9 +277,24 @@ export interface EmitContext {
 // Frontmatter types
 // ---------------------------------------------------------------------------
 
+/** Legal provenance status of the source content */
+export type LegalStatus =
+  | "official_legal_evidence" // USC positive law titles
+  | "official_prima_facie" // USC non-positive law titles
+  | "authoritative_unofficial"; // eCFR-sourced content
+
+/** Discriminator for content source */
+export type SourceType = "usc" | "ecfr";
+// Future additions: "cfr" (annual edition), "fr" (Federal Register),
+// "state-il" (Illinois statutes), etc.
+
 /** Data used to generate YAML frontmatter for a section file */
 export interface FrontmatterData {
-  /** USLM canonical identifier (e.g., "/us/usc/t1/s1") */
+  /** Content source identifier */
+  source: SourceType;
+  /** Legal provenance status */
+  legal_status: LegalStatus;
+  /** Canonical identifier (e.g., "/us/usc/t1/s1" or "/us/cfr/t17/s240.10b-5") */
   identifier: string;
   /** Human-readable display title (e.g., "1 USC § 1 - Words denoting...") */
   title: string;
@@ -307,7 +322,7 @@ export interface FrontmatterData {
   positive_law: boolean;
   /** Full source credit text */
   source_credit?: string | undefined;
-  /** Release point identifier (e.g., "119-73") */
+  /** Release point identifier (e.g., "119-73") or date string */
   currency: string;
   /** ISO date from XML generation timestamp */
   last_updated: string;
@@ -319,4 +334,19 @@ export interface FrontmatterData {
   section_count?: number | undefined;
   /** Total estimated tokens (title-level granularity only) */
   total_token_estimate?: number | undefined;
+
+  // --- Source-specific optional fields ---
+
+  /** eCFR/CFR: regulatory authority citation */
+  authority?: string | undefined;
+  /** eCFR/CFR: source/provenance note */
+  regulatory_source?: string | undefined;
+  /** eCFR/CFR: responsible agency name */
+  agency?: string | undefined;
+  /** eCFR/CFR: part number (e.g., "240") */
+  cfr_part?: string | undefined;
+  /** eCFR/CFR: subpart identifier */
+  cfr_subpart?: string | undefined;
+  /** Number of parts (title-level granularity only, eCFR) */
+  part_count?: number | undefined;
 }

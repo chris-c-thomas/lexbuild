@@ -1,12 +1,13 @@
 /**
- * `lexbuild convert` command — converts USC XML files to Markdown.
+ * `lexbuild convert-ecfr` command — converts eCFR XML files to Markdown.
  */
 
 import chalk from "chalk";
 import { Command, Option } from "commander";
 import { existsSync, readdirSync } from "node:fs";
-import { basename, dirname, join, relative, resolve } from "node:path";
-import { convertTitle } from "@lexbuild/usc";
+import { join, relative, resolve } from "node:path";
+import { convertEcfrTitle } from "@lexbuild/ecfr";
+import type { EcfrConvertOptions, EcfrConvertResult } from "@lexbuild/ecfr";
 import {
   createSpinner,
   summaryBlock,
@@ -19,13 +20,13 @@ import {
 } from "../ui.js";
 import { parseTitles } from "../parse-titles.js";
 
-/** Parsed options from the convert command */
-interface ConvertCommandOptions {
+/** Parsed options from the convert-ecfr command */
+interface ConvertEcfrCommandOptions {
   output: string;
   titles?: string | undefined;
   all: boolean;
   inputDir: string;
-  granularity: "section" | "chapter" | "title";
+  granularity: "section" | "part" | "chapter" | "title";
   linkStyle: "relative" | "canonical" | "plaintext";
   includeSourceCredits: boolean;
   includeNotes: boolean;
@@ -36,12 +37,12 @@ interface ConvertCommandOptions {
   verbose: boolean;
 }
 
-/** Build the shared convert options from CLI flags. */
+/** Build EcfrConvertOptions from CLI flags. */
 function buildConvertOptions(
   inputPath: string,
   outputPath: string,
-  options: ConvertCommandOptions,
-) {
+  options: ConvertEcfrCommandOptions,
+): EcfrConvertOptions {
   const hasSelectiveFlags =
     options.includeEditorialNotes || options.includeStatutoryNotes || options.includeAmendments;
   const includeNotes = hasSelectiveFlags ? false : options.includeNotes;
@@ -60,68 +61,48 @@ function buildConvertOptions(
   };
 }
 
-/** Resolve the XML file path for a given title number. */
+/** Regex matching eCFR XML filenames like ECFR-title1.xml, ECFR-title17.xml */
+const ECFR_XML_RE = /^ECFR-title(\d+)\.xml$/;
+
+/** Resolve the XML file path for a given eCFR title number. */
 function titleXmlPath(inputDir: string, titleNum: number): string {
-  const padded = String(titleNum).padStart(2, "0");
-  return join(inputDir, `usc${padded}.xml`);
+  return join(inputDir, `ECFR-title${titleNum}.xml`);
 }
 
-/** Try to resolve a USC XML path, falling back to zero-padded filename. */
-export function resolveUscXmlPath(inputPath: string): string | undefined {
-  if (existsSync(inputPath)) return inputPath;
-
-  // Check if filename matches usc{N}.xml pattern and try zero-padded
-  const dir = dirname(inputPath);
-  const base = basename(inputPath);
-  const match = /^usc(\d+)\.xml$/.exec(base);
-  if (match?.[1]) {
-    const padded = match[1].padStart(2, "0");
-    const paddedPath = join(dir, `usc${padded}.xml`);
-    if (existsSync(paddedPath)) return paddedPath;
-  }
-
-  return undefined;
-}
-
-/** Regex matching USC XML filenames like usc01.xml, usc54.xml */
-const USC_XML_RE = /^usc(\d{2})\.xml$/;
-
-/**
- * Scan a directory for USC XML files and return their title numbers, sorted.
- */
-export function discoverTitles(inputDir: string): number[] {
+/** Scan a directory for eCFR XML files and return their title numbers, sorted. */
+function discoverEcfrTitles(inputDir: string): number[] {
   if (!existsSync(inputDir)) return [];
 
   return readdirSync(inputDir)
-    .map((name) => USC_XML_RE.exec(name))
+    .map((name) => ECFR_XML_RE.exec(name))
     .filter((m): m is RegExpExecArray => m !== null)
     .map((m) => parseInt(m[1] ?? "0", 10))
     .sort((a, b) => a - b);
 }
 
-/** Result from runConversion including elapsed time. */
+/** Result from running a conversion including elapsed time. */
 interface ConversionRun {
-  result: Awaited<ReturnType<typeof convertTitle>>;
+  result: EcfrConvertResult;
   elapsed: number;
 }
 
-/** Run a conversion without printing output. Returns the result and elapsed time. */
+/** Run a conversion without printing output. */
 async function runConversion(
   inputPath: string,
   outputPath: string,
-  options: ConvertCommandOptions,
+  options: ConvertEcfrCommandOptions,
 ): Promise<ConversionRun> {
   const startTime = performance.now();
-  const result = await convertTitle(buildConvertOptions(inputPath, outputPath, options));
+  const result = await convertEcfrTitle(buildConvertOptions(inputPath, outputPath, options));
   const elapsed = performance.now() - startTime;
   return { result, elapsed };
 }
 
-/** Convert a single XML file and print its detailed summary. */
+/** Convert a single file and print its detailed summary. */
 async function convertSingleFile(
   inputPath: string,
   outputPath: string,
-  options: ConvertCommandOptions,
+  options: ConvertEcfrCommandOptions,
   spinnerLabel: string,
 ) {
   const spinner = createSpinner(spinnerLabel);
@@ -129,15 +110,16 @@ async function convertSingleFile(
 
   try {
     const { result, elapsed } = await runConversion(inputPath, outputPath, options);
-
     spinner.stop();
 
     const rows: Array<[string, string]> = [];
     if (options.granularity === "section") {
       rows.push(["Sections", formatNumber(result.sectionsWritten)]);
-      rows.push(["Chapters", formatNumber(result.chapterCount)]);
+      rows.push(["Parts", formatNumber(result.partCount)]);
+    } else if (options.granularity === "part") {
+      rows.push(["Parts", formatNumber(result.partCount)]);
     } else if (options.granularity === "chapter") {
-      rows.push(["Chapters", formatNumber(result.chapterCount)]);
+      rows.push(["Chapters", formatNumber(result.sectionsWritten)]);
     }
     rows.push(["Est. Tokens", formatNumber(result.totalTokenEstimate)]);
 
@@ -151,8 +133,8 @@ async function convertSingleFile(
     );
 
     const titleLabel = result.dryRun
-      ? `lexbuild — Title ${result.titleNumber}: ${result.titleName} [dry-run]`
-      : `lexbuild — Title ${result.titleNumber}: ${result.titleName}`;
+      ? `lexbuild — eCFR Title ${result.titleNumber}: ${result.titleName} [dry-run]`
+      : `lexbuild — eCFR Title ${result.titleNumber}: ${result.titleName}`;
 
     const outputRelative = relative(process.cwd(), outputPath) || outputPath;
 
@@ -178,16 +160,16 @@ async function convertSingleFile(
   }
 }
 
-export const convertCommand = new Command("convert")
-  .description("Convert USC XML file(s) to Markdown")
-  .argument("[input]", "Path to a USC XML file")
+export const convertEcfrCommand = new Command("convert-ecfr")
+  .description("Convert eCFR XML file(s) to Markdown")
+  .argument("[input]", "Path to an eCFR XML file")
   .option("-o, --output <dir>", "Output directory", "./output")
-  .option("--titles <spec>", "Title(s) to convert: 1, 1-5, or 1-5,8,11")
-  .option("--all", "Convert all downloaded titles found in --input-dir", false)
-  .option("-i, --input-dir <dir>", "Directory containing USC XML files", "./downloads/usc/xml")
+  .option("--titles <spec>", "Title(s) to convert: 1, 1-5, or 1-5,17")
+  .option("--all", "Convert all downloaded eCFR titles found in --input-dir", false)
+  .option("-i, --input-dir <dir>", "Directory containing eCFR XML files", "./downloads/ecfr/xml")
   .addOption(
-    new Option("-g, --granularity <level>", "Output granularity: section, chapter, or title")
-      .choices(["section", "chapter", "title"])
+    new Option("-g, --granularity <level>", "Output granularity: section, part, chapter, or title")
+      .choices(["section", "part", "chapter", "title"])
       .default("section"),
   )
   .addOption(
@@ -200,7 +182,7 @@ export const convertCommand = new Command("convert")
   .option("--include-notes", "Include all notes (default)", true)
   .option("--no-include-notes", "Exclude all notes")
   .option("--include-editorial-notes", "Include editorial notes only", false)
-  .option("--include-statutory-notes", "Include statutory notes only", false)
+  .option("--include-statutory-notes", "Include statutory/regulatory notes only", false)
   .option("--include-amendments", "Include amendment history notes only", false)
   .option("--dry-run", "Parse and report structure without writing files", false)
   .option("-v, --verbose", "Enable verbose logging", false)
@@ -208,29 +190,28 @@ export const convertCommand = new Command("convert")
     "after",
     `
 Input modes (use exactly one):
-  <input>       Convert a single XML file
+  <input>       Convert a single eCFR XML file
   --titles      Convert specific titles by number
   --all         Convert all titles in --input-dir
 
 Granularity:
   section       One .md file per section (default)
-  chapter       One .md file per chapter, sections inlined
+  part          One .md file per part, sections inlined
+  chapter       One .md file per chapter, parts and sections inlined
   title         One .md file per title, entire hierarchy inlined
 
 Examples:
-  $ lexbuild convert --titles 1                   Convert Title 1
-  $ lexbuild convert --titles 1-5,8,11            Convert a mix of titles
-  $ lexbuild convert --all -g chapter             All titles, chapter-level
-  $ lexbuild convert --titles 26 -g title         Title 26 as a single file
-  $ lexbuild convert --all --dry-run              Preview stats only
-  $ lexbuild convert ./downloads/usc/xml/usc01.xml -o ./out`,
+  $ lexbuild convert-ecfr --titles 1                    Convert eCFR Title 1
+  $ lexbuild convert-ecfr --titles 1-5,17               Convert specific titles
+  $ lexbuild convert-ecfr --all -g part                 All titles, part-level
+  $ lexbuild convert-ecfr --all --dry-run               Preview stats only
+  $ lexbuild convert-ecfr ./downloads/ecfr/xml/ECFR-title1.xml -o ./out`,
   )
-  .action(async (input: string | undefined, options: ConvertCommandOptions) => {
-    // Validate: must specify exactly one of <input>, --titles, or --all
+  .action(async (input: string | undefined, options: ConvertEcfrCommandOptions) => {
     const modeCount = [input, options.titles, options.all].filter(Boolean).length;
     if (modeCount === 0) {
       console.error(
-        error("Specify an input file, --titles <spec>, or --all (e.g. --titles 1-5,8,11)"),
+        error("Specify an input file, --titles <spec>, or --all (e.g. --titles 1-5,17)"),
       );
       process.exit(1);
     }
@@ -244,13 +225,12 @@ Examples:
 
     // Single-file mode
     if (input) {
-      const rawPath = resolve(input);
-      const inputPath = resolveUscXmlPath(rawPath);
-      if (!inputPath) {
-        console.error(error(`Input file not found: ${rawPath}`));
+      const inputPath = resolve(input);
+      if (!existsSync(inputPath)) {
+        console.error(error(`Input file not found: ${inputPath}`));
         process.exit(1);
       }
-      await convertSingleFile(inputPath, outputPath, options, `Converting${dryRunLabel}...`);
+      await convertSingleFile(inputPath, outputPath, options, `Converting eCFR${dryRunLabel}...`);
       return;
     }
 
@@ -258,15 +238,15 @@ Examples:
     let titles: number[];
     if (options.all) {
       const inputDir = resolve(options.inputDir);
-      titles = discoverTitles(inputDir);
+      titles = discoverEcfrTitles(inputDir);
       if (titles.length === 0) {
-        console.error(error(`No USC XML files found in ${inputDir}`));
+        console.error(error(`No eCFR XML files found in ${inputDir}`));
         process.exit(1);
       }
     } else {
       const titlesSpec = options.titles as string;
       try {
-        titles = parseTitles(titlesSpec);
+        titles = parseTitles(titlesSpec, 50);
       } catch (err) {
         console.error(error(err instanceof Error ? err.message : String(err)));
         process.exit(1);
@@ -277,7 +257,7 @@ Examples:
     const totalTitles = titles.length;
     const results: ConversionRun[] = [];
 
-    const spinner = createSpinner(`Converting${dryRunLabel}...`);
+    const spinner = createSpinner(`Converting eCFR${dryRunLabel}...`);
     spinner.start();
 
     for (const [i, titleNum] of titles.entries()) {
@@ -289,7 +269,7 @@ Examples:
         process.exit(1);
       }
 
-      spinner.text = `Converting Title ${titleNum}${dryRunLabel} (${i + 1}/${totalTitles})...`;
+      spinner.text = `Converting eCFR Title ${titleNum}${dryRunLabel} (${i + 1}/${totalTitles})...`;
 
       try {
         const run = await runConversion(xmlPath, outputPath, options);
@@ -302,27 +282,25 @@ Examples:
 
     spinner.stop();
 
-    // Summary header
     const outputRelative = relative(process.cwd(), outputPath) || outputPath;
     const headerTitle = options.dryRun
-      ? "lexbuild — Conversion Summary [dry-run]"
-      : "lexbuild — Conversion Summary";
+      ? "lexbuild — eCFR Conversion Summary [dry-run]"
+      : "lexbuild — eCFR Conversion Summary";
     const header = summaryBlock({
       title: headerTitle,
       rows: [["Directory", outputRelative]],
     });
     process.stdout.write(header);
 
-    // Build data table rows — adapt columns to granularity
     const granularity = options.granularity;
     let totalSections = 0;
-    let totalChapters = 0;
+    let totalParts = 0;
     let totalTokens = 0;
     let totalElapsed = 0;
 
     const tableRows = results.map(({ result, elapsed }) => {
       totalSections += result.sectionsWritten;
-      totalChapters += result.chapterCount;
+      totalParts += result.partCount;
       totalTokens += result.totalTokenEstimate;
       totalElapsed += elapsed;
 
@@ -337,7 +315,15 @@ Examples:
         return [
           result.titleNumber,
           result.titleName,
-          formatNumber(result.chapterCount),
+          formatNumber(result.sectionsWritten),
+          formatNumber(result.totalTokenEstimate),
+          formatDuration(elapsed),
+        ];
+      } else if (granularity === "part") {
+        return [
+          result.titleNumber,
+          result.titleName,
+          formatNumber(result.partCount),
           formatNumber(result.totalTokenEstimate),
           formatDuration(elapsed),
         ];
@@ -345,7 +331,7 @@ Examples:
         return [
           result.titleNumber,
           result.titleName,
-          formatNumber(result.chapterCount),
+          formatNumber(result.partCount),
           formatNumber(result.sectionsWritten),
           formatNumber(result.totalTokenEstimate),
           formatDuration(elapsed),
@@ -353,7 +339,6 @@ Examples:
       }
     });
 
-    // Totals row
     if (granularity === "title") {
       tableRows.push([
         chalk.bold("Total"),
@@ -365,7 +350,15 @@ Examples:
       tableRows.push([
         chalk.bold("Total"),
         "",
-        chalk.bold(formatNumber(totalChapters)),
+        chalk.bold(formatNumber(totalSections)),
+        chalk.bold(formatNumber(totalTokens)),
+        chalk.bold(formatDuration(totalElapsed)),
+      ]);
+    } else if (granularity === "part") {
+      tableRows.push([
+        chalk.bold("Total"),
+        "",
+        chalk.bold(formatNumber(totalParts)),
         chalk.bold(formatNumber(totalTokens)),
         chalk.bold(formatDuration(totalElapsed)),
       ]);
@@ -373,31 +366,34 @@ Examples:
       tableRows.push([
         chalk.bold("Total"),
         "",
-        chalk.bold(formatNumber(totalChapters)),
+        chalk.bold(formatNumber(totalParts)),
         chalk.bold(formatNumber(totalSections)),
         chalk.bold(formatNumber(totalTokens)),
         chalk.bold(formatDuration(totalElapsed)),
       ]);
     }
 
-    // Table headers and footer — adapt to granularity
     const tableHeaders =
       granularity === "title"
         ? ["Title", "Name", "Tokens", "Duration"]
         : granularity === "chapter"
           ? ["Title", "Name", "Chapters", "Tokens", "Duration"]
-          : ["Title", "Name", "Chapters", "Sections", "Tokens", "Duration"];
+          : granularity === "part"
+            ? ["Title", "Name", "Parts", "Tokens", "Duration"]
+            : ["Title", "Name", "Parts", "Sections", "Tokens", "Duration"];
 
     console.log(dataTable(tableHeaders, tableRows));
 
-    // Footer — show the primary unit for the chosen granularity
     const titleWord = totalTitles === 1 ? "title" : "titles";
     let countLabel: string;
     if (granularity === "title") {
       countLabel = `${totalTitles} ${titleWord}`;
     } else if (granularity === "chapter") {
-      const chapterWord = totalChapters === 1 ? "chapter" : "chapters";
-      countLabel = `${totalTitles} ${titleWord} (${formatNumber(totalChapters)} ${chapterWord})`;
+      const chapterWord = totalSections === 1 ? "chapter" : "chapters";
+      countLabel = `${totalTitles} ${titleWord} (${formatNumber(totalSections)} ${chapterWord})`;
+    } else if (granularity === "part") {
+      const partWord = totalParts === 1 ? "part" : "parts";
+      countLabel = `${totalTitles} ${titleWord} (${formatNumber(totalParts)} ${partWord})`;
     } else {
       const sectionWord = totalSections === 1 ? "section" : "sections";
       countLabel = `${totalTitles} ${titleWord} (${formatNumber(totalSections)} ${sectionWord})`;

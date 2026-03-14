@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/%40lexbuild%2Fusc?style=for-the-badge)](https://www.npmjs.com/package/@lexbuild/usc)
 [![license](https://img.shields.io/github/license/chris-c-thomas/LexBuild?style=for-the-badge)](https://github.com/chris-c-thomas/LexBuild)
 
-This package is part of the [LexBuild](https://github.com/chris-c-thomas/LexBuild) monorepo, a tool that converts U.S. legislative XML into structured Markdown optimized for AI, RAG pipelines, and semantic search. See the monorepo for full documentation, architecture details, and contribution guidelines.
+This package is part of the [LexBuild](https://github.com/chris-c-thomas/LexBuild) monorepo, a tool that converts U.S. legal XML into structured Markdown optimized for AI, RAG pipelines, and semantic search. See the monorepo for full documentation, architecture details, and contribution guidelines.
 
 It converts official [USLM XML](https://uscode.house.gov/download/resources/USLM-User-Guide.pdf) from the [Office of the Law Revision Counsel](https://uscode.house.gov/) (OLRC) into structured Markdown and is built on [`@lexbuild/core`](https://www.npmjs.com/package/@lexbuild/core) for shared parsing and rendering infrastructure. It also provides a downloader for fetching the XML directly from OLRC. End users typically interact with this package through [`@lexbuild/cli`](https://www.npmjs.com/package/@lexbuild/cli).
 

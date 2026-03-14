@@ -311,6 +311,8 @@ describe("renderDocument", () => {
       children: [content("Some text.")],
     };
     const fm: FrontmatterData = {
+      source: "usc",
+      legal_status: "official_legal_evidence",
       identifier: "/us/usc/t1/s2",
       title: "1 USC § 2 - Test section",
       title_number: 1,

@@ -17,7 +17,7 @@ export {
   APPENDIX_LEVEL_ELEMENTS,
   META_ELEMENTS,
   CONTAINER_ELEMENTS,
-} from "./xml/namespace.js";
+} from "./xml/uslm-elements.js";
 
 // AST types
 export { LEVEL_TYPES, BIG_LEVELS, SMALL_LEVELS } from "./ast/types.js";
@@ -40,11 +40,15 @@ export type {
   DocumentMeta,
   EmitContext,
   FrontmatterData,
+  SourceType,
+  LegalStatus,
 } from "./ast/types.js";
 
 // AST builder
-export { ASTBuilder } from "./ast/builder.js";
-export type { ASTBuilderOptions } from "./ast/builder.js";
+// AST builder (USLM-specific, aliased for clarity)
+export { ASTBuilder } from "./ast/uslm-builder.js";
+export { ASTBuilder as UslmASTBuilder } from "./ast/uslm-builder.js";
+export type { ASTBuilderOptions } from "./ast/uslm-builder.js";
 
 // Markdown rendering
 export { renderDocument, renderSection, renderNode } from "./markdown/renderer.js";

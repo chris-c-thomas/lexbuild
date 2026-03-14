@@ -2,7 +2,7 @@
 
 ## Package Overview
 
-`@lexbuild/cli` is the published npm package that users install (`npm install -g @lexbuild/cli`). It provides the `lexbuild` binary with `download` and `convert` commands. The CLI is a thin orchestration layer over `@lexbuild/usc` — all conversion and download logic lives in that package.
+`@lexbuild/cli` is the published npm package that users install (`npm install -g @lexbuild/cli`). It provides the `lexbuild` binary with source-specific download and convert commands. The CLI is a thin orchestration layer — all conversion and download logic lives in the source packages (`@lexbuild/usc`, `@lexbuild/ecfr`).
 
 ## Module Structure
 
@@ -12,13 +12,15 @@ src/
 ├── ui.ts                       # Terminal UI utilities (spinners, tables, formatters)
 ├── parse-titles.ts             # Title specification parser ("1-5,8,11" → number[])
 └── commands/
-    ├── download.ts             # lexbuild download command
-    └── convert.ts              # lexbuild convert command
+    ├── download-usc.ts         # lexbuild download-usc command
+    ├── convert-usc.ts          # lexbuild convert-usc command
+    ├── download-ecfr.ts        # lexbuild download-ecfr command
+    └── convert-ecfr.ts         # lexbuild convert-ecfr command
 ```
 
 ## Commands
 
-### `lexbuild download`
+### `lexbuild download-usc`
 
 Downloads USC XML from OLRC. Calls `downloadTitles()` from `@lexbuild/usc`.
 
@@ -32,7 +34,7 @@ Options:
 
 Requires either `--titles` or `--all`. Renders summary table with file sizes on completion.
 
-### `lexbuild convert`
+### `lexbuild convert-usc`
 
 Converts USC XML to Markdown. Calls `convertTitle()` from `@lexbuild/usc`.
 
@@ -60,6 +62,45 @@ Three input modes (mutually exclusive): `<input>` positional arg, `--titles`, or
 
 **Note flag logic**: If any selective note flag is set (`--include-editorial-notes`, etc.), the broad `--include-notes` flag is automatically disabled to prevent conflicts.
 
+### `lexbuild download-ecfr`
+
+Downloads eCFR XML from govinfo. Calls `downloadEcfrTitles()` from `@lexbuild/ecfr`.
+
+```
+Options:
+  --output <dir>           Default: "./downloads/ecfr/xml"
+  --titles <spec>          Title selection: "1", "1-5", "1-5,17"
+  --all                    Download all 50 titles
+```
+
+### `lexbuild convert-ecfr`
+
+Converts eCFR XML to Markdown. Calls `convertEcfrTitle()` from `@lexbuild/ecfr`.
+
+```
+Arguments:
+  [input]                  Path to single eCFR XML file (optional)
+
+Options:
+  --output <dir>           Default: "./output"
+  --titles <spec>          Title selection
+  --all                    Discover & convert all titles in --input-dir
+  --input-dir <dir>        Default: "./downloads/ecfr/xml"
+  -g, --granularity        section | part | chapter | title (default: section)
+  --link-style             relative | canonical | plaintext (default: plaintext)
+  --include-source-credits Default: true
+  --include-notes          Default: true (all notes)
+  --include-editorial-notes
+  --include-statutory-notes
+  --include-amendments
+  --dry-run                Parse only, no files written
+  -v, --verbose            Print detailed file output
+```
+
+### Bare `download` / `convert`
+
+Running `lexbuild download` or `lexbuild convert` without a source suffix prints an error listing available source-specific commands and exits with code 1.
+
 ## UI Module (`ui.ts`)
 
 Provides consistent terminal output:
@@ -77,17 +118,17 @@ Tables use `cli-table3` with custom border characters. `visualLength()` strips A
 
 ## Title Parser (`parse-titles.ts`)
 
-`parseTitles(input: string): number[]`
+`parseTitles(input: string, maxTitle?: number): number[]`
 
 Accepts: `"29"`, `"1,3,8,11"`, `"1-5"`, `"1-5,8,11"` (mixed ranges and lists).
 
-Validates range 1-54, rejects floats/letters, deduplicates, returns sorted ascending.
+Validates range 1–`maxTitle` (default 54 for USC, 50 for eCFR), rejects floats/letters, deduplicates, returns sorted ascending.
 
 ## Build Configuration
 
 - **tsup**: ESM output with `#!/usr/bin/env node` shebang banner injected at build time
 - **Binary**: `"lexbuild": "./dist/index.js"` in package.json `bin` field
-- **Dependencies**: `commander`, `chalk`, `ora`, `cli-table3` for CLI; `@lexbuild/core` and `@lexbuild/usc` via `workspace:*`
+- **Dependencies**: `commander`, `chalk`, `ora`, `cli-table3` for CLI; `@lexbuild/core`, `@lexbuild/usc`, and `@lexbuild/ecfr` via `workspace:*`
 
 ## Error Handling
 

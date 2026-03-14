@@ -22,7 +22,7 @@ function readPackageVersion(): string {
 }
 
 /** Output format version */
-export const FORMAT_VERSION = "1.0.0";
+export const FORMAT_VERSION = "1.1.0";
 
 /** Generator identifier (reads version from package.json) */
 export const GENERATOR = `lexbuild@${readPackageVersion()}`;
@@ -37,6 +37,8 @@ export function generateFrontmatter(data: FrontmatterData): string {
   // We construct it manually to control field ordering.
   const fm: Record<string, unknown> = {
     identifier: data.identifier,
+    source: data.source,
+    legal_status: data.legal_status,
     title: data.title,
     title_number: data.title_number,
     title_name: data.title_name,
@@ -91,6 +93,26 @@ export function generateFrontmatter(data: FrontmatterData): string {
   }
   if (data.total_token_estimate !== undefined) {
     fm["total_token_estimate"] = data.total_token_estimate;
+  }
+  if (data.part_count !== undefined) {
+    fm["part_count"] = data.part_count;
+  }
+
+  // Source-specific optional fields
+  if (data.authority !== undefined) {
+    fm["authority"] = data.authority;
+  }
+  if (data.regulatory_source !== undefined) {
+    fm["regulatory_source"] = data.regulatory_source;
+  }
+  if (data.agency !== undefined) {
+    fm["agency"] = data.agency;
+  }
+  if (data.cfr_part !== undefined) {
+    fm["cfr_part"] = data.cfr_part;
+  }
+  if (data.cfr_subpart !== undefined) {
+    fm["cfr_subpart"] = data.cfr_subpart;
   }
 
   const yamlStr = stringify(fm, {

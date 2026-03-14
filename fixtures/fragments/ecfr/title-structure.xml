@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<DLPSTEXTCLASS>
+<HEADER>
+<FILEDESC>
+<TITLESTMT><TITLE>Title 1: General Provisions</TITLE></TITLESTMT>
+<PUBLICATIONSTMT><IDNO TYPE="title">1</IDNO></PUBLICATIONSTMT>
+</FILEDESC>
+</HEADER>
+<TEXT><BODY><ECFRBRWS>
+<AMDDATE>Dec. 29, 2022(fm)</AMDDATE>
+<DIV1 N="1" NODE="1:1" TYPE="TITLE">
+<HEAD>Title 1—General Provisions</HEAD>
+<CFRTOC>
+<PTHD>Part</PTHD>
+<CHAPTI><SUBJECT><E T="04">chapter i</E>—Administrative Committee of the Federal Register</SUBJECT><PG>1</PG></CHAPTI>
+</CFRTOC>
+<DIV3 N="I" NODE="1:1.0.1" TYPE="CHAPTER">
+<HEAD>CHAPTER I—ADMINISTRATIVE COMMITTEE OF THE FEDERAL REGISTER</HEAD>
+<DIV4 N="A" NODE="1:1.0.1.1" TYPE="SUBCHAP">
+<HEAD>SUBCHAPTER A—GENERAL</HEAD>
+<DIV5 N="1" NODE="1:1.0.1.1.1" TYPE="PART">
+<HEAD>PART 1—DEFINITIONS</HEAD>
+<AUTH>
+<HED>Authority:</HED><PSPACE>44 U.S.C. 1506; sec. 6, E.O. 10530, 19 FR 2709.</PSPACE></AUTH>
+<DIV8 N="§ 1.1" NODE="1:1.0.1.1.1.0.1.1" TYPE="SECTION">
+<HEAD>§ 1.1   Definitions.</HEAD>
+<P>As used in this chapter, unless the context requires otherwise—</P>
+<P><I>Administrative Committee</I> means the Administrative Committee of the Federal Register.</P>
+<CITA TYPE="N">[37 FR 23603, Nov. 4, 1972]</CITA>
+</DIV8>
+</DIV5>
+<DIV5 N="2" NODE="1:1.0.1.1.2" TYPE="PART">
+<HEAD>PART 2—GENERAL INFORMATION</HEAD>
+<SOURCE>
+<HED>Source:</HED><PSPACE>37 FR 23603, Nov. 4, 1972, unless otherwise noted.</PSPACE></SOURCE>
+<DIV8 N="§ 2.1" NODE="1:1.0.1.1.2.0.1.1" TYPE="SECTION">
+<HEAD>§ 2.1   Scope and purpose.</HEAD>
+<P>(a) This chapter sets forth the policies and procedures.</P>
+</DIV8>
+<DIV8 N="§ 2.2" NODE="1:1.0.1.1.2.0.1.2" TYPE="SECTION">
+<HEAD>§ 2.2   Administrative Committee of the Federal Register.</HEAD>
+<P>The Administrative Committee is established by section 1506 of title 44.</P>
+</DIV8>
+</DIV5>
+</DIV4>
+</DIV3>
+</DIV1>
+</ECFRBRWS></BODY></TEXT>
+</DLPSTEXTCLASS>

@@ -7,7 +7,7 @@
  * - `"1-5"` → `[1, 2, 3, 4, 5]`
  * - `"1-5,8,11"` → `[1, 2, 3, 4, 5, 8, 11]`
  */
-export function parseTitles(input: string): number[] {
+export function parseTitles(input: string, maxTitle = 54): number[] {
   const trimmed = input.trim();
   if (trimmed === "") {
     throw new Error("Title specification cannot be empty");
@@ -35,15 +35,15 @@ export function parseTitles(input: string): number[] {
         throw new Error(`Invalid range: "${part}" (start ${start} must be ≤ end ${end})`);
       }
 
-      validateTitleNumber(start, input);
-      validateTitleNumber(end, input);
+      validateTitleNumber(start, input, maxTitle);
+      validateTitleNumber(end, input, maxTitle);
 
       for (let i = start; i <= end; i++) {
         result.add(i);
       }
     } else {
       const num = parseIntStrict(part, input);
-      validateTitleNumber(num, input);
+      validateTitleNumber(num, input, maxTitle);
       result.add(num);
     }
   }
@@ -60,9 +60,9 @@ function parseIntStrict(str: string, fullInput: string): number {
   return parseInt(trimmed, 10);
 }
 
-/** Validate that a title number is in the valid range (1-54). */
-function validateTitleNumber(num: number, fullInput: string): void {
-  if (num < 1 || num > 54) {
-    throw new Error(`Title number ${num} out of range (must be 1-54) in: "${fullInput}"`);
+/** Validate that a title number is in the valid range. */
+function validateTitleNumber(num: number, fullInput: string, max = 54): void {
+  if (num < 1 || num > max) {
+    throw new Error(`Title number ${num} out of range (must be 1-${max}) in: "${fullInput}"`);
   }
 }

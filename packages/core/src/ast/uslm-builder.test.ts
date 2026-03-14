@@ -2,8 +2,8 @@ import { describe, it, expect, vi } from "vitest";
 import { createReadStream } from "node:fs";
 import { resolve } from "node:path";
 import { XMLParser } from "../xml/parser.js";
-import { ASTBuilder } from "./builder.js";
-import type { ASTBuilderOptions } from "./builder.js";
+import { ASTBuilder } from "./uslm-builder.js";
+import type { ASTBuilderOptions } from "./uslm-builder.js";
 import type { LevelNode, ContentNode, InlineNode, EmitContext, SourceCreditNode } from "./types.js";
 
 const FIXTURES_DIR = resolve(import.meta.dirname, "../../../../fixtures/fragments");

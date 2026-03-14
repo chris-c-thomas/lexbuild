@@ -22,19 +22,25 @@ export interface ParsedIdentifier {
 }
 
 /**
- * Parse a USLM identifier into its components.
+ * Parse an identifier into its components.
  *
- * Handles: /us/usc/t{N}, /us/usc/t{N}/s{N}, /us/usc/t{N}/s{N}/{sub}
- * Returns null for non-USC identifiers (stat, pl, act).
+ * Handles:
+ * - USC: /us/usc/t{N}, /us/usc/t{N}/s{N}, /us/usc/t{N}/s{N}/{sub}
+ * - CFR: /us/cfr/t{N}, /us/cfr/t{N}/s{N}
+ *
+ * Returns null for non-USC/CFR identifiers (stat, pl, act).
  */
 export function parseIdentifier(identifier: string): ParsedIdentifier | null {
-  // Match: /us/usc/t{title}[/s{section}[/subpath]]
+  // Match: /us/{code}/t{title}[/s{section}[/subpath]]
   const match = /^\/(\w+)\/(\w+)\/t(\w+)(?:\/s([^/]+)(?:\/(.+))?)?$/.exec(identifier);
   if (!match) return null;
 
+  const code = match[2] ?? "";
+  if (code !== "usc" && code !== "cfr") return null;
+
   return {
     jurisdiction: match[1] ?? "",
-    code: match[2] ?? "",
+    code,
     titleNum: match[3],
     sectionNum: match[4],
     subPath: match[5],
@@ -84,7 +90,7 @@ export function createLinkResolver(): LinkResolver {
         // Try resolving just the section (strip subsection path)
         const parsed = parseIdentifier(identifier);
         if (parsed?.sectionNum && parsed.titleNum) {
-          const sectionId = `/us/usc/t${parsed.titleNum}/s${parsed.sectionNum}`;
+          const sectionId = `/us/${parsed.code}/t${parsed.titleNum}/s${parsed.sectionNum}`;
           const sectionPath = registry.get(sectionId);
           if (sectionPath) {
             return relative(dirname(fromFile), sectionPath);
@@ -97,14 +103,28 @@ export function createLinkResolver(): LinkResolver {
 
     fallbackUrl(identifier: string): string | null {
       const parsed = parseIdentifier(identifier);
-      if (!parsed || parsed.code !== "usc") return null;
+      if (!parsed) return null;
 
-      if (parsed.sectionNum) {
-        return `https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title${parsed.titleNum}-section${parsed.sectionNum}`;
+      // USC: link to uscode.house.gov
+      if (parsed.code === "usc") {
+        if (parsed.sectionNum) {
+          return `https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title${parsed.titleNum}-section${parsed.sectionNum}`;
+        }
+        if (parsed.titleNum) {
+          return `https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title${parsed.titleNum}`;
+        }
       }
-      if (parsed.titleNum) {
-        return `https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title${parsed.titleNum}`;
+
+      // CFR (eCFR and annual): link to ecfr.gov
+      if (parsed.code === "cfr") {
+        if (parsed.sectionNum) {
+          return `https://www.ecfr.gov/current/title-${parsed.titleNum}/section-${parsed.sectionNum}`;
+        }
+        if (parsed.titleNum) {
+          return `https://www.ecfr.gov/current/title-${parsed.titleNum}`;
+        }
       }
+
       return null;
     },
   };

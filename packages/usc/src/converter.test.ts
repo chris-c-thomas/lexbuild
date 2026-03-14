@@ -429,7 +429,7 @@ describe("convertTitle", () => {
 
       // Normal section should NOT have status field (omitted when current)
       const normal = await readFile(join(chapterDir, "section-1004.md"), "utf-8");
-      expect(normal).not.toContain("status:");
+      expect(normal).not.toContain("\nstatus:");
     });
 
     it("includes status in _meta.json for all sections", async () => {

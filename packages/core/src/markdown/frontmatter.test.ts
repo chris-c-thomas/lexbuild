@@ -5,6 +5,8 @@ import type { FrontmatterData } from "../ast/types.js";
 
 /** Minimal valid frontmatter data */
 const MINIMAL_DATA: FrontmatterData = {
+  source: "usc",
+  legal_status: "official_legal_evidence",
   identifier: "/us/usc/t1/s1",
   title: "1 USC § 1 - Words denoting number, gender, and so forth",
   title_number: 1,

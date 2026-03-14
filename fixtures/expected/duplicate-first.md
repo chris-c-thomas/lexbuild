@@ -1,5 +1,7 @@
 ---
 identifier: "/us/usc/t5/s3598"
+source: "usc"
+legal_status: "official_legal_evidence"
 title: "5 USC § 3598 - FBI Reserve Service"
 title_number: 5
 title_name: "GOVERNMENT ORGANIZATION AND EMPLOYEES"
@@ -10,7 +12,7 @@ chapter_name: "RETENTION PREFERENCE, VOLUNTARY SEPARATION INCENTIVE PAYMENTS, RE
 positive_law: true
 currency: "unknown"
 last_updated: "2025-12-03"
-format_version: "1.0.0"
+format_version: "1.1.0"
 generator: "lexbuild@0.0.0"
 source_credit: "(Pub. L. 108–458, Nov. 17, 2006.)"
 ---

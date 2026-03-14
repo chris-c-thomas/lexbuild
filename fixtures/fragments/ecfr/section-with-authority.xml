@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<DLPSTEXTCLASS>
+<HEADER>
+<FILEDESC>
+<TITLESTMT><TITLE>Title 1: General Provisions</TITLE></TITLESTMT>
+<PUBLICATIONSTMT><IDNO TYPE="title">1</IDNO></PUBLICATIONSTMT>
+</FILEDESC>
+</HEADER>
+<TEXT><BODY><ECFRBRWS>
+<DIV1 N="1" NODE="1:1" TYPE="TITLE">
+<HEAD>Title 1—General Provisions</HEAD>
+<DIV3 N="I" NODE="1:1.0.1" TYPE="CHAPTER">
+<HEAD>CHAPTER I—ADMINISTRATIVE COMMITTEE OF THE FEDERAL REGISTER</HEAD>
+<DIV5 N="2" NODE="1:1.0.1.1.2" TYPE="PART">
+<HEAD>PART 2—GENERAL INFORMATION</HEAD>
+<AUTH>
+<HED>Authority:</HED><PSPACE>44 U.S.C. 1506, 4101; sec. 6, E.O. 10530, 19 FR 2709; 3 CFR, 1954-1958 Comp., p. 189; 1 U.S.C. 112, 113.</PSPACE></AUTH>
+<SOURCE>
+<HED>Source:</HED><PSPACE>37 FR 23603, Nov. 4, 1972, unless otherwise noted.</PSPACE></SOURCE>
+<DIV8 N="§ 2.1" NODE="1:1.0.1.1.2.0.1.1" TYPE="SECTION">
+<HEAD>§ 2.1   Scope and purpose.</HEAD>
+<P>(a) This chapter sets forth the policies, procedures, and delegations under which the Administrative Committee of the Federal Register carries out its general responsibilities under chapter 15 of title 44, United States Code.</P>
+<P>(b) A primary purpose of this chapter is to inform the public of the nature and uses of Federal Register publications.</P>
+</DIV8>
+</DIV5>
+</DIV3>
+</DIV1>
+</ECFRBRWS></BODY></TEXT>
+</DLPSTEXTCLASS>

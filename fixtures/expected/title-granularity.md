@@ -1,12 +1,14 @@
 ---
 identifier: "/us/usc/t1"
+source: "usc"
+legal_status: "official_legal_evidence"
 title: "Title 1 — GENERAL PROVISIONS"
 title_number: 1
 title_name: "GENERAL PROVISIONS"
 positive_law: true
 currency: "unknown"
 last_updated: "2025-12-03"
-format_version: "1.0.0"
+format_version: "1.1.0"
 generator: "lexbuild@0.0.0"
 chapter_count: 1
 section_count: 1

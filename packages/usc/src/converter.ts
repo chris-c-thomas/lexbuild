@@ -575,6 +575,8 @@ async function writeChapter(
   const lastUpdated = parseDate(meta.created ?? "");
 
   const fmData: FrontmatterData = {
+    source: "usc",
+    legal_status: meta.positivelaw ? "official_legal_evidence" : "official_prima_facie",
     identifier: chapterNode.identifier ?? `/us/usc/t${titleNum}/ch${chapterNum}`,
     title: `${titleNum} USC Chapter ${chapterNum} - ${chapterName}`,
     title_number: parseIntSafe(titleNum),
@@ -751,6 +753,8 @@ async function writeWholeTitle(
   // Build enriched frontmatter for title-level output
   // Use full body length (not just section content) for accurate token estimate
   const fmData: FrontmatterData = {
+    source: "usc",
+    legal_status: meta.positivelaw ? "official_legal_evidence" : "official_prima_facie",
     identifier: titleNode.identifier ?? meta.identifier ?? `/us/usc/t${titleNum}`,
     title: `Title ${titleNum} — ${titleName}`,
     title_number: parseIntSafe(titleNum),
@@ -1021,6 +1025,8 @@ function buildFrontmatter(node: LevelNode, context: EmitContext): FrontmatterDat
   const lastUpdated = parseDate(meta.created ?? "");
 
   const fm: FrontmatterData = {
+    source: "usc",
+    legal_status: meta.positivelaw ? "official_legal_evidence" : "official_prima_facie",
     identifier: node.identifier ?? `/us/usc/t${titleNum}/s${sectionNum}`,
     title: displayTitle,
     title_number: titleNum,

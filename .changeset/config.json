@@ -2,7 +2,7 @@
   "$schema": "https://unpkg.com/@changesets/config@3.1.2/schema.json",
   "changelog": ["@changesets/changelog-github", { "repo": "chris-c-thomas/LexBuild" }],
   "commit": false,
-  "fixed": [["@lexbuild/core", "@lexbuild/usc", "@lexbuild/cli"]],
+  "fixed": [["@lexbuild/core", "@lexbuild/usc", "@lexbuild/ecfr", "@lexbuild/cli"]],
   "linked": [],
   "access": "public",
   "baseBranch": "main",

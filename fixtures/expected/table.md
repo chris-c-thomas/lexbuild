@@ -1,5 +1,7 @@
 ---
 identifier: "/us/usc/t99/s1"
+source: "usc"
+legal_status: "official_legal_evidence"
 title: "99 USC § 1 - Section with table"
 title_number: 99
 title_name: "TEST"
@@ -10,7 +12,7 @@ chapter_name: "TEST CHAPTER"
 positive_law: true
 currency: "unknown"
 last_updated: "2025-12-03"
-format_version: "1.0.0"
+format_version: "1.1.0"
 generator: "lexbuild@0.0.0"
 source_credit: "(Test source credit.)"
 ---

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<DLPSTEXTCLASS>
+<HEADER>
+<FILEDESC>
+<TITLESTMT><TITLE>Title 1: General Provisions</TITLE></TITLESTMT>
+<PUBLICATIONSTMT><IDNO TYPE="title">1</IDNO></PUBLICATIONSTMT>
+</FILEDESC>
+</HEADER>
+<TEXT><BODY><ECFRBRWS>
+<DIV1 N="1" NODE="1:1" TYPE="TITLE">
+<HEAD>Title 1—General Provisions</HEAD>
+<DIV3 N="I" NODE="1:1.0.1" TYPE="CHAPTER">
+<HEAD>CHAPTER I—ADMINISTRATIVE COMMITTEE OF THE FEDERAL REGISTER</HEAD>
+<DIV5 N="17" NODE="1:1.0.1.1.17" TYPE="PART">
+<HEAD>PART 17—FILING FOR PUBLIC INSPECTION AND PUBLICATION SCHEDULES</HEAD>
+<DIV8 N="§ 17.2" NODE="1:1.0.1.1.17.0.1.2" TYPE="SECTION">
+<HEAD>§ 17.2   Publication schedules.</HEAD>
+<P>(a) Regular schedule. Documents received before 2:00 p.m. are published on the schedule shown below:</P>
+<DIV width="100%"><DIV class="gpotbl_div"><TABLE border="1" cellpadding="1" cellspacing="1" class="gpotbl_table" frame="void" width="100%"><TR><TH class="gpotbl_colhed" scope="col">Received before 2:00 p.m.</TH><TH class="gpotbl_colhed" scope="col">Filed for public inspection</TH><TH class="gpotbl_colhed" scope="col">Published</TH></TR><TR><TD align="left" class="gpotbl_cell" scope="row">Monday</TD><TD align="left" class="gpotbl_cell">Wednesday</TD><TD align="left" class="gpotbl_cell">Thursday</TD></TR><TR><TD align="left" class="gpotbl_cell" scope="row">Tuesday</TD><TD align="left" class="gpotbl_cell">Thursday</TD><TD align="left" class="gpotbl_cell">Friday</TD></TR><TR><TD align="left" class="gpotbl_cell" scope="row">Wednesday</TD><TD align="left" class="gpotbl_cell">Friday</TD><TD align="left" class="gpotbl_cell">Monday</TD></TR><TR><TD align="left" class="gpotbl_cell" scope="row">Thursday</TD><TD align="left" class="gpotbl_cell">Monday</TD><TD align="left" class="gpotbl_cell">Tuesday</TD></TR><TR><TD align="left" class="gpotbl_cell" scope="row">Friday</TD><TD align="left" class="gpotbl_cell">Tuesday</TD><TD align="left" class="gpotbl_cell">Wednesday</TD></TR></TABLE></DIV></DIV>
+</DIV8>
+</DIV5>
+</DIV3>
+</DIV1>
+</ECFRBRWS></BODY></TEXT>
+</DLPSTEXTCLASS>
