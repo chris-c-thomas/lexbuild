@@ -1,5 +1,5 @@
 /**
- * `lexbuild convert` command — converts USC XML files to Markdown.
+ * `lexbuild convert-usc` command — converts USC XML files to Markdown.
  */
 
 import chalk from "chalk";
@@ -178,8 +178,8 @@ async function convertSingleFile(
   }
 }
 
-export const convertCommand = new Command("convert")
-  .description("Convert USC XML file(s) to Markdown")
+export const convertUscCommand = new Command("convert-usc")
+  .description("Convert U.S. Code XML file(s) to Markdown")
   .argument("[input]", "Path to a USC XML file")
   .option("-o, --output <dir>", "Output directory", "./output")
   .option("--titles <spec>", "Title(s) to convert: 1, 1-5, or 1-5,8,11")
@@ -218,12 +218,12 @@ Granularity:
   title         One .md file per title, entire hierarchy inlined
 
 Examples:
-  $ lexbuild convert --titles 1                   Convert Title 1
-  $ lexbuild convert --titles 1-5,8,11            Convert a mix of titles
-  $ lexbuild convert --all -g chapter             All titles, chapter-level
-  $ lexbuild convert --titles 26 -g title         Title 26 as a single file
-  $ lexbuild convert --all --dry-run              Preview stats only
-  $ lexbuild convert ./downloads/usc/xml/usc01.xml -o ./out`,
+  $ lexbuild convert-usc --titles 1                   Convert Title 1
+  $ lexbuild convert-usc --titles 1-5,8,11            Convert a mix of titles
+  $ lexbuild convert-usc --all -g chapter             All titles, chapter-level
+  $ lexbuild convert-usc --titles 26 -g title         Title 26 as a single file
+  $ lexbuild convert-usc --all --dry-run              Preview stats only
+  $ lexbuild convert-usc ./downloads/usc/xml/usc01.xml -o ./out`,
   )
   .action(async (input: string | undefined, options: ConvertCommandOptions) => {
     // Validate: must specify exactly one of <input>, --titles, or --all

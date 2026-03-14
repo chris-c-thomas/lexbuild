@@ -1,5 +1,5 @@
 /**
- * `lexbuild download` command — downloads USC XML from OLRC.
+ * `lexbuild download-usc` command — downloads USC XML from OLRC.
  */
 
 import { Command } from "commander";
@@ -24,7 +24,7 @@ interface DownloadCommandOptions {
   releasePoint: string;
 }
 
-export const downloadCommand = new Command("download")
+export const downloadUscCommand = new Command("download-usc")
   .description("Download U.S. Code XML from OLRC")
   .option("-o, --output <dir>", "Download directory", "./downloads/usc/xml")
   .option("--titles <spec>", "Title(s) to download: 1, 1-5, or 1-5,8,11")
@@ -34,10 +34,10 @@ export const downloadCommand = new Command("download")
     "after",
     `
 Examples:
-  $ lexbuild download --all                      Download all 54 titles
-  $ lexbuild download --titles 1                 Download Title 1 only
-  $ lexbuild download --titles 1-5,8,11          Download specific titles
-  $ lexbuild download --all -o ./my-xml          Custom output directory
+  $ lexbuild download-usc --all                      Download all 54 titles
+  $ lexbuild download-usc --titles 1                 Download Title 1 only
+  $ lexbuild download-usc --titles 1-5,8,11          Download specific titles
+  $ lexbuild download-usc --all -o ./my-xml          Custom output directory
 
 Source: https://uscode.house.gov/download/download.shtml`,
   )

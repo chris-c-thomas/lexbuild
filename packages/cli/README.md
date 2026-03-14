@@ -19,8 +19,8 @@ npm install -g @lexbuild/cli
 Run directly with npx:
 
 ```bash
-npx @lexbuild/cli download --all
-npx @lexbuild/cli convert --all
+npx @lexbuild/cli download-usc --all
+npx @lexbuild/cli convert-usc --all
 ```
 
 ## Quick Start
@@ -29,13 +29,13 @@ npx @lexbuild/cli convert --all
 
 ```bash
 # Download and convert all 54 titles
-lexbuild download --all && lexbuild convert --all
+lexbuild download-usc --all && lexbuild convert-usc --all
 
 # Start small — download and convert Title 1
-lexbuild download --titles 1 && lexbuild convert --titles 1
+lexbuild download-usc --titles 1 && lexbuild convert-usc --titles 1
 
 # Download and convert a range
-lexbuild download --titles 1-5 && lexbuild convert --titles 1-5
+lexbuild download-usc --titles 1-5 && lexbuild convert-usc --titles 1-5
 ```
 
 ### eCFR (Code of Federal Regulations)
@@ -52,14 +52,14 @@ lexbuild download-ecfr --titles 17 && lexbuild convert-ecfr --titles 17
 
 ### U.S. Code
 
-#### `lexbuild download`
+#### `lexbuild download-usc`
 
 Fetch U.S. Code XML files from the OLRC.
 
 ```bash
-lexbuild download --titles 1           # Single title
-lexbuild download --titles 1-5,8,11    # Range + specific titles
-lexbuild download --all                # All 54 titles (single bulk zip)
+lexbuild download-usc --titles 1           # Single title
+lexbuild download-usc --titles 1-5,8,11    # Range + specific titles
+lexbuild download-usc --all                # All 54 titles (single bulk zip)
 ```
 
 | Option | Default | Description |
@@ -69,18 +69,18 @@ lexbuild download --all                # All 54 titles (single bulk zip)
 | `-o, --output <dir>` | `./downloads/usc/xml` | Output directory |
 | `--release-point <id>` | current | OLRC release point |
 
-#### `lexbuild convert`
+#### `lexbuild convert-usc`
 
 Convert downloaded USC XML to Markdown.
 
 ```bash
-lexbuild convert --titles 1                          # By title number
-lexbuild convert --all                               # All downloaded titles
-lexbuild convert ./downloads/usc/xml/usc01.xml       # Direct file path
-lexbuild convert --titles 1 -g chapter               # Chapter-level output
-lexbuild convert --titles 1 -g title                 # Title-level output (single file)
-lexbuild convert --titles 1 --link-style canonical   # OLRC website links
-lexbuild convert --titles 42 --dry-run               # Preview without writing
+lexbuild convert-usc --titles 1                          # By title number
+lexbuild convert-usc --all                               # All downloaded titles
+lexbuild convert-usc ./downloads/usc/xml/usc01.xml       # Direct file path
+lexbuild convert-usc --titles 1 -g chapter               # Chapter-level output
+lexbuild convert-usc --titles 1 -g title                 # Title-level output (single file)
+lexbuild convert-usc --titles 1 --link-style canonical   # OLRC website links
+lexbuild convert-usc --titles 42 --dry-run               # Preview without writing
 ```
 
 | Option | Default | Description |

@@ -83,12 +83,12 @@ pnpm turbo lint
 pnpm turbo dev
 
 # Run the CLI locally during development
-node packages/cli/dist/index.js download --all
-node packages/cli/dist/index.js download --titles 1
-node packages/cli/dist/index.js convert --all
-node packages/cli/dist/index.js convert --titles 1-5 -o ./test-output
-node packages/cli/dist/index.js convert ./downloads/usc/xml/usc01.xml -o ./test-output
-node packages/cli/dist/index.js convert --titles 1 -g title -o ./test-output
+node packages/cli/dist/index.js download-usc --all
+node packages/cli/dist/index.js download-usc --titles 1
+node packages/cli/dist/index.js convert-usc --all
+node packages/cli/dist/index.js convert-usc --titles 1-5 -o ./test-output
+node packages/cli/dist/index.js convert-usc ./downloads/usc/xml/usc01.xml -o ./test-output
+node packages/cli/dist/index.js convert-usc --titles 1 -g title -o ./test-output
 
 # eCFR commands
 node packages/cli/dist/index.js download-ecfr --all

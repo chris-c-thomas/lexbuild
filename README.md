@@ -3,14 +3,17 @@
 [![npm](https://img.shields.io/npm/v/%40lexbuild%2Fcli?style=for-the-badge)](https://www.npmjs.com/package/@lexbuild/cli)
 [![CI](https://img.shields.io/github/actions/workflow/status/chris-c-thomas/LexBuild/ci.yml?style=for-the-badge&label=CI)](https://github.com/chris-c-thomas/LexBuild/actions/workflows/ci.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?style=for-the-badge)](https://www.typescriptlang.org/)
-[![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=for-the-badge)](https://nodejs.org/)
+[![Node](https://img.shields.io/badge/node-%3E%3D22-brightgreen?style=for-the-badge)](https://nodejs.org/)
 [![license](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 
-LexBuild is an open-source toolchain for legal and civic texts. It transforms legislative source data, starting with the [U.S. Code](https://uscode.house.gov/) into structured Markdown with rich metadata, optimized for LLMs, RAG pipelines, and semantic search.
+LexBuild is an open-source toolchain for U.S. legal texts. It transforms official source data into structured Markdown with rich metadata, optimized for LLMs, RAG pipelines, and semantic search.
+
+It currently handles the [U.S. Code](https://uscode.house.gov/) and the [Code of Federal Regulations](https://www.ecfr.gov/)
 
 ## Table of Contents
 
 - [Overview](#overview)
+- [Supported Sources](#supported-sources)
 - [Features](#features)
 - [Monorepo](#monorepo)
 - [Packages](#packages)
@@ -20,7 +23,6 @@ LexBuild is an open-source toolchain for legal and civic texts. It transforms le
 - [Output](#output)
 - [Performance](#performance)
 - [Development](#development)
-- [Documentation](#documentation)
 - [Data Sources](#data-sources)
 - [Contributing](#contributing)
 - [License](#license)
@@ -29,29 +31,56 @@ LexBuild is an open-source toolchain for legal and civic texts. It transforms le
 
 ## Overview
 
-The U.S. Code comprises 54 titles of federal statutory law. The [Office of the Law Revision Counsel](https://uscode.house.gov/about_office.xhtml) (OLRC) publishes the official text as [deeply nested XML](https://uscode.house.gov/download/download.shtml) using the [United States Legislative Markup](https://uscode.house.gov/download/resources/USLM-User-Guide.pdf) (USLM) schema. These files are dense, laden with presentation markup, and difficult to work with directly.
+The U.S. Code comprises 54 titles of federal statutory law published by the [Office of the Law Revision Counsel](https://uscode.house.gov/about_office.xhtml) (OLRC) as [USLM XML](https://uscode.house.gov/download/resources/USLM-User-Guide.pdf). The Code of Federal Regulations (CFR) comprises 50 titles of federal regulations published by the [Office of the Federal Register](https://www.ecfr.gov/) as GPO/SGML-derived XML via [govinfo](https://www.govinfo.gov/bulkdata/ECFR). Both formats are dense, deeply nested, and difficult to work with directly.
 
-LexBuild transforms this XML into per-section Markdown files with YAML frontmatter, predictable file paths, and content sized for typical embedding model context windows, making the entire U.S. Code accessible to LLMs, vector databases, and legal research tools.
+LexBuild transforms this XML into per-section Markdown files with YAML frontmatter, predictable file paths, and content sized for typical embedding model context windows, making the full corpus of federal law and regulations accessible to LLMs, vector databases, and legal research tools.
 
-The project is designed as an extensible platform. The U.S. Code is the first supported source, but the architecture is designed to accommodate additional legal corpora such as the Code of Federal Regulations, state statutes, and others, through new packages that share a common core.
+The project is designed as an extensible multi-source platform. Each source gets its own package with a source-specific AST builder, while sharing a common core for XML parsing, AST types, Markdown rendering, and frontmatter generation. Adding a new source means writing a new builder — the rendering pipeline is free.
+
+---
+
+## Supported Sources
+
+| Source | Package | XML Format | Titles | Status |
+|--------|---------|------------|--------|--------|
+| U.S. Code | [`@lexbuild/usc`](packages/usc/) | USLM 1.0 | 54 | Stable |
+| eCFR (Code of Federal Regulations) | [`@lexbuild/ecfr`](packages/ecfr/) | GPO/SGML | 50 | Stable |
+| Annual CFR (official edition) | `@lexbuild/cfr` | GPO/SGML | 50 | Planned |
+| Federal Register | `@lexbuild/fr` | GPO/SGML variant | — | Planned |
+| State statutes | `@lexbuild/state-*` | Varies | — | Exploratory |
 
 ---
 
 ## Features
 
-- **Built-in downloader** — fetch individual titles or the entire U.S. Code directly from OLRC
+### Shared
+
 - **Streaming SAX parser** — handles XML files of any size (100MB+) with bounded memory
-- **Section-level output** — each section becomes its own Markdown file, sized for RAG chunk windows
-- **Chapter-level output** — optional mode that inlines all sections into per-chapter files
-- **Title-level output** — optional mode that produces a single file per title with recursive heading hierarchy
-- **YAML frontmatter** — structured metadata on every file (identifier, title, chapter, section, status, source credit)
-- **Structural fidelity** — preserves the full USLM hierarchy using bold inline numbering that mirrors legal citation conventions
-- **Cross-reference links** — resolved as relative links within the corpus, or as OLRC website URLs
-- **Filterable notes** — editorial notes, statutory notes, and amendment history can be selectively included or excluded
+- **Multi-source architecture** — each source has its own AST builder, sharing a common rendering pipeline
+- **YAML frontmatter** — structured metadata on every file (`source`, `legal_status`, identifier, hierarchy, status)
 - **Metadata indexes** — `_meta.json` sidecar files with section listings and token estimates
-- **Tables** — XHTML tables and USLM layout tables converted to Markdown pipe tables
+- **Cross-reference links** — resolved as relative links within the corpus, or as source website URLs
+- **Filterable notes** — editorial notes, statutory notes, and amendment history can be selectively included or excluded
 - **Dry-run mode** — preview conversion stats without writing files
+- **Multiple granularities** — section-level, chapter/part-level, or full title as a single file
+
+### U.S. Code
+
+- **Built-in downloader** — fetch individual titles or the entire U.S. Code directly from OLRC
+- **Section-level output** — each section becomes its own Markdown file, sized for RAG chunk windows
+- **Chapter and title modes** — optional coarser granularity for different use cases
+- **Structural fidelity** — preserves the full USLM hierarchy using bold inline numbering
+- **Tables** — XHTML tables and USLM layout tables converted to Markdown pipe tables
 - **Appendix handling** — titles with appendices (5, 11, 18, 28) output to separate directories
+- **Duplicate section disambiguation** — sections with duplicate numbers within a chapter get `-2`, `-3` suffixes
+
+### eCFR
+
+- **Built-in downloader** — fetch individual titles or all 50 titles from govinfo bulk data
+- **Part-based granularity** — section, part, or title output modes (part is the CFR equivalent of USC chapter)
+- **Authority and source tracking** — part-level AUTH and SOURCE citations extracted to frontmatter
+- **HTML table support** — HTML-style tables (TABLE/TR/TH/TD) converted to Markdown pipe tables
+- **Legal status metadata** — all eCFR output marked as `authoritative_unofficial`
 
 ---
 
@@ -61,19 +90,21 @@ LexBuild is a monorepo managed with [pnpm](https://pnpm.io/) workspaces and [Tur
 
 ```
 lexbuild/
-├── packages/           # Shared libraries and tools
+├── packages/
 │   ├── core/           # @lexbuild/core — format-agnostic foundation
 │   ├── usc/            # @lexbuild/usc — U.S. Code source package
+│   ├── ecfr/           # @lexbuild/ecfr — eCFR source package
 │   └── cli/            # @lexbuild/cli — CLI binary (published to npm)
 ├── apps/
 │   └── web/            # LexBuild web app
-├── fixtures/           # Test data
+├── fixtures/
 │   ├── fragments/      # Small synthetic XML snippets for unit tests
+│   │   ├── usc/        # USLM fixtures
+│   │   └── ecfr/       # GPO/SGML fixtures
 │   └── expected/       # Expected output snapshots for integration tests
 ├── docs/               # Architecture, format spec, extension guide
 ├── turbo.json          # Turborepo config
 └── pnpm-workspace.yaml # Workspace definitions
-
 ```
 
 ### Dependency Graph
@@ -82,22 +113,22 @@ lexbuild/
 @lexbuild/cli
   ├── @lexbuild/usc
   │     └── @lexbuild/core
+  ├── @lexbuild/ecfr
+  │     └── @lexbuild/core
   └── @lexbuild/core (direct dep for shared types)
-
-Future packages (e.g., @lexbuild/cfr) follow the same pattern:
-  @lexbuild/cfr
-    └── @lexbuild/core
 ```
 
-All internal dependencies use pnpm's `workspace:*` protocol, ensuring packages always resolve to the local version during development. [Changesets](https://github.com/changesets/changesets) manages versioning in lockstep across all packages — every release bumps all packages to the same version.
+Source packages are independent of each other. `@lexbuild/usc` and `@lexbuild/ecfr` never import from each other — they only depend on core. Future source packages follow the same pattern.
+
+All internal dependencies use pnpm's `workspace:*` protocol. [Changesets](https://github.com/changesets/changesets) manages versioning in lockstep across all packages — every release bumps all packages to the same version.
 
 ### Build Pipeline
 
 Turborepo orchestrates the build, respecting the dependency graph:
 
 1. `@lexbuild/core` builds first (no internal deps)
-2. `@lexbuild/usc` builds next (depends on core)
-3. `@lexbuild/cli` builds last (depends on both)
+2. `@lexbuild/usc` and `@lexbuild/ecfr` build next (depend on core, independent of each other)
+3. `@lexbuild/cli` builds last (depends on all three)
 
 Tests run after builds; type-checking runs after upstream packages build; linting has no dependencies.
 
@@ -113,12 +144,12 @@ Tests run after builds; type-checking runs after upstream packages build; lintin
 |------------|-------------|
 | XML Parser | SAX streaming parser (`saxes`) with namespace normalization and typed event emitter |
 | AST Types | Semantic tree representation — `LevelNode`, `ContentNode`, `InlineNode`, `NoteNode`, `TableNode`, and more |
-| AST Builder | Stack-based tree construction with configurable emit level (section, chapter, etc.) |
+| USLM AST Builder | Stack-based tree construction with configurable emit level (section, chapter, etc.) for USLM XML |
 | Markdown Renderer | Stateless AST-to-Markdown conversion with configurable note filtering and link styles |
-| Frontmatter Generator | YAML frontmatter from structured metadata |
-| Link Resolver | Cross-reference resolution with single-pass registration and fallback URLs |
+| Frontmatter Generator | YAML frontmatter from structured metadata with `source` and `legal_status` fields |
+| Link Resolver | Cross-reference resolution with single-pass registration and fallback URLs for both USC and CFR identifiers |
 
-**Key design**: The AST builder uses a **section-emit pattern** — when a section close tag is encountered, the completed subtree is emitted via callback and released from memory. This keeps memory bounded even for 100MB+ XML files.
+**Key design**: The AST builder uses a **section-emit pattern** — when a section close tag is encountered, the completed subtree is emitted via callback and released from memory. This keeps memory bounded even for 100MB+ XML files. Source packages for non-USLM formats (like eCFR) implement their own builders following the same pattern.
 
 **Dependencies**: `saxes`, `yaml`, `zod` (no internal deps)
 
@@ -135,30 +166,44 @@ Tests run after builds; type-checking runs after upstream packages build; lintin
 
 **Dependencies**: `@lexbuild/core`, `yauzl` (ZIP extraction)
 
+### @lexbuild/ecfr
+
+**eCFR source package.** Implements everything specific to the GPO/SGML-derived XML from govinfo's eCFR bulk data.
+
+| Capability | Description |
+|------------|-------------|
+| eCFR AST Builder | Stack-based SAX → AST construction for GPO/SGML XML (DIV-based hierarchy, E emphasis codes) |
+| Converter | Full pipeline with section/part/title granularity, `_meta.json`, and `README.md` generation |
+| Downloader | Fetches individual title XML files from govinfo (no ZIP — plain XML per title) |
+| Element Classification | Complete mapping of 60+ GPO/SGML elements to LexBuild AST node types |
+
+The eCFR XML uses a completely different format from USLM — numbered `DIV1`–`DIV9` elements with `TYPE` attributes instead of semantic element names, flat `<P>` elements instead of nested subsections, `<E T="xx">` emphasis codes instead of `<b>`/`<i>`, and HTML-style tables instead of XHTML namespace tables.
+
+**Dependencies**: `@lexbuild/core` (no dependency on `@lexbuild/usc`)
+
 ### @lexbuild/cli
 
-**The published npm package.** Provides the `lexbuild` binary that end users install. Thin orchestration layer — all heavy lifting is delegated to `usc` and `core`.
+**The published npm package.** Provides the `lexbuild` binary that end users install. Thin orchestration layer — all heavy lifting is delegated to the source packages and core.
 
 | Command | Description |
 |---------|-------------|
-| `lexbuild download` | Fetch U.S. Code XML from OLRC |
-| `lexbuild convert` | Convert XML to structured Markdown |
+| `lexbuild download-usc` | Fetch U.S. Code XML from OLRC |
+| `lexbuild convert-usc` | Convert USC XML to structured Markdown |
+| `lexbuild download-ecfr` | Fetch eCFR XML from govinfo |
+| `lexbuild convert-ecfr` | Convert eCFR XML to structured Markdown |
 
-As new source packages are added, new commands will be registered here (e.g., `lexbuild download-cfr`, `lexbuild convert-cfr`).
-
-**Dependencies**: `@lexbuild/core`, `@lexbuild/usc`, `commander`, `chalk`, `ora`, `cli-table3`, `pino`, `pino-pretty`
+**Dependencies**: `@lexbuild/core`, `@lexbuild/usc`, `@lexbuild/ecfr`, `commander`, `chalk`, `ora`, `cli-table3`
 
 ### Adding a New Source Package
 
-The monorepo is designed to grow. Adding support for a new legal source (e.g., CFR, state statutes) follows a consistent pattern:
+The monorepo is designed to grow. Adding support for a new legal source follows an established pattern:
 
 1. Create `packages/{source}/` with a dependency on `@lexbuild/core`
-2. Implement a converter function analogous to `convertTitle()` in `@lexbuild/usc`
-3. Reuse core's XML parser, AST types, Markdown renderer, and frontmatter generator
-4. Add a new CLI command in `packages/cli`
-5. Document the source's XML schema in the package README
-
-See [docs/development/extending.md](docs/development/extending.md) for the full guide.
+2. Implement a source-specific AST builder (SAX events → LexBuild AST nodes)
+3. Implement a converter function analogous to `convertTitle()` or `convertEcfrTitle()`
+4. Reuse core's XML parser, AST types, Markdown renderer, and frontmatter generator
+5. Add download and convert commands in `packages/cli`
+6. Add the package to the `fixed` array in `.changeset/config.json`
 
 ---
 
@@ -166,7 +211,7 @@ See [docs/development/extending.md](docs/development/extending.md) for the full 
 
 ### Web
 
-A server-rendered documentation site for browsing the entire U.S. Code as structured Markdown. Built with Next.js 16, TypeScript, React 19, Tailwind CSS 4, Shiki, and shadcn/ui.
+A server-rendered documentation site for browsing the U.S. Code as structured Markdown. Built with Next.js 16, TypeScript, React 19, Tailwind CSS 4, Shiki, and shadcn/ui.
 
 - **60,000+ section pages** served via SSR with CDN caching (1-year `s-maxage`)
 - **Three granularity levels** — view any title, chapter, or section with Markdown source and rendered HTML preview
@@ -190,15 +235,15 @@ You can run the CLI directly using `npx` or `pnpm dlx`
 #### npx
 
 ```bash
-npx @lexbuild/cli download --all
-npx @lexbuild/cli convert --all
+npx @lexbuild/cli download-usc --all
+npx @lexbuild/cli convert-usc --all
 ```
 
 #### pnpm dlx
 
 ```bash
-pnpm dlx @lexbuild/cli download --all
-pnpm dlx @lexbuild/cli convert --all
+pnpm dlx @lexbuild/cli download-usc --all
+pnpm dlx @lexbuild/cli convert-usc --all
 ```
 
 ### Global Install
@@ -240,82 +285,59 @@ pnpm turbo build
 
 ## Usage
 
-### Quick Start Examples
+### U.S. Code
 
 ```bash
 # Download and convert all 54 titles
-lexbuild download --all && lexbuild convert --all
+lexbuild download-usc --all && lexbuild convert-usc --all
 
-# Or start small — download and convert Title 1
-lexbuild download --titles 1 && lexbuild convert --titles 1
+# Start small — download and convert Title 1
+lexbuild download-usc --titles 1 && lexbuild convert-usc --titles 1
 
 # Download and convert a range
-lexbuild download --titles 1-5 && lexbuild convert --titles 1-5
-```
-
-### Download Examples
-
-Fetch U.S. Code XML files directly from the OLRC:
-
-```bash
-# Download a single title
-lexbuild download --titles 1
-
-# Download multiple titles (range)
-lexbuild download --titles 1-5
-
-# Download specific titles (mixed)
-lexbuild download --titles 1-5,8,11
-
-# Download all 54 titles (uses a single bulk zip)
-lexbuild download --all
-
-# Use a specific release point
-lexbuild download --titles 26 --release-point 119-73not60
-```
-
-Or download manually from the [OLRC download page](https://uscode.house.gov/download/download.shtml).
-
-### Convert Examples
-
-```bash
-# Convert all downloaded titles
-lexbuild convert --all
-
-# Convert a single XML file
-lexbuild convert ./downloads/usc/xml/usc01.xml -o ./output
-
-# Convert by title number
-lexbuild convert --titles 1
-
-# Convert multiple titles
-lexbuild convert --titles 1-5,8,11
-
-# Convert with a custom input directory
-lexbuild convert --titles 1-5 -i ./my-xml-files
+lexbuild download-usc --titles 1-5 && lexbuild convert-usc --titles 1-5
 
 # Chapter-level output (one file per chapter)
-lexbuild convert --titles 1 -o ./output -g chapter
+lexbuild convert-usc --titles 1 -g chapter
 
 # Title-level output (one file per title)
-lexbuild convert --titles 1 -o ./output -g title
+lexbuild convert-usc --titles 26 -g title
 
 # Cross-reference links resolved to OLRC URLs
-lexbuild convert --titles 5 -o ./output --link-style canonical
+lexbuild convert-usc --titles 5 --link-style canonical
 
 # Include only amendment notes
-lexbuild convert --titles 1 -o ./output --include-amendments
-
-# Exclude all notes
-lexbuild convert --titles 1 -o ./output --no-include-notes
+lexbuild convert-usc --titles 1 --include-amendments
 
 # Dry run — preview stats without writing files
-lexbuild convert --titles 42 --dry-run
+lexbuild convert-usc --titles 42 --dry-run
+```
+
+### eCFR (Code of Federal Regulations)
+
+```bash
+# Download and convert all 50 titles
+lexbuild download-ecfr --all && lexbuild convert-ecfr --all
+
+# Download and convert a single title
+lexbuild download-ecfr --titles 17 && lexbuild convert-ecfr --titles 17
+
+# Convert a range of titles
+lexbuild download-ecfr --titles 1-5 && lexbuild convert-ecfr --titles 1-5
+
+# Part-level output (one file per part — CFR equivalent of chapter)
+lexbuild convert-ecfr --titles 17 -g part
+
+# Convert a specific XML file
+lexbuild convert-ecfr ./downloads/ecfr/xml/ECFR-title17.xml -o ./output
+
+# Dry run — preview stats without writing files
+lexbuild convert-ecfr --all --dry-run
 ```
 
 ### CLI Reference
 
-#### `lexbuild download [options]`
+#### `lexbuild download-usc [options]`
 
 | Option | Default | Description |
 |--------|---------|-------------|
@@ -324,9 +346,9 @@ lexbuild convert --titles 42 --dry-run
 | `-o, --output <dir>` | `./downloads/usc/xml` | Download directory |
 | `--release-point <id>` | latest bundled (e.g. `119-73not60`) | OLRC release point identifier |
 
-#### `lexbuild convert [options] [input]`
+#### `lexbuild convert-usc [options] [input]`
 
-Specify input as a file path, `--titles`, or `--all` (exactly one). When multiple `--include-*-notes` flags are used, they combine additively.
+Specify input as a file path, `--titles`, or `--all` (exactly one).
 
 | Option | Default | Description |
 |--------|---------|-------------|
@@ -335,7 +357,7 @@ Specify input as a file path, `--titles`, or `--all` (exactly one). When multipl
 | `--all` | — | Convert all downloaded titles in `--input-dir` |
 | `-o, --output <dir>` | `./output` | Output directory |
 | `-i, --input-dir <dir>` | `./downloads/usc/xml` | Input directory for XML files |
-| `-g, --granularity <level>` | `section` | `section`, `chapter`, or `title` (see below) |
+| `-g, --granularity <level>` | `section` | `section`, `chapter`, or `title` |
 | `--link-style <style>` | `plaintext` | `plaintext`, `canonical`, or `relative` |
 | `--no-include-source-credits` | — | Exclude source credit annotations |
 | `--no-include-notes` | — | Exclude all notes |
@@ -345,19 +367,40 @@ Specify input as a file path, `--titles`, or `--all` (exactly one). When multipl
 | `--dry-run` | — | Parse and report without writing files |
 | `-v, --verbose` | — | Enable verbose logging |
 
-**Granularity Modes:** `-g, --granularity <level>`
+#### `lexbuild download-ecfr [options]`
 
-| Mode | Output | Description |
+| Option | Default | Description |
 |--------|---------|-------------|
-| `section` | `title-NN/chapter-NN/section-N.md` | One file per section (default) |
-| `chapter` | `title-NN/chapter-NN/chapter-NN.md` | One file per chapter, sections inlined |
-| `title` | `title-NN.md` | One file per title, entire hierarchy inlined |
+| `--titles <spec>` | — | Title(s) to download: `1`, `1-5`, or `1-5,17` |
+| `--all` | — | Download all 50 titles |
+| `-o, --output <dir>` | `./downloads/ecfr/xml` | Download directory |
+
+#### `lexbuild convert-ecfr [options] [input]`
+
+Specify input as a file path, `--titles`, or `--all` (exactly one).
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `[input]` | — | Path to an eCFR XML file |
+| `--titles <spec>` | — | Title(s) to convert: `1`, `1-5`, or `1-5,17` |
+| `--all` | — | Convert all downloaded titles in `--input-dir` |
+| `-o, --output <dir>` | `./output` | Output directory |
+| `-i, --input-dir <dir>` | `./downloads/ecfr/xml` | Input directory for XML files |
+| `-g, --granularity <level>` | `section` | `section`, `part`, or `title` |
+| `--link-style <style>` | `plaintext` | `plaintext`, `canonical`, or `relative` |
+| `--no-include-source-credits` | — | Exclude source credit annotations |
+| `--no-include-notes` | — | Exclude all notes |
+| `--include-editorial-notes` | — | Include editorial notes only |
+| `--include-statutory-notes` | — | Include statutory/regulatory notes only |
+| `--include-amendments` | — | Include amendment notes only |
+| `--dry-run` | — | Parse and report without writing files |
+| `-v, --verbose` | — | Enable verbose logging |
 
 ---
 
 ## Output
 
-### Directory Structure
+### U.S. Code
 
 **Section granularity** (default):
 
@@ -384,8 +427,6 @@ output/usc/
     _meta.json
     chapter-01/
       chapter-01.md
-    chapter-02/
-      chapter-02.md
 ```
 
 **Title granularity** (`-g title`):
@@ -393,18 +434,54 @@ output/usc/
 ```
 output/usc/
   title-01.md
-  title-26.md
 ```
 
-Title directories are zero-padded (`title-01` through `title-54`). Chapter directories follow the same convention. Section files use the section number as-is, which may be alphanumeric (e.g., `section-106a.md`, `section-7801.md`). Title-level output produces flat files with no subdirectories or sidecar metadata — all metadata is in enriched YAML frontmatter.
+### eCFR
 
-### Markdown Structure
+**Section granularity** (default):
 
-Each section file consists of YAML frontmatter followed by statutory text:
+```
+output/ecfr/
+  title-17/
+    README.md
+    _meta.json
+    chapter-IV/
+      part-240/
+        _meta.json
+        section-240.10b-5.md
+        section-240.10b-18.md
+      part-249/
+        _meta.json
+        section-249.220f.md
+```
+
+**Part granularity** (`-g part`):
+
+```
+output/ecfr/
+  title-17/
+    chapter-IV/
+      part-240.md
+```
+
+**Title granularity** (`-g title`):
+
+```
+output/ecfr/
+  title-17.md
+```
+
+### Frontmatter
+
+Every Markdown file includes YAML frontmatter with source-specific metadata:
+
+**U.S. Code:**
 
 ```yaml
 ---
 identifier: "/us/usc/t1/s7"
+source: "usc"
+legal_status: "official_legal_evidence"
 title: "1 USC § 7 - Marriage"
 title_number: 1
 title_name: "GENERAL PROVISIONS"
@@ -415,27 +492,37 @@ chapter_name: "RULES OF CONSTRUCTION"
 positive_law: true
 currency: "119-73"
 last_updated: "2025-12-03"
-format_version: "1.0.0"
-generator: "lexbuild@0.7.0"
+format_version: "1.1.0"
+generator: "lexbuild@1.8.0"
 source_credit: "(Added Pub. L. 104-199, § 3(a), Sept. 21, 1996, ...)"
 ---
 ```
 
-```markdown
-# § 7. Marriage
+**eCFR:**
 
-**(a)** For the purposes of any Federal law, rule, or regulation in which
-marital status is a factor, an individual shall be considered married if...
-
-**(b)** In this section, the term "State" means a State, the District of
-Columbia, the Commonwealth of Puerto Rico, or any other territory...
-
+```yaml
 ---
-
-**Source Credit**: (Added Pub. L. 104-199, § 3(a), Sept. 21, 1996, ...)
+identifier: "/us/cfr/t17/s240.10b-5"
+source: "ecfr"
+legal_status: "authoritative_unofficial"
+title: "17 CFR § 240.10b-5 - Employment of manipulative and deceptive devices"
+title_number: 17
+title_name: "Commodity and Securities Exchanges"
+section_number: "240.10b-5"
+section_name: "Employment of manipulative and deceptive devices"
+part_number: "240"
+part_name: "GENERAL RULES AND REGULATIONS, SECURITIES EXCHANGE ACT OF 1934"
+positive_law: false
+currency: "2025-03-13"
+last_updated: "2025-03-13"
+format_version: "1.1.0"
+generator: "lexbuild@1.8.0"
+authority: "15 U.S.C. 78a et seq., ..."
+cfr_part: "240"
+---
 ```
 
-Subsections and below use bold inline numbering (`**(a)**`, `**(1)**`, `**(A)**`, `**(i)**`) rather than Markdown headings, preserving a flat document structure optimized for embedding models and chunking strategies.
+The `source` field discriminates content origin (`"usc"` or `"ecfr"`). The `legal_status` field indicates provenance: `"official_legal_evidence"` (positive law USC titles), `"official_prima_facie"` (non-positive law USC titles), or `"authoritative_unofficial"` (eCFR).
 
 ### Metadata Indexes
 
@@ -443,7 +530,7 @@ Each directory includes a `_meta.json` sidecar file for programmatic access:
 
 ```json
 {
-  "format_version": "1.0.0",
+  "format_version": "1.1.0",
   "identifier": "/us/usc/t5",
   "title_number": 5,
   "title_name": "Government Organization and Employees",
@@ -473,8 +560,6 @@ Each directory includes a `_meta.json` sidecar file for programmatic access:
   ]
 }
 ```
-
-For the complete output format specification, see [docs/reference/output-format.md](docs/reference/output-format.md).
 
 ---
 
@@ -524,12 +609,12 @@ pnpm turbo dev             # Watch mode (rebuild on change)
 # Build only core
 pnpm turbo build --filter=@lexbuild/core
 
-# Test only usc
-pnpm turbo test --filter=@lexbuild/usc
+# Test only ecfr
+pnpm turbo test --filter=@lexbuild/ecfr
 
 # Run the CLI locally during development
-node packages/cli/dist/index.js download --titles 1
 node packages/cli/dist/index.js convert --titles 1
+node packages/cli/dist/index.js convert-ecfr --titles 17
 ```
 
 ### Versioning and Releases
@@ -546,17 +631,16 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor guide.
 
 ---
 
-## Documentation
-
-Full documentation in the `docs/` directory [here](docs/)
-
----
-
 ## Data Sources
 
-LexBuild processes XML published by the [Office of the Law Revision Counsel](https://uscode.house.gov/) (OLRC) of the U.S. House of Representatives. The XML uses the United States Legislative Markup (USLM) 1.0 schema.
+LexBuild processes XML from two official U.S. government sources:
 
-The U.S. Code XML is **public domain** and freely available at [uscode.house.gov/download/download.shtml](https://uscode.house.gov/download/download.shtml).
+| Source | Publisher | Format | URL |
+|--------|-----------|--------|-----|
+| U.S. Code | Office of the Law Revision Counsel (OLRC) | USLM 1.0 XML | [uscode.house.gov/download](https://uscode.house.gov/download/download.shtml) |
+| eCFR | Office of the Federal Register via govinfo | GPO/SGML XML | [govinfo.gov/bulkdata/ECFR](https://www.govinfo.gov/bulkdata/ECFR) |
+
+Both datasets are **public domain** and freely available.
 
 ---
 
