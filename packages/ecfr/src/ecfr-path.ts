@@ -31,9 +31,9 @@ export function buildEcfrOutputPath(
     // Title-level file — flat file
     return join(outputRoot, "ecfr", `${titleDir}.md`);
   } else if (node.levelType === "chapter") {
-    // Chapter-level file — one file per chapter inside title dir
+    // Chapter-level file — directly inside title dir (no chapter subdirectory)
     const chapNum = node.numValue ?? "0";
-    segments.push(`chapter-${chapNum}.md`);
+    return join(outputRoot, "ecfr", titleDir, `chapter-${chapNum}.md`);
   } else if (node.levelType === "part") {
     // Part-level file — one file per part inside chapter dir
     segments.push(`part-${node.numValue ?? "0"}.md`);

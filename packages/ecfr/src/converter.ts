@@ -140,6 +140,9 @@ export async function convertEcfrTitle(options: EcfrConvertOptions): Promise<Ecf
   const rss = process.memoryUsage().rss;
   if (rss > peakMemory) peakMemory = rss;
 
+  // Get part-level notes captured by the builder during parsing
+  const partNotes = builder.getPartNotes();
+
   // Extract title info
   let titleNumber = "0";
   let titleName = "";
@@ -198,8 +201,19 @@ export async function convertEcfrTitle(options: EcfrConvertOptions): Promise<Ecf
       const suffixedPath = suffix ? filePath.replace(/\.md$/, `${suffix}.md`) : filePath;
 
       const frontmatter = buildEcfrFrontmatter(node, context);
-      // Enrich with part-level authority/source if available
-      enrichPartLevelNotes(frontmatter, node, context, collected);
+      // Enrich with part-level authority/source from builder's captured notes
+      const partId = context.ancestors.find((a) => a.levelType === "part")?.identifier;
+      if (partId && (!frontmatter.authority || !frontmatter.regulatory_source)) {
+        const partNoteData = partNotes.get(partId);
+        if (partNoteData) {
+          if (!frontmatter.authority && partNoteData.authority) {
+            frontmatter.authority = partNoteData.authority;
+          }
+          if (!frontmatter.regulatory_source && partNoteData.regulatorySource) {
+            frontmatter.regulatory_source = partNoteData.regulatorySource;
+          }
+        }
+      }
 
       const fromFile = suffixedPath;
       const markdown = renderDocument(node, frontmatter, {
@@ -210,10 +224,11 @@ export async function convertEcfrTitle(options: EcfrConvertOptions): Promise<Ecf
       await mkdir(dirname(suffixedPath), { recursive: true });
       await writeFile(suffixedPath, markdown, "utf-8");
 
-      // Register for link resolution
+      // Register for link resolution.
+      // Only register the canonical identifier for the first occurrence so that
+      // cross-references resolve to the primary file, not a later duplicate.
       if (node.identifier) {
-        linkResolver.register(node.identifier, suffixedPath);
-        if (suffix && occurrence === 1) {
+        if (occurrence === 1) {
           linkResolver.register(node.identifier, suffixedPath);
         }
       }
@@ -239,10 +254,8 @@ export async function convertEcfrTitle(options: EcfrConvertOptions): Promise<Ecf
       if (currentRss > peakMemory) peakMemory = currentRss;
     }
 
-    // Write _meta.json and README
-    if (!dryRun) {
-      await writeMetaFiles(sectionMetas, titleNumber, titleName, output, granularity, input);
-    }
+    // Write _meta.json and README (dryRun returns early above, so this always runs)
+    await writeMetaFiles(sectionMetas, titleNumber, titleName, output, granularity, input);
 
     const files = sectionMetas.map((m) => join(buildTitleDir(titleNumber, output), m.relativeFile));
 
@@ -333,43 +346,6 @@ export async function convertEcfrTitle(options: EcfrConvertOptions): Promise<Ecf
     totalTokenEstimate: Math.ceil(totalLength / 4),
     peakMemoryBytes: peakMemory,
   };
-}
-
-/**
- * Enrich frontmatter with part-level authority and source notes.
- * AUTH and SOURCE elements appear at the part level, not section level.
- */
-function enrichPartLevelNotes(
-  fm: FrontmatterData,
-  _node: LevelNode,
-  context: EmitContext,
-  collected: CollectedSection[],
-): void {
-  if (fm.authority || fm.regulatory_source) return;
-
-  // Find the part ancestor to get its authority/source
-  const partIdentifier = context.ancestors.find((a) => a.levelType === "part")?.identifier;
-  if (!partIdentifier) return;
-
-  // Look through all collected items for the part itself
-  // (only works when part was collected in a previous section's context)
-  // For now, we search all siblings for matching part-level notes
-  for (const item of collected) {
-    if (item.node.identifier === partIdentifier) {
-      for (const child of item.node.children) {
-        if (child.type === "note") {
-          const noteNode = child as { noteType?: string; children: ASTNode[] };
-          if (noteNode.noteType === "authority" && !fm.authority) {
-            fm.authority = flattenText(noteNode.children);
-          }
-          if (noteNode.noteType === "regulatorySource" && !fm.regulatory_source) {
-            fm.regulatory_source = flattenText(noteNode.children);
-          }
-        }
-      }
-      break;
-    }
-  }
 }
 
 function flattenText(nodes: ASTNode[]): string {

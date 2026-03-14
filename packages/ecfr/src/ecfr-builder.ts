@@ -35,7 +35,6 @@ import {
   ECFR_PASSTHROUGH_ELEMENTS,
   ECFR_SKIP_ELEMENTS,
   ECFR_REF_ELEMENTS,
-  ECFR_TABLE_ELEMENTS,
 } from "./ecfr-elements.js";
 
 /** Options for configuring the eCFR AST builder */
@@ -87,10 +86,17 @@ export class EcfrASTBuilder {
   private ignoreDepth = 0;
   /** Depth inside CFRTOC or other ignored container */
   private ignoredContainerDepth = 0;
+  /** Part-level notes (authority/source) keyed by part identifier */
+  private readonly partNotes = new Map<string, { authority?: string | undefined; regulatorySource?: string | undefined }>();
 
   constructor(options: EcfrASTBuilderOptions) {
     this.options = options;
     this.emitAtIndex = LEVEL_TYPES.indexOf(options.emitAt);
+  }
+
+  /** Get part-level notes (authority/source) captured during parsing */
+  getPartNotes(): ReadonlyMap<string, { authority?: string | undefined; regulatorySource?: string | undefined }> {
+    return this.partNotes;
   }
 
   /** Handle SAX open element */
@@ -476,6 +482,26 @@ export class EcfrASTBuilder {
 
     const levelNode = frame.node as LevelNode;
     const levelIndex = LEVEL_TYPES.indexOf(levelNode.levelType);
+
+    // Capture part-level authority/source notes before the node is emitted or released
+    if (levelNode.levelType === "part" && levelNode.identifier) {
+      let authority: string | undefined;
+      let regulatorySource: string | undefined;
+      for (const child of levelNode.children) {
+        if (child.type === "note") {
+          const noteNode = child as NoteNode;
+          if (noteNode.noteType === "authority" && !authority) {
+            authority = this.extractNoteText(noteNode);
+          }
+          if (noteNode.noteType === "regulatorySource" && !regulatorySource) {
+            regulatorySource = this.extractNoteText(noteNode);
+          }
+        }
+      }
+      if (authority || regulatorySource) {
+        this.partNotes.set(levelNode.identifier, { authority, regulatorySource });
+      }
+    }
 
     // Should we emit this node?
     if (levelIndex >= 0 && levelIndex >= this.emitAtIndex) {
