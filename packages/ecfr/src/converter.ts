@@ -107,11 +107,7 @@ export async function convertEcfrTitle(options: EcfrConvertOptions): Promise<Ecf
   // Chapter and section granularity both emit at section level — chapter mode
   // groups sections by chapter ancestor in the write phase.
   const emitAt: LevelType =
-    granularity === "title"
-      ? "title"
-      : granularity === "part"
-        ? "part"
-        : "section";
+    granularity === "title" ? "title" : granularity === "part" ? "part" : "section";
 
   // Collect phase
   const collected: CollectedSection[] = [];
@@ -365,7 +361,8 @@ function buildDryRunResult(
     }
     count = chapterKeys.size;
   } else {
-    const targetLevel = granularity === "title" ? "title" : granularity === "part" ? "part" : "section";
+    const targetLevel =
+      granularity === "title" ? "title" : granularity === "part" ? "part" : "section";
     const filtered = collected.filter((c) => c.node.levelType === targetLevel);
     count = filtered.length;
     for (const { node } of filtered) {

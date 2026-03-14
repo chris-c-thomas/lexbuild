@@ -87,7 +87,10 @@ export class EcfrASTBuilder {
   /** Depth inside CFRTOC or other ignored container */
   private ignoredContainerDepth = 0;
   /** Part-level notes (authority/source) keyed by part identifier */
-  private readonly partNotes = new Map<string, { authority?: string | undefined; regulatorySource?: string | undefined }>();
+  private readonly partNotes = new Map<
+    string,
+    { authority?: string | undefined; regulatorySource?: string | undefined }
+  >();
 
   constructor(options: EcfrASTBuilderOptions) {
     this.options = options;
@@ -95,7 +98,10 @@ export class EcfrASTBuilder {
   }
 
   /** Get part-level notes (authority/source) captured during parsing */
-  getPartNotes(): ReadonlyMap<string, { authority?: string | undefined; regulatorySource?: string | undefined }> {
+  getPartNotes(): ReadonlyMap<
+    string,
+    { authority?: string | undefined; regulatorySource?: string | undefined }
+  > {
     return this.partNotes;
   }
 
