@@ -42,18 +42,18 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "turbo build",
-    "test": "turbo test",
-    "typecheck": "turbo typecheck",
-    "lint": "turbo lint",
-    "lint:fix": "turbo lint:fix",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "dev": "turbo dev",
+    "dev": "turbo run dev",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "changeset publish",
-    "release:local": "turbo build && changeset publish"
+    "release:local": "turbo run build && changeset publish"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.2",
