@@ -8,22 +8,17 @@
 
 LexBuild is an open-source toolchain for U.S. legal texts. It transforms official source data into structured Markdown with rich metadata, optimized for LLMs, RAG pipelines, and semantic search.
 
-It currently handles the [U.S. Code](https://uscode.house.gov/) and the [Code of Federal Regulations](https://www.ecfr.gov/)
-
 ## Table of Contents
 
 - [Overview](#overview)
-- [Supported Sources](#supported-sources)
-- [Features](#features)
+- [Sources](#sources)
 - [Monorepo](#monorepo)
 - [Packages](#packages)
 - [Apps](#apps)
 - [Install](#install)
 - [Usage](#usage)
 - [Output](#output)
-- [Performance](#performance)
 - [Development](#development)
-- [Data Sources](#data-sources)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -31,15 +26,19 @@ It currently handles the [U.S. Code](https://uscode.house.gov/) and the [Code of
 
 ## Overview
 
-The U.S. Code comprises 54 titles of federal statutory law published by the [Office of the Law Revision Counsel](https://uscode.house.gov/about_office.xhtml) (OLRC) as [USLM XML](https://uscode.house.gov/download/resources/USLM-User-Guide.pdf). The Code of Federal Regulations (CFR) comprises 50 titles of federal regulations published by the [Office of the Federal Register](https://www.ecfr.gov/) as GPO/SGML-derived XML via [govinfo](https://www.govinfo.gov/bulkdata/ECFR). Both formats are dense, deeply nested, and difficult to work with directly.
+The [United States Code](https://uscode.house.gov/) (U.S. Code) is the official codification of federal statutory law, organized into 54 titles. It is available as [USLM-derived XML](https://github.com/usgpo/uslm) provided by the [Office of the Law Revision Counsel](https://uscode.house.gov/about_office.xhtml) (OLRC).
+
+The [Code of Federal Regulations](https://www.govinfo.gov/app/collection/cfr/) (CFR) is the official codification of federal administrative regulations, organized into 50 titles. Each title is revised once per year and published on a staggered quarterly schedule. The [Electronic Code of Federal Regulations](https://www.ecfr.gov/) (eCFR) serves as a continuously updated editorial compilation of the CFR, incorporating regulatory changes as they appear in the  [Federal Register](https://www.federalregister.gov/). The eCFR is available as [GPO/SGML-derived XML](https://www.govinfo.gov/bulkdata/ECFR) through [GovInfo](https://www.govinfo.gov)
+
+Both formats are dense and deeply nested, often making them difficult to work with directly.
 
 LexBuild transforms this XML into per-section Markdown files with YAML frontmatter, predictable file paths, and content sized for typical embedding model context windows, making the full corpus of federal law and regulations accessible to LLMs, vector databases, and legal research tools.
 
-The project is designed as an extensible multi-source platform. Each source gets its own package with a source-specific AST builder, while sharing a common core for XML parsing, AST types, Markdown rendering, and frontmatter generation. Adding a new source means writing a new builder — the rendering pipeline is free.
+The project is designed as an extensible multi-source platform. Each source gets its own package with a source-specific AST builder and shares a common core for XML parsing, AST types, Markdown rendering, and frontmatter generation.
 
 ---
 
-## Supported Sources
+## Sources
 
 | Source | Package | XML Format | Titles | Status |
 |--------|---------|------------|--------|--------|
@@ -51,42 +50,9 @@ The project is designed as an extensible multi-source platform. Each source gets
 
 ---
 
-## Features
-
-### Shared
-
-- **Streaming SAX parser** — handles XML files of any size (100MB+) with bounded memory
-- **Multi-source architecture** — each source has its own AST builder, sharing a common rendering pipeline
-- **YAML frontmatter** — structured metadata on every file (`source`, `legal_status`, identifier, hierarchy, status)
-- **Metadata indexes** — `_meta.json` sidecar files with section listings and token estimates
-- **Cross-reference links** — resolved as relative links within the corpus, or as source website URLs
-- **Filterable notes** — editorial notes, statutory notes, and amendment history can be selectively included or excluded
-- **Dry-run mode** — preview conversion stats without writing files
-- **Multiple granularities** — section-level, chapter/part-level, or full title as a single file
-
-### U.S. Code
-
-- **Built-in downloader** — fetch individual titles or the entire U.S. Code directly from OLRC
-- **Section-level output** — each section becomes its own Markdown file, sized for RAG chunk windows
-- **Chapter and title modes** — optional coarser granularity for different use cases
-- **Structural fidelity** — preserves the full USLM hierarchy using bold inline numbering
-- **Tables** — XHTML tables and USLM layout tables converted to Markdown pipe tables
-- **Appendix handling** — titles with appendices (5, 11, 18, 28) output to separate directories
-- **Duplicate section disambiguation** — sections with duplicate numbers within a chapter get `-2`, `-3` suffixes
-
-### eCFR
-
-- **Built-in downloader** — fetch individual titles or all 50 titles from govinfo bulk data
-- **Part-based granularity** — section, part, or title output modes (part is the CFR equivalent of USC chapter)
-- **Authority and source tracking** — part-level AUTH and SOURCE citations extracted to frontmatter
-- **HTML table support** — HTML-style tables (TABLE/TR/TH/TD) converted to Markdown pipe tables
-- **Legal status metadata** — all eCFR output marked as `authoritative_unofficial`
-
----
-
 ## Monorepo
 
-LexBuild is a monorepo managed with [pnpm](https://pnpm.io/) workspaces and [Turborepo](https://turbo.build/). This structure cleanly separates concerns — shared parsing infrastructure, source-specific logic, CLI tooling, and downstream applications — while keeping everything in a single repository with unified versioning.
+LexBuild is a monorepo managed with [pnpm](https://pnpm.io/) workspaces and [Turborepo](https://turbo.build/). This structure cleanly separates concerns such as shared parsing infrastructure, source-specific logic, CLI tooling, and downstream applications, all while keeping everything in a single repository with unified versioning.
 
 ```
 lexbuild/
@@ -94,7 +60,7 @@ lexbuild/
 │   ├── core/           # @lexbuild/core — format-agnostic foundation
 │   ├── usc/            # @lexbuild/usc — U.S. Code source package
 │   ├── ecfr/           # @lexbuild/ecfr — eCFR source package
-│   └── cli/            # @lexbuild/cli — CLI binary (published to npm)
+│   └── cli/            # @lexbuild/cli — CLI binary
 ├── apps/
 │   └── web/            # LexBuild web app
 ├── fixtures/
@@ -102,9 +68,9 @@ lexbuild/
 │   │   ├── usc/        # USLM fixtures
 │   │   └── ecfr/       # GPO/SGML fixtures
 │   └── expected/       # Expected output snapshots for integration tests
-├── docs/               # Architecture, format spec, extension guide
+├── docs/               # Full Documentation
 ├── turbo.json          # Turborepo config
-└── pnpm-workspace.yaml # Workspace definitions
+└── pnpm-workspace.yaml # pnpm workspace config
 ```
 
 ### Dependency Graph
@@ -115,22 +81,24 @@ lexbuild/
   │     └── @lexbuild/core
   ├── @lexbuild/ecfr
   │     └── @lexbuild/core
-  └── @lexbuild/core (direct dep for shared types)
+  └── @lexbuild/core
 ```
 
-Source packages are independent of each other. `@lexbuild/usc` and `@lexbuild/ecfr` never import from each other — they only depend on core. Future source packages follow the same pattern.
+Source packages are independent of each other. `@lexbuild/usc` and `@lexbuild/ecfr` never import from each other as they only depend `@lexbuild/core`. Future source packages will follow the same pattern.
 
-All internal dependencies use pnpm's `workspace:*` protocol. [Changesets](https://github.com/changesets/changesets) manages versioning in lockstep across all packages — every release bumps all packages to the same version.
+All internal dependencies use pnpm's `workspace:*` protocol.
+
+[Changesets](https://github.com/changesets/changesets) manages versioning in lockstep across all packages.
 
 ### Build Pipeline
 
 Turborepo orchestrates the build, respecting the dependency graph:
 
-1. `@lexbuild/core` builds first (no internal deps)
-2. `@lexbuild/usc` and `@lexbuild/ecfr` build next (depend on core, independent of each other)
-3. `@lexbuild/cli` builds last (depends on all three)
+1. `@lexbuild/core` builds first
+2. `@lexbuild/usc` and `@lexbuild/ecfr` build next
+3. `@lexbuild/cli` builds last
 
-Tests run after builds; type-checking runs after upstream packages build; linting has no dependencies.
+Tests run after builds, type-checking runs after upstream packages build, and linting has no dependencies.
 
 ---
 
@@ -138,72 +106,64 @@ Tests run after builds; type-checking runs after upstream packages build; lintin
 
 ### @lexbuild/core
 
-**The format-agnostic foundation.** Core knows nothing about any specific legal source — it provides the infrastructure that all source packages build on.
+Implements the base infrastructure that all other source packages build on.
 
 | Capability | Description |
 |------------|-------------|
-| XML Parser | SAX streaming parser (`saxes`) with namespace normalization and typed event emitter |
+| XML Parser | Streaming SAX parser (`saxes`) — handles XML files of any size (100MB+) with bounded memory |
 | AST Types | Semantic tree representation — `LevelNode`, `ContentNode`, `InlineNode`, `NoteNode`, `TableNode`, and more |
 | USLM AST Builder | Stack-based tree construction with configurable emit level (section, chapter, etc.) for USLM XML |
 | Markdown Renderer | Stateless AST-to-Markdown conversion with configurable note filtering and link styles |
-| Frontmatter Generator | YAML frontmatter from structured metadata with `source` and `legal_status` fields |
+| Frontmatter Generator | YAML frontmatter with structured metadata (`source`, `legal_status`, identifier, hierarchy, status) |
 | Link Resolver | Cross-reference resolution with single-pass registration and fallback URLs for both USC and CFR identifiers |
 
-**Key design**: The AST builder uses a **section-emit pattern** — when a section close tag is encountered, the completed subtree is emitted via callback and released from memory. This keeps memory bounded even for 100MB+ XML files. Source packages for non-USLM formats (like eCFR) implement their own builders following the same pattern.
+Each source package produces the same AST node types, so it gets Markdown rendering, frontmatter generation, cross-reference resolution, note filtering, multiple granularities, and dry-run mode for free.
 
-**Dependencies**: `saxes`, `yaml`, `zod` (no internal deps)
+The AST builder uses a section-emit pattern. When a section close tag is encountered, the completed subtree is emitted via callback and released from memory. Source packages for non-USLM formats (like eCFR) implement their own builders following the same pattern.
+
+**Dependencies**: `saxes`, `yaml`, `zod`
 
 ### @lexbuild/usc
 
-**U.S. Code source package.** Implements everything specific to USLM 1.0 XML from the OLRC.
+Implements everything specific to USLM 1.0 XML from the OLRC.
 
 | Capability | Description |
 |------------|-------------|
-| Converter | Orchestrates the full pipeline: XML stream, SAX parse, AST build, render, write |
-| Downloader | Fetches individual or bulk title ZIP files from OLRC and extracts the XML |
-| File Writer | Writes section/chapter `.md` files, `_meta.json` indexes, and `README.md` overviews |
-| Title Metadata | Extracts Dublin Core metadata, release points, and positive law status |
+| Converter | Full pipeline: XML stream → SAX parse → AST build → render → write, at section/chapter/title granularity |
+| Downloader | Fetches individual or bulk title ZIP files directly from OLRC |
+| Metadata | `_meta.json` indexes, `README.md` overviews, Dublin Core metadata, release points, positive law status |
+| Structural Fidelity | Preserves the full USLM hierarchy using bold inline numbering that mirrors legal citation conventions |
+| Tables | XHTML tables and USLM layout tables converted to Markdown pipe tables |
+| Edge Cases | Appendix titles (5, 11, 18, 28) to separate directories, duplicate section disambiguation (`-2`, `-3` suffixes) |
 
-**Dependencies**: `@lexbuild/core`, `yauzl` (ZIP extraction)
+**Dependencies**: `@lexbuild/core`, `yauzl`
 
 ### @lexbuild/ecfr
 
-**eCFR source package.** Implements everything specific to the GPO/SGML-derived XML from govinfo's eCFR bulk data.
+Implements everything specific to the GPO/SGML-derived XML from govinfo's eCFR bulk data.
 
 | Capability | Description |
 |------------|-------------|
-| eCFR AST Builder | Stack-based SAX → AST construction for GPO/SGML XML (DIV-based hierarchy, E emphasis codes) |
+| eCFR AST Builder | Stack-based SAX→AST construction for GPO/SGML XML (DIV-based hierarchy, E emphasis codes) |
 | Converter | Full pipeline with section/part/title granularity, `_meta.json`, and `README.md` generation |
-| Downloader | Fetches individual title XML files from govinfo (no ZIP — plain XML per title) |
-| Element Classification | Complete mapping of 60+ GPO/SGML elements to LexBuild AST node types |
+| Downloader | Fetches individual title XML files from govinfo (plain XML per title, no ZIP) |
+| Regulatory Metadata | Authority and source citations extracted from part-level AUTH/SOURCE elements to frontmatter |
+| Tables | HTML-style tables (TABLE/TR/TH/TD) converted to Markdown pipe tables |
 
-The eCFR XML uses a completely different format from USLM — numbered `DIV1`–`DIV9` elements with `TYPE` attributes instead of semantic element names, flat `<P>` elements instead of nested subsections, `<E T="xx">` emphasis codes instead of `<b>`/`<i>`, and HTML-style tables instead of XHTML namespace tables.
-
-**Dependencies**: `@lexbuild/core` (no dependency on `@lexbuild/usc`)
+**Dependencies**: `@lexbuild/core`
 
 ### @lexbuild/cli
 
-**The published npm package.** Provides the `lexbuild` binary that end users install. Thin orchestration layer — all heavy lifting is delegated to the source packages and core.
+Provides the `lexbuild` binary that end users install. `@lexbuild/cli` is orchestration layer where all heavy lifting is delegated to the source packages and core.
 
 | Command | Description |
 |---------|-------------|
-| `lexbuild download-usc` | Fetch U.S. Code XML from OLRC |
-| `lexbuild convert-usc` | Convert USC XML to structured Markdown |
-| `lexbuild download-ecfr` | Fetch eCFR XML from govinfo |
-| `lexbuild convert-ecfr` | Convert eCFR XML to structured Markdown |
+| `lexbuild download-usc` | Fetch [U.S. Code XML](https://uscode.house.gov/download/download.shtml) from the [OLRC](https://uscode.house.gov/) |
+| `lexbuild convert-usc` | Convert [U.S. Code XML](https://uscode.house.gov/download/download.shtml) to structured Markdown |
+| `lexbuild download-ecfr` | Fetch [eCFR XML](https://www.govinfo.gov/bulkdata/ECFR) from [GovInfo](https://www.govinfo.gov/) |
+| `lexbuild convert-ecfr` | Convert [eCFR XML](https://www.govinfo.gov/bulkdata/ECFR) to structured Markdown |
 
 **Dependencies**: `@lexbuild/core`, `@lexbuild/usc`, `@lexbuild/ecfr`, `commander`, `chalk`, `ora`, `cli-table3`
-
-### Adding a New Source Package
-
-The monorepo is designed to grow. Adding support for a new legal source follows an established pattern:
-
-1. Create `packages/{source}/` with a dependency on `@lexbuild/core`
-2. Implement a source-specific AST builder (SAX events → LexBuild AST nodes)
-3. Implement a converter function analogous to `convertTitle()` or `convertEcfrTitle()`
-4. Reuse core's XML parser, AST types, Markdown renderer, and frontmatter generator
-5. Add download and convert commands in `packages/cli`
-6. Add the package to the `fixed` array in `.changeset/config.json`
 
 ---
 
@@ -563,20 +523,6 @@ Each directory includes a `_meta.json` sidecar file for programmatic access:
 
 ---
 
-## Performance
-
-The full U.S. Code — all 54 titles (53 with content; Title 53 is reserved), over 60,000 sections, ~85 million estimated tokens — converts in under 20 seconds on a modern machine. SAX streaming keeps memory bounded even for the largest titles:
-
-| Title | XML Size | Sections | ~Tokens | Duration |
-|-------|----------|----------|---------|----------|
-| Title 1 - General Provisions | 0.3 MB | 39 | 35K | 0.04s |
-| Title 10 - Armed Forces | 50.7 MB | 3,847 | 6.0M | 1.4s |
-| Title 26 - Internal Revenue Code | 53.2 MB | 2,160 | 6.4M | 1.1s |
-| Title 42 - Public Health | 107.3 MB | 8,460 | 14.7M | 2.7s |
-| **All 54 titles** | **~650 MB** | **60,215** | **~85M** | **~18s** |
-
----
-
 ## Development
 
 ### Prerequisites
@@ -616,31 +562,6 @@ pnpm turbo test --filter=@lexbuild/ecfr
 node packages/cli/dist/index.js convert --titles 1
 node packages/cli/dist/index.js convert-ecfr --titles 17
 ```
-
-### Versioning and Releases
-
-LexBuild uses [Changesets](https://github.com/changesets/changesets) for version management. All packages are versioned in lockstep.
-
-```bash
-pnpm changeset             # Create a changeset for your changes
-pnpm version-packages      # Apply changesets and bump versions
-pnpm release               # Build and publish all packages to npm
-```
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor guide.
-
----
-
-## Data Sources
-
-LexBuild processes XML from two official U.S. government sources:
-
-| Source | Publisher | Format | URL |
-|--------|-----------|--------|-----|
-| U.S. Code | Office of the Law Revision Counsel (OLRC) | USLM 1.0 XML | [uscode.house.gov/download](https://uscode.house.gov/download/download.shtml) |
-| eCFR | Office of the Federal Register via govinfo | GPO/SGML XML | [govinfo.gov/bulkdata/ECFR](https://www.govinfo.gov/bulkdata/ECFR) |
-
-Both datasets are **public domain** and freely available.
 
 ---
 
