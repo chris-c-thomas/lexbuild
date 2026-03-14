@@ -167,7 +167,9 @@ export async function convertEcfrTitle(options: EcfrConvertOptions): Promise<Ecf
   const sectionMetas: SectionMeta[] = [];
 
   if (granularity === "section") {
-    // First pass: count duplicates per part/section key
+    // Pass 1: compute output paths, detect duplicates, and register all
+    // identifiers with the link resolver BEFORE rendering. This ensures
+    // both forward and backward cross-references can resolve.
     const counts = new Map<string, number>();
     for (const { node, context } of collected) {
       const partNum = context.ancestors.find((a) => a.levelType === "part")?.numValue ?? "__root__";
@@ -176,8 +178,8 @@ export async function convertEcfrTitle(options: EcfrConvertOptions): Promise<Ecf
       counts.set(key, (counts.get(key) ?? 0) + 1);
     }
 
-    // Build suffix tracker
     const seen = new Map<string, number>();
+    const outputPaths: string[] = [];
 
     for (const { node, context } of collected) {
       const partNum = context.ancestors.find((a) => a.levelType === "part")?.numValue ?? "__root__";
@@ -191,6 +193,20 @@ export async function convertEcfrTitle(options: EcfrConvertOptions): Promise<Ecf
 
       const filePath = buildEcfrOutputPath(node, context, output);
       const suffixedPath = suffix ? filePath.replace(/\.md$/, `${suffix}.md`) : filePath;
+      outputPaths.push(suffixedPath);
+
+      // Register canonical identifier for first occurrence only
+      if (node.identifier && occurrence === 1) {
+        linkResolver.register(node.identifier, suffixedPath);
+      }
+    }
+
+    // Pass 2: render and write files (all identifiers are now registered)
+    for (let i = 0; i < collected.length; i++) {
+      const item = collected[i];
+      const suffixedPath = outputPaths[i];
+      if (!item || !suffixedPath) continue;
+      const { node, context } = item;
 
       const frontmatter = buildEcfrFrontmatter(node, context);
       // Enrich with part-level authority/source from builder's captured notes
@@ -216,16 +232,9 @@ export async function convertEcfrTitle(options: EcfrConvertOptions): Promise<Ecf
       await mkdir(dirname(suffixedPath), { recursive: true });
       await writeFile(suffixedPath, markdown, "utf-8");
 
-      // Register for link resolution.
-      // Only register the canonical identifier for the first occurrence so that
-      // cross-references resolve to the primary file, not a later duplicate.
-      if (node.identifier) {
-        if (occurrence === 1) {
-          linkResolver.register(node.identifier, suffixedPath);
-        }
-      }
-
       const hasNotes = node.children.some((c) => c.type === "note" || c.type === "notesContainer");
+      const secNum = node.numValue ?? "0";
+      const partNum = context.ancestors.find((a) => a.levelType === "part")?.numValue ?? "__root__";
 
       sectionMetas.push({
         identifier: node.identifier ?? `/us/cfr/t${titleNumber}/s${secNum}`,
@@ -328,13 +337,25 @@ export async function convertEcfrTitle(options: EcfrConvertOptions): Promise<Ecf
     }
   }
 
+  // Compute partCount based on granularity
+  const partCount =
+    granularity === "part"
+      ? files.length
+      : granularity === "chapter"
+        ? new Set(
+            collected
+              .map((c) => c.context.ancestors.find((a) => a.levelType === "part")?.numValue)
+              .filter(Boolean),
+          ).size
+        : 0;
+
   return {
     sectionsWritten: files.length,
     files,
     titleNumber,
     titleName,
     dryRun: false,
-    partCount: 0,
+    partCount,
     totalTokenEstimate: Math.ceil(totalLength / 4),
     peakMemoryBytes: peakMemory,
   };

@@ -62,7 +62,9 @@ export function buildEcfrFrontmatter(node: LevelNode, context: EmitContext): Fro
   }
 
   if (chapterAncestor?.numValue) {
-    // CFR chapters use Roman numerals — store as string, not int
+    // chapter_number is typed as number — only set for numeric chapters.
+    // CFR chapters use Roman numerals (I, II, IV) which won't parse;
+    // those are captured in chapter_name instead.
     const parsed = parseInt(chapterAncestor.numValue, 10);
     if (!isNaN(parsed)) {
       fm.chapter_number = parsed;

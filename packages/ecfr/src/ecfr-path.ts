@@ -88,9 +88,10 @@ function padTwo(num: string): string {
 }
 
 function sanitizeFilename(name: string): string {
-  return name
+  const sanitized = name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "")
     .slice(0, 50);
+  return sanitized || "appendix";
 }

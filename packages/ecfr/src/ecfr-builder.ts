@@ -82,8 +82,6 @@ export class EcfrASTBuilder {
   private readonly emitAtIndex: number;
   /** Track title number from metadata header */
   private titleNumber = "";
-  /** Depth inside ignore elements */
-  private ignoreDepth = 0;
   /** Depth inside CFRTOC or other ignored container */
   private ignoredContainerDepth = 0;
   /** Part-level notes (authority/source) keyed by part identifier */
