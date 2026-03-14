@@ -1,5 +1,14 @@
 # @lexbuild/ecfr
 
+## 1.9.1
+
+### Patch Changes
+
+- [`d32b3ed`](https://github.com/chris-c-thomas/LexBuild/commit/d32b3edda8bcb319f64e7b8b444ca943db0103e4) Thanks [@chris-c-thomas](https://github.com/chris-c-thomas)! - Publish @lexbuild/ecfr to npm registry
+
+- Updated dependencies []:
+  - @lexbuild/core@1.9.1
+
 ## 1.9.0
 
 ### Minor Changes

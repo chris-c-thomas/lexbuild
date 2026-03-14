@@ -1,5 +1,14 @@
 # @lexbuild/cli
 
+## 1.9.1
+
+### Patch Changes
+
+- Updated dependencies [[`d32b3ed`](https://github.com/chris-c-thomas/LexBuild/commit/d32b3edda8bcb319f64e7b8b444ca943db0103e4)]:
+  - @lexbuild/ecfr@1.9.1
+  - @lexbuild/core@1.9.1
+  - @lexbuild/usc@1.9.1
+
 ## 1.9.0
 
 ### Minor Changes
