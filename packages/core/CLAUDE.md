@@ -2,7 +2,7 @@
 
 ## Package Overview
 
-`@lexbuild/core` is the foundational package of the LexBuild monorepo. It provides XML parsing, AST types/builder, Markdown rendering, frontmatter generation, and cross-reference link resolution. All source-specific packages (`@lexbuild/usc`, future `@lexbuild/cfr`) depend on core.
+`@lexbuild/core` is the foundational package of the LexBuild monorepo. It provides XML parsing, AST types/builder, Markdown rendering, frontmatter generation, and cross-reference link resolution. All source-specific packages (`@lexbuild/usc`, `@lexbuild/ecfr`) depend on core.
 
 ## Module Structure
 
@@ -10,24 +10,24 @@
 src/
 ├── index.ts                     # Barrel exports
 ├── xml/
-│   ├── namespace.ts             # USLM/XHTML namespace constants & element classification sets
+│   ├── uslm-elements.ts        # USLM/XHTML namespace constants & element classification sets
 │   └── parser.ts                # Streaming SAX parser wrapping saxes
 ├── ast/
-│   ├── types.ts                 # AST node type definitions (LevelNode, ContentNode, InlineNode, etc.)
-│   └── builder.ts               # XML SAX events → AST conversion (~1,180 lines, core state machine)
+│   ├── types.ts                 # AST node type definitions, FrontmatterData, SourceType, LegalStatus
+│   └── uslm-builder.ts         # USLM XML SAX events → AST conversion (core state machine)
 └── markdown/
     ├── renderer.ts              # AST → Markdown conversion (~585 lines)
-    ├── frontmatter.ts           # YAML frontmatter generation
-    └── links.ts                 # Cross-reference link resolution & OLRC fallback URLs
+    ├── frontmatter.ts           # YAML frontmatter generation (FORMAT_VERSION 1.1.0)
+    └── links.ts                 # Cross-reference link resolution (USC + CFR fallback URLs)
 ```
 
 ## Data Flow
 
 ```
-USLM XML → [XMLParser] → SAX events → [ASTBuilder] → AST nodes → [renderer] → Markdown + YAML frontmatter
+Source XML → [XMLParser] → SAX events → [Source-specific Builder] → AST nodes → [renderer] → Markdown + YAML frontmatter
 ```
 
-The pipeline is streaming: SAX events feed the ASTBuilder, which emits completed subtrees (e.g., sections) via a callback. Emitted nodes are immediately released to keep memory bounded for large titles (100MB+ XML).
+The pipeline is streaming: SAX events feed a source-specific builder (USLM `ASTBuilder` for USC, `EcfrASTBuilder` for eCFR), which emits completed subtrees (e.g., sections) via a callback. Emitted nodes are immediately released to keep memory bounded for large titles (100MB+ XML). The renderer operates on AST nodes and is source-agnostic.
 
 ## Key Architectural Patterns
 
@@ -70,9 +70,9 @@ Text inside nested inline elements (e.g., `<heading><b>Editorial Notes</b></head
 
 Level hierarchy: `BIG_LEVELS` (17 types above section) and `SMALL_LEVELS` (8 types below section) are exported as Sets.
 
-## Namespace Classification
+## USLM Element Classification
 
-Defined in `xml/namespace.ts`:
+Defined in `xml/uslm-elements.ts` (USLM-specific; eCFR element classification lives in `@lexbuild/ecfr`):
 
 - `LEVEL_ELEMENTS` — 20 hierarchical element types
 - `CONTENT_ELEMENTS` — content, chapeau, continuation, proviso
@@ -98,15 +98,18 @@ Cross-heading notes (`<note role="crossHeading">`) act as category markers insid
 
 ### Link Resolution
 
-`links.ts` provides a `LinkResolver` with register/resolve/fallback:
+`links.ts` provides a `LinkResolver` with register/resolve/fallback. Supports both `/us/usc/` and `/us/cfr/` identifier schemes:
 1. Exact identifier match in registry → relative path
 2. Strip subsection path, try section-level → relative path
-3. Not found → OLRC fallback URL (`uscode.house.gov/view.xhtml?req=granuleid:...`)
-4. Non-USC refs (stat, pl, act) → always plaintext
+3. USC not found → OLRC fallback URL (`uscode.house.gov/view.xhtml?req=granuleid:...`)
+4. CFR not found → eCFR fallback URL (`ecfr.gov/current/title-N/section-N`)
+5. Non-USC/CFR refs (stat, pl, act) → always plaintext
 
 ## Frontmatter
 
-`frontmatter.ts` generates ordered YAML using the `yaml` package. Field order is controlled manually. `FORMAT_VERSION` and `GENERATOR` (read from package.json) are exported constants.
+`frontmatter.ts` generates ordered YAML using the `yaml` package. Field order is controlled manually. `FORMAT_VERSION` (`"1.1.0"`) and `GENERATOR` (read from package.json) are exported constants.
+
+The `FrontmatterData` interface includes required `source` (`SourceType`) and `legal_status` (`LegalStatus`) fields, plus optional source-specific fields (`authority`, `regulatory_source`, `cfr_part`, etc.) that are included when defined.
 
 ## Implementation Details
 
