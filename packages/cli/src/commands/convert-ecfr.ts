@@ -26,7 +26,7 @@ interface ConvertEcfrCommandOptions {
   titles?: string | undefined;
   all: boolean;
   inputDir: string;
-  granularity: "section" | "part" | "title";
+  granularity: "section" | "part" | "chapter" | "title";
   linkStyle: "relative" | "canonical" | "plaintext";
   includeSourceCredits: boolean;
   includeNotes: boolean;
@@ -118,6 +118,8 @@ async function convertSingleFile(
       rows.push(["Parts", formatNumber(result.partCount)]);
     } else if (options.granularity === "part") {
       rows.push(["Parts", formatNumber(result.partCount)]);
+    } else if (options.granularity === "chapter") {
+      rows.push(["Chapters", formatNumber(result.sectionsWritten)]);
     }
     rows.push(["Est. Tokens", formatNumber(result.totalTokenEstimate)]);
 
@@ -166,8 +168,8 @@ export const convertEcfrCommand = new Command("convert-ecfr")
   .option("--all", "Convert all downloaded eCFR titles found in --input-dir", false)
   .option("-i, --input-dir <dir>", "Directory containing eCFR XML files", "./downloads/ecfr/xml")
   .addOption(
-    new Option("-g, --granularity <level>", "Output granularity: section, part, or title")
-      .choices(["section", "part", "title"])
+    new Option("-g, --granularity <level>", "Output granularity: section, part, chapter, or title")
+      .choices(["section", "part", "chapter", "title"])
       .default("section"),
   )
   .addOption(
@@ -195,6 +197,7 @@ Input modes (use exactly one):
 Granularity:
   section       One .md file per section (default)
   part          One .md file per part, sections inlined
+  chapter       One .md file per chapter, parts and sections inlined
   title         One .md file per title, entire hierarchy inlined
 
 Examples:
@@ -308,6 +311,14 @@ Examples:
           formatNumber(result.totalTokenEstimate),
           formatDuration(elapsed),
         ];
+      } else if (granularity === "chapter") {
+        return [
+          result.titleNumber,
+          result.titleName,
+          formatNumber(result.sectionsWritten),
+          formatNumber(result.totalTokenEstimate),
+          formatDuration(elapsed),
+        ];
       } else if (granularity === "part") {
         return [
           result.titleNumber,
@@ -335,6 +346,14 @@ Examples:
         chalk.bold(formatNumber(totalTokens)),
         chalk.bold(formatDuration(totalElapsed)),
       ]);
+    } else if (granularity === "chapter") {
+      tableRows.push([
+        chalk.bold("Total"),
+        "",
+        chalk.bold(formatNumber(totalSections)),
+        chalk.bold(formatNumber(totalTokens)),
+        chalk.bold(formatDuration(totalElapsed)),
+      ]);
     } else if (granularity === "part") {
       tableRows.push([
         chalk.bold("Total"),
@@ -357,9 +376,11 @@ Examples:
     const tableHeaders =
       granularity === "title"
         ? ["Title", "Name", "Tokens", "Duration"]
-        : granularity === "part"
-          ? ["Title", "Name", "Parts", "Tokens", "Duration"]
-          : ["Title", "Name", "Parts", "Sections", "Tokens", "Duration"];
+        : granularity === "chapter"
+          ? ["Title", "Name", "Chapters", "Tokens", "Duration"]
+          : granularity === "part"
+            ? ["Title", "Name", "Parts", "Tokens", "Duration"]
+            : ["Title", "Name", "Parts", "Sections", "Tokens", "Duration"];
 
     console.log(dataTable(tableHeaders, tableRows));
 
@@ -367,6 +388,9 @@ Examples:
     let countLabel: string;
     if (granularity === "title") {
       countLabel = `${totalTitles} ${titleWord}`;
+    } else if (granularity === "chapter") {
+      const chapterWord = totalSections === 1 ? "chapter" : "chapters";
+      countLabel = `${totalTitles} ${titleWord} (${formatNumber(totalSections)} ${chapterWord})`;
     } else if (granularity === "part") {
       const partWord = totalParts === 1 ? "part" : "parts";
       countLabel = `${totalTitles} ${titleWord} (${formatNumber(totalParts)} ${partWord})`;

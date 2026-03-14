@@ -86,7 +86,7 @@ Options:
   --titles <spec>          Title selection
   --all                    Discover & convert all titles in --input-dir
   --input-dir <dir>        Default: "./downloads/ecfr/xml"
-  -g, --granularity        section | part | title (default: section)
+  -g, --granularity        section | part | chapter | title (default: section)
   --link-style             relative | canonical | plaintext (default: plaintext)
   --include-source-credits Default: true
   --include-notes          Default: true (all notes)

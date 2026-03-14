@@ -145,7 +145,7 @@ Implements everything specific to the GPO/SGML-derived XML from govinfo's eCFR b
 | Capability | Description |
 |------------|-------------|
 | eCFR AST Builder | Stack-based SAX→AST construction for GPO/SGML XML (DIV-based hierarchy, E emphasis codes) |
-| Converter | Full pipeline with section/part/title granularity, `_meta.json`, and `README.md` generation |
+| Converter | Full pipeline with section/part/chapter/title granularity, `_meta.json`, and `README.md` generation |
 | Downloader | Fetches individual title XML files from govinfo (plain XML per title, no ZIP) |
 | Regulatory Metadata | Authority and source citations extracted from part-level AUTH/SOURCE elements to frontmatter |
 | Tables | HTML-style tables (TABLE/TR/TH/TD) converted to Markdown pipe tables |
@@ -346,7 +346,7 @@ Specify input as a file path, `--titles`, or `--all` (exactly one).
 | `--all` | — | Convert all downloaded titles in `--input-dir` |
 | `-o, --output <dir>` | `./output` | Output directory |
 | `-i, --input-dir <dir>` | `./downloads/ecfr/xml` | Input directory for XML files |
-| `-g, --granularity <level>` | `section` | `section`, `part`, or `title` |
+| `-g, --granularity <level>` | `section` | `section`, `part`, `chapter`, or `title` |
 | `--link-style <style>` | `plaintext` | `plaintext`, `canonical`, or `relative` |
 | `--no-include-source-credits` | — | Exclude source credit annotations |
 | `--no-include-notes` | — | Exclude all notes |
@@ -422,6 +422,17 @@ output/ecfr/
   title-17/
     chapter-IV/
       part-240.md
+```
+
+**Chapter granularity** (`-g chapter`):
+
+```
+output/ecfr/
+  title-17/
+    chapter-I/
+      chapter-I.md
+    chapter-II/
+      chapter-II.md
 ```
 
 **Title granularity** (`-g title`):

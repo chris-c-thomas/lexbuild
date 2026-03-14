@@ -27,14 +27,16 @@ export function buildEcfrOutputPath(
     segments.push(`chapter-${chapterNum}`);
   }
 
-  if (node.levelType === "part" || node.levelType === "title") {
-    // Part or title level granularity — filename is the level itself
-    if (node.levelType === "part") {
-      segments.push(`part-${node.numValue ?? "0"}.md`);
-    } else {
-      // Title-level file — flat file
-      return join(outputRoot, "ecfr", `${titleDir}.md`);
-    }
+  if (node.levelType === "title") {
+    // Title-level file — flat file
+    return join(outputRoot, "ecfr", `${titleDir}.md`);
+  } else if (node.levelType === "chapter") {
+    // Chapter-level file — one file per chapter inside title dir
+    const chapNum = node.numValue ?? "0";
+    segments.push(`chapter-${chapNum}.md`);
+  } else if (node.levelType === "part") {
+    // Part-level file — one file per part inside chapter dir
+    segments.push(`part-${node.numValue ?? "0"}.md`);
   } else if (node.levelType === "appendix") {
     // Appendix — use sanitized name
     const appendixName = sanitizeFilename(node.numValue ?? node.heading ?? "appendix");

@@ -158,7 +158,7 @@ eCFR XML → [XMLParser(defaultNamespace: "")] → SAX events
 {
   input: string;
   output: string;
-  granularity: "section" | "part" | "title";
+  granularity: "section" | "part" | "chapter" | "title";
   linkStyle: "relative" | "canonical" | "plaintext";
   includeSourceCredits: boolean;
   includeNotes: boolean;

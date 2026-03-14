@@ -23,7 +23,7 @@ import { convertEcfrTitle } from "@lexbuild/ecfr";
 const result = await convertEcfrTitle({
   input: "./downloads/ecfr/xml/ECFR-title17.xml",
   output: "./output",
-  granularity: "section", // or "part" or "title"
+  granularity: "section", // or "part", "chapter", or "title"
   linkStyle: "plaintext",
   includeSourceCredits: true,
   includeNotes: true,
@@ -102,6 +102,7 @@ Each title produces Markdown files with YAML frontmatter. The output structure d
 |---|---|---|
 | `section` (default) | `ecfr/title-NN/chapter-X/part-N/section-N.N.md` | `_meta.json` per part + title, `README.md` per title |
 | `part` | `ecfr/title-NN/chapter-X/part-N.md` | — |
+| `chapter` | `ecfr/title-NN/chapter-X/chapter-X.md` | — |
 | `title` | `ecfr/title-NN.md` | — |
 
 ### Frontmatter

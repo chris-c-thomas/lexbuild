@@ -30,6 +30,7 @@ import type {
   RenderOptions,
   NotesFilter,
   ASTNode,
+  AncestorInfo,
 } from "@lexbuild/core";
 import { EcfrASTBuilder } from "./ecfr-builder.js";
 import { buildEcfrFrontmatter } from "./ecfr-frontmatter.js";
@@ -41,8 +42,8 @@ export interface EcfrConvertOptions {
   input: string;
   /** Output root directory */
   output: string;
-  /** Output granularity: section (default), part, or title */
-  granularity: "section" | "part" | "title";
+  /** Output granularity: section (default), part, chapter, or title */
+  granularity: "section" | "part" | "chapter" | "title";
   /** Link style for cross-references */
   linkStyle: "relative" | "canonical" | "plaintext";
   /** Include source credits in output */
@@ -107,9 +108,15 @@ export async function convertEcfrTitle(options: EcfrConvertOptions): Promise<Ecf
   const { input, output, granularity, dryRun } = options;
   let peakMemory = process.memoryUsage().rss;
 
-  // Map granularity to emit level
+  // Map granularity to emit level.
+  // Chapter and section granularity both emit at section level — chapter mode
+  // groups sections by chapter ancestor in the write phase.
   const emitAt: LevelType =
-    granularity === "title" ? "title" : granularity === "part" ? "part" : "section";
+    granularity === "title"
+      ? "title"
+      : granularity === "part"
+        ? "part"
+        : "section";
 
   // Collect phase
   const collected: CollectedSection[] = [];
@@ -157,7 +164,7 @@ export async function convertEcfrTitle(options: EcfrConvertOptions): Promise<Ecf
   };
 
   if (dryRun) {
-    return buildDryRunResult(collected, titleNumber, titleName, peakMemory);
+    return buildDryRunResult(collected, granularity, titleNumber, titleName, peakMemory);
   }
 
   // Two-pass link registration for section granularity
@@ -251,29 +258,78 @@ export async function convertEcfrTitle(options: EcfrConvertOptions): Promise<Ecf
     };
   }
 
-  // Part or title granularity — simpler write
+  // Chapter, part, or title granularity
   const files: string[] = [];
   let totalLength = 0;
 
-  for (const { node, context } of collected) {
-    const frontmatter = buildEcfrFrontmatter(node, context);
-    const markdown = renderDocument(node, frontmatter, renderOpts);
+  if (granularity === "chapter") {
+    // Chapter granularity: group emitted sections by chapter ancestor,
+    // then render each chapter as a composite document with all sections inlined.
+    const chapterMap = new Map<
+      string,
+      { sections: CollectedSection[]; chapterAncestor: AncestorInfo; firstContext: EmitContext }
+    >();
 
-    const filePath = buildEcfrOutputPath(node, context, output);
-    await mkdir(dirname(filePath), { recursive: true });
-    await writeFile(filePath, markdown, "utf-8");
-    files.push(filePath);
-    totalLength += markdown.length;
+    for (const item of collected) {
+      const chapterAnc = item.context.ancestors.find((a) => a.levelType === "chapter");
+      const chapterKey = chapterAnc?.numValue ?? "__root__";
+      const existing = chapterMap.get(chapterKey);
+      if (existing) {
+        existing.sections.push(item);
+      } else {
+        chapterMap.set(chapterKey, {
+          sections: [item],
+          chapterAncestor: chapterAnc ?? { levelType: "chapter", numValue: chapterKey },
+          firstContext: item.context,
+        });
+      }
+    }
+
+    for (const [chapterKey, { sections, chapterAncestor, firstContext }] of chapterMap) {
+      // Build a synthetic chapter LevelNode containing all sections
+      const chapterNode: LevelNode = {
+        type: "level",
+        levelType: "chapter",
+        num: chapterAncestor.numValue,
+        numValue: chapterAncestor.numValue,
+        heading: chapterAncestor.heading,
+        identifier: chapterAncestor.identifier,
+        children: sections.map((s) => s.node),
+      };
+
+      const frontmatter = buildEcfrFrontmatter(chapterNode, firstContext);
+      const markdown = renderDocument(chapterNode, frontmatter, renderOpts);
+
+      const filePath = buildEcfrOutputPath(chapterNode, firstContext, output);
+      await mkdir(dirname(filePath), { recursive: true });
+      await writeFile(filePath, markdown, "utf-8");
+      files.push(filePath);
+      totalLength += markdown.length;
+    }
+  } else {
+    // Part or title granularity — filter to target level
+    const targetLevel = emitAt;
+    const filtered = collected.filter((c) => c.node.levelType === targetLevel);
+
+    for (const { node, context } of filtered) {
+      const frontmatter = buildEcfrFrontmatter(node, context);
+      const markdown = renderDocument(node, frontmatter, renderOpts);
+
+      const filePath = buildEcfrOutputPath(node, context, output);
+      await mkdir(dirname(filePath), { recursive: true });
+      await writeFile(filePath, markdown, "utf-8");
+      files.push(filePath);
+      totalLength += markdown.length;
+    }
   }
 
   return {
-    sectionsWritten: collected.length,
+    sectionsWritten: files.length,
     files,
     titleNumber,
     titleName,
     dryRun: false,
-    partCount:
-      granularity === "title" ? 0 : new Set(collected.map((c) => c.node.numValue ?? "0")).size,
+    partCount: 0,
     totalTokenEstimate: Math.ceil(totalLength / 4),
     peakMemoryBytes: peakMemory,
   };
@@ -332,26 +388,40 @@ function flattenText(nodes: ASTNode[]): string {
 
 function buildDryRunResult(
   collected: CollectedSection[],
+  granularity: string,
   titleNumber: string,
   titleName: string,
   peakMemory: number,
 ): EcfrConvertResult {
+  let count = 0;
   let totalEstimate = 0;
-  for (const { node } of collected) {
-    totalEstimate += estimateTokens(node);
+
+  if (granularity === "chapter") {
+    // Count unique chapter ancestors from section-level emissions
+    const chapterKeys = new Set<string>();
+    for (const { node, context } of collected) {
+      const chapterAnc = context.ancestors.find((a) => a.levelType === "chapter");
+      const key = chapterAnc?.numValue ?? "__root__";
+      chapterKeys.add(key);
+      totalEstimate += estimateTokens(node);
+    }
+    count = chapterKeys.size;
+  } else {
+    const targetLevel = granularity === "title" ? "title" : granularity === "part" ? "part" : "section";
+    const filtered = collected.filter((c) => c.node.levelType === targetLevel);
+    count = filtered.length;
+    for (const { node } of filtered) {
+      totalEstimate += estimateTokens(node);
+    }
   }
 
   return {
-    sectionsWritten: collected.length,
+    sectionsWritten: count,
     files: [],
     titleNumber,
     titleName,
     dryRun: true,
-    partCount: new Set(
-      collected.map(
-        (c) => c.context.ancestors.find((a) => a.levelType === "part")?.numValue ?? "0",
-      ),
-    ).size,
+    partCount: 0,
     totalTokenEstimate: totalEstimate,
     peakMemoryBytes: peakMemory,
   };

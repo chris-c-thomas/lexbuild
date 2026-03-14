@@ -356,13 +356,14 @@ Where `{N}` is the title number (1-50, not zero-padded). Example: `ECFR-title17.
 
 **Section granularity** (default): `output/ecfr/title-{NN}/chapter-{X}/part-{N}/section-{N.N}.md`
 **Part granularity**: `output/ecfr/title-{NN}/chapter-{X}/part-{N}.md`
+**Chapter granularity**: `output/ecfr/title-{NN}/chapter-{X}/chapter-{X}.md`
 **Title granularity**: `output/ecfr/title-{NN}.md`
 
 - Title dirs: `title-01` through `title-50` (zero-padded to 2 digits)
 - Chapter dirs: `chapter-{X}` where X is a Roman numeral (e.g., `chapter-I`, `chapter-IV`)
 - Part dirs: `part-{N}` where N is the part number (e.g., `part-240`)
 - Section files: `section-{N.N}.md` where N.N is the part-prefixed section number (e.g., `section-240.10b-5.md`)
-- Section and part granularities generate `_meta.json` per part and title, plus `README.md` per title
+- Section granularity generates `_meta.json` per part and title, plus `README.md` per title
 
 ## Key Design Decisions
 

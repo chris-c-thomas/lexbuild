@@ -136,7 +136,7 @@ lexbuild convert-ecfr --all --dry-run                         # Preview without 
 | `--all` | — | Convert all titles in input directory |
 | `-i, --input-dir <dir>` | `./downloads/ecfr/xml` | Input directory for XML files |
 | `-o, --output <dir>` | `./output` | Output directory |
-| `-g, --granularity <level>` | `section` | `section`, `part`, or `title` |
+| `-g, --granularity <level>` | `section` | `section`, `part`, `chapter`, or `title` |
 | `--link-style <style>` | `plaintext` | `plaintext`, `canonical`, or `relative` |
 | `--no-include-source-credits` | — | Exclude source credits |
 | `--no-include-notes` | — | Exclude all notes |
@@ -162,6 +162,7 @@ lexbuild convert-ecfr --all --dry-run                         # Preview without 
 |---|---|
 | `section` (default) | `output/ecfr/title-17/chapter-IV/part-240/section-240.10b-5.md` |
 | `part` | `output/ecfr/title-17/chapter-IV/part-240.md` |
+| `chapter` | `output/ecfr/title-17/chapter-IV/chapter-IV.md` |
 | `title` | `output/ecfr/title-17.md` |
 
 Each file includes YAML frontmatter with source-specific metadata (`source`, `legal_status`, identifier, hierarchy context) followed by the legal text. Section and chapter/part granularities also generate `_meta.json` sidecar files and `README.md` summaries per title.
