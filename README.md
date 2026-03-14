@@ -6,7 +6,7 @@
 [![Node](https://img.shields.io/badge/node-%3E%3D22-brightgreen?style=for-the-badge)](https://nodejs.org/)
 [![license](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 
-LexBuild is an open-source toolchain for U.S. legal texts. It transforms official source data into structured Markdown with rich metadata, optimized for LLMs, RAG pipelines, and semantic search.
+LexBuild is an open-source toolchain for U.S. legal texts. Its extensible architecture transforms official source data into structured Markdown with rich metadata, optimized for LLMs, RAG pipelines, and semantic search.
 
 ## Table of Contents
 
