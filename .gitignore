@@ -125,17 +125,21 @@ skills-lock.json
 .playwright-mcp/
 
 # -----------------------------------------------------------------------------
-# LexBuild Operational Outputs
+# LexBuild CLI
 # -----------------------------------------------------------------------------
 
 # Downloaded Source Files (Large, Regenerable)
 downloads/
 
 # Converted Markdown Output (Regenerable from Source XML)
+# output/ is the default for sections
 output/
 output-chapter/
+output-chapters/
 output-part/
+output-parts/
 output-title/
+output-titles/
 
 # Test Output
 test-output/
