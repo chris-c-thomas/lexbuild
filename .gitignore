@@ -132,14 +132,10 @@ skills-lock.json
 downloads/
 
 # Converted Markdown Output (Regenerable from Source XML)
-# output/ is the default for sections
 output/
 output-chapter/
-output-chapters/
 output-part/
-output-parts/
 output-title/
-output-titles/
 
 # Test Output
 test-output/
