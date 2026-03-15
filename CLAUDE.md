@@ -109,6 +109,7 @@ npx tsx scripts/generate-nav.ts                    # Build sidebar JSON from _me
 npx tsx scripts/generate-highlights.ts             # Pre-render Shiki HTML for all .md files
 npx tsx scripts/generate-highlights.ts --limit 50  # Test on subset
 npx tsx scripts/generate-sitemap.ts                # Build sitemap.xml
+npx tsx scripts/index-search.ts                    # Index into Meilisearch (requires running instance)
 ```
 
 ### Astro App Notes

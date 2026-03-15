@@ -959,6 +959,9 @@ npx tsx scripts/generate-highlights.ts --limit 50 # Test subset
 
 # 4. Generate sitemap (reads _meta.json, writes public/sitemap.xml)
 npx tsx scripts/generate-sitemap.ts
+
+# 5. Index content into Meilisearch (requires running Meilisearch instance)
+npx tsx scripts/index-search.ts                    # Full index (~281k docs, ~13 min)
 ```
 
 ### Script Details
@@ -968,25 +971,29 @@ npx tsx scripts/generate-sitemap.ts
 | `generate-nav.ts` | `_meta.json` sidecars + filesystem chapter directories | `public/nav/{source}/titles.json` + per-title JSON | No (fast, <2s) |
 | `generate-highlights.ts` | `.md` files (frontmatter stripped, body highlighted) | `.highlighted.html` alongside each `.md` | Yes (mtime-based skip) |
 | `generate-sitemap.ts` | `_meta.json` sidecars + filesystem directories | `public/sitemap.xml` | No (fast, <5s) |
+| `index-search.ts` | `_meta.json` + `.md` files (truncated body) | Meilisearch `lexbuild` index | No (deletes + rebuilds index) |
 
 ### Notes
 
 - **`generate-nav.ts`** includes reserved title placeholders (USC Title 53, eCFR Title 35) so the sidebar shows the full numbering sequence.
 - **`generate-highlights.ts`** uses Shiki dual themes (`github-light-default` + `github-dark-default`). To change themes, update both this script and `src/lib/shiki.ts`, then re-run. Delete existing `.highlighted.html` files first since mtime skip won't detect a theme change.
 - **`generate-sitemap.ts`** produces ~292k URLs. Depth-based priority: index/title pages (0.8), chapter/part pages (0.6), section pages (0.5).
+- **`index-search.ts`** uses streaming batches of 500 documents to avoid OOM (281k documents with 5KB body each). Document IDs are sanitized (dots/colons replaced with underscores) for Meilisearch compatibility. Requires `MEILI_URL` and optionally `MEILI_MASTER_KEY` env vars. For local dev: `meilisearch --env development --db-path /tmp/meilisearch-dev`.
 - All outputs (`public/nav/`, `public/sitemap.xml`, `*.highlighted.html`) are gitignored.
 
 ---
 
-## Search — Phase 3 (Deferred)
+## Search (Meilisearch)
 
-Search is gated behind the `ENABLE_SEARCH` environment variable. When disabled (default), the SearchDialog component is not rendered and no Meilisearch connection is attempted.
+Search is gated behind the `ENABLE_SEARCH` environment variable. When disabled (default), the SearchDialog component is not rendered and no Meilisearch connection is attempted. Set `ENABLE_SEARCH=true` in `.env.local` for local development.
+
+For local dev, start Meilisearch with: `meilisearch --env development --db-path /tmp/meilisearch-dev`
 
 ### Meilisearch Index Schema
 
 ```typescript
 interface SearchDocument {
-  id: string;                           // "usc:title-01:section-1" or "ecfr:title-17:section-240.10b-5"
+  id: string;                           // "usc-title-01-section-1" or "ecfr-title-17-section-240_10b-5" (sanitized)
   source: "usc" | "ecfr";              // Facet
   title_number: number;                 // Facet + filter
   title_name: string;
@@ -1157,17 +1164,18 @@ export default defineConfig({
 
 **Acceptance**: Sidebar navigates full hierarchy for both sources. Pre-rendered highlights load correctly. Sitemap covers all URLs. Title-level pages render without timeout.
 
-### Phase 3: Search — Meilisearch (2-3 days)
+### Phase 3: Search — Meilisearch ✅
 
 **Goal**: Full-text faceted search across both corpora.
 
-1. Write `scripts/index-search.ts` — reads `_meta.json` + truncated Markdown, upserts to Meilisearch
-2. Create `SearchDialog.tsx` (React island, `client:idle`) — Cmd+K trigger, Meilisearch JS client, facet filters (source, title, status)
-3. Configure Meilisearch index: searchable/filterable/sortable attributes, ranking rules
-4. Add Caddy proxy rule for `/api/search` → Meilisearch
-5. Gate behind `ENABLE_SEARCH` env var — skip rendering SearchDialog when false
+1. Write `scripts/index-search.ts` — streaming batch indexer (500 docs/batch) reads `_meta.json` + truncated Markdown body (5000 chars), upserts to Meilisearch. Sanitizes document IDs (Meilisearch rejects dots/colons). 281k documents indexed in ~13 minutes.
+2. Create `SearchDialog.tsx` (React island, `client:idle`) — Cmd+K / Ctrl+K trigger, debounced queries (150ms), source filter tabs with facet counts, result list with identifier + heading + hierarchy breadcrumbs, result count + timing footer.
+3. Create `src/lib/search.ts` — Meilisearch client wrapper with typed `SearchDocument` and `SearchResult` interfaces, filter builder for source/title/status facets, highlight support.
+4. Configure Meilisearch index: searchable (`identifier`, `heading`, `body`), filterable (`source`, `title_number`, `granularity`, `status`), sortable (`title_number`, `identifier`), displayed (excludes `body` to reduce payload).
+5. Gate behind `ENABLE_SEARCH` env var — `BaseLayout.astro` conditionally renders `SearchDialog` only when `true`. Meilisearch URL and search key passed as props from server-side env vars.
+6. Caddy proxy rule for `/api/search` → Meilisearch prepared in Phase 0 Caddyfile (commented, uncomment for production).
 
-**Acceptance**: Cmd+K opens search, queries return results from both sources, facets filter correctly, result links navigate to correct pages.
+**Acceptance**: Cmd+K opens search, queries return results from both sources in <5ms, facet tabs filter correctly with counts, result links navigate to correct pages.
 
 ### Phase 4: Production Deploy (2-3 days)
 
@@ -1233,6 +1241,7 @@ export default defineConfig({
     "rehype-sanitize": "^6.0.0",
     "shiki": "^4.0.2",
     "lucide-react": "^0.500.0",
+    "meilisearch": "^0.55.0",
     "@tanstack/react-virtual": "^3.13.22",
     "tailwindcss": "^4.1.8",
     "class-variance-authority": "^0.7.1",
