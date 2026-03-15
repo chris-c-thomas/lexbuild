@@ -59,20 +59,22 @@ function isValidSegment(segment: string): boolean {
 }
 
 function buildContentPath(sourceId: SourceId, granularity: Granularity, slug: string[]): string {
+  // Path format: {source}/{granularity}s/{path}.md (source-first, plural granularity)
+  const granularityDir = `${granularity}s`; // section → sections, title → titles, etc.
   switch (granularity) {
     case "title":
-      // title/usc/title-01.md
-      return `title/${sourceId}/${slug[0]}.md`;
+      // usc/titles/title-01.md
+      return `${sourceId}/${granularityDir}/${slug[0]}.md`;
     case "chapter":
-      // chapter/usc/title-01/chapter-01/chapter-01.md (file inside its own dir)
-      return `chapter/${sourceId}/${slug.join("/")}/${slug[slug.length - 1]}.md`;
+      // usc/chapters/title-01/chapter-01/chapter-01.md (file inside its own dir)
+      return `${sourceId}/${granularityDir}/${slug.join("/")}/${slug[slug.length - 1]}.md`;
     case "part":
-      // part/ecfr/title-17/chapter-IV/part-240.md (file directly in parent dir)
-      return `part/${sourceId}/${slug.join("/")}.md`;
+      // ecfr/parts/title-17/chapter-IV/part-240.md (file directly in parent dir)
+      return `${sourceId}/${granularityDir}/${slug.join("/")}.md`;
     case "section":
-      // section/usc/title-01/chapter-01/section-1.md (file directly in parent dir)
-      // section/ecfr/title-17/chapter-IV/part-240/section-240.10b-5.md (same pattern)
-      return `section/${sourceId}/${slug.join("/")}.md`;
+      // usc/sections/title-01/chapter-01/section-1.md (file directly in parent dir)
+      // ecfr/sections/title-17/chapter-IV/part-240/section-240.10b-5.md (same pattern)
+      return `${sourceId}/${granularityDir}/${slug.join("/")}.md`;
   }
 }
 

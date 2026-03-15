@@ -203,17 +203,15 @@ apps/astro/
 │   ├── index-search.ts                 # Index content into Meilisearch (Phase 3)
 │   └── link-content.sh                # Symlink CLI output into content/ for local dev
 ├── content/                            # Git-ignored — symlink or copy of CLI output
-│   ├── section/
-│   │   ├── usc/                        # section-level USC output
-│   │   └── ecfr/                       # section-level eCFR output
-│   ├── chapter/
-│   │   ├── usc/
-│   │   └── ecfr/
-│   ├── part/
-│   │   └── ecfr/                       # eCFR only (USC has no part granularity)
-│   └── title/
-│       ├── usc/
-│       └── ecfr/
+│   ├── usc/                            # U.S. Code content (source-first)
+│   │   ├── sections/                   # section-level output (symlink to output/usc/)
+│   │   ├── chapters/                   # chapter-level output
+│   │   └── titles/                     # title-level output
+│   └── ecfr/                           # eCFR content
+│       ├── sections/                   # section-level output (symlink to output/ecfr/)
+│       ├── chapters/                   # chapter-level output
+│       ├── parts/                      # part-level output (eCFR only)
+│       └── titles/                     # title-level output
 └── public/
     ├── nav/                            # Git-ignored — pre-built sidebar JSON per source
     │   ├── usc/
@@ -274,22 +272,22 @@ if [ ! -d "$OUTPUT_DIR/usc" ] && [ ! -d "$OUTPUT_DIR/ecfr" ]; then
   exit 1
 fi
 
-# Create content directory structure
-mkdir -p "$CONTENT_DIR"/{section,chapter,title}/{usc,ecfr}
-mkdir -p "$CONTENT_DIR"/part/ecfr
+# Create content directory structure (source-first, then granularity)
+mkdir -p "$CONTENT_DIR"/usc/{sections,chapters,titles}
+mkdir -p "$CONTENT_DIR"/ecfr/{sections,chapters,parts,titles}
 
 # Symlink section-level output (the primary granularity for browsing)
-# USC: output/usc/title-NN/chapter-NN/section-N.md → content/section/usc/title-NN/...
+# output/usc/ → content/usc/sections/
 if [ -d "$OUTPUT_DIR/usc" ]; then
-  rm -f "$CONTENT_DIR/section/usc"
-  ln -s "$OUTPUT_DIR/usc" "$CONTENT_DIR/section/usc"
+  rm -rf "$CONTENT_DIR/usc/sections"
+  ln -s "$OUTPUT_DIR/usc" "$CONTENT_DIR/usc/sections"
   echo "Linked USC section output"
 fi
 
-# eCFR: output/ecfr/title-NN/chapter-X/part-N/section-N.N.md → content/section/ecfr/title-NN/...
+# output/ecfr/ → content/ecfr/sections/
 if [ -d "$OUTPUT_DIR/ecfr" ]; then
-  rm -f "$CONTENT_DIR/section/ecfr"
-  ln -s "$OUTPUT_DIR/ecfr" "$CONTENT_DIR/section/ecfr"
+  rm -rf "$CONTENT_DIR/ecfr/sections"
+  ln -s "$OUTPUT_DIR/ecfr" "$CONTENT_DIR/ecfr/sections"
   echo "Linked eCFR section output"
 fi
 
@@ -301,22 +299,24 @@ echo "Content linked. Run 'pnpm dev' to start the dev server."
 
 ### Content File Resolution
 
-The content reader resolves paths relative to `CONTENT_DIR`:
+The content reader resolves paths relative to `CONTENT_DIR`. The directory structure is **source-first, then granularity** (plural):
 
 ```
 CONTENT_DIR/
-├── section/usc/title-01/chapter-01/section-1.md
-├── section/usc/title-01/chapter-01/section-1.highlighted.html  (optional)
-├── section/ecfr/title-17/chapter-IV/part-240/section-240.10b-5.md
-├── section/ecfr/title-17/chapter-IV/part-240/section-240.10b-5.highlighted.html  (optional)
-├── chapter/usc/title-01/chapter-01/chapter-01.md
-├── chapter/ecfr/title-17/chapter-IV/chapter-IV.md
-├── part/ecfr/title-17/chapter-IV/part-240.md
-├── title/usc/title-01.md
-└── title/ecfr/title-17.md
+├── usc/
+│   ├── sections/title-01/chapter-01/section-1.md
+│   ├── sections/title-01/chapter-01/section-1.highlighted.html  (optional)
+│   ├── chapters/title-01/chapter-01/chapter-01.md
+│   └── titles/title-01.md
+└── ecfr/
+    ├── sections/title-17/chapter-IV/part-240/section-240.10b-5.md
+    ├── sections/title-17/chapter-IV/part-240/section-240.10b-5.highlighted.html  (optional)
+    ├── chapters/title-17/chapter-IV/chapter-IV.md
+    ├── parts/title-17/chapter-IV/part-240.md
+    └── titles/title-17.md
 ```
 
-**Important**: The default CLI output at section granularity writes to `output/usc/` and `output/ecfr/` — these ARE the section-level files. The symlink approach above maps `output/usc/` directly to `content/section/usc/`. For chapter, part, and title granularities, the CLI must be run separately with the appropriate `-g` flag and the output placed accordingly.
+**Important**: The default CLI output at section granularity writes to `output/usc/` and `output/ecfr/` — these ARE the section-level files. The symlink approach maps `output/usc/` directly to `content/usc/sections/`. For chapter, part, and title granularities, the CLI must be run separately with the appropriate `-g` flag and the output placed accordingly.
 
 For local dev, having only section-level output is sufficient to browse individual sections. Chapter, part, and title views will 404 gracefully if those granularities haven't been generated.
 
@@ -332,18 +332,18 @@ Each source gets its own route tree under `pages/{source}/`. A catch-all `[...sl
 
 | URL Pattern | Slug | Granularity | Content Path |
 |---|---|---|---|
-| `/usc/title-01` | `["title-01"]` | title | `title/usc/title-01.md` |
-| `/usc/title-01/chapter-01` | `["title-01", "chapter-01"]` | chapter | `chapter/usc/title-01/chapter-01/chapter-01.md` |
-| `/usc/title-01/chapter-01/section-1` | `["title-01", "chapter-01", "section-1"]` | section | `section/usc/title-01/chapter-01/section-1.md` |
+| `/usc/title-01` | `["title-01"]` | title | `usc/titles/title-01.md` |
+| `/usc/title-01/chapter-01` | `["title-01", "chapter-01"]` | chapter | `usc/chapters/title-01/chapter-01/chapter-01.md` |
+| `/usc/title-01/chapter-01/section-1` | `["title-01", "chapter-01", "section-1"]` | section | `usc/sections/title-01/chapter-01/section-1.md` |
 
 #### eCFR Routes (`pages/ecfr/[...slug].astro`)
 
 | URL Pattern | Slug | Granularity | Content Path |
 |---|---|---|---|
-| `/ecfr/title-17` | `["title-17"]` | title | `title/ecfr/title-17.md` |
-| `/ecfr/title-17/chapter-IV` | `["title-17", "chapter-IV"]` | chapter | `chapter/ecfr/title-17/chapter-IV/chapter-IV.md` |
-| `/ecfr/title-17/chapter-IV/part-240` | `["title-17", "chapter-IV", "part-240"]` | part | `part/ecfr/title-17/chapter-IV/part-240.md` |
-| `/ecfr/title-17/chapter-IV/part-240/section-240.10b-5` | `["title-17", "chapter-IV", "part-240", "section-240.10b-5"]` | section | `section/ecfr/title-17/chapter-IV/part-240/section-240.10b-5.md` |
+| `/ecfr/title-17` | `["title-17"]` | title | `ecfr/titles/title-17.md` |
+| `/ecfr/title-17/chapter-IV` | `["title-17", "chapter-IV"]` | chapter | `ecfr/chapters/title-17/chapter-IV/chapter-IV.md` |
+| `/ecfr/title-17/chapter-IV/part-240` | `["title-17", "chapter-IV", "part-240"]` | part | `ecfr/parts/title-17/chapter-IV/part-240.md` |
+| `/ecfr/title-17/chapter-IV/part-240/section-240.10b-5` | `["title-17", "chapter-IV", "part-240", "section-240.10b-5"]` | section | `ecfr/sections/title-17/chapter-IV/part-240/section-240.10b-5.md` |
 
 ### Slug Resolution Logic (`src/lib/routes.ts`)
 
@@ -745,41 +745,33 @@ function buildContentPath(
   granularity: Granularity,
   slug: string[],
 ): string {
-  // granularity/ + sourceId/ + slug path + filename
+  // Path format: {source}/{granularity}s/{path}.md (source-first, plural granularity)
+  const granularityDir = `${granularity}s`;
   switch (granularity) {
     case "title":
-      return `title/${sourceId}/${slug[0]}.md`;
-    case "chapter": {
-      const last = slug[slug.length - 1];
-      return `chapter/${sourceId}/${slug.join("/")}/${last}.md`;
-    }
-    case "part": {
-      const last = slug[slug.length - 1];
-      return `part/${sourceId}/${slug.join("/")}/${last}.md`;
-    }
+      return `${sourceId}/${granularityDir}/${slug[0]}.md`;
+    case "chapter":
+      return `${sourceId}/${granularityDir}/${slug.join("/")}/${slug[slug.length - 1]}.md`;
+    case "part":
+      return `${sourceId}/${granularityDir}/${slug.join("/")}.md`;
     case "section":
-      return `section/${sourceId}/${slug.join("/")}/${slug[slug.length - 1]}.md`;
-    // Note: eCFR section path differs — section file sits inside the part directory.
-    // The actual path is: section/ecfr/title-NN/chapter-X/part-N/section-N.N.md
-    // which matches slug.join("/") naturally since the slug includes all segments.
+      return `${sourceId}/${granularityDir}/${slug.join("/")}.md`;
   }
 }
 
 // buildBreadcrumbs and parseSegments implementations follow similar patterns.
 ```
 
-**Important edge case for eCFR section paths**: The CLI writes eCFR sections into part directories as `output/ecfr/title-17/chapter-IV/part-240/section-240.10b-5.md`. When symlinked to `content/section/ecfr/`, the full path is `content/section/ecfr/title-17/chapter-IV/part-240/section-240.10b-5.md`. The slug `["title-17", "chapter-IV", "part-240", "section-240.10b-5"]` joined is `title-17/chapter-IV/part-240/section-240.10b-5`, which resolves correctly to `section/ecfr/title-17/chapter-IV/part-240/section-240.10b-5.md`.
+**Important edge case for eCFR section paths**: The CLI writes eCFR sections into part directories as `output/ecfr/title-17/chapter-IV/part-240/section-240.10b-5.md`. When symlinked to `content/ecfr/sections/`, the full path is `content/ecfr/sections/title-17/chapter-IV/part-240/section-240.10b-5.md`. The slug `["title-17", "chapter-IV", "part-240", "section-240.10b-5"]` joined is `title-17/chapter-IV/part-240/section-240.10b-5`, which resolves correctly to `ecfr/sections/title-17/chapter-IV/part-240/section-240.10b-5.md`.
 
-However, the section `.md` file itself lives directly in the part directory (not in a `section-N.N/` subdirectory). So `buildContentPath` for eCFR sections should be:
+The section `.md` file lives directly in the part directory (not in a `section-N.N/` subdirectory). So `buildContentPath` for eCFR sections is:
 ```
-section/ecfr/{slug[0]}/{slug[1]}/{slug[2]}/{slug[3]}.md
+ecfr/sections/{slug[0]}/{slug[1]}/{slug[2]}/{slug[3]}.md
 ```
 NOT:
 ```
-section/ecfr/{slug[0]}/{slug[1]}/{slug[2]}/{slug[3]}/{slug[3]}.md  ← WRONG
+ecfr/sections/{slug[0]}/{slug[1]}/{slug[2]}/{slug[3]}/{slug[3]}.md  ← WRONG
 ```
-
-This differs from USC sections where the file is `section-N.md` inside a chapter directory. Test both source paths during implementation.
 
 ---
 

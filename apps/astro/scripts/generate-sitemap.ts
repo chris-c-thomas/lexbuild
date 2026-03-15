@@ -63,7 +63,7 @@ function xmlEscape(str: string): string {
 
 async function collectUscUrls(contentDir: string): Promise<string[]> {
   const urls: string[] = [];
-  const uscDir = join(contentDir, "section", "usc");
+  const uscDir = join(contentDir, "usc", "sections");
   const titleDirs = (await listDirs(uscDir)).filter((d) => d.startsWith("title-"));
 
   // Index page
@@ -93,7 +93,7 @@ async function collectUscUrls(contentDir: string): Promise<string[]> {
 
 async function collectEcfrUrls(contentDir: string): Promise<string[]> {
   const urls: string[] = [];
-  const ecfrDir = join(contentDir, "section", "ecfr");
+  const ecfrDir = join(contentDir, "ecfr", "sections");
   const titleDirs = (await listDirs(ecfrDir)).filter((d) => d.startsWith("title-"));
 
   // Index page

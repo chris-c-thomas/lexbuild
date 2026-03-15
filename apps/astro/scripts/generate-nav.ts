@@ -183,7 +183,7 @@ const ECFR_RESERVED_TITLES: TitleSummary[] = [
 // ---------------------------------------------------------------------------
 
 async function generateUscNav(contentDir: string, outDir: string): Promise<void> {
-  const uscDir = join(contentDir, "section", "usc");
+  const uscDir = join(contentDir, "usc", "sections");
   const titleDirs = (await listDirs(uscDir)).filter((d) => d.startsWith("title-"));
 
   const titles: TitleSummary[] = [];
@@ -260,7 +260,7 @@ async function generateUscNav(contentDir: string, outDir: string): Promise<void>
 // ---------------------------------------------------------------------------
 
 async function generateEcfrNav(contentDir: string, outDir: string): Promise<void> {
-  const ecfrDir = join(contentDir, "section", "ecfr");
+  const ecfrDir = join(contentDir, "ecfr", "sections");
   const titleDirs = (await listDirs(ecfrDir)).filter((d) => d.startsWith("title-"));
 
   const titles: TitleSummary[] = [];
