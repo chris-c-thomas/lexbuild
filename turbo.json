@@ -9,13 +9,20 @@
       "dependsOn": ["^build"]
     },
     "test": {
-      "dependsOn": ["build"]
+      "dependsOn": ["^build"]
     },
-    "lint": {},
-    "lint:fix": {},
+    "transit": {
+      "dependsOn": ["^transit"]
+    },
+    "lint": {
+      "dependsOn": ["transit"]
+    },
+    "lint:fix": {
+      "dependsOn": ["transit"]
+    },
     "build:web": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**"],
+      "outputs": [".next/**", "!.next/cache/**"],
       "cache": false
     },
     "dev": {
