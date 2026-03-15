@@ -1,6 +1,7 @@
 ---
 import "@/styles/global.css";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import { Sidebar } from "@/components/sidebar/Sidebar";
 import type { SourceId } from "@/lib/types";
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
 const { title, description = "U.S. legal code as structured Markdown — LexBuild", source } = Astro.props;
 const siteUrl = import.meta.env.SITE_URL ?? "https://lexbuild.dev";
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
+const currentPath = Astro.url.pathname;
 ---
 
 <!doctype html>
@@ -38,8 +40,8 @@ const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
     </script>
   </head>
   <body class="min-h-screen bg-background text-foreground antialiased">
-    <header class="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header class="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div class="mx-auto flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8">
         <div class="flex items-center gap-6">
           <a href="/" class="text-lg font-bold text-foreground">
             LexBuild
@@ -64,9 +66,18 @@ const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
         </div>
       </div>
     </header>
-    <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <slot />
-    </main>
+    {source ? (
+      <div class="flex">
+        <Sidebar client:load sourceId={source} currentPath={currentPath} />
+        <main class="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
+          <slot />
+        </main>
+      </div>
+    ) : (
+      <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <slot />
+      </main>
+    )}
     <footer class="border-t border-border py-6 text-center text-sm text-muted-foreground">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         LexBuild &mdash; U.S. legal text as structured Markdown for AI/RAG
