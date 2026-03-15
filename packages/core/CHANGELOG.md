@@ -1,5 +1,11 @@
 # @lexbuild/core
 
+## 1.9.3
+
+### Patch Changes
+
+- 93b4e78: refactor: remove Next.js web application, add Astro SSR app for browsing converted legal content
+
 ## 1.9.2
 
 ### Patch Changes

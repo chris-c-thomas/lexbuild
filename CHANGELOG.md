@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.9.3]
+
+### Added
+
+- Scaffold Astro 6 SSR app (`apps/astro/`) for browsing converted U.S. Code and eCFR content as Markdown, with island architecture, dark mode, and filesystem-based content serving
+
+### Removed
+
+- Remove `apps/web/` Next.js application from monorepo and update all references, dependencies, and documentation
+
+### Changed
+
+- Rename `apps/astro` package from `"astro"` to `"@lexbuild/web"` to avoid name collision with the Astro framework dependency
+- Switch changeset changelog plugin from `@changesets/changelog-github` to default (no GitHub token required for local versioning)
+
+### Fixed
+
+- Dependabot issues: undici, eslint, pnpm-lock.yml updates
+
 ## [1.9.2]
 
 ### Changed
