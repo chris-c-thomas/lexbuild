@@ -1,38 +1,56 @@
 #!/bin/bash
 # Link CLI output into the app's content directory for local development.
-# Run from apps/astro/ after running lexbuild convert-usc and convert-ecfr.
+# Run from apps/astro/ after running lexbuild convert commands at all granularities.
 set -euo pipefail
 
 REPO_ROOT="$(cd ../.. && pwd)"
-OUTPUT_DIR="${REPO_ROOT}/output"
 CONTENT_DIR="./content"
-
-# Ensure output exists
-if [ ! -d "$OUTPUT_DIR/usc" ] && [ ! -d "$OUTPUT_DIR/ecfr" ]; then
-  echo "Error: No output found at $OUTPUT_DIR"
-  echo "Run 'lexbuild convert-usc --all' and 'lexbuild convert-ecfr --all' first."
-  exit 1
-fi
 
 # Create content directory structure (source-first, then granularity)
 mkdir -p "$CONTENT_DIR"/usc/{sections,chapters,titles}
 mkdir -p "$CONTENT_DIR"/ecfr/{sections,chapters,parts,titles}
 
-# Symlink section-level output (the primary granularity for browsing)
-# CLI outputs to output/usc/ and output/ecfr/ at section granularity by default.
-if [ -d "$OUTPUT_DIR/usc" ]; then
+# Section-level output (default granularity, -o ./output)
+if [ -d "$REPO_ROOT/output/usc" ]; then
   rm -rf "$CONTENT_DIR/usc/sections"
-  ln -s "$OUTPUT_DIR/usc" "$CONTENT_DIR/usc/sections"
-  echo "Linked USC section output"
+  ln -s "$REPO_ROOT/output/usc" "$CONTENT_DIR/usc/sections"
+  echo "Linked USC sections"
 fi
-
-if [ -d "$OUTPUT_DIR/ecfr" ]; then
+if [ -d "$REPO_ROOT/output/ecfr" ]; then
   rm -rf "$CONTENT_DIR/ecfr/sections"
-  ln -s "$OUTPUT_DIR/ecfr" "$CONTENT_DIR/ecfr/sections"
-  echo "Linked eCFR section output"
+  ln -s "$REPO_ROOT/output/ecfr" "$CONTENT_DIR/ecfr/sections"
+  echo "Linked eCFR sections"
 fi
 
-# Note: chapter-level and title-level output requires running the CLI with -g chapter / -g title.
-# Those are optional for local dev — the app gracefully handles missing granularity levels.
+# Chapter-level output (-g chapter -o ./output-chapter)
+if [ -d "$REPO_ROOT/output-chapter/usc" ]; then
+  rm -rf "$CONTENT_DIR/usc/chapters"
+  ln -s "$REPO_ROOT/output-chapter/usc" "$CONTENT_DIR/usc/chapters"
+  echo "Linked USC chapters"
+fi
+if [ -d "$REPO_ROOT/output-chapter/ecfr" ]; then
+  rm -rf "$CONTENT_DIR/ecfr/chapters"
+  ln -s "$REPO_ROOT/output-chapter/ecfr" "$CONTENT_DIR/ecfr/chapters"
+  echo "Linked eCFR chapters"
+fi
+
+# Part-level output (-g part -o ./output-part, eCFR only)
+if [ -d "$REPO_ROOT/output-part/ecfr" ]; then
+  rm -rf "$CONTENT_DIR/ecfr/parts"
+  ln -s "$REPO_ROOT/output-part/ecfr" "$CONTENT_DIR/ecfr/parts"
+  echo "Linked eCFR parts"
+fi
+
+# Title-level output (-g title -o ./output-title)
+if [ -d "$REPO_ROOT/output-title/usc" ]; then
+  rm -rf "$CONTENT_DIR/usc/titles"
+  ln -s "$REPO_ROOT/output-title/usc" "$CONTENT_DIR/usc/titles"
+  echo "Linked USC titles"
+fi
+if [ -d "$REPO_ROOT/output-title/ecfr" ]; then
+  rm -rf "$CONTENT_DIR/ecfr/titles"
+  ln -s "$REPO_ROOT/output-title/ecfr" "$CONTENT_DIR/ecfr/titles"
+  echo "Linked eCFR titles"
+fi
 
 echo "Content linked. Run 'pnpm dev' to start the dev server."

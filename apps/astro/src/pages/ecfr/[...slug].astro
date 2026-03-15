@@ -3,63 +3,182 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import ContentViewer from "@/components/content/ContentViewer";
 import FrontmatterPanel from "@/components/content/FrontmatterPanel.astro";
 import BreadcrumbNav from "@/components/content/BreadcrumbNav.astro";
+import HierarchyIndex from "@/components/content/HierarchyIndex.astro";
 import { resolveRoute } from "@/lib/routes";
 import { getFile } from "@/lib/content";
 import { getHighlightedHtml } from "@/lib/highlight";
 import { renderMarkdown } from "@/lib/markdown";
 import { parseFrontmatter } from "@/lib/frontmatter";
-import type { SourceId } from "@/lib/types";
+import { getTitleSummary, getTitleNav, getChapterNav } from "@/lib/nav";
+import type { SourceId, ContentFrontmatter, PartNav } from "@/lib/types";
 import { toTitleCase } from "@/lib/utils";
 
 const SOURCE_ID: SourceId = "ecfr";
 const { slug } = Astro.params;
 
-// Resolve route — slug is a string in Astro, split on "/"
 const route = resolveRoute(SOURCE_ID, slug?.split("/"));
 if (!route) {
   return new Response(null, { status: 404, statusText: "Not found" });
 }
 
-// Read content
-const rawFile = await getFile(route.contentPath);
-if (!rawFile) {
-  return new Response(null, { status: 404, statusText: "Not found" });
-}
-
-// Parse frontmatter + body
-const { frontmatter, body } = parseFrontmatter(rawFile);
-
-// Get highlighted source HTML and render Markdown in parallel
-const [highlightedSource, renderedHtml] = await Promise.all([
-  getHighlightedHtml(route.contentPath, body),
-  renderMarkdown(body),
-]);
-
-// Build page title
-const pageTitle = frontmatter.title ? toTitleCase(frontmatter.title) : `eCFR - ${slug}`;
-
-// Cache headers — CDN caches for 1 year, revalidates in background
+// Cache headers
 Astro.response.headers.set(
   "Cache-Control",
   "public, s-maxage=31536000, stale-while-revalidate=86400",
 );
+
+// ── Prepare data based on granularity ──
+
+let pageTitle = "";
+let indexChildren: Array<{
+  label: string;
+  sublabel?: string;
+  href: string;
+  stats: Array<{ label: string; value: string | number }>;
+}> = [];
+let indexDescription = "";
+let downloadPath: string | undefined;
+let downloadFilename: string | undefined;
+
+let frontmatter: ContentFrontmatter | null = null;
+let body = "";
+let highlightedSource = "";
+let renderedHtml = "";
+
+if (route.granularity === "title") {
+  // ── Title index: show chapter cards ──
+  const titleDir = route.segments["title"]!;
+  const titleSummary = await getTitleSummary(SOURCE_ID, titleDir);
+  const titleNav = await getTitleNav(SOURCE_ID, titleDir);
+
+  if (!titleSummary || !titleNav) {
+    return new Response(null, { status: 404, statusText: "Not found" });
+  }
+
+  pageTitle = `Title ${titleSummary.number} — ${toTitleCase(titleSummary.name)}`;
+  indexDescription = `${titleSummary.chapterCount} chapters, ${titleSummary.partCount ?? 0} parts, ${titleSummary.sectionCount.toLocaleString()} sections`;
+  downloadPath = route.contentPath;
+  downloadFilename = `${titleDir}.md`;
+
+  indexChildren = titleNav.chapters.map((ch) => {
+    const partCount = ch.parts?.length ?? 0;
+    const sectionCount = ch.parts?.reduce((s, p) => s + p.sections.length, 0) ?? 0;
+    return {
+      label: `Ch. ${ch.number}`,
+      sublabel: ch.name,
+      href: `/ecfr/${titleDir}/${ch.directory}`,
+      stats: [
+        { label: "parts", value: partCount },
+        { label: "sections", value: sectionCount },
+      ],
+    };
+  });
+
+} else if (route.granularity === "chapter") {
+  // ── Chapter index: show part cards ──
+  const titleDir = route.segments["title"]!;
+  const chapterDir = route.segments["chapter"]!;
+  const titleSummary = await getTitleSummary(SOURCE_ID, titleDir);
+  const chapter = await getChapterNav(SOURCE_ID, titleDir, chapterDir);
+
+  if (!titleSummary || !chapter) {
+    return new Response(null, { status: 404, statusText: "Not found" });
+  }
+
+  const chapterNumber = chapterDir.replace("chapter-", "");
+  pageTitle = `Title ${titleSummary.number}, Ch. ${chapterNumber} — ${toTitleCase(chapter.name)}`;
+  indexDescription = `${chapter.parts?.length ?? 0} parts`;
+  downloadPath = route.contentPath;
+  downloadFilename = `${chapterDir}.md`;
+
+  indexChildren = (chapter.parts ?? []).map((p) => ({
+    label: `Part ${p.number}`,
+    sublabel: p.name,
+    href: `/ecfr/${titleDir}/${chapterDir}/${p.directory}`,
+    stats: [
+      { label: "sections", value: p.sections.length },
+    ],
+  }));
+
+} else if (route.granularity === "part") {
+  // ── Part index: show section cards ──
+  const titleDir = route.segments["title"]!;
+  const chapterDir = route.segments["chapter"]!;
+  const partDir = route.segments["part"]!;
+  const titleSummary = await getTitleSummary(SOURCE_ID, titleDir);
+  const chapter = await getChapterNav(SOURCE_ID, titleDir, chapterDir);
+
+  if (!titleSummary || !chapter) {
+    return new Response(null, { status: 404, statusText: "Not found" });
+  }
+
+  const part: PartNav | undefined = chapter.parts?.find((p) => p.directory === partDir);
+  if (!part) {
+    return new Response(null, { status: 404, statusText: "Not found" });
+  }
+
+  pageTitle = `Title ${titleSummary.number}, Part ${part.number} — ${toTitleCase(part.name)}`;
+  indexDescription = `${part.sections.length} sections`;
+  downloadPath = route.contentPath;
+  downloadFilename = `${partDir}.md`;
+
+  indexChildren = part.sections.map((s) => ({
+    label: `§ ${s.number}`,
+    sublabel: s.name,
+    href: `/ecfr/${titleDir}/${chapterDir}/${partDir}/${s.file}`,
+    stats: s.status !== "current" ? [{ label: s.status, value: "" }] : [],
+  }));
+
+} else {
+  // ── Section content page ──
+  const rawFile = await getFile(route.contentPath);
+  if (!rawFile) {
+    return new Response(null, { status: 404, statusText: "Not found" });
+  }
+
+  const parsed = parseFrontmatter(rawFile);
+  frontmatter = parsed.frontmatter;
+  body = parsed.body;
+
+  [highlightedSource, renderedHtml] = await Promise.all([
+    getHighlightedHtml(route.contentPath, body),
+    renderMarkdown(body),
+  ]);
+
+  pageTitle = frontmatter.title ? toTitleCase(frontmatter.title) : `eCFR - ${slug}`;
+}
+
+const isIndexPage = route.granularity !== "section";
 ---
 
 <BaseLayout title={pageTitle} source={SOURCE_ID} description={`${pageTitle} — Structured Markdown from LexBuild.`}>
   <BreadcrumbNav breadcrumbs={route.breadcrumbs} />
-  <div class="flex flex-col gap-6">
-    <div class="flex flex-col gap-4">
-      <h1 class="text-2xl font-bold text-foreground">{toTitleCase(frontmatter.title)}</h1>
-      <FrontmatterPanel frontmatter={frontmatter} source={SOURCE_ID} />
-    </div>
-    <ContentViewer
-      client:load
-      rawMarkdown={body}
-      highlightedSource={highlightedSource}
-      renderedHtml={renderedHtml}
-      frontmatter={frontmatter}
+
+  {isIndexPage ? (
+    <HierarchyIndex
+      source={SOURCE_ID}
       granularity={route.granularity}
-      downloadFilename={`${slug?.split("/").pop() ?? "content"}.md`}
+      heading={pageTitle}
+      description={indexDescription}
+      children={indexChildren}
+      downloadPath={downloadPath}
+      downloadFilename={downloadFilename}
     />
-  </div>
+  ) : frontmatter ? (
+    <div class="flex flex-col gap-6">
+      <div class="flex flex-col gap-4">
+        <h1 class="text-2xl font-bold text-foreground">{toTitleCase(frontmatter.title)}</h1>
+        <FrontmatterPanel frontmatter={frontmatter} source={SOURCE_ID} />
+      </div>
+      <ContentViewer
+        client:load
+        rawMarkdown={body}
+        highlightedSource={highlightedSource}
+        renderedHtml={renderedHtml}
+        frontmatter={frontmatter}
+        granularity={route.granularity}
+        downloadFilename={`${slug?.split("/").pop() ?? "content"}.md`}
+      />
+    </div>
+  ) : null}
 </BaseLayout>
