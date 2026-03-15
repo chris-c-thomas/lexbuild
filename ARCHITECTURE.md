@@ -6,9 +6,9 @@ LexBuild is a layered monorepo that separates format-agnostic infrastructure fro
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        Applications & CLI                              │
 │                                                                        │
-│  @lexbuild/cli                         apps/web                        │
+│  @lexbuild/cli                         apps/astro                      │
 │  ┌───────────┐  ┌───────────┐          ┌──────────────────────┐        │
-│  │ download  │  │ convert   │          │ Next.js SSR site     │        │
+│  │ download  │  │ convert   │          │ Astro SSR site       │        │
 │  └─────┬─────┘  └─────┬─────┘          │ (consumes output     │        │
 │        │               │               │  files, not packages)│        │
 │        │               │               └──────────────────────┘        │
@@ -44,6 +44,6 @@ LexBuild is a layered monorepo that separates format-agnostic infrastructure fro
 
 2. **Source Packages** (`@lexbuild/usc`, future `@lexbuild/cfr`, etc.) — Source-specific conversion logic. Each package orchestrates the pipeline for its source's XML format: download, parse, build AST, render, write files.
 
-3. **Applications & CLI** (`@lexbuild/cli`, `apps/web/`) — User-facing tools. The CLI delegates all heavy lifting to source packages. The web app consumes the converted output files directly.
+3. **Applications & CLI** (`@lexbuild/cli`, `apps/astro/`) — User-facing tools. The CLI delegates all heavy lifting to source packages. The Astro app consumes the converted output files directly.
 
 For the full architecture documentation, see [`docs/architecture/`](docs/architecture/)

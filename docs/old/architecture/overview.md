@@ -10,9 +10,9 @@ LexBuild separates concerns into three layers. Each layer depends only on the la
 ┌───────────────────────────────────────────────────────────────────────┐
 │                        Applications & CLI                             │
 │                                                                       │
-│  @lexbuild/cli                         apps/web                       │
+│  @lexbuild/cli                         apps/astro                     │
 │  ┌───────────┐  ┌───────────┐          ┌──────────────────────┐       │
-│  │ download   │  │ convert   │          │ Next.js SSR site     │      │
+│  │ download   │  │ convert   │          │ Astro SSR site       │      │
 │  └─────┬─────┘  └─────┬─────┘          │ (consumes output     │       │
 │        │               │                │  files, not packages) │     │
 │        │               │                └──────────────────────┘      │
@@ -74,7 +74,7 @@ The architecture is designed to grow horizontally. Adding a new source (e.g., Co
 The top layer contains user-facing tools that consume source packages:
 
 - **`@lexbuild/cli`** -- command-line interface built with `commander`. Parses arguments, delegates to source packages, and provides user-facing output (`chalk`, `ora`, `cli-table3`). Contains no conversion logic. As new source packages are added, new commands are registered here.
-- **`apps/web`** -- a Next.js based web app that renders converted Markdown files with sidebar navigation, full-text search, and dark mode. It has no code dependency on any LexBuild package; it consumes only the output files.
+- **`apps/astro`** -- an Astro-based web app that renders converted Markdown files with sidebar navigation, search, and dark mode. It has no code dependency on any LexBuild package; it consumes only the output files.
 
 ## Package Dependency Graph
 
@@ -84,7 +84,7 @@ The top layer contains user-facing tools that consume source packages:
   │     └── @lexbuild/core
   └── @lexbuild/core (direct dep for shared types)
 
-apps/web
+apps/astro
   └── (no package deps — consumes output files only)
 ```
 
@@ -99,7 +99,7 @@ lexbuild/
 │   ├── usc/         # @lexbuild/usc — U.S. Code converter and downloader
 │   └── cli/         # @lexbuild/cli — CLI binary
 ├── apps/
-│   └── web/         # LexBuild web app
+│   └── astro/       # LexBuild web app
 ├── downloads/
 │   └── usc/xml/     # Downloaded USC XML files (gitignored)
 ├── fixtures/

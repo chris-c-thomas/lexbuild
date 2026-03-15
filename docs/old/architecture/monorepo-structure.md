@@ -11,7 +11,7 @@ lexbuild/
 │   ├── usc/                     # @lexbuild/usc — U.S. Code source package
 │   └── cli/                     # @lexbuild/cli — CLI binary (end-user entry point)
 ├── apps/                        # Private applications (never published to npm)
-│   └── web/                     # Documentation site — Next.js 16, SSR, browse output as HTML
+│   └── astro/                   # Documentation site — Astro 6, SSR, browse output as HTML
 ├── fixtures/                    # Shared test data (used by multiple packages)
 │   ├── fragments/               # Small synthetic XML snippets for unit tests
 │   └── expected/                # Expected output snapshots for integration tests
@@ -58,9 +58,9 @@ Apps are **private** (`"private": true` in `package.json`) and never published t
 
 | App | Purpose |
 |-----|---------|
-| `apps/web/` | Server-rendered documentation site (Next.js 16) for browsing converted U.S. Code as structured Markdown |
+| `apps/astro/` | Server-rendered documentation site (Astro 6) for browsing converted U.S. Code and eCFR as structured Markdown |
 
-The web app has no runtime dependency on `@lexbuild/core`, `@lexbuild/usc`, or `@lexbuild/cli`. It reads `.md` files and `_meta.json` sidecars produced by the CLI. See [dependency-graph.md](dependency-graph.md) for the full relationship model.
+The Astro app has no runtime dependency on `@lexbuild/core`, `@lexbuild/usc`, or `@lexbuild/cli`. It reads `.md` files and `_meta.json` sidecars produced by the CLI. See [dependency-graph.md](dependency-graph.md) for the full relationship model.
 
 ## What Lives Where
 

@@ -30,10 +30,6 @@ This directory contains the full documentation for LexBuild — an open-source t
 - [@lexbuild/usc](packages/usc.md)
 - [@lexbuild/cli](packages/cli.md)
 
-## Apps
-
-- [LexBuild Web App](apps/web.md)
-
 ## Reference
 
 - [Output Format](reference/output-format.md)

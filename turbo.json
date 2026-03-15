@@ -20,16 +20,7 @@
     "lint:fix": {
       "dependsOn": ["transit"]
     },
-    "build:web": {
-      "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"],
-      "cache": false
-    },
     "dev": {
-      "cache": false,
-      "persistent": true
-    },
-    "dev:web": {
       "cache": false,
       "persistent": true
     },

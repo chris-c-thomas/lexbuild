@@ -227,7 +227,7 @@ Scopes are optional but recommended when a change is scoped to a specific packag
 | `core` | `@lexbuild/core` |
 | `usc` | `@lexbuild/usc` |
 | `cli` | `@lexbuild/cli` |
-| `web` | `apps/web/` |
+| `astro` | `apps/astro/` |
 
 ### Examples
 

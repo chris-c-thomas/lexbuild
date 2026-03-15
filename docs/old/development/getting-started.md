@@ -103,7 +103,7 @@ lexbuild/
 │   ├── usc/            # @lexbuild/usc
 │   └── cli/            # @lexbuild/cli
 ├── apps/
-│   └── web/            # Documentation site (Next.js)
+│   └── astro/          # Documentation site (Astro)
 ├── fixtures/
 │   ├── fragments/      # Synthetic XML snippets for unit tests
 │   └── expected/       # Pinned expected output for snapshot tests
@@ -120,7 +120,7 @@ lexbuild/
 
 **@lexbuild/cli** -- The published npm package that users install. A thin orchestration layer that wires up `commander` commands (`download`, `convert`) and delegates all heavy lifting to `@lexbuild/usc` and `@lexbuild/core`.
 
-**apps/web** -- A Next.js server-rendered site for browsing the converted U.S. Code. It consumes LexBuild's output files (`.md` and `_meta.json`) but has no code dependency on any `@lexbuild/*` package. The web app is excluded from the default `pnpm turbo build` pipeline and from changeset versioning.
+**apps/astro** -- An Astro server-rendered site for browsing converted U.S. Code and eCFR content. It consumes LexBuild's output files (`.md` and `_meta.json`) but has no code dependency on any `@lexbuild/*` package. The Astro app is excluded from the default `pnpm turbo build` pipeline and from changeset versioning.
 
 ### Dependency Graph
 

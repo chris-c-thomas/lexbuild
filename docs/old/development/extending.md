@@ -228,7 +228,7 @@ Every source package builds on `@lexbuild/core`. Here is the full set of reusabl
 | `markdown/links.ts` | `createLinkResolver` | Cross-reference resolution with fallback URLs |
 | `xml/namespace.ts` | `LEVEL_ELEMENTS`, `CONTENT_ELEMENTS`, `INLINE_ELEMENTS`, etc. | Element classification sets for namespace-aware parsing |
 
-The key benefit: any source package that produces valid AST nodes gets Markdown rendering, frontmatter generation, link resolution, and output format consistency for free. Downstream consumers (RAG pipelines, search indexes, the web app) work identically regardless of which source produced the Markdown.
+The key benefit: any source package that produces valid AST nodes gets Markdown rendering, frontmatter generation, link resolution, and output format consistency for free. Downstream consumers (RAG pipelines, search indexes, the Astro app) work identically regardless of which source produced the Markdown.
 
 ## Adding an Application
 
@@ -250,15 +250,15 @@ Apps typically:
 ### Important Conventions for Apps
 
 - Apps have `"private": true` in `package.json` and are listed in the changeset `ignore` array.
-- Apps are excluded from the default `pnpm turbo build` pipeline. Use a distinct script name (e.g., `build:web` instead of `build`).
+- Apps are excluded from the default `pnpm turbo build` pipeline. Use a distinct script name (e.g., `build:astro` instead of `build`).
 - Apps have no `workspace:*` dependency on any `@lexbuild/*` package. They consume output files, not package code.
-- Generated content directories should be gitignored. Use `.vercelignore` or equivalent to include them in deploys.
+- Generated content directories should be gitignored.
 
 ### Existing Apps
 
 | App | Description | Stack |
 |-----|-------------|-------|
-| `apps/web/` | Documentation site -- browse U.S. Code with search and navigation | Next.js, Tailwind CSS v4, Pagefind |
+| `apps/astro/` | Documentation site -- browse U.S. Code and eCFR with search and navigation | Astro 6, Tailwind CSS v4, React islands |
 
 ## Integration Patterns
 

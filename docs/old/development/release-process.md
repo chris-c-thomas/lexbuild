@@ -14,7 +14,7 @@ All published packages share a single version number. This is configured in `.ch
 
 When any package in the fixed group receives a changeset, all packages in the group are bumped to the same new version. This eliminates version drift between packages and simplifies dependency management for consumers -- `@lexbuild/cli@1.4.2` always depends on `@lexbuild/usc@1.4.2` and `@lexbuild/core@1.4.2`.
 
-The web app (`apps/web/`) is excluded from changesets entirely. It is listed in the `ignore` array in the changeset config and has `"private": true` in its `package.json`.
+The Astro app (`apps/astro/`) is excluded from changesets entirely. It is listed in the `ignore` array in the changeset config and has `"private": true` in its `package.json`.
 
 ## Creating a Changeset
 
@@ -112,7 +112,7 @@ The full changeset configuration (`.changeset/config.json`):
 | `commit` | `false` | `changeset version` does not auto-commit; the GitHub Action handles commits |
 | `changelog` | `@changesets/changelog-github` | Changelog entries include GitHub PR links and author attribution |
 | `updateInternalDependencies` | `"patch"` | Internal deps are bumped to match the new version |
-| `ignore` | `["web"]` | The web app is excluded from versioning |
+| `ignore` | `["astro"]` | The Astro app is excluded from versioning |
 
 ## Quick Reference
 

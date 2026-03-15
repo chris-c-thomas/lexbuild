@@ -14,7 +14,7 @@ lexbuild/
 │   ├── ecfr/        # @lexbuild/ecfr — eCFR (Code of Federal Regulations) converter and downloader
 │   └── cli/         # @lexbuild/cli — CLI binary (the published npm package users install)
 ├── apps/
-│   └── web/         # Documentation site — Next.js 16, SSR, browse U.S. Code as Markdown
+│   └── astro/       # LexBuild web app — Astro 6, SSR, browse U.S. Code + eCFR as Markdown
 ├── downloads/
 │   ├── usc/
 │   │   └── xml/     # Full USC XML files (usc01.xml ... usc54.xml) — gitignored
@@ -36,7 +36,7 @@ Each package and app has its own `CLAUDE.md` with architecture details, module s
 - [`packages/usc/CLAUDE.md`](packages/usc/CLAUDE.md) — Collect-then-write pattern, granularity output, edge cases (duplicates, appendices), downloader
 - [`packages/ecfr/CLAUDE.md`](packages/ecfr/CLAUDE.md) — eCFR GPO/SGML XML→AST→Markdown, DIV-based hierarchy, element classification, downloader
 - [`packages/cli/CLAUDE.md`](packages/cli/CLAUDE.md) — Commands, options, UI module, title parser, build config
-- [`apps/web/CLAUDE.md`](apps/web/CLAUDE.md) — Next.js 16 SSR site, content provider abstraction, routes, sidebar, search, deployment
+- [`apps/astro/CLAUDE.md`](apps/astro/CLAUDE.md) — Astro 6 SSR site, island architecture, multi-source content browser, deployment
 
 ## Tech Stack
 
@@ -98,27 +98,22 @@ node packages/cli/dist/index.js convert-ecfr --titles 1 -o ./test-output
 node packages/cli/dist/index.js convert-ecfr ./downloads/ecfr/xml/ECFR-title1.xml -o ./test-output
 node packages/cli/dist/index.js convert-ecfr --titles 17 -g part -o ./test-output
 
-# Web app (apps/web/) — NOT included in default `pnpm turbo build`
-pnpm turbo dev:web                    # Dev server (http://localhost:3000)
-pnpm turbo build:web                  # Production build
-cd apps/web && bash scripts/generate-content.sh   # Generate all content + nav + search + sitemap
+# Astro app (apps/astro/) — NOT included in default `pnpm turbo build`
+pnpm turbo dev:astro --filter=astro   # Dev server (http://localhost:4321)
+pnpm turbo build:astro --filter=astro # Production build
 ```
 
-### Web App Notes
+### Astro App Notes
 
-The web app (`apps/web/`) is a Next.js 16 SSR site that consumes LexBuild's output files. It has **no code dependency** on `@lexbuild/core`, `@lexbuild/usc`, or `@lexbuild/cli`.
+The Astro app (`apps/astro/`) is deployed to a self-managed VPS (AWS Lightsail) behind Cloudflare's edge cache. It has **no code dependency** on `@lexbuild/core`, `@lexbuild/usc`, or `@lexbuild/cli`.
 
 Key points:
-- **Excluded from `pnpm turbo build`** — no `build` script in its `package.json` (only `build:web`). This prevents CI failures since the app requires content files that aren't in git.
+- **Excluded from `pnpm turbo build`** — no `build` script in its `package.json` (only `build:astro`). This prevents CI failures since the app requires content files that aren't in git.
 - **Excluded from changesets** — `"private": true` and listed in `.changeset/config.json` `ignore`.
-- **Content is gitignored** — `apps/web/content/`, `public/nav/`, `public/_pagefind/`, `public/sitemap.xml` are all generated artifacts.
-- **Tailwind CSS v4 requires `@tailwindcss/postcss`** and `postcss.config.mjs`. Without these, no styles are generated.
-- **Production URL**: `https://lexbuild.dev` (`www` redirects to apex via Vercel 308).
-- **Deploy via `vercel deploy --prod`** from the **monorepo root** (not `apps/web/`). Vercel needs the full repo for `pnpm-lock.yaml`. Root Directory is set to `apps/web` in Vercel dashboard. Build Command is overridden to `next build`.
-- **Content served from Vercel Blob** in production (`CONTENT_STORAGE=blob` in `.env.production`). `BLOB_READ_WRITE_TOKEN` is auto-injected by Vercel when a Blob store is connected to the project. Cloudflare R2 (`CONTENT_STORAGE=s3`) is retained as a legacy option. PageFind index (~61k files) served from R2 via `NEXT_PUBLIC_PAGEFIND_BASE_URL`.
-- **Root `.vercelignore`** excludes `downloads/`, `output/`, `apps/web/content/`, `apps/web/public/_pagefind/` to stay under Vercel's 10 MB upload limit. `apps/web/public/nav/` is NOT excluded (small static JSON needed for sidebar).
-- **On-demand ISR** — pages use empty `generateStaticParams()` + `revalidate = false` so Vercel caches at the edge. Without this, Vercel forces `max-age=0` on dynamic routes.
-- See `.claude/deployment.md` for the complete deployment guide, `apps/web/CLAUDE.md` for the full web app spec.
+- **Content is gitignored** — `apps/astro/content/`, `public/nav/`, `public/sitemap.xml` are all generated artifacts.
+- **Content served from local filesystem** in production (`fs.readFile` from `/srv/lexbuild/content/`).
+- **Production URL**: `https://lexbuild.dev` — served via Cloudflare (orange-cloud proxy) → Caddy → Astro Node server.
+- See `apps/astro/CLAUDE.md` for the full architecture spec.
 
 ## Code Conventions
 

@@ -22,16 +22,7 @@ The build pipeline is defined in `turbo.json` at the repository root:
     },
     "lint": {},
     "lint:fix": {},
-    "build:web": {
-      "dependsOn": ["^build"],
-      "outputs": [".next/**"],
-      "cache": false
-    },
     "dev": {
-      "cache": false,
-      "persistent": true
-    },
-    "dev:web": {
       "cache": false,
       "persistent": true
     }
@@ -197,58 +188,6 @@ Running `pnpm turbo dev` starts tsup in watch mode (`tsup --watch`) for every pa
 - **`cache: false`** -- Watch tasks should never be cached; they run continuously.
 - **`persistent: true`** -- Tells Turborepo this task does not terminate on its own. Without this flag, Turborepo would wait for the task to exit before considering the pipeline complete.
 
-## Web App: Excluded from Default Build
-
-The web app (`apps/web/`) is deliberately excluded from the standard `pnpm turbo build` pipeline. Its `package.json` defines `build:web` instead of `build`:
-
-```json
-// apps/web/package.json (scripts excerpt)
-{
-  "scripts": {
-    "dev": "next dev",
-    "dev:web": "next dev",
-    "build:web": "next build",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint src/"
-  }
-}
-```
-
-Since there is no `build` script, `pnpm turbo build` skips the web app entirely. This is intentional for two reasons:
-
-1. **Content dependency**: The web app requires generated content files (`apps/web/content/`) that are produced by running the CLI. These files are gitignored and not available in CI or fresh clones.
-2. **Build isolation**: The web app's Next.js build is heavyweight and unrelated to the core platform. Including it in the default build would slow down development and CI for contributors who are not working on the site.
-
-### Building the Web App
-
-To build the web app, use the dedicated task:
-
-```bash
-pnpm turbo build:web --filter=web
-```
-
-The `build:web` task in `turbo.json` is configured with:
-
-```json
-"build:web": {
-  "dependsOn": ["^build"],
-  "outputs": [".next/**"],
-  "cache": false
-}
-```
-
-- **`dependsOn: ["^build"]`** -- Ensures upstream packages are built first (though the web app has no `workspace:*` dependencies, this is a safety net).
-- **`outputs: [".next/**"]`** -- The Next.js build output directory.
-- **`cache: false`** -- The web app build is never cached because it depends on external content files that Turborepo does not track.
-
-### Web App Dev Server
-
-```bash
-pnpm turbo dev:web --filter=web
-```
-
-Starts the Next.js development server on `http://localhost:3000`. Like the package-level `dev` task, this is persistent and uncached.
-
 ## Common Build Commands
 
 All commands below are run from the repository root. For a full development setup guide, see [Getting Started](../development/getting-started.md).
@@ -283,9 +222,6 @@ pnpm turbo test --filter=@lexbuild/usc
 ```bash
 # Watch all packages
 pnpm turbo dev
-
-# Watch the web app
-pnpm turbo dev:web --filter=web
 ```
 
 ### Versioning and Release

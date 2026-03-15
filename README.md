@@ -62,7 +62,7 @@ lexbuild/
 │   ├── ecfr/           # @lexbuild/ecfr — eCFR source package
 │   └── cli/            # @lexbuild/cli — CLI binary
 ├── apps/
-│   └── web/            # LexBuild web app
+│   └── astro/          # LexBuild web app
 ├── fixtures/
 │   ├── fragments/      # Small synthetic XML snippets for unit tests
 │   │   ├── usc/        # USLM fixtures
@@ -171,18 +171,18 @@ Provides the `lexbuild` binary that end users install. `@lexbuild/cli` is orches
 
 ### Web
 
-A server-rendered documentation site for browsing the U.S. Code as structured Markdown. Built with Next.js 16, TypeScript, React 19, Tailwind CSS 4, Shiki, and shadcn/ui.
+A server-rendered documentation site for browsing U.S. Code and eCFR content as structured Markdown. Built with Astro 6, TypeScript, React 19 (islands), Tailwind CSS 4, Shiki, and shadcn/ui. Deployed to AWS Lightsail behind Cloudflare.
 
-- **60,000+ section pages** served via SSR with CDN caching (1-year `s-maxage`)
-- **Three granularity levels** — view any title, chapter, or section with Markdown source and rendered HTML preview
-- **Sidebar navigation** — lazy-loaded per-title JSON, virtualized section lists for large chapters
-- **Full-text search** — Pagefind-powered Cmd+K search across all sections
+- **260,000+ section pages** across U.S. Code and eCFR, served via SSR with Cloudflare edge caching
+- **Four granularity levels** — view any title, chapter, part (eCFR), or section with Markdown source and rendered HTML preview
+- **Sidebar navigation** — lazy-loaded per-title JSON, virtualized section lists for large chapters/parts
+- **Zero client JS by default** — interactive React islands only where needed (sidebar, content toggle, search)
 - **Dark mode** — class-based theme toggle with system preference detection
-- **SEO** — unique `<title>`, Open Graph metadata, sitemap with 63k+ URLs
+- **SEO** — unique `<title>`, Open Graph metadata, sitemap
 
-The site consumes LexBuild's *output* (`.md` files and `_meta.json` sidecars), not its code so it has no dependency on `@lexbuild/core`, `@lexbuild/usc`, or `@lexbuild/cli`.
+The site consumes LexBuild's *output* (`.md` files and `_meta.json` sidecars), not its code, so it has no dependency on `@lexbuild/core`, `@lexbuild/usc`, or `@lexbuild/cli`.
 
-See [apps/web/README.md](apps/web/README.md) for setup and development instructions.
+See [apps/astro/CLAUDE.md](apps/astro/CLAUDE.md) for architecture and development instructions.
 
 ---
 
