@@ -140,7 +140,7 @@ Astro renders pages as static HTML with zero JavaScript by default. Interactive 
 | `BaseLayout.astro` | No | Static HTML shell |
 | `FrontmatterPanel.astro` | No | Pure display |
 | `BreadcrumbNav.astro` | No | Pure display |
-| `ContentViewer` | **Yes** (`client:load`) | Source/preview toggle, clipboard, download |
+| `ContentViewer` | **Yes** (`client:load`) | Radix Tabs (source/preview), clipboard, download |
 | `Sidebar` | **Yes** (`client:load`) | Desktop-only (`hidden lg:block`) wrapper for `SidebarContent` |
 | `MobileNav` | **Yes** (`client:load`) | Hamburger trigger + Sheet drawer with source dropdown + sidebar tree |
 | `SearchDialog` | **Yes** (`client:idle`) | Meilisearch client, keyboard shortcut (Phase 3) |
@@ -172,7 +172,7 @@ apps/astro/
 │   │   └── 404.astro                  # Custom error page
 │   ├── components/
 │   │   ├── content/
-│   │   │   ├── ContentViewer.tsx       # React island — source/preview toggle, copy, download
+│   │   │   ├── ContentViewer.tsx       # React island — shadcn Tabs (source/preview), copy, download
 │   │   │   ├── FrontmatterPanel.astro  # Static metadata display (adapts per source + granularity)
 │   │   │   └── BreadcrumbNav.astro     # Hierarchical breadcrumb (Title > Chapter > Section)
 │   │   ├── sidebar/
@@ -599,12 +599,10 @@ import { createHighlighter } from "shiki";
 let highlighterPromise: Promise<HighlighterGeneric<BundledLanguage, BundledTheme>> | null = null;
 
 function getHighlighter() {
-  if (!highlighterPromise) {
-    highlighterPromise = createHighlighter({
-      themes: ["github-light-default", "github-dark-default"],
-      langs: ["markdown", "yaml"],
-    });
-  }
+  highlighterPromise ??= createHighlighter({
+    themes: ["github-light-default", "github-dark-default"],
+    langs: ["markdown", "yaml"],
+  });
   return highlighterPromise;
 }
 
@@ -619,6 +617,8 @@ export async function highlightMarkdown(code: string): Promise<string> {
 ```
 
 **Note**: On the VPS, `.highlighted.html` files will always be present (generated during content pipeline). Runtime Shiki is only used during local development when you haven't generated highlight files. This keeps the production runtime lightweight.
+
+**Word wrapping**: Shiki outputs `<pre>` elements with inline `white-space: pre` styles. The `ContentViewer` wraps Shiki output in a `.shiki-wrap` div, and `global.css` contains CSS overrides (with `!important`) to force `white-space: pre-wrap`, `overflow-wrap: break-word`, and `overflow-x: hidden` on `.shiki-wrap pre.shiki` and its `<code>`/`.line` children. Without these overrides, long legal text lines overflow the container.
 
 ### `src/lib/markdown.ts` — Rendering Pipeline
 
@@ -1145,6 +1145,9 @@ export default defineConfig({
 - **PM2 restart is not zero-downtime by default.** Use `pm2 reload` (not `pm2 restart`) for graceful reload in production.
 - **Changing Shiki themes requires regenerating all highlights.** Update themes in both `scripts/generate-highlights.ts` and `src/lib/shiki.ts`, delete existing `.highlighted.html` files, then re-run the script. The mtime-based skip won't detect theme changes.
 - **eCFR title `_meta.json` has flat `parts[]`, not nested chapters.** Chapter grouping for the sidebar is derived from filesystem `chapter-X/` directories, not from metadata. The `generate-nav.ts` script walks the directory tree to build the chapter → part → section hierarchy.
+- **Tailwind v4 `@theme inline` variables are NOT runtime CSS custom properties.** Variables defined in `@theme inline` (e.g., `--color-slate-blue-600`) are inlined into generated utility classes at build time and do NOT exist as CSS custom properties in the browser. Scoped `<style>` blocks in `.astro` components cannot use `var(--color-slate-blue-600)` — use the hex value directly (e.g., `#5285a3`). Only variables defined in `:root` or `.dark` blocks (like `--background`, `--border`, `--muted`) are available at runtime.
+- **Tailwind v4 utility classes may not generate from `.astro` scoped content.** Some Tailwind utilities (notably `grid-cols-*`) have been observed to silently fail to generate CSS when used in `.astro` files, even though other utilities in the same file work. If a Tailwind utility isn't taking effect, verify with DevTools that the CSS rule exists. For layout-critical properties, use scoped `<style>` blocks with plain CSS as a reliable fallback. `FrontmatterPanel.astro` uses this approach for its grid layout.
+- **ContentViewer uses shadcn Tabs, not custom buttons.** The source/preview toggle in `ContentViewer.tsx` uses Radix-based `Tabs`/`TabsList`/`TabsTrigger`/`TabsContent` from `@/components/ui/tabs`. The TabsTrigger styles have been customized to use slate-blue text for active/hover states.
 
 ---
 
@@ -1294,3 +1297,6 @@ shadcn/ui is initialized with the `radix-nova` preset and zinc color theme. Comp
 - Summer-green, putty palettes available in `global.css` `@theme inline` block for future use
 - `prose prose-zinc` with `@tailwindcss/typography` for rendered legal HTML content
 - Icons via `lucide-react` with `data-icon` attributes per shadcn convention
+- TabsTrigger customized: active state uses `text-slate-blue-700` (light) / `text-slate-blue-300` (dark); hover uses `text-slate-blue-600` / `dark:text-slate-blue-300`
+- FrontmatterPanel uses scoped `<style>` with plain CSS (not Tailwind utilities) for grid layout — see Tailwind v4 pitfall above
+- Shiki output word-wrap enforced via `.shiki-wrap` CSS overrides in `global.css`
