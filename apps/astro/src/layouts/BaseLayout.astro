@@ -2,6 +2,7 @@
 import "@/styles/global.css";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import { Sidebar } from "@/components/sidebar/Sidebar";
+import { MobileNav } from "@/components/sidebar/MobileNav";
 import { SearchDialog } from "@/components/search/SearchDialog";
 import type { SourceId } from "@/lib/types";
 
@@ -47,10 +48,11 @@ const meiliSearchKey = import.meta.env.MEILI_SEARCH_KEY ?? "";
     <header class="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div class="mx-auto flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8">
         <div class="flex items-center gap-6">
+          <MobileNav client:load source={source} currentPath={currentPath} />
           <a href="/" class="text-lg font-bold text-foreground">
             LexBuild
           </a>
-          <nav class="hidden items-center gap-4 text-sm font-medium sm:flex">
+          <nav class="hidden items-center gap-4 text-sm font-medium lg:flex">
             <a
               href="/usc"
               class:list={["transition-colors hover:text-foreground", source === "usc" ? "text-foreground" : "text-muted-foreground"]}
