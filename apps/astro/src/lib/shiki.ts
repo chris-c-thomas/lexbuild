@@ -4,12 +4,10 @@ import { createHighlighter } from "shiki";
 let highlighterPromise: Promise<HighlighterGeneric<BundledLanguage, BundledTheme>> | null = null;
 
 function getHighlighter() {
-  if (!highlighterPromise) {
-    highlighterPromise = createHighlighter({
-      themes: ["github-light-default", "github-dark-default"],
-      langs: ["markdown", "yaml"],
-    });
-  }
+  highlighterPromise ??= createHighlighter({
+    themes: ["github-light-default", "github-dark-default"],
+    langs: ["markdown", "yaml"],
+  });
   return highlighterPromise;
 }
 
