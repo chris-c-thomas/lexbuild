@@ -3,7 +3,7 @@
 dist/
 
 # Content (symlinked or copied from CLI output)
-content/
+/content/
 
 # Navigation data (generated)
 public/nav/
