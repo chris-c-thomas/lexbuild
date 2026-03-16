@@ -962,7 +962,7 @@ npx tsx scripts/generate-highlights.ts --limit 50 # Test subset
 npx tsx scripts/generate-sitemap.ts
 
 # 5. Index content into Meilisearch (requires running Meilisearch instance)
-npx tsx scripts/index-search.ts                    # Full index (~281k docs, ~13 min)
+npx tsx scripts/index-search.ts                    # Full index (~281k docs, ~26 min)
 ```
 
 ### Script Details
@@ -979,7 +979,7 @@ npx tsx scripts/index-search.ts                    # Full index (~281k docs, ~13
 - **`generate-nav.ts`** includes reserved title placeholders (USC Title 53, eCFR Title 35) so the sidebar shows the full numbering sequence.
 - **`generate-highlights.ts`** uses Shiki dual themes (`github-light-default` + `github-dark-default`). To change themes, update both this script and `src/lib/shiki.ts`, then re-run. Delete existing `.highlighted.html` files first since mtime skip won't detect a theme change.
 - **`generate-sitemap.ts`** produces ~292k URLs. Depth-based priority: index/title pages (0.8), chapter/part pages (0.6), section pages (0.5).
-- **`index-search.ts`** uses streaming batches of 500 documents to avoid OOM (281k documents with 5KB body each). Document IDs are sanitized (dots/colons replaced with underscores) for Meilisearch compatibility. Requires `MEILI_URL` and optionally `MEILI_MASTER_KEY` env vars. For local dev: `meilisearch --env development --db-path /tmp/meilisearch-dev`.
+- **`index-search.ts`** uses streaming batches of 500 documents to avoid OOM (281k documents with 5KB body each). Document IDs are sanitized (dots/colons replaced with underscores) for Meilisearch compatibility. Requires `MEILI_URL` and optionally `MEILI_MASTER_KEY` env vars. Uses a 60s `waitForTask` timeout (the default 5s is too short — Meilisearch processing slows as the index grows beyond ~130k docs). Full index takes ~26 minutes.
 - All outputs (`public/nav/`, `public/sitemap.xml`, `*.highlighted.html`) are gitignored.
 
 ---
@@ -988,7 +988,14 @@ npx tsx scripts/index-search.ts                    # Full index (~281k docs, ~13
 
 Search is gated behind the `ENABLE_SEARCH` environment variable. When disabled (default), the SearchDialog component is not rendered and no Meilisearch connection is attempted. Set `ENABLE_SEARCH=true` in `.env.local` for local development.
 
-For local dev, start Meilisearch with: `meilisearch --env development --db-path /tmp/meilisearch-dev`
+For local dev on macOS, install and start Meilisearch via Homebrew:
+
+```bash
+brew install meilisearch
+brew services start meilisearch    # Runs on port 7700, no master key, data at /opt/homebrew/var/meilisearch/data.ms
+```
+
+No master key means `MEILI_SEARCH_KEY` can be left empty in `.env.local`. The search dialog queries Meilisearch directly without authentication in this mode.
 
 ### Meilisearch Index Schema
 
@@ -1169,7 +1176,7 @@ export default defineConfig({
 
 **Goal**: Full-text faceted search across both corpora.
 
-1. Write `scripts/index-search.ts` — streaming batch indexer (500 docs/batch) reads `_meta.json` + truncated Markdown body (5000 chars), upserts to Meilisearch. Sanitizes document IDs (Meilisearch rejects dots/colons). 281k documents indexed in ~13 minutes.
+1. Write `scripts/index-search.ts` — streaming batch indexer (500 docs/batch) reads `_meta.json` + truncated Markdown body (5000 chars), upserts to Meilisearch. Sanitizes document IDs (Meilisearch rejects dots/colons). 281k documents indexed in ~26 minutes (60s `waitForTask` timeout required — default 5s times out as index grows).
 2. Create `SearchDialog.tsx` (React island, `client:idle`) — Cmd+K / Ctrl+K trigger, debounced queries (150ms), source filter tabs with facet counts, result list with identifier + heading + hierarchy breadcrumbs, result count + timing footer.
 3. Create `src/lib/search.ts` — Meilisearch client wrapper with typed `SearchDocument` and `SearchResult` interfaces, filter builder for source/title/status facets, highlight support.
 4. Configure Meilisearch index: searchable (`identifier`, `heading`, `body`), filterable (`source`, `title_number`, `granularity`, `status`), sortable (`title_number`, `identifier`), displayed (excludes `body` to reduce payload).
