@@ -115,6 +115,8 @@ tags
 
 # Google
 /.gemini/
+# .gemini/config.yml
+# .gemini/styleguide.md
 
 # Skills
 skills-lock.json
