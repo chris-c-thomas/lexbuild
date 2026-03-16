@@ -30,7 +30,7 @@ export function SectionList({ sections, basePath, currentPath }: SectionListProp
                     : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                 }`}
               >
-                <span className="shrink-0 font-mono text-[0.65rem] text-sidebar-foreground/50">
+                <span className="shrink-0 font-mono text-[0.65rem] font-semibold text-slate-blue-700 dark:text-slate-blue-600">
                   §{section.number}
                 </span>
                 <span className="min-w-0 truncate">{section.name}</span>
@@ -94,7 +94,7 @@ function VirtualizedSectionList({ sections, basePath, currentPath }: SectionList
                     : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                 }`}
               >
-                <span className="shrink-0 font-mono text-[0.65rem] text-sidebar-foreground/50">
+                <span className="shrink-0 font-mono text-[0.65rem] font-semibold text-slate-blue-700 dark:text-slate-blue-600">
                   §{section.number}
                 </span>
                 <span className="min-w-0 truncate">{section.name}</span>
