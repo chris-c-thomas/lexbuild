@@ -30,6 +30,7 @@ Astro.response.headers.set(
 // ── Prepare data based on granularity ──
 
 let pageTitle = "";
+let pageDescription = "";
 let indexChildren: Array<{
   label: string;
   sublabel?: string;
@@ -56,7 +57,9 @@ if (route.granularity === "title") {
     return new Response(null, { status: 404, statusText: "Not found" });
   }
 
-  pageTitle = `Title ${titleSummary.number} — ${toTitleCase(titleSummary.name)}`;
+  const titleName = toTitleCase(titleSummary.name);
+  pageTitle = `Title ${titleSummary.number} — ${titleName}`;
+  pageDescription = `Title ${titleSummary.number}, ${titleName} — U.S. Code.`;
   indexDescription = `${titleSummary.chapterCount} chapters, ${titleSummary.sectionCount.toLocaleString()} sections, ${titleSummary.tokenEstimate.toLocaleString()} tokens`;
   downloadPath = route.contentPath;
   downloadFilename = `${titleDir}.md`;
@@ -81,7 +84,10 @@ if (route.granularity === "title") {
     return new Response(null, { status: 404, statusText: "Not found" });
   }
 
-  pageTitle = `Title ${titleSummary.number}, Chapter ${chapter.number} — ${toTitleCase(chapter.name)}`;
+  const titleName = toTitleCase(titleSummary.name);
+  const chapterName = toTitleCase(chapter.name);
+  pageTitle = `Title ${titleSummary.number}, Chapter ${chapter.number} — ${chapterName}`;
+  pageDescription = `Chapter ${chapter.number}, ${chapterName}. Title ${titleSummary.number}, ${titleName} — U.S. Code.`;
   indexDescription = `${chapter.sections?.length ?? 0} sections`;
   downloadPath = route.contentPath;
   downloadFilename = `${chapterDir}.md`;
@@ -110,12 +116,15 @@ if (route.granularity === "title") {
   ]);
 
   pageTitle = frontmatter.title ? toTitleCase(frontmatter.title) : `USC - ${slug}`;
+  const sectionName = frontmatter.section_name ? toTitleCase(frontmatter.section_name) : "";
+  const chapterCtx = frontmatter.chapter_name ? `Chapter ${frontmatter.chapter_number}, ${toTitleCase(frontmatter.chapter_name)}` : "";
+  pageDescription = `${frontmatter.title_number} U.S.C. § ${frontmatter.section_number ?? ""}${sectionName ? ` — ${sectionName}` : ""}. ${chapterCtx ? `${chapterCtx}. ` : ""}Title ${frontmatter.title_number}, ${toTitleCase(frontmatter.title_name)}.`;
 }
 
 const isIndexPage = route.granularity === "title" || route.granularity === "chapter";
 ---
 
-<BaseLayout title={pageTitle} source={SOURCE_ID} description={`${pageTitle} — Structured Markdown from LexBuild.`}>
+<BaseLayout title={pageTitle} source={SOURCE_ID} description={pageDescription}>
   <BreadcrumbNav breadcrumbs={route.breadcrumbs} currentPageName={frontmatter?.section_name ? toTitleCase(frontmatter.section_name) : undefined} />
 
   {isIndexPage ? (
