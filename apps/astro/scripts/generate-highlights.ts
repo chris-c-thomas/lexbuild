@@ -122,42 +122,58 @@ async function main(): Promise<void> {
 
   // Initialize Shiki
   console.log(`\nInitializing Shiki...`);
-  const highlighter: HighlighterGeneric<BundledLanguage, BundledTheme> = await createHighlighter({
+  let highlighter: HighlighterGeneric<BundledLanguage, BundledTheme> = await createHighlighter({
     themes: [THEMES.light, THEMES.dark],
     langs: ["markdown"],
   });
   console.log(`  Shiki ready`);
 
-  // Process files
+  // Process files — recreate Shiki every BATCH_SIZE files to prevent memory buildup
+  const BATCH_SIZE = 50_000;
   const startTime = performance.now();
   let processed = 0;
   let errors = 0;
 
-  for (const mdPath of toProcess) {
-    try {
-      const raw = await readFile(mdPath, "utf-8");
-      const { content: body } = matter(raw);
-
-      const html = highlighter.codeToHtml(body, {
-        lang: "markdown",
-        themes: { light: THEMES.light, dark: THEMES.dark },
+  for (let batchStart = 0; batchStart < toProcess.length; batchStart += BATCH_SIZE) {
+    // Create a fresh highlighter for each batch to release Shiki's internal caches
+    if (batchStart > 0) {
+      highlighter.dispose();
+      highlighter = await createHighlighter({
+        themes: [THEMES.light, THEMES.dark],
+        langs: ["markdown"],
       });
+    }
 
-      const htmlPath = mdPath.replace(/\.md$/, ".highlighted.html");
-      await writeFile(htmlPath, html, "utf-8");
-      processed++;
+    const batchEnd = Math.min(batchStart + BATCH_SIZE, toProcess.length);
+    for (let i = batchStart; i < batchEnd; i++) {
+      const mdPath = toProcess[i]!;
+      try {
+        const raw = await readFile(mdPath, "utf-8");
+        const { content: body } = matter(raw);
 
-      // Progress every 1000 files
-      if (processed % 1000 === 0) {
-        const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
-        console.log(`  ${processed}/${toProcess.length} (${elapsed}s)`);
+        const html = highlighter.codeToHtml(body, {
+          lang: "markdown",
+          themes: { light: THEMES.light, dark: THEMES.dark },
+        });
+
+        const htmlPath = mdPath.replace(/\.md$/, ".highlighted.html");
+        await writeFile(htmlPath, html, "utf-8");
+        processed++;
+
+        // Progress every 1000 files
+        if (processed % 1000 === 0) {
+          const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+          console.log(`  ${processed}/${toProcess.length} (${elapsed}s)`);
+        }
+      } catch (err) {
+        errors++;
+        const rel = relative(resolvedDir, mdPath);
+        console.warn(`  Error: ${rel}: ${err instanceof Error ? err.message : String(err)}`);
       }
-    } catch (err) {
-      errors++;
-      const rel = relative(resolvedDir, mdPath);
-      console.warn(`  Error: ${rel}: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
+
+  highlighter.dispose();
 
   const totalTime = ((performance.now() - startTime) / 1000).toFixed(1);
   console.log(`\nDone: ${processed} files highlighted, ${errors} errors, ${totalTime}s`);

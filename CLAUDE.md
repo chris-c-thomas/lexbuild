@@ -109,7 +109,12 @@ npx tsx scripts/generate-nav.ts                    # Build sidebar JSON from _me
 npx tsx scripts/generate-highlights.ts             # Pre-render Shiki HTML for all .md files
 npx tsx scripts/generate-highlights.ts --limit 50  # Test on subset
 npx tsx scripts/generate-sitemap.ts                # Build sitemap.xml
-npx tsx scripts/index-search.ts                    # Index into Meilisearch (requires running instance)
+npx tsx scripts/index-search.ts                    # Index into Meilisearch (~281k docs, ~26 min)
+
+# Meilisearch local setup (macOS)
+brew install meilisearch                           # Install via Homebrew
+brew services start meilisearch                    # Start as background service (port 7700, no master key)
+curl -s http://127.0.0.1:7700/health               # Verify running
 ```
 
 ### Astro App Notes
