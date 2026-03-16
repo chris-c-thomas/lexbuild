@@ -1,0 +1,126 @@
+---
+import type { ContentFrontmatter, SourceId } from "@/lib/types";
+import { toTitleCase } from "@/lib/utils";
+
+interface Props {
+  frontmatter: ContentFrontmatter;
+  source: SourceId;
+}
+
+const { frontmatter, source } = Astro.props;
+
+const isTitle = frontmatter.chapter_count !== undefined;
+const isSection = frontmatter.section_number !== undefined;
+
+// Build compact key-value pairs for the grid
+const fields: Array<{ label: string; value: string }> = [
+  { label: "Identifier", value: frontmatter.identifier },
+  { label: "Currency", value: frontmatter.currency },
+];
+
+if (frontmatter.positive_law !== undefined) {
+  fields.push({ label: "Positive Law", value: frontmatter.positive_law ? "Yes" : "No" });
+}
+
+fields.push({ label: "Updated", value: frontmatter.last_updated });
+
+if (source === "ecfr" && frontmatter.agency) {
+  fields.push({ label: "Agency", value: frontmatter.agency });
+}
+
+if ((isSection || !isTitle) && frontmatter.chapter_name) {
+  fields.push({
+    label: "Chapter",
+    value: `${frontmatter.chapter_number} — ${toTitleCase(frontmatter.chapter_name)}`,
+  });
+}
+
+if (isTitle) {
+  if (frontmatter.chapter_count !== undefined) fields.push({ label: "Chapters", value: String(frontmatter.chapter_count) });
+  if (frontmatter.section_count !== undefined) fields.push({ label: "Sections", value: String(frontmatter.section_count) });
+  if (frontmatter.total_token_estimate !== undefined) fields.push({ label: "Est. Tokens", value: frontmatter.total_token_estimate.toLocaleString() });
+}
+
+// Full-width fields shown below the grid
+const fullWidthFields: Array<{ label: string; value: string }> = [];
+if (isSection && frontmatter.source_credit) {
+  fullWidthFields.push({ label: "Source", value: frontmatter.source_credit });
+}
+if (frontmatter.authority) {
+  fullWidthFields.push({ label: "Authority", value: frontmatter.authority });
+}
+---
+
+<div class="frontmatter-panel">
+  <dl class="frontmatter-grid">
+    {fields.map((field) => (
+      <div class="frontmatter-cell">
+        <dt class="frontmatter-label">
+          {field.label}
+        </dt>
+        <dd class="frontmatter-value">{field.value}</dd>
+      </div>
+    ))}
+  </dl>
+
+  {fullWidthFields.map((field) => (
+    <div class="frontmatter-full">
+      <dt class="frontmatter-label">
+        {field.label}
+      </dt>
+      <dd class="frontmatter-value">{field.value}</dd>
+    </div>
+  ))}
+</div>
+
+<style>
+  .frontmatter-panel {
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    background: color-mix(in oklch, var(--muted) 30%, transparent);
+  }
+
+  .frontmatter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  }
+
+  .frontmatter-cell {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Vertical dividers between cells on the same row via box-shadow trick */
+  .frontmatter-cell + .frontmatter-cell {
+    border-left: 1px solid var(--border);
+  }
+
+  .frontmatter-full {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Remove bottom border on last row of grid cells when full-width fields follow */
+  .frontmatter-grid:last-child .frontmatter-cell {
+    border-bottom: none;
+  }
+
+  .frontmatter-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #5285a3;
+  }
+
+  :global(.dark) .frontmatter-label {
+    color: #94b7c7;
+  }
+
+  .frontmatter-value {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: var(--foreground);
+    overflow-wrap: break-word;
+  }
+</style>

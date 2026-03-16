@@ -1,0 +1,101 @@
+---
+/**
+ * Index page for title, chapter, and part views.
+ * Shows child items as cards with stats, plus a download button
+ * for the current granularity's .md file (if it exists).
+ */
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { toTitleCase } from "@/lib/utils";
+import { getFile } from "@/lib/content";
+import type { SourceId, Granularity } from "@/lib/types";
+import { Download } from "lucide-react";
+
+interface ChildItem {
+  label: string;
+  sublabel?: string;
+  href: string;
+  stats: Array<{ label: string; value: string | number }>;
+}
+
+interface Props {
+  source: SourceId;
+  granularity: Granularity;
+  heading: string;
+  description?: string;
+  children: ChildItem[];
+  downloadPath?: string;
+  downloadFilename?: string;
+}
+
+const { source, granularity, heading, description, children, downloadPath, downloadFilename } = Astro.props;
+
+let downloadAvailable = false;
+let downloadContent: string | null = null;
+if (downloadPath) {
+  downloadContent = await getFile(downloadPath);
+  downloadAvailable = downloadContent !== null;
+}
+
+const granularityLabel = granularity === "title" ? "Title" : granularity === "chapter" ? "Chapter" : "Part";
+---
+
+<div class="flex flex-col gap-6">
+  <div class="flex items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-blue-800 dark:text-slate-blue-200">{toTitleCase(heading)}</h1>
+      {description && <p class="mt-1 text-sm text-muted-foreground">{description}</p>}
+    </div>
+    {downloadAvailable && downloadFilename && (
+      <a
+        href={`data:text/markdown;charset=utf-8,${encodeURIComponent(downloadContent!)}`}
+        download={downloadFilename}
+      >
+        <Button variant="outline" size="sm">
+          <Download data-icon="inline-start" />
+          Download {granularityLabel}
+        </Button>
+      </a>
+    )}
+  </div>
+
+  {children.length > 0 ? (
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {children.map((child) => (
+        <a href={child.href} class="group">
+          <Card size="sm" className="h-full transition-all group-hover:ring-primary/30 group-hover:shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-bold text-slate-blue-700 dark:text-slate-blue-400">
+                {child.label}
+              </CardTitle>
+              {child.sublabel && (
+                <CardDescription className="text-sm font-medium text-foreground">
+                  {toTitleCase(child.sublabel)}
+                </CardDescription>
+              )}
+              {child.stats.length > 0 && (
+                <div class="flex flex-wrap gap-2 pt-1">
+                  {child.stats
+                    .filter((stat) => stat.label)
+                    .map((stat) => (
+                      <Badge variant="secondary">
+                        {typeof stat.value === "number" ? stat.value.toLocaleString() : stat.value} {stat.label}
+                      </Badge>
+                    ))}
+                </div>
+              )}
+            </CardHeader>
+          </Card>
+        </a>
+      ))}
+    </div>
+  ) : (
+    <Card>
+      <CardHeader className="items-center py-12">
+        <CardTitle className="text-muted-foreground">No content available at this level.</CardTitle>
+      </CardHeader>
+    </Card>
+  )}
+</div>
