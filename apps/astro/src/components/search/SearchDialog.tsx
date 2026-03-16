@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { Search, X, ArrowRight } from "lucide-react";
 import { getClient, type SearchResult } from "@/lib/search";
 
@@ -92,10 +93,12 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex h-8 items-center gap-2 rounded-md border border-input bg-background px-3 text-sm text-muted-foreground transition-colors hover:bg-muted"
+        className="flex h-8 w-48 items-center justify-between rounded-md border border-input bg-background px-3 text-sm text-muted-foreground transition-colors hover:bg-muted"
       >
-        <Search className="size-3.5" />
-        <span className="hidden sm:inline">Search</span>
+        <span className="flex items-center gap-2">
+          <Search className="size-3.5" />
+          <span className="hidden sm:inline">Search</span>
+        </span>
         <kbd className="pointer-events-none hidden select-none rounded border border-border bg-muted px-1.5 font-mono text-[0.65rem] font-medium text-muted-foreground sm:inline">
           <span className="text-xs">⌘</span>K
         </kbd>
@@ -103,11 +106,11 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
     );
   }
 
-  return (
+  return createPortal(
     <>
-      {/* Backdrop */}
+      {/* Backdrop — starts below the header (h-14 = 3.5rem) */}
       <div
-        className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+        className="fixed inset-0 top-14 z-50 bg-black/50 backdrop-blur-sm"
         onClick={() => setOpen(false)}
       />
 
@@ -236,7 +239,8 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
           )}
         </div>
       </div>
-    </>
+    </>,
+    document.body,
   );
 }
 
