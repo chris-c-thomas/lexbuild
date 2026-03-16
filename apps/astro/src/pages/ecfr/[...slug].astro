@@ -152,7 +152,7 @@ const isIndexPage = route.granularity !== "section";
 ---
 
 <BaseLayout title={pageTitle} source={SOURCE_ID} description={`${pageTitle} — Structured Markdown from LexBuild.`}>
-  <BreadcrumbNav breadcrumbs={route.breadcrumbs} />
+  <BreadcrumbNav breadcrumbs={route.breadcrumbs} currentPageName={frontmatter?.section_name ? toTitleCase(frontmatter.section_name) : undefined} />
 
   {isIndexPage ? (
     <HierarchyIndex

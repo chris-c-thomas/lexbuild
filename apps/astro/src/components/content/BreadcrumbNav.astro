@@ -11,9 +11,11 @@ import type { Breadcrumb as BreadcrumbType } from "@/lib/types";
 
 interface Props {
   breadcrumbs: BreadcrumbType[];
+  /** Optional name appended to the last breadcrumb (e.g. section name). */
+  currentPageName?: string;
 }
 
-const { breadcrumbs } = Astro.props;
+const { breadcrumbs, currentPageName } = Astro.props;
 ---
 
 <Breadcrumb className="mb-4">
@@ -23,7 +25,9 @@ const { breadcrumbs } = Astro.props;
         {i > 0 && <BreadcrumbSeparator />}
         <BreadcrumbItem>
           {i === breadcrumbs.length - 1 ? (
-            <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+            <BreadcrumbPage>
+              {crumb.label}{currentPageName ? ` — ${currentPageName}` : ""}
+            </BreadcrumbPage>
           ) : (
             <BreadcrumbLink href={crumb.href}>{crumb.label}</BreadcrumbLink>
           )}
