@@ -126,7 +126,7 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
             <input
               ref={inputRef}
               type="text"
-              placeholder="Search U.S. Code and eCFR..."
+              placeholder="Search LexBuild"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="placeholder:text-muted-foreground flex-1 bg-transparent px-3 py-3 text-sm outline-none"
@@ -225,8 +225,8 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
 
             {!loading && !query && (
               <div className="text-muted-foreground px-4 py-8 text-center text-sm">
-                Type to search across <span className="text-foreground font-medium">287,000+</span>{" "}
-                sections of U.S. law and regulations
+                Search across <span className="text-foreground font-medium">287,000+</span>{" "}
+                sections of the U.S. law and regulations
               </div>
             )}
           </div>
