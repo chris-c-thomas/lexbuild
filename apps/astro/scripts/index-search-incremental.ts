@@ -341,10 +341,7 @@ async function indexEcfrIncremental(
 // Prune — remove orphaned documents from the index
 // ---------------------------------------------------------------------------
 
-async function pruneOrphans(
-  client: Meilisearch,
-  expectedIds: Set<string>,
-): Promise<number> {
+async function pruneOrphans(client: Meilisearch, expectedIds: Set<string>): Promise<number> {
   console.log("\nPruning orphaned documents...");
   console.log(`  Expected documents on disk: ${expectedIds.size}`);
 

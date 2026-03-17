@@ -44,7 +44,7 @@ export function MobileNav({ source, currentPath }: MobileNavProps) {
               onChange={(e) => {
                 window.location.href = `/${e.target.value}`;
               }}
-              className="border-sidebar-border bg-sidebar-accent text-sidebar-accent-foreground appearance-none rounded-md border py-1 pr-7 pl-2.5 text-xs font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+              className="border-sidebar-border bg-sidebar-accent text-sidebar-accent-foreground focus-visible:ring-ring appearance-none rounded-md border py-1 pr-7 pl-2.5 text-xs font-medium outline-none focus-visible:ring-2 focus-visible:ring-offset-1"
               aria-label="Select source"
             >
               <option value="usc">U.S. Code</option>

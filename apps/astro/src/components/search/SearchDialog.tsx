@@ -173,7 +173,11 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
           </div>
 
           {/* Results */}
-          <div className="max-h-[50vh] overflow-y-auto" style={{ overscrollBehavior: "contain" }} aria-live="polite">
+          <div
+            className="max-h-[50vh] overflow-y-auto"
+            style={{ overscrollBehavior: "contain" }}
+            aria-live="polite"
+          >
             {loading && (
               <div className="text-muted-foreground px-4 py-8 text-center text-sm">
                 Searching\u2026
@@ -186,7 +190,9 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
 
             {!loading && !error && query && results && results.hits.length === 0 && (
               <div className="text-muted-foreground px-4 py-8 text-center text-sm">
-                No results for {"\u201C"}{query}{"\u201D"}
+                No results for {"\u201C"}
+                {query}
+                {"\u201D"}
               </div>
             )}
 
@@ -229,8 +235,8 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
 
             {!loading && !query && (
               <div className="text-muted-foreground px-4 py-8 text-center text-sm">
-                Search across <span className="text-foreground font-medium">287,000+</span>{" "}
-                sections of the U.S. law and regulations
+                Search across <span className="text-foreground font-medium">287,000+</span> sections
+                of the U.S. law and regulations
               </div>
             )}
           </div>
