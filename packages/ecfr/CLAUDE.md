@@ -15,7 +15,8 @@ src/
 ├── ecfr-frontmatter.ts      # Build FrontmatterData from eCFR context
 ├── ecfr-path.ts             # Output path builder
 ├── converter.ts             # Conversion orchestrator (collect-then-write)
-└── downloader.ts            # Download eCFR XML from govinfo
+├── downloader.ts            # Download eCFR XML from govinfo bulk data
+└── ecfr-api-downloader.ts   # Download eCFR XML from ecfr.gov API (daily-updated)
 ```
 
 ## Public API
@@ -24,7 +25,10 @@ src/
 |--------|------|---------|
 | `convertEcfrTitle()` | Function | Convert an eCFR XML file to Markdown |
 | `downloadEcfrTitles()` | Function | Download eCFR XML from govinfo bulk data |
-| `buildEcfrDownloadUrl()` | Function | Build download URL for a single title |
+| `downloadEcfrTitlesFromApi()` | Function | Download eCFR XML from ecfr.gov API (default) |
+| `fetchEcfrTitlesMeta()` | Function | Fetch title metadata and currency dates from API |
+| `buildEcfrDownloadUrl()` | Function | Build govinfo download URL for a single title |
+| `buildEcfrApiDownloadUrl()` | Function | Build ecfr.gov API download URL for a single title |
 | `EcfrASTBuilder` | Class | SAX→AST builder for GPO/SGML XML |
 | `ECFR_TITLE_COUNT` | Constant | `50` |
 | `ECFR_TITLE_NUMBERS` | Constant | Array `[1, 2, ..., 50]` |
@@ -32,12 +36,15 @@ src/
 
 ## eCFR XML Schema
 
-**Source**: `https://www.govinfo.gov/bulkdata/ECFR/title-{N}/ECFR-title{N}.xml`
+**Sources**:
+- **eCFR API (default)**: `https://www.ecfr.gov/api/versioner/v1/full/{date}/title-{N}.xml` — daily-updated, point-in-time
+- **govinfo bulk**: `https://www.govinfo.gov/bulkdata/ECFR/title-{N}/ECFR-title{N}.xml` — updates irregularly
 
-**Format**: GPO/SGML-derived XML — no namespace declarations, no XSD schema. NOT USLM.
+**Format**: GPO/SGML-derived XML — no namespace declarations, no XSD schema. NOT USLM. Both sources use the same element vocabulary (DIV1-DIV9, HEAD, P, AUTH, etc.) but differ in wrapper structure.
 
 ### Document Root Structure
 
+**govinfo bulk XML**:
 ```xml
 <DLPSTEXTCLASS>        <!-- pass-through wrapper -->
   <HEADER>...</HEADER>  <!-- skipped (minimal metadata) -->
@@ -49,7 +56,17 @@ src/
 </DLPSTEXTCLASS>
 ```
 
-No Dublin Core metadata, no release point, no positive law flag. Metadata is minimal compared to USLM.
+**eCFR API XML**:
+```xml
+<ECFR>                 <!-- pass-through wrapper -->
+  <VOLUME N="1" AMDDATE="..."/>  <!-- skipped -->
+  <DIV1 N="1" TYPE="TITLE">
+    <!-- Title content (no NODE attributes, no § prefix on section N) -->
+  </DIV1>
+</ECFR>
+```
+
+Key API differences: no `HEADER`/`CFRTOC`, no `NODE` attribute, no `§` prefix on section `N` values, single `DIV1` for multi-volume titles (N = title number directly). The builder handles both formats transparently — no source detection needed.
 
 ### DIV Hierarchy
 
@@ -58,7 +75,7 @@ The eCFR uses numbered DIV elements where the `TYPE` attribute determines semant
 | Element | TYPE | LevelType | N format | Notes |
 |---------|------|-----------|---------|-------|
 | `DIV1` | `TITLE` | `title` | Numeric (`1`, `17`) | Root |
-| ~~`DIV2`~~ | ~~`SUBTITLE`~~ | ~~`subtitle`~~ | — | **Not observed** in Titles 1 or 17 |
+| `DIV2` | `SUBTITLE` | `subtitle` | Letter (`A`, `B`) | Present in some titles (e.g., Title 2) |
 | `DIV3` | `CHAPTER` | `chapter` | Roman (`I`, `II`) | Major grouping |
 | `DIV4` | `SUBCHAP` | `subchapter` | Letter (`A`, `B`) | |
 | `DIV5` | `PART` | `part` | Numeric (`1`, `240`) | Primary regulatory unit |
@@ -139,8 +156,8 @@ eCFR uses **HTML-style tables** (`TABLE`, `TR`, `TH`, `TD`), NOT GPOTABLE format
 | Category | Behavior | Elements |
 |----------|----------|----------|
 | **Ignore** | Skip entire subtree | `CFRTOC`, `HEADER` |
-| **Pass-through** | Transparent, no frame | `DLPSTEXTCLASS`, `TEXT`, `BODY`, `ECFRBRWS` |
-| **Skip** | Skip self (no subtree) | `PTHD`, `CHAPTI`, `RESERVED`, `PG`, `STARS`, `AMDDATE`, etc. |
+| **Pass-through** | Transparent, no frame | `DLPSTEXTCLASS`, `TEXT`, `BODY`, `ECFRBRWS`, `ECFR` |
+| **Skip** | Skip self (no subtree) | `PTHD`, `CHAPTI`, `RESERVED`, `PG`, `STARS`, `AMDDATE`, `VOLUME`, etc. |
 
 ## Conversion Pipeline
 
@@ -192,11 +209,19 @@ output/ecfr/
 
 ## Download URLs
 
+**eCFR API (default)**:
+```
+https://www.ecfr.gov/api/versioner/v1/full/{YYYY-MM-DD}/title-{N}.xml
+```
+Point-in-time full title XML. Date defaults to current currency date from `/api/versioner/v1/titles`. Supports `?part=N` and `?section=N.N` query filters. Daily-updated.
+
+**govinfo bulk data**:
 ```
 https://www.govinfo.gov/bulkdata/ECFR/title-{N}/ECFR-title{N}.xml
 ```
+Individual XML files per title (not ZIP archives). Updates irregularly.
 
-Individual XML files per title (not ZIP archives). 50 titles total.
+50 titles total, 49 with content (Title 35 is reserved).
 
 ## Frontmatter Fields
 
@@ -211,7 +236,7 @@ eCFR sections include all standard fields plus:
 ## Common Pitfalls
 
 - **HEADER is fully skipped** — metadata comes from DIV1 attributes, not HEADER elements
-- **DIV2 (SUBTITLE) not observed** — hierarchy skips from DIV1 to DIV3
+- **DIV2 (SUBTITLE) present in some titles** — e.g., Title 2 has Subtitle A/B containing chapters. Parts can nest directly under a subtitle without an intermediate chapter.
 - **SUBJGRP (DIV7)** is organizational only, not a legal subdivision — mapped to `subpart`
 - **Tables are HTML, not GPOTABLE** — the refactor plan's GPOTABLE assumption was wrong
 - **AUTH/SOURCE at part level** — these notes appear on DIV5, not DIV8 sections. The builder captures them in a `partNotes` map (keyed by part identifier) during parsing; the converter enriches section frontmatter from this map.
@@ -219,7 +244,8 @@ eCFR sections include all standard fields plus:
 - **Lowercase `div` wrappers** around tables — handled as pass-through/ignore in the builder
 - **Multi-volume titles** — large titles (e.g., Title 17) have multiple DIV1 elements, one per volume. The `N` attribute on DIV1 is the volume number, not the title number. The builder extracts the title number from the `NODE` attribute prefix (e.g., `NODE="17:1"` → `17`).
 - **CFR chapter numbers are Roman numerals** — `chapter_number` (typed as `number`) is only set when the value parses as an integer. Roman numeral chapter designators (I, II, IV) are captured in `chapter_name` instead.
-- **Reserved titles** — Title 35 (Panama Canal) has no bulk XML on govinfo. The downloader silently skips reserved titles via the `RESERVED_TITLES` set.
+- **Reserved titles** — Title 35 (Panama Canal) has no bulk XML on govinfo and returns 404 from the eCFR API. Both downloaders silently skip reserved titles via the `RESERVED_TITLES` set.
+- **eCFR API vs govinfo XML** — both use the same element vocabulary but differ in wrappers. The builder handles both transparently: `ECFR` root (API) is passthrough, `VOLUME` element (API) is skipped, `§` prefix stripping handles both `"§ 1.1"` (govinfo) and `"1.1"` (API), NODE absence is handled gracefully.
 
 ## Dependency on @lexbuild/core
 

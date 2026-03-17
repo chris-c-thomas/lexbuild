@@ -22,17 +22,17 @@ src/
 
 ### `lexbuild download-usc`
 
-Downloads USC XML from OLRC. Calls `downloadTitles()` from `@lexbuild/usc`.
+Downloads USC XML from OLRC. Calls `downloadTitles()` from `@lexbuild/usc`. Auto-detects the latest OLRC release point by scraping the download page; falls back to `FALLBACK_RELEASE_POINT` if detection fails.
 
 ```
 Options:
   --output <dir>           Default: "./downloads/usc/xml"
   --titles <spec>          Title selection: "1", "1-5", "1-5,8,11"
   --all                    Download all 54 titles (single bulk zip)
-  --release-point <id>     Default: CURRENT_RELEASE_POINT
+  --release-point <id>     Pin a specific release point (auto-detected if omitted)
 ```
 
-Requires either `--titles` or `--all`. Renders summary table with file sizes on completion.
+Requires either `--titles` or `--all`. Summary output shows `(auto-detected)` when the release point was detected at runtime.
 
 ### `lexbuild convert-usc`
 
@@ -64,14 +64,18 @@ Three input modes (mutually exclusive): `<input>` positional arg, `--titles`, or
 
 ### `lexbuild download-ecfr`
 
-Downloads eCFR XML from govinfo. Calls `downloadEcfrTitles()` from `@lexbuild/ecfr`.
+Downloads eCFR XML. Defaults to the ecfr.gov API (daily-updated); govinfo bulk data available as fallback via `--source govinfo`.
 
 ```
 Options:
   --output <dir>           Default: "./downloads/ecfr/xml"
   --titles <spec>          Title selection: "1", "1-5", "1-5,17"
   --all                    Download all 50 titles
+  --source <source>        ecfr-api (default, daily-updated) or govinfo (bulk)
+  --date <YYYY-MM-DD>      Point-in-time date (ecfr-api only)
 ```
+
+When using `ecfr-api` source, the currency date is auto-detected from `/api/versioner/v1/titles` unless `--date` is specified. Output files use the same naming (`ECFR-title{N}.xml`) regardless of source, so `convert-ecfr` works identically with either.
 
 ### `lexbuild convert-ecfr`
 

@@ -12,8 +12,9 @@ src/
 ├── converter.ts          # Main conversion orchestrator (1,232 lines)
 ├── converter.test.ts     # 15+ test cases
 ├── snapshot.test.ts      # Output stability snapshots
-├── downloader.ts         # OLRC XML download + bulk zip handling (418 lines)
-└── downloader.test.ts    # 15+ test cases
+├── downloader.ts         # OLRC XML download + bulk zip handling + auto-detection
+├── downloader.test.ts    # 15+ test cases
+└── release-points.ts     # OLRC release point auto-detection (scrapes download page)
 ```
 
 ## Public API
@@ -21,12 +22,15 @@ src/
 | Export | Type | Purpose |
 |--------|------|---------|
 | `convertTitle()` | Function | Convert a USC XML file to Markdown at any granularity |
-| `downloadTitles()` | Function | Download USC XML from OLRC (single or all 54 titles) |
+| `downloadTitles()` | Function | Download USC XML from OLRC (auto-detects latest release point) |
+| `detectLatestReleasePoint()` | Function | Scrape OLRC download page for current release point |
+| `parseReleasePointFromHtml()` | Function | Parse release point from HTML (exported for testing) |
 | `buildDownloadUrl()` | Function | Build download URL for a single title |
 | `buildAllTitlesUrl()` | Function | Build download URL for all titles as one zip |
 | `releasePointToPath()` | Function | Convert `"119-73not60"` → `"119/73not60"` |
 | `isAllTitles()` | Function | Check if title list covers all 54 USC titles |
-| `CURRENT_RELEASE_POINT` | Constant | Currently `"119-73not60"` |
+| `FALLBACK_RELEASE_POINT` | Constant | Fallback release point when auto-detection fails |
+| `CURRENT_RELEASE_POINT` | Constant | Deprecated alias for `FALLBACK_RELEASE_POINT` |
 | `USC_TITLE_NUMBERS` | Constant | Array `[1, 2, ..., 54]` |
 | `ConvertOptions` | Type | Input options for `convertTitle()` |
 | `ConvertResult` | Type | Conversion result (sections written, files, tokens, memory) |
@@ -34,6 +38,7 @@ src/
 | `DownloadResult` | Type | Download result (titles downloaded, files, bytes, stats) |
 | `DownloadedFile` | Type | Metadata for a single downloaded file (path, title, size, release point) |
 | `DownloadError` | Type | Error type for download failures (wraps underlying I/O/network errors) |
+| `ReleasePointInfo` | Type | Detected release point with description |
 
 ## Conversion Pipeline
 
@@ -102,6 +107,14 @@ Chapters containing subchapters, parts, or divisions are handled by recursive tr
 Title granularity holds the entire AST in memory during rendering. Large titles (26, 42) can require 500MB+ RSS. Section and chapter granularity stream and release nodes.
 
 ## Downloader
+
+### Release Point Auto-Detection
+
+The downloader auto-detects the latest OLRC release point by scraping the download page (`https://uscode.house.gov/download/download.shtml`). When `options.releasePoint` is not provided, `downloadTitles()` calls `detectLatestReleasePoint()` which extracts the release point from download URL hrefs in the page HTML. Falls back to `FALLBACK_RELEASE_POINT` if the page is unreachable or unparseable.
+
+The `--release-point` CLI flag overrides auto-detection for reproducible builds.
+
+### Download Modes
 
 Two download modes:
 

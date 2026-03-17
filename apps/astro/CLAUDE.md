@@ -1141,7 +1141,7 @@ export default defineConfig({
 
 - **Astro `[...slug]` returns a string, not an array.** `Astro.params.slug` is `"title-01/chapter-01/section-1"` — split on `/` to get segments.
 - **Section numbers are strings.** `"202a"`, `"7701-1"`, `"240.10b-5"` are all valid. Never parse as integers.
-- **eCFR chapter numbers are Roman numerals.** `chapter-I`, `chapter-IV`, not `chapter-01`. The sidebar, routes, and content paths must all preserve the original format.
+- **eCFR chapter numbers are Roman numerals.** `chapter-I`, `chapter-IV`, not `chapter-01`. The sidebar, routes, and content paths must all preserve the original format. In frontmatter, `chapter_number` (typed as `number`) is only set for numeric chapters — Roman numerals appear only in `chapter_name`. The `FrontmatterPanel` conditionally displays the chapter number prefix to avoid showing "undefined" for eCFR chapters.
 - **eCFR has 4 hierarchy levels, USC has 3.** The slug resolver must handle both. A 3-segment slug means "section" for USC but "part" for eCFR.
 - **Title-level files can be very large.** Title 26 (USC) is ~10MB. Title 17 (eCFR) is similarly large. Pre-rendered highlights avoid runtime Shiki cost. If runtime Shiki is used (local dev), expect 200ms+ for these files.
 - **`content/` is git-ignored.** It must be populated before the dev server works. Run `scripts/link-content.sh` after CLI conversion.

@@ -90,9 +90,11 @@ node packages/cli/dist/index.js convert-usc --titles 1-5 -o ./test-output
 node packages/cli/dist/index.js convert-usc ./downloads/usc/xml/usc01.xml -o ./test-output
 node packages/cli/dist/index.js convert-usc --titles 1 -g title -o ./test-output
 
-# eCFR commands
+# eCFR commands (default source: ecfr-api — daily-updated)
 node packages/cli/dist/index.js download-ecfr --all
 node packages/cli/dist/index.js download-ecfr --titles 1,17
+node packages/cli/dist/index.js download-ecfr --all --source govinfo          # Fallback to govinfo bulk
+node packages/cli/dist/index.js download-ecfr --all --date 2026-01-01         # Point-in-time download
 node packages/cli/dist/index.js convert-ecfr --all
 node packages/cli/dist/index.js convert-ecfr --titles 1 -o ./test-output
 node packages/cli/dist/index.js convert-ecfr ./downloads/ecfr/xml/ECFR-title1.xml -o ./test-output
@@ -174,6 +176,11 @@ Official USLM reference documents from OLRC (not committed — download locally 
 
 - [USLM User Guide (PDF)](https://uscode.house.gov/download/resources/USLM-User-Guide.pdf) — v0.1.4, Oct 2013. Covers abstract/concrete model, identification, referencing, metadata, versioning, and presentation models.
 - [USLM Schema & CSS](https://uscode.house.gov/download/resources/schemaandcss.zip) — USLM-1.0.xsd, USLM-1.0.15.xsd, usctitle.css, Dublin Core schemas, XHTML schema
+
+GPO XML reference guides (committed in `reference/usgpo-xml-reference-files/`):
+
+- `ECFR-XML-User-Guide.md` — eCFR bulk XML structure (DIV hierarchy, element catalog, SGML-to-XML conversion details). Confirms `NODE` attribute is "for internal use and may be changed at any time."
+- `CFR-XML_User-Guide.md` — **Annual CFR** XML format. Uses a different schema from eCFR: `CFRDOC` root, `TITLE > CHAPTER > PART > SECTION` elements (not DIV-based), `GPOTABLE` for tables (not HTML tables), `SECTNO`/`SUBJECT` for section numbers/headings. A future `@lexbuild/cfr` package would need its own builder for this format.
 
 ## USLM XML Schema — Key Facts
 
@@ -328,22 +335,36 @@ Where `{NN}` is zero-padded title number (01-54), `{congress}` is Congress numbe
 
 Example: `xml_usc01@119-73not60.zip`
 
-Note: Release points can include exclusion suffixes (e.g., `119-73not60` means "through PL 119-73, excluding PL 119-60"). The current release point is hardcoded in `packages/usc/src/downloader.ts` as `CURRENT_RELEASE_POINT`.
+Note: Release points can include exclusion suffixes (e.g., `119-73not60` means "through PL 119-73, excluding PL 119-60"). The downloader auto-detects the latest release point by scraping the OLRC download page. A hardcoded `FALLBACK_RELEASE_POINT` in `packages/usc/src/downloader.ts` is used only if auto-detection fails. The `--release-point` CLI flag allows pinning a specific release point.
 
 The zip contains a single XML file named like `usc01.xml`.
 
 ## eCFR Download URLs
 
-Bulk data page: `https://www.govinfo.gov/bulkdata/ECFR`
+**eCFR API (default source)**: `https://www.ecfr.gov/api/versioner/v1/`
+
+Daily-updated, point-in-time XML via the ecfr.gov versioner API:
+```
+https://www.ecfr.gov/api/versioner/v1/full/{YYYY-MM-DD}/title-{N}.xml
+```
+
+Title metadata and currency dates:
+```
+https://www.ecfr.gov/api/versioner/v1/titles
+```
+
+No API key required. No documented rate limits. Supports `?part=N` and `?section=N.N` query filters for granular fetching.
+
+**govinfo bulk data (fallback)**: `https://www.govinfo.gov/bulkdata/ECFR`
 
 Individual title XML (no zip — plain XML):
 ```
 https://www.govinfo.gov/bulkdata/ECFR/title-{N}/ECFR-title{N}.xml
 ```
 
-Where `{N}` is the title number (1-50, not zero-padded). Example: `ECFR-title17.xml`
+Where `{N}` is the title number (1-50, not zero-padded). Example: `ECFR-title17.xml`. Updates irregularly — can lag months behind ecfr.gov for stable titles.
 
-**Reserved titles**: Title 35 (Panama Canal) is reserved — govinfo does not publish bulk XML for it. The downloader silently skips reserved titles during `--all` downloads. The `RESERVED_TITLES` set in `packages/ecfr/src/downloader.ts` tracks which titles to skip.
+**Reserved titles**: Title 35 (Panama Canal) is reserved — both sources return 404. The downloaders silently skip reserved titles during `--all` downloads. The `RESERVED_TITLES` set tracks which titles to skip.
 
 50 titles total, 49 with content.
 
