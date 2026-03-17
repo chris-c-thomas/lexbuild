@@ -172,3 +172,6 @@ bun.lock
 # Verdaccio Local Registry
 .verdaccio/
 storage/
+
+# Meilisearch Local Data
+data.ms/
