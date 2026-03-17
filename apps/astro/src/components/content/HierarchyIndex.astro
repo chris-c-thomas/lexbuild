@@ -65,7 +65,7 @@ const granularityLabel = granularity === "title" ? "Title" : granularity === "ch
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {children.map((child) => (
         <a href={child.href} class="group">
-          <Card size="sm" className="h-full transition-all group-hover:ring-primary/30 group-hover:shadow-sm">
+          <Card size="sm" className="h-full transition-[box-shadow] group-hover:ring-primary/30 group-hover:shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-bold text-slate-blue-700 dark:text-slate-blue-400">
                 {child.label}

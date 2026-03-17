@@ -126,14 +126,18 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
             <input
               ref={inputRef}
               type="text"
-              placeholder="Search LexBuild"
+              placeholder="Search LexBuild\u2026"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="placeholder:text-muted-foreground flex-1 bg-transparent px-3 py-3 text-sm outline-none"
+              aria-label="Search"
+              autoComplete="off"
+              spellCheck={false}
+              className="placeholder:text-muted-foreground flex-1 bg-transparent px-3 py-3 text-sm outline-none focus-visible:outline-none"
             />
             {query && (
               <button
                 onClick={() => setQuery("")}
+                aria-label="Clear search"
                 className="text-muted-foreground hover:text-foreground rounded p-0.5"
               >
                 <X className="size-3.5" />
@@ -169,10 +173,10 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
           </div>
 
           {/* Results */}
-          <div className="max-h-[50vh] overflow-y-auto">
+          <div className="max-h-[50vh] overflow-y-auto" style={{ overscrollBehavior: "contain" }} aria-live="polite">
             {loading && (
               <div className="text-muted-foreground px-4 py-8 text-center text-sm">
-                Searching...
+                Searching\u2026
               </div>
             )}
 
@@ -182,7 +186,7 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
 
             {!loading && !error && query && results && results.hits.length === 0 && (
               <div className="text-muted-foreground px-4 py-8 text-center text-sm">
-                No results for "{query}"
+                No results for {"\u201C"}{query}{"\u201D"}
               </div>
             )}
 

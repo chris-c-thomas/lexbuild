@@ -58,7 +58,7 @@ function VirtualizedSectionList({ sections, basePath, currentPath }: SectionList
   });
 
   return (
-    <div ref={parentRef} className="max-h-[60vh] overflow-y-auto">
+    <div ref={parentRef} className="max-h-[60vh] overflow-y-auto" style={{ overscrollBehavior: "contain" }}>
       <div
         style={{
           height: virtualizer.getTotalSize(),

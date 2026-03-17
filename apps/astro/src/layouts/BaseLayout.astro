@@ -38,12 +38,19 @@ const meiliSearchKey = import.meta.env.MEILI_SEARCH_KEY ?? "";
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#ffffff" id="theme-color" />
     <!-- Prevent flash of wrong theme -->
     <script is:inline>
       (function () {
-        const theme = localStorage.getItem("theme");
-        if (theme === "dark" || (!theme && matchMedia("(prefers-color-scheme: dark)").matches)) {
-          document.documentElement.classList.add("dark");
+        var d = document.documentElement;
+        var theme = localStorage.getItem("theme");
+        var isDark = theme === "dark" || (!theme && matchMedia("(prefers-color-scheme: dark)").matches);
+        if (isDark) {
+          d.classList.add("dark");
+          d.style.colorScheme = "dark";
+          document.getElementById("theme-color").setAttribute("content", "#1b1b1f");
+        } else {
+          d.style.colorScheme = "light";
         }
       })();
     </script>
@@ -69,15 +76,20 @@ const meiliSearchKey = import.meta.env.MEILI_SEARCH_KEY ?? "";
           <a href="/" class="text-2xl font-bold text-slate-blue-800 dark:text-slate-blue-200"> LexBuild </a>
           <nav class="hidden items-center gap-4 text-md font-medium lg:flex">
             <a
+              href="https://www.npmjs.com/package/@lexbuild/cli"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-slate-blue-700 dark:hover:text-slate-blue-300"
+            >
+              CLI
+            </a>
+            <a
               href="/usc"
               class:list={[
                 "inline-flex items-center gap-1.5 transition-colors hover:text-slate-blue-700 dark:hover:text-slate-blue-300",
                 source === "usc" ? "text-foreground" : "text-muted-foreground",
               ]}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="m12 3 7 4v2H5V7z"/><path d="M2 17h20v2H2z"/><path d="M5 9v8"/><path d="M19 9v8"/><path d="M9 9v8"/><path d="M15 9v8" /><path d="m2 17 2 4h16l2-4"/>
-              </svg>
               U.S. Code
             </a>
             <a
@@ -87,10 +99,15 @@ const meiliSearchKey = import.meta.env.MEILI_SEARCH_KEY ?? "";
                 source === "ecfr" ? "text-foreground" : "text-muted-foreground",
               ]}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>
-              </svg>
               eCFR
+            </a>
+            <a
+              href="https://github.com/chris-c-thomas/LexBuild/tree/main/docs"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-slate-blue-700 dark:hover:text-slate-blue-300"
+            >
+              Docs
             </a>
           </nav>
         </div>

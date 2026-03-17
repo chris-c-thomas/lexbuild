@@ -44,7 +44,7 @@ export function MobileNav({ source, currentPath }: MobileNavProps) {
               onChange={(e) => {
                 window.location.href = `/${e.target.value}`;
               }}
-              className="border-sidebar-border bg-sidebar-accent text-sidebar-accent-foreground appearance-none rounded-md border py-1 pr-7 pl-2.5 text-xs font-medium outline-none"
+              className="border-sidebar-border bg-sidebar-accent text-sidebar-accent-foreground appearance-none rounded-md border py-1 pr-7 pl-2.5 text-xs font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
               aria-label="Select source"
             >
               <option value="usc">U.S. Code</option>
@@ -61,6 +61,14 @@ export function MobileNav({ source, currentPath }: MobileNavProps) {
         {!source && (
           <nav className="flex flex-col gap-1 p-3">
             <a
+              href="https://www.npmjs.com/package/@lexbuild/cli"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sidebar-foreground hover:bg-sidebar-accent/50 rounded-md px-3 py-2 text-sm font-medium transition-colors"
+            >
+              CLI
+            </a>
+            <a
               href="/usc"
               className="text-sidebar-foreground hover:bg-sidebar-accent/50 rounded-md px-3 py-2 text-sm font-medium transition-colors"
             >
@@ -71,6 +79,14 @@ export function MobileNav({ source, currentPath }: MobileNavProps) {
               className="text-sidebar-foreground hover:bg-sidebar-accent/50 rounded-md px-3 py-2 text-sm font-medium transition-colors"
             >
               eCFR
+            </a>
+            <a
+              href="https://github.com/chris-c-thomas/LexBuild/tree/main/docs"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sidebar-foreground hover:bg-sidebar-accent/50 rounded-md px-3 py-2 text-sm font-medium transition-colors"
+            >
+              Docs
             </a>
           </nav>
         )}

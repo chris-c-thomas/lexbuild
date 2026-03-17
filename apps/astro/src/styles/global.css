@@ -198,6 +198,10 @@
   html {
     @apply font-sans;
   }
+  /* Offset anchored headings for sticky header (h-14 = 3.5rem + 0.5rem breathing room) */
+  [id] {
+    scroll-margin-top: 4rem;
+  }
   code,
   pre,
   kbd,
