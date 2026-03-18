@@ -1,5 +1,19 @@
 # @lexbuild/core
 
+## 1.10.0
+
+### Minor Changes
+
+- 268dc81: Update eCFR downloader to handle govinfo eCFR XML or eCFR.gov API XML
+
+### Patch Changes
+
+- 2abf796: Update monorepo README.md
+- af2ea01: Fix eCFR frontmatter panel info
+- 791ca5e: Set the eCFR data API as the default eCFR source (govinfo still available if desired)
+- 65539ac: Update README.md files
+- d71a5d8: Auto detect latest release of the USC and add options to choose previous release points
+
 ## 1.9.4
 
 ### Patch Changes
