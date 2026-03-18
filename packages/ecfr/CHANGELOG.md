@@ -1,5 +1,13 @@
 # @lexbuild/ecfr
 
+## 1.9.4
+
+### Patch Changes
+
+- 6a7111a: Add ENFILE/EMFILE retry wrapper for file writes in converters
+- Updated dependencies [6a7111a]
+  - @lexbuild/core@1.9.4
+
 ## 1.9.3
 
 ### Patch Changes

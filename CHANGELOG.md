@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.9.4]
+
+### Added
+
+- Meilisearch full-text search across USC and eCFR with Cmd+K dialog and faceted filtering (~281k sections)
+- Hierarchical drill-down pages with download at every granularity level
+- Mobile sidebar navigation using shadcn Sheet (Radix Dialog drawer)
+- Markdown / Preview tab list for content viewing
+- Incremental search indexer for Meilisearch
+- Sitemap chunking (50k URL limit per file, separated by source)
+- Meta tags for SEO (`apps/astro/`)
+
+### Changed
+
+- Refactor UI components to use shadcn/ui (radix-nova preset, zinc theme) as the design system base
+- Restructure content directory to source-first layout
+- Update design and layout of page sections, frontmatter, download/copy buttons, and breadcrumbs
+- Sidebar styling improvements and dark mode hover states
+- Search box, header, and landing page styles
+
+### Fixed
+
+- Add resilient `writeFile`/`mkdir` wrappers in `@lexbuild/core` with ENFILE/EMFILE retry and exponential backoff to prevent file descriptor exhaustion during large conversions
+- Release token cache every 50k files to free heap during search indexing
+- Garbage collect every 50k files to prevent OOM in highlight pre-rendering
+- Set search index batch size to 5k (down from 50k) to prevent OOM
+- Allow chapters with >100 sections to display properly in sidebar nav
+- Add section titles to breadcrumbs on section pages
+- Apply `toTitleCase` to USC sidebar entries
+- Add error handling for Meilisearch connection issues
+- Markdown/preview container word wrap and overflow fixes
+- DOM-text-to-HTML validation check
+- ESLint error fixes
+
 ## [1.9.3]
 
 ### Added
