@@ -73,16 +73,11 @@ const meiliSearchKey = import.meta.env.MEILI_SEARCH_KEY ?? "";
       <div class="mx-auto flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8">
         <div class="flex items-center gap-6">
           <MobileNav client:load source={source} currentPath={currentPath} />
-          <a href="/" class="font-display text-2xl font-semibold text-slate-blue-800 dark:text-slate-blue-200"> LexBuild </a>
-          <nav class="hidden items-center gap-4 text-md font-medium lg:flex">
-            <a
-              href="https://www.npmjs.com/package/@lexbuild/cli"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-slate-blue-700 dark:hover:text-slate-blue-300"
-            >
-              CLI
-            </a>
+          <a href="/" class="inline-flex items-center gap-2 font-display text-2xl font-semibold text-slate-blue-800 dark:text-slate-blue-200">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"></path><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path></svg>
+            LexBuild
+          </a>
+          <nav class="hidden pl-2 items-center gap-5 text-md font-regular lg:flex">
             <a
               href="/usc"
               class:list={[
@@ -100,6 +95,14 @@ const meiliSearchKey = import.meta.env.MEILI_SEARCH_KEY ?? "";
               ]}
             >
               eCFR
+            </a>
+            <a
+              href="https://www.npmjs.com/package/@lexbuild/cli"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-slate-blue-700 dark:hover:text-slate-blue-300"
+            >
+              CLI
             </a>
             <a
               href="https://github.com/chris-c-thomas/LexBuild/tree/main/docs"
@@ -146,9 +149,19 @@ const meiliSearchKey = import.meta.env.MEILI_SEARCH_KEY ?? "";
         </main>
       )
     }
-    <footer class="border-t border-border py-6 text-center text-sm text-muted-foreground">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <span class="font-medium text-slate-blue-700 dark:text-slate-blue-400">LexBuild - 2026</span>
+    <footer class="border-t border-border py-6 text-sm text-muted-foreground">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-slate-blue-800 dark:text-slate-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"></path><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path></svg>
+          <span class="font-display font-semibold text-slate-blue-800 dark:text-slate-blue-200">LexBuild</span>
+          <span class="text-muted-foreground">&mdash;</span>
+          <span>U.S. legal text as structured Markdown · 2026</span>
+        </div>
+        <nav class="hidden items-center gap-6 sm:flex">
+          <a href="https://www.npmjs.com/package/@lexbuild/cli" target="_blank" rel="noopener noreferrer" class="transition-colors hover:text-slate-blue-700 dark:hover:text-slate-blue-300">CLI</a>
+          <a href="https://github.com/chris-c-thomas/LexBuild/tree/main/docs" target="_blank" rel="noopener noreferrer" class="transition-colors hover:text-slate-blue-700 dark:hover:text-slate-blue-300">Docs</a>
+          <a href="https://github.com/chris-c-thomas/LexBuild" target="_blank" rel="noopener noreferrer" class="transition-colors hover:text-slate-blue-700 dark:hover:text-slate-blue-300">GitHub</a>
+        </nav>
       </div>
     </footer>
   </body>

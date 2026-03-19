@@ -52,7 +52,7 @@ const sources = Object.values(SOURCES);
       <div class="flex items-center justify-center gap-3 flex-wrap">
         <a
           href="#quickstart"
-          class="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-md bg-slate-blue-600 text-white border border-slate-blue-700 hover:bg-slate-blue-700 hover:border-slate-blue-700 transition-all duration-150 cursor-pointer"
+          class="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-sm bg-slate-blue-600 text-white border border-slate-blue-700 hover:bg-slate-blue-700 hover:border-slate-blue-700 transition-all duration-150 cursor-pointer"
         >
           CLI Quick Start
           <svg
@@ -69,7 +69,7 @@ const sources = Object.values(SOURCES);
           href="https://github.com/chris-c-thomas/LexBuild"
           target="_blank"
           rel="noopener"
-          class="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-md bg-white text-slate-blue-700 border border-slate-blue-200 hover:border-slate-blue-400 hover:bg-slate-blue-50 dark:bg-slate-blue-900 dark:text-slate-blue-200 dark:border-slate-blue-700 dark:hover:border-slate-blue-500 dark:hover:bg-slate-blue-800 transition-all duration-150 cursor-pointer"
+          class="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-sm bg-white text-slate-blue-900 border border-slate-blue-300 hover:border-slate-blue-500 hover:bg-slate-blue-50 dark:bg-slate-blue-800 dark:text-slate-blue-200 dark:border-slate-blue-700 dark:hover:border-slate-blue-500 dark:hover:bg-slate-blue-800 transition-all duration-150 cursor-pointer"
         >
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
             <path
@@ -83,19 +83,19 @@ const sources = Object.values(SOURCES);
   </section>
 
   <section id="quickstart" class="border-b border-border-base py-14">
-    <div class="max-w-4xl mx-auto px-6">
+    <div class="max-w-3xl mx-auto px-6">
       <div class="mb-6">
         <h2 class="font-display text-xl font-semibold tracking-tight mb-1">CLI Quick Start</h2>
         <p class="text-ink-muted text-[15px]">No complex configuration required. Advanced CLI options are available.</p>
       </div>
-      <div class="bg-slate-blue-50 border border-slate-blue-100 dark:bg-card dark:border-border rounded-xl p-5 sm:p-6">
+      <div class="bg-slate-blue-50 border border-slate-blue-100 dark:bg-card dark:border-border rounded-sm p-5 sm:p-6">
         <div class="flex flex-col gap-1.5 mb-3">
           <span
-            class="font-mono text-[11px] font-medium uppercase tracking-wider px-2 py-0.5 rounded border text-slate-blue-700 border-slate-blue-300 bg-slate-blue-100 dark:text-slate-blue-300 dark:border-slate-blue-600 dark:bg-slate-blue-900 self-start"
+            class="font-mono text-[11px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-sm border text-slate-blue-700 border-slate-blue-300 bg-slate-blue-100 dark:text-slate-blue-300 dark:border-slate-blue-600 dark:bg-slate-blue-900 self-start"
             >USC</span
           >
           <span class="font-normal text-[15px]"
-            >Download all 54 Titles from the source <a
+            >Download all 54 Titles of the U.S. Code directly from the source <a
               href="https://uscode.house.gov/download/download.shtml"
               target="_blank"
               rel="noopener"
@@ -106,11 +106,11 @@ const sources = Object.values(SOURCES);
               target="_blank"
               rel="noopener"
               class="text-slate-blue-600 hover:text-slate-blue-800 dark:text-slate-blue-400 dark:hover:text-slate-blue-200 font-medium">OLRC</a
-            > and convert into per-section Markdown</span
+            > and convert into per-section Markdown files.</span
           >
         </div>
         <div
-          class="bg-slate-blue-950 rounded-lg p-4 font-mono text-[13px] leading-relaxed text-[#d4dce4] overflow-x-auto"
+          class="bg-slate-blue-950 rounded-sm p-4 font-mono text-[13px] leading-relaxed text-[#d4dce4] overflow-x-auto"
         >
           <div>
             <span class="text-slate-blue-400">$</span>
@@ -122,22 +122,12 @@ const sources = Object.values(SOURCES);
             <span class="text-white">npx @lexbuild/cli convert-usc</span>
             <span class="text-putty-300">--all</span>
           </div>
-          <!-- <div>
-            <span class="text-slate-blue-400">$</span>
-            <span class="text-white">npx @lexbuild/cli convert-usc</span>
-            <span class="text-putty-300">-g title --all</span>
-          </div>
-          <div>
-            <span class="text-slate-blue-400">$</span>
-            <span class="text-white">npx @lexbuild/cli convert-usc</span>
-            <span class="text-putty-300">-g -chapter --all</span>
-          </div> -->
         </div>
       </div>
       <div class="mt-5 flex justify-center">
         <a
           href="https://github.com/chris-c-thomas/LexBuild/"
-          class="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-md bg-white text-slate-blue-700 border border-slate-blue-200 hover:border-slate-blue-400 hover:bg-slate-blue-50 dark:bg-slate-blue-900 dark:text-slate-blue-200 dark:border-slate-blue-700 dark:hover:border-slate-blue-500 dark:hover:bg-slate-blue-800 transition-all duration-150 cursor-pointer"
+          class="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-sm bg-white text-slate-blue-800 border border-slate-blue-300 hover:border-slate-blue-500 hover:bg-slate-blue-50 dark:bg-slate-blue-900 dark:text-slate-blue-200 dark:border-slate-blue-700 dark:hover:border-slate-blue-500 dark:hover:bg-slate-blue-800 transition-all duration-150 cursor-pointer"
         >
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="4 17 10 11 4 5"></polyline>
@@ -154,7 +144,7 @@ const sources = Object.values(SOURCES);
       <div class="mb-6">
         <h2 class="font-display text-xl font-semibold tracking-tight mb-1">Browse Sources</h2>
         <p class="text-ink-muted text-[15px]">
-          Explore the full text of U.S. federal law and regulations.
+          Explore U.S. federal law and regulations as structured Markdown, no CLI required. Browse, copy, or download entire titles, chapters, parts, or sections straight from the browser.
         </p>
       </div>
       <div class="grid gap-6 sm:grid-cols-2">
@@ -162,7 +152,7 @@ const sources = Object.values(SOURCES);
           sources.map((source) => (
             <a
               href={source.basePath}
-              class="group rounded-md border border-border bg-card p-6 shadow-sm transition-[border-color,box-shadow] hover:border-slate-blue-400 hover:shadow-md dark:hover:border-slate-blue-600"
+              class="group rounded-sm border border-border bg-card p-6 shadow-sm transition-[border-color,box-shadow] hover:border-slate-blue-400 hover:shadow-md dark:hover:border-slate-blue-600"
             >
               <div class="flex items-center gap-3">
                 <span class="text-xs font-bold tracking-wider text-slate-blue-600 dark:text-slate-blue-400">
@@ -170,7 +160,7 @@ const sources = Object.values(SOURCES);
                 </span>
                 <span class="h-px flex-1 bg-slate-blue-200 dark:bg-slate-blue-800" />
               </div>
-              <h2 class="mt-3 text-xl font-semibold text-foreground group-hover:text-slate-blue-700 dark:group-hover:text-slate-blue-300 transition-colors">
+              <h2 class="font-sans mt-3 text-xl font-semibold text-foreground group-hover:text-slate-blue-700 dark:group-hover:text-slate-blue-300 transition-colors">
                 {source.name}
               </h2>
               <p class="mt-2 text-sm leading-relaxed text-muted-foreground">{source.description}</p>
@@ -210,8 +200,8 @@ const sources = Object.values(SOURCES);
         </p>
       </div>
       <div class="grid grid-cols-1 gap-4">
-        <div class="relative bg-code-surface rounded-xl border border-white/5 p-5 sm:p-6 overflow-x-auto">
-          <button class="copy-btn absolute top-3 right-3 p-1.5 rounded-md text-white/30 hover:text-white/70 hover:bg-white/10 transition-colors" aria-label="Copy frontmatter">
+        <div class="relative bg-code-surface rounded-sm border border-white/5 p-5 sm:p-6 overflow-x-auto">
+          <button class="copy-btn absolute top-3 right-3 p-1.5 rounded-sm text-white/30 hover:text-white/70 hover:bg-white/10 transition-colors" aria-label="Copy frontmatter">
             <svg class="w-4 h-4 copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
             <svg class="w-4 h-4 check-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
           </button>
@@ -233,8 +223,8 @@ const sources = Object.values(SOURCES);
 <span class="text-slate-blue-300">release_point</span>: <span class="text-putty-200">"2024-12-15"</span>
 <span class="text-white/25">---</span></pre>
         </div>
-        <div class="relative bg-code-surface rounded-xl border border-white/5 p-5 sm:p-6 overflow-x-auto max-h-[500px] overflow-y-auto">
-          <button class="copy-btn absolute top-3 right-3 z-10 p-1.5 rounded-md text-white/30 hover:text-white/70 hover:bg-white/10 transition-colors" aria-label="Copy section body">
+        <div class="relative bg-code-surface rounded-sm border border-white/5 p-5 sm:p-6 overflow-x-auto max-h-[500px] overflow-y-auto">
+          <button class="copy-btn absolute top-3 right-3 z-10 p-1.5 rounded-sm text-white/30 hover:text-white/70 hover:bg-white/10 transition-colors" aria-label="Copy section body">
             <svg class="w-4 h-4 copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
             <svg class="w-4 h-4 check-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
           </button>
@@ -387,7 +377,7 @@ Amendment by Pub. L. 101–650 effective 6 months after Dec. 1, 1990, see sectio
           href="https://www.npmjs.com/org/lexbuild"
           target="_blank"
           rel="noopener"
-          class="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-md bg-white text-slate-blue-700 border border-slate-blue-200 hover:border-slate-blue-400 hover:bg-slate-blue-50 dark:bg-slate-blue-900 dark:text-slate-blue-200 dark:border-slate-blue-700 dark:hover:border-slate-blue-500 dark:hover:bg-slate-blue-800 transition-all duration-150 cursor-pointer"
+          class="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-sm bg-white text-slate-blue-700 border border-slate-blue-200 hover:border-slate-blue-400 hover:bg-slate-blue-50 dark:bg-slate-blue-900 dark:text-slate-blue-200 dark:border-slate-blue-700 dark:hover:border-slate-blue-500 dark:hover:bg-slate-blue-800 transition-all duration-150 cursor-pointer"
         >
           <svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
             <path d="M0 7.334v8h6.666v1.332H12v-1.332h12v-8H0zm6.666 6.664H5.334v-4H3.999v4H1.335V8.667h5.331v5.331zm4 0h-2.666V8.667h2.666v5.331zm12 0h-2.666v-4h-1.334v4h-1.334v-4h-1.334v4h-2.666V8.667h9.334v5.331zM11.332 8.667h2.665v4h-2.665v-4z"></path>
