@@ -73,7 +73,7 @@ const meiliSearchKey = import.meta.env.MEILI_SEARCH_KEY ?? "";
       <div class="mx-auto flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8">
         <div class="flex items-center gap-6">
           <MobileNav client:load source={source} currentPath={currentPath} />
-          <a href="/" class="text-2xl font-bold text-slate-blue-800 dark:text-slate-blue-200"> LexBuild </a>
+          <a href="/" class="font-display text-2xl font-semibold text-slate-blue-800 dark:text-slate-blue-200"> LexBuild </a>
           <nav class="hidden items-center gap-4 text-md font-medium lg:flex">
             <a
               href="https://www.npmjs.com/package/@lexbuild/cli"
@@ -141,14 +141,14 @@ const meiliSearchKey = import.meta.env.MEILI_SEARCH_KEY ?? "";
           </main>
         </div>
       ) : (
-        <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <main>
           <slot />
         </main>
       )
     }
     <footer class="border-t border-border py-6 text-center text-sm text-muted-foreground">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <span class="font-medium text-slate-blue-700 dark:text-slate-blue-400">LexBuild</span> &mdash; U.S. legal text as structured Markdown for AI/RAG
+        <span class="font-medium text-slate-blue-700 dark:text-slate-blue-400">LexBuild</span>
       </div>
     </footer>
   </body>

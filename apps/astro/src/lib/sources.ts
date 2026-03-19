@@ -10,6 +10,8 @@ export const SOURCES: Record<SourceId, SourceConfig> = {
     granularities: ["section", "chapter", "title"],
     hierarchy: ["title", "chapter", "section"],
     titleCount: 54,
+    chapterCount: 2883,
+    sectionCount: 60215,
     slugGranularity: { 1: "title", 2: "chapter", 3: "section" },
   },
   ecfr: {
@@ -21,6 +23,9 @@ export const SOURCES: Record<SourceId, SourceConfig> = {
     granularities: ["section", "part", "chapter", "title"],
     hierarchy: ["title", "chapter", "part", "section"],
     titleCount: 50,
+    chapterCount: 453,
+    sectionCount: 227479,
+    partCount: 8305,
     slugGranularity: { 1: "title", 2: "chapter", 3: "part", 4: "section" },
   },
 };

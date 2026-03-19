@@ -18,6 +18,9 @@ export interface SourceConfig {
   granularities: Granularity[];
   hierarchy: string[];
   titleCount: number;
+  chapterCount: number;
+  sectionCount: number;
+  partCount?: number;
   /** Slug segment count → granularity mapping */
   slugGranularity: Record<number, Granularity>;
 }
