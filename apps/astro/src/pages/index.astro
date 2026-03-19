@@ -323,6 +323,76 @@ Amendment by Pub. L. 101–650 effective 6 months after Dec. 1, 1990, see sectio
     </div>
   </section>
 
+  <section id="packages" class="py-14 border-b border-slate-blue-200">
+    <div class="max-w-4xl mx-auto px-6">
+      <div class="mb-6">
+        <h2 class="font-display text-xl font-semibold tracking-tight mb-1">Packages</h2>
+        <p class="text-slate-blue-700 text-[15px]">
+          A monorepo of composable packages. Source-specific parsers are separate from the shared core.
+        </p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="flex flex-col border border-slate-blue-100 rounded-xl p-5 bg-white hover:border-slate-blue-300 transition-colors">
+          <div class="font-mono text-[13px] font-medium text-slate-blue-700 mb-1.5">@lexbuild/core</div>
+          <div class="text-[13px] font-semibold mb-1">Core Engine</div>
+          <p class="text-[13px] text-slate-blue-700 leading-normal">Streaming SAX parser, typed AST, Markdown renderer, YAML frontmatter generation, and cross-reference link resolution.</p>
+          <div class="font-mono text-[11px] mt-auto pt-2.5 text-green-700">Published</div>
+        </div>
+        <div class="flex flex-col border border-slate-blue-100 rounded-xl p-5 bg-white hover:border-slate-blue-300 transition-colors">
+          <div class="font-mono text-[13px] font-medium text-slate-blue-700 mb-1.5">@lexbuild/cli</div>
+          <div class="text-[13px] font-semibold mb-1">CLI Tool</div>
+          <p class="text-[13px] text-slate-blue-700 leading-normal">Downloads source XML and orchestrates Markdown conversion. Controls granularity, output paths, and batch processing.</p>
+          <div class="font-mono text-[11px] mt-auto pt-2.5 text-green-700">Published</div>
+        </div>
+        <div class="flex flex-col border border-slate-blue-100 rounded-xl p-5 bg-white hover:border-slate-blue-300 transition-colors">
+          <div class="font-mono text-[13px] font-medium text-slate-blue-700 mb-1.5">@lexbuild/usc</div>
+          <div class="text-[13px] font-semibold mb-1">U.S. Code Parser</div>
+          <p class="text-[13px] text-slate-blue-700 leading-normal">USLM 1.0 schema parser. Handles positive-law and prima facie titles from the Office of the Law Revision Counsel.</p>
+          <div class="font-mono text-[11px] mt-auto pt-2.5 text-green-700">Published</div>
+        </div>
+        <div class="flex flex-col border border-slate-blue-100 rounded-xl p-5 bg-white hover:border-slate-blue-300 transition-colors">
+          <div class="font-mono text-[13px] font-medium text-slate-blue-700 mb-1.5">@lexbuild/ecfr</div>
+          <div class="text-[13px] font-semibold mb-1">eCFR Parser</div>
+          <p class="text-[13px] text-slate-blue-700 leading-normal">Parses eCFR XML from the ecfr.gov versioner API with govinfo bulk fallback. Handles DIV-based hierarchy and GPO/SGML    
+  schema.</p>
+          <div class="font-mono text-[11px] mt-auto pt-2.5 text-green-700">Published</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-3">
+        <div class="border border-dashed border-slate-blue-200 rounded-xl p-5 bg-slate-blue-50 hover:border-slate-blue-300 transition-colors">
+          <div class="font-mono text-[13px] font-medium text-slate-blue-700 mb-1.5">@lexbuild/cfr</div>
+          <div class="text-[13px] font-semibold mb-1">Annual CFR</div>
+          <p class="text-[13px] text-slate-blue-700 leading-normal">Official annual edition from govinfo.</p>
+          <div class="font-mono text-[11px] mt-2.5 text-slate-blue-400">Planned</div>
+        </div>
+        <div class="border border-dashed border-slate-blue-200 rounded-xl p-5 bg-slate-blue-50 hover:border-slate-blue-300 transition-colors">
+          <div class="font-mono text-[13px] font-medium text-slate-blue-700 mb-1.5">@lexbuild/fr</div>
+          <div class="text-[13px] font-semibold mb-1">Federal Register</div>
+          <p class="text-[13px] text-slate-blue-700 leading-normal">Daily Federal Register publications.</p>
+          <div class="font-mono text-[11px] mt-2.5 text-slate-blue-400">Planned</div>
+        </div>
+        <div class="border border-dashed border-slate-blue-200 rounded-xl p-5 bg-slate-blue-50 hover:border-slate-blue-300 transition-colors sm:col-span-2">
+          <div class="font-mono text-[13px] font-medium text-slate-blue-700 mb-1.5">@lexbuild/&lt;state&gt;</div>
+          <div class="text-[13px] font-semibold mb-1">State Statutes</div>
+          <p class="text-[13px] text-slate-blue-700 leading-normal">State-level statutory code parsers. Same pipeline pattern, broader coverage.</p>
+          <div class="font-mono text-[11px] mt-2.5 text-slate-blue-400">Planned</div>
+        </div>
+      </div>
+      <div class="mt-5 flex justify-center">
+        <a
+          href="https://www.npmjs.com/org/lexbuild"
+          target="_blank"
+          rel="noopener"
+          class="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-md bg-white text-slate-blue-700 border border-slate-blue-200 hover:border-slate-blue-400 hover:bg-slate-blue-50 transition-all duration-150 cursor-pointer"
+        >
+          <svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M0 7.334v8h6.666v1.332H12v-1.332h12v-8H0zm6.666 6.664H5.334v-4H3.999v4H1.335V8.667h5.331v5.331zm4 0h-2.666V8.667h2.666v5.331zm12 0h-2.666v-4h-1.334v4h-1.334v-4h-1.334v4h-2.666V8.667h9.334v5.331zM11.332 8.667h2.665v4h-2.665v-4z"></path>
+          </svg>
+          View on npm
+        </a>
+      </div>
+    </div>
+  </section>
 
 </BaseLayout>
 
