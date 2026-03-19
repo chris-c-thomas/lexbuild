@@ -128,7 +128,7 @@ Key points:
 - **Excluded from changesets** — `"private": true` and listed in `.changeset/config.json` `ignore`.
 - **Content is gitignored** — `apps/astro/content/`, `public/nav/`, `public/sitemap.xml`, `*.highlighted.html` are all generated artifacts.
 - **Content served from local filesystem** in production (`fs.readFile` from `/srv/lexbuild/content/`).
-- **UI**: shadcn/ui (radix-nova preset, zinc theme) + Tailwind CSS 4 + Google Sans / JetBrains Mono fonts. Slate-blue accent palette for headings and labels. Mobile navigation uses a shadcn Sheet (Radix Dialog drawer) with source dropdown; desktop uses a sticky sidebar. Both share `SidebarContent.tsx` for the tree. Breakpoint: `lg` (1024px).
+- **UI**: shadcn/ui (radix-nova preset, zinc theme) + Tailwind CSS 4 + IBM Plex Serif / IBM Plex Sans / IBM Plex Mono fonts. Slate-blue accent palette for headings and labels. Mobile navigation uses a shadcn Sheet (Radix Dialog drawer) with source dropdown; desktop uses a sticky sidebar. Both share `SidebarContent.tsx` for the tree. Breakpoint: `lg` (1024px).
 - **Tailwind CSS v4 caveat**: `@theme inline` variables are build-time only — they do NOT exist as runtime CSS custom properties. Scoped `<style>` in `.astro` components must use hex values directly. Some Tailwind utilities (e.g., `grid-cols-*`) may silently fail to generate in `.astro` files — use scoped `<style>` with plain CSS as a fallback for layout-critical properties.
 - **Production URL**: `https://lexbuild.dev` — served via Cloudflare (orange-cloud proxy) → Caddy → Astro Node server.
 - See `apps/astro/CLAUDE.md` for the full architecture spec.

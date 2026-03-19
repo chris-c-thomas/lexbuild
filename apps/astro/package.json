@@ -12,7 +12,6 @@
   "dependencies": {
     "@astrojs/node": "^10.0.1",
     "@astrojs/react": "^5.0.0",
-    "@fontsource/google-sans": "^5.2.1",
     "@fontsource-variable/ibm-plex-sans": "^5.2.8",
     "@fontsource/ibm-plex-mono": "^5.2.7",
     "@fontsource/ibm-plex-serif": "^5.2.7",

@@ -53,15 +53,10 @@ const granularityLabel =
     </div>
     {
       downloadAvailable && downloadFilename && (
-        <a
-          href={`data:text/markdown;charset=utf-8,${encodeURIComponent(downloadContent!)}`}
-          download={downloadFilename}
-        >
-          <Button variant="outline" size="sm">
-            <Download data-icon="inline-start" />
-            Download {granularityLabel}
-          </Button>
-        </a>
+        <Button variant="outline" size="sm" id="download-btn" data-filename={downloadFilename}>
+          <Download data-icon="inline-start" />
+          Download {granularityLabel}
+        </Button>
       )
     }
   </div>
@@ -106,3 +101,17 @@ const granularityLabel =
     )
   }
 </div>
+
+{downloadAvailable && (
+  <script define:vars={{ downloadContent, downloadFilename }}>
+    document.getElementById("download-btn")?.addEventListener("click", () => {
+      const blob = new Blob([downloadContent], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = downloadFilename;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  </script>
+)}
