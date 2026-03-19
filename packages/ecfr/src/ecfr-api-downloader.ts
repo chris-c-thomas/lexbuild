@@ -155,7 +155,15 @@ export async function downloadEcfrTitlesFromApi(
   let asOfDate = options.date;
   if (!asOfDate) {
     const meta = await fetchEcfrTitlesMeta();
-    asOfDate = meta.date;
+    if (meta.importInProgress) {
+      // When an import is in progress, the advertised meta.date may return 404.
+      // Fall back to the previous day which should be fully available.
+      const prev = new Date(meta.date);
+      prev.setDate(prev.getDate() - 1);
+      asOfDate = prev.toISOString().slice(0, 10);
+    } else {
+      asOfDate = meta.date;
+    }
   }
 
   await mkdir(output, { recursive: true });

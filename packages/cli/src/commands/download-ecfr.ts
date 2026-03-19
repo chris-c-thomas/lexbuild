@@ -4,7 +4,11 @@
 
 import { Command } from "commander";
 import { relative, resolve } from "node:path";
-import { downloadEcfrTitles, downloadEcfrTitlesFromApi } from "@lexbuild/ecfr";
+import {
+  downloadEcfrTitles,
+  downloadEcfrTitlesFromApi,
+  fetchEcfrTitlesMeta,
+} from "@lexbuild/ecfr";
 import {
   createSpinner,
   summaryBlock,
@@ -93,10 +97,30 @@ Sources:
     const outputDir = resolve(options.output);
     const titleCount = titles ? titles.length : 50;
     const sourceLabel = options.source === "ecfr-api" ? "eCFR API" : "govinfo";
+
+    // For ecfr-api, resolve the date upfront so we can display it before downloading
+    let resolvedDate: string | undefined;
+    let importInProgress = false;
+    if (options.source === "ecfr-api" && !options.date) {
+      const meta = await fetchEcfrTitlesMeta();
+      if (meta.importInProgress) {
+        const prev = new Date(meta.date);
+        prev.setDate(prev.getDate() - 1);
+        resolvedDate = prev.toISOString().slice(0, 10);
+        importInProgress = true;
+      } else {
+        resolvedDate = meta.date;
+      }
+    } else if (options.source === "ecfr-api") {
+      resolvedDate = options.date;
+    }
+
+    const dateLabel = resolvedDate ? ` as of ${resolvedDate}` : "";
+    const importNote = importInProgress ? " (import in progress, using previous day)" : "";
     const label =
       titleCount === 1
-        ? `Downloading eCFR Title ${titles?.[0]} from ${sourceLabel}`
-        : `Downloading ${titleCount} eCFR titles from ${sourceLabel}`;
+        ? `Downloading eCFR Title ${titles?.[0]} from ${sourceLabel}${dateLabel}${importNote}`
+        : `Downloading ${titleCount} eCFR titles from ${sourceLabel}${dateLabel}${importNote}`;
 
     const spinner = createSpinner(`${label}...`);
     spinner.start();
@@ -105,7 +129,7 @@ Sources:
 
     try {
       if (options.source === "ecfr-api") {
-        await downloadFromApi(options, titles, outputDir, spinner, startTime);
+        await downloadFromApi(options, titles, outputDir, spinner, startTime, resolvedDate);
       } else {
         await downloadFromGovinfo(titles, outputDir, spinner, startTime);
       }
@@ -162,11 +186,12 @@ async function downloadFromApi(
   outputDir: string,
   spinner: ReturnType<typeof createSpinner>,
   startTime: number,
+  resolvedDate?: string,
 ): Promise<void> {
   const result = await downloadEcfrTitlesFromApi({
     output: outputDir,
     titles,
-    date: options.date,
+    date: resolvedDate ?? options.date,
   });
 
   const elapsed = performance.now() - startTime;
