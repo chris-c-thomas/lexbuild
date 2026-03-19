@@ -9,6 +9,7 @@ import {
   downloadEcfrTitlesFromApi,
   fetchEcfrTitlesMeta,
 } from "@lexbuild/ecfr";
+import type { EcfrTitlesResponse } from "@lexbuild/ecfr";
 import {
   createSpinner,
   summaryBlock,
@@ -98,29 +99,46 @@ Sources:
     const titleCount = titles ? titles.length : 50;
     const sourceLabel = options.source === "ecfr-api" ? "eCFR API" : "govinfo";
 
-    // For ecfr-api, resolve the date upfront so we can display it before downloading
-    let resolvedDate: string | undefined;
-    let importInProgress = false;
+    // For ecfr-api, fetch metadata upfront to resolve dates and display status
+    let meta: EcfrTitlesResponse | undefined;
     if (options.source === "ecfr-api" && !options.date) {
-      const meta = await fetchEcfrTitlesMeta();
-      if (meta.importInProgress) {
-        const prev = new Date(meta.date);
-        prev.setDate(prev.getDate() - 1);
-        resolvedDate = prev.toISOString().slice(0, 10);
-        importInProgress = true;
-      } else {
-        resolvedDate = meta.date;
-      }
-    } else if (options.source === "ecfr-api") {
-      resolvedDate = options.date;
+      meta = await fetchEcfrTitlesMeta();
     }
 
-    const dateLabel = resolvedDate ? ` as of ${resolvedDate}` : "";
-    const importNote = importInProgress ? " (import in progress, using previous day)" : "";
+    // Build spinner label with date info
+    let dateLabel = "";
+    let statusNote = "";
+    if (options.date) {
+      dateLabel = ` as of ${options.date}`;
+    } else if (meta) {
+      const primaryDate = meta.importInProgress
+        ? (() => {
+            const prev = new Date(meta.date);
+            prev.setDate(prev.getDate() - 1);
+            return prev.toISOString().slice(0, 10);
+          })()
+        : meta.date;
+      dateLabel = ` as of ${primaryDate}`;
+
+      // Check for titles with individual processing
+      const processingTitles = meta.titles.filter(
+        (t) => t.processingInProgress && !t.reserved,
+      );
+      if (meta.importInProgress && processingTitles.length > 0) {
+        const titleWord = processingTitles.length === 1 ? "title uses" : "titles use";
+        statusNote = ` (import in progress, ${processingTitles.length} ${titleWord} earlier dates)`;
+      } else if (meta.importInProgress) {
+        statusNote = " (import in progress, using previous day)";
+      } else if (processingTitles.length > 0) {
+        const nums = processingTitles.map((t) => t.number).join(", ");
+        statusNote = ` (Title ${nums} processing, using earlier date)`;
+      }
+    }
+
     const label =
       titleCount === 1
-        ? `Downloading eCFR Title ${titles?.[0]} from ${sourceLabel}${dateLabel}${importNote}`
-        : `Downloading ${titleCount} eCFR titles from ${sourceLabel}${dateLabel}${importNote}`;
+        ? `Downloading eCFR Title ${titles?.[0]} from ${sourceLabel}${dateLabel}${statusNote}`
+        : `Downloading ${titleCount} eCFR titles from ${sourceLabel}${dateLabel}${statusNote}`;
 
     const spinner = createSpinner(`${label}...`);
     spinner.start();
@@ -129,7 +147,7 @@ Sources:
 
     try {
       if (options.source === "ecfr-api") {
-        await downloadFromApi(options, titles, outputDir, spinner, startTime, resolvedDate);
+        await downloadFromApi(options, titles, outputDir, spinner, startTime, meta);
       } else {
         await downloadFromGovinfo(titles, outputDir, spinner, startTime);
       }
@@ -186,26 +204,41 @@ async function downloadFromApi(
   outputDir: string,
   spinner: ReturnType<typeof createSpinner>,
   startTime: number,
-  resolvedDate?: string,
+  meta?: EcfrTitlesResponse,
 ): Promise<void> {
   const result = await downloadEcfrTitlesFromApi({
     output: outputDir,
     titles,
-    date: resolvedDate ?? options.date,
+    date: options.date,
+    titlesMeta: meta,
   });
 
   const elapsed = performance.now() - startTime;
   spinner.stop();
 
-  const fileRows = result.files.map((file) => [
-    String(file.titleNumber),
-    formatBytes(file.size),
-    relative(outputDir, file.path) || file.path,
-  ]);
+  // Check if any titles used different dates
+  const uniqueDates = new Set(result.files.map((f) => f.asOfDate));
+  const dateDisplay =
+    uniqueDates.size <= 1
+      ? result.asOfDate
+      : `${result.asOfDate} (${uniqueDates.size - 1} titles at earlier dates)`;
+
+  const fileRows = result.files.map((file) => {
+    const row = [
+      String(file.titleNumber),
+      formatBytes(file.size),
+      relative(outputDir, file.path) || file.path,
+    ];
+    // Show the date if it differs from the primary
+    if (file.asOfDate !== result.asOfDate) {
+      row.push(file.asOfDate);
+    }
+    return row;
+  });
 
   const summaryRows: [string, string][] = [
     ["Source", "ecfr.gov/api/versioner/v1"],
-    ["As of date", result.asOfDate],
+    ["As of date", dateDisplay],
     ["Directory", relative(process.cwd(), outputDir) || outputDir],
   ];
 
@@ -215,8 +248,37 @@ async function downloadFromApi(
   });
   process.stdout.write(output);
 
+  // Include date column only if some titles used different dates
+  const hasMultipleDates = uniqueDates.size > 1;
+  const headings = hasMultipleDates
+    ? ["Title", "Size", "File", "Date"]
+    : ["Title", "Size", "File"];
+
   if (fileRows.length > 0) {
-    console.log(dataTable(["Title", "Size", "File"], fileRows));
+    console.log(dataTable(headings, fileRows));
+  }
+
+  // Report failures with context
+  if (result.failed.length > 0) {
+    const processing = result.failed.filter((f) => f.status === 503);
+    const other = result.failed.filter((f) => f.status !== 503);
+
+    if (processing.length > 0) {
+      const nums = processing.map((f) => `Title ${f.titleNumber}`).join(", ");
+      console.log(
+        `  ${error(`Unavailable (processing on server): ${nums}`)}`,
+      );
+      console.log(
+        `    The eCFR API cannot serve these titles while an import is in progress.`,
+      );
+      console.log(
+        `    Re-run this command later to download them. Existing local files (if any) are preserved.`,
+      );
+    }
+    if (other.length > 0) {
+      const nums = other.map((f) => `Title ${f.titleNumber} (${f.status})`).join(", ");
+      console.log(`  ${error(`Failed: ${nums}`)}`);
+    }
   }
 
   const titleWord = result.titlesDownloaded === 1 ? "title" : "titles";

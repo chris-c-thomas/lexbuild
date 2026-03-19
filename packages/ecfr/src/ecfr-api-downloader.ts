@@ -5,6 +5,10 @@
  * Unlike the govinfo bulk downloader, this source provides daily-updated,
  * point-in-time data and supports fetching the CFR as of any specific date.
  *
+ * Uses per-title currency dates from the /titles metadata endpoint to ensure
+ * every title downloads successfully, even when individual titles are being
+ * processed or the global import is in progress.
+ *
  * API base: https://www.ecfr.gov/api/versioner/v1/
  */
 
@@ -20,6 +24,12 @@ const ECFR_API_BASE = "https://www.ecfr.gov/api/versioner/v1";
 
 /** Titles that are reserved and return 404 from the API */
 const RESERVED_TITLES = new Set([35]);
+
+/** Maximum retry attempts for transient errors (503, 504) */
+const MAX_RETRIES = 2;
+
+/** Base delay between retries in milliseconds */
+const RETRY_BASE_DELAY_MS = 3000;
 
 // ---------------------------------------------------------------------------
 // Title metadata
@@ -39,6 +49,8 @@ export interface EcfrTitleMeta {
   upToDateAsOf: string;
   /** Whether this title is reserved (e.g., Title 35) */
   reserved: boolean;
+  /** Whether this title is currently being processed */
+  processingInProgress: boolean;
 }
 
 /** Response from the /titles endpoint */
@@ -74,6 +86,7 @@ export async function fetchEcfrTitlesMeta(): Promise<EcfrTitlesResponse> {
     latestIssueDate: t.latest_issue_date,
     upToDateAsOf: t.up_to_date_as_of,
     reserved: t.reserved,
+    processingInProgress: t.processing_in_progress ?? false,
   }));
 
   return {
@@ -93,8 +106,10 @@ export interface EcfrApiDownloadOptions {
   output: string;
   /** Specific titles to download (1-50), or undefined for all */
   titles?: number[] | undefined;
-  /** Point-in-time date (YYYY-MM-DD). Defaults to the current currency date. */
+  /** Point-in-time date (YYYY-MM-DD). Defaults to per-title currency dates. */
   date?: string | undefined;
+  /** Pre-fetched title metadata (avoids a second /titles call) */
+  titlesMeta?: EcfrTitlesResponse | undefined;
 }
 
 /** Result of a download from the eCFR API */
@@ -105,8 +120,10 @@ export interface EcfrApiDownloadResult {
   files: EcfrApiDownloadedFile[];
   /** Total bytes downloaded */
   totalBytes: number;
-  /** The date used for point-in-time downloads */
+  /** The primary date used (most common across titles) */
   asOfDate: string;
+  /** Titles that failed after retries */
+  failed: EcfrDownloadFailure[];
 }
 
 /** Metadata for a single downloaded file from the eCFR API */
@@ -117,8 +134,18 @@ export interface EcfrApiDownloadedFile {
   titleNumber: number;
   /** File size in bytes */
   size: number;
-  /** The point-in-time date used */
+  /** The point-in-time date used for this title */
   asOfDate: string;
+}
+
+/** A title that failed to download */
+export interface EcfrDownloadFailure {
+  /** Title number */
+  titleNumber: number;
+  /** HTTP status code of the final attempt */
+  status: number;
+  /** The date that was attempted */
+  dateAttempted: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -142,8 +169,12 @@ export function buildEcfrApiDownloadUrl(titleNumber: number, date: string): stri
 /**
  * Download eCFR XML files from the ecfr.gov versioner API.
  *
- * When no date is specified, fetches the current currency date from the
- * /titles endpoint and uses that for all downloads.
+ * Uses per-title currency dates from the /titles metadata to ensure every
+ * title downloads successfully. Titles that are being processed get their
+ * individual `up_to_date_as_of` date instead of the global date.
+ *
+ * Retries transient errors (503, 504) up to MAX_RETRIES times with
+ * exponential backoff.
  */
 export async function downloadEcfrTitlesFromApi(
   options: EcfrApiDownloadOptions,
@@ -151,52 +182,107 @@ export async function downloadEcfrTitlesFromApi(
   const { output } = options;
   const titles = options.titles ?? ECFR_TITLE_NUMBERS;
 
-  // Resolve the date to use
-  let asOfDate = options.date;
-  if (!asOfDate) {
-    const meta = await fetchEcfrTitlesMeta();
-    if (meta.importInProgress) {
-      // When an import is in progress, the advertised meta.date may return 404.
-      // Fall back to the previous day which should be fully available.
-      const prev = new Date(meta.date);
-      prev.setDate(prev.getDate() - 1);
-      asOfDate = prev.toISOString().slice(0, 10);
-    } else {
-      asOfDate = meta.date;
+  // Fetch metadata (or use pre-fetched)
+  const meta = options.titlesMeta ?? (await fetchEcfrTitlesMeta());
+
+  // Build a map of title number → best available date
+  const titleDateMap = new Map<number, string>();
+
+  if (options.date) {
+    // Explicit date: use it for all titles
+    for (const num of titles) {
+      titleDateMap.set(num, options.date);
+    }
+  } else {
+    // Auto-detect: use each title's up_to_date_as_of for the most reliable date
+    const globalDate = meta.importInProgress
+      ? (() => {
+          const prev = new Date(meta.date);
+          prev.setDate(prev.getDate() - 1);
+          return prev.toISOString().slice(0, 10);
+        })()
+      : meta.date;
+
+    for (const num of titles) {
+      const titleMeta = meta.titles.find((t) => t.number === num);
+      if (titleMeta?.processingInProgress && titleMeta.upToDateAsOf) {
+        // Title is being processed — use its individual currency date
+        titleDateMap.set(num, titleMeta.upToDateAsOf);
+      } else if (titleMeta?.upToDateAsOf) {
+        // Use the title's own date if available, falling back to global
+        titleDateMap.set(num, titleMeta.upToDateAsOf < globalDate ? titleMeta.upToDateAsOf : globalDate);
+      } else {
+        titleDateMap.set(num, globalDate);
+      }
     }
   }
 
   await mkdir(output, { recursive: true });
   const files: EcfrApiDownloadedFile[] = [];
+  const failed: EcfrDownloadFailure[] = [];
   let totalBytes = 0;
 
   for (const titleNum of titles) {
-    // Skip reserved titles (e.g., Title 35 — Panama Canal)
     if (RESERVED_TITLES.has(titleNum)) continue;
 
-    const url = buildEcfrApiDownloadUrl(titleNum, asOfDate);
-    // Use the same filename as govinfo downloads for converter compatibility
+    const titleDate = titleDateMap.get(titleNum)!;
     const filePath = join(output, `ECFR-title${titleNum}.xml`);
 
+    const result = await downloadWithRetry(titleNum, titleDate, filePath);
+    if (result.ok) {
+      totalBytes += result.size;
+      files.push({ path: filePath, titleNumber: titleNum, size: result.size, asOfDate: titleDate });
+    } else {
+      failed.push({ titleNumber: titleNum, status: result.status, dateAttempted: titleDate });
+    }
+  }
+
+  // Determine the primary date (most common across downloaded files)
+  const dateCounts = new Map<string, number>();
+  for (const file of files) {
+    dateCounts.set(file.asOfDate, (dateCounts.get(file.asOfDate) ?? 0) + 1);
+  }
+  const primaryDate =
+    options.date ??
+    [...dateCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ??
+    meta.date;
+
+  return { titlesDownloaded: files.length, files, totalBytes, asOfDate: primaryDate, failed };
+}
+
+/** Download a single title with retry on transient errors */
+async function downloadWithRetry(
+  titleNum: number,
+  date: string,
+  filePath: string,
+): Promise<{ ok: true; size: number } | { ok: false; status: number }> {
+  const url = buildEcfrApiDownloadUrl(titleNum, date);
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     const response = await fetch(url);
-    if (!response.ok) {
-      console.warn(`Failed to download eCFR Title ${titleNum} from API: ${response.status}`);
+
+    if (response.ok) {
+      const body = response.body;
+      if (!body) return { ok: false, status: 0 };
+
+      const dest = createWriteStream(filePath);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ReadableStream type bridge
+      await pipeline(Readable.fromWeb(body as any), dest);
+
+      const fileStat = await stat(filePath);
+      return { ok: true, size: fileStat.size };
+    }
+
+    // Retry on transient errors (503 Service Unavailable, 504 Gateway Timeout)
+    if ((response.status === 503 || response.status === 504) && attempt < MAX_RETRIES) {
+      const delay = RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
+      await new Promise((resolve) => setTimeout(resolve, delay));
       continue;
     }
 
-    const body = response.body;
-    if (!body) continue;
-
-    const dest = createWriteStream(filePath);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ReadableStream type bridge
-    await pipeline(Readable.fromWeb(body as any), dest);
-
-    const fileStat = await stat(filePath);
-    const size = fileStat.size;
-    totalBytes += size;
-
-    files.push({ path: filePath, titleNumber: titleNum, size, asOfDate });
+    // Non-retryable error or retries exhausted
+    return { ok: false, status: response.status };
   }
 
-  return { titlesDownloaded: files.length, files, totalBytes, asOfDate };
+  return { ok: false, status: 0 };
 }
