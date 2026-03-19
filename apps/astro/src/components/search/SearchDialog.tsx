@@ -96,7 +96,7 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="border-input bg-background text-muted-foreground hover:bg-muted flex h-8 w-48 items-center justify-between rounded-md border px-3 text-sm transition-colors"
+        className="border-input bg-background text-muted-foreground hover:bg-muted flex h-8 w-48 cursor-text items-center justify-between rounded-md border px-3 text-sm transition-colors"
       >
         <span className="flex items-center gap-2">
           <Search className="size-3.5" />
