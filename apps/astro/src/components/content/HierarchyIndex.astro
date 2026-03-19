@@ -89,7 +89,7 @@ const granularityLabel =
                       {i > 0 && <span class="bg-slate-blue-300 dark:bg-slate-blue-700 h-3 w-px" />}
                       <span>
                         {typeof stat.value === "number" ? stat.value.toLocaleString() : stat.value}
-                        {stat.value ? " " : ""}
+                        {stat.value !== "" ? " " : ""}
                         {stat.label}
                       </span>
                     </>

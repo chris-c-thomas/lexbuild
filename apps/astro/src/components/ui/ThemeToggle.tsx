@@ -24,7 +24,7 @@ export default function ThemeToggle() {
     const next = !document.documentElement.classList.contains("dark");
     document.documentElement.classList.toggle("dark", next);
     document.documentElement.style.colorScheme = next ? "dark" : "light";
-    document.getElementById("theme-color")?.setAttribute("content", next ? "#1b1b1f" : "#ffffff");
+    document.getElementById("theme-color")?.setAttribute("content", next ? "#0e1821" : "#ffffff");
     localStorage.setItem("theme", next ? "dark" : "light");
   }, []);
 
