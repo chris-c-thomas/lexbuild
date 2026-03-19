@@ -1059,11 +1059,13 @@ GET /api/search?q=securities+fraud&source=ecfr&title_number=17
 
 ## Dark Mode
 
-Class-based toggle:
-1. Inline `<script>` in `<head>` (inside `BaseLayout.astro`) reads `localStorage.theme` and sets `.dark` class on `<html>` before first paint — prevents flash of wrong theme.
-2. `ThemeToggle.tsx` React island toggles the class and persists to `localStorage`.
-3. Tailwind `darkMode: "class"` in config.
+Class-based toggle with dark slate blue theme:
+1. Inline `<script>` in `<head>` (inside `BaseLayout.astro`) reads `localStorage.theme` and sets `.dark` class on `<html>` before first paint — prevents flash of wrong theme. Dark theme-color meta: `#0e1821`.
+2. `ThemeToggle.tsx` React island toggles the class and persists to `localStorage`. Must use the same dark theme-color value (`#0e1821`) as the inline script.
+3. Tailwind `darkMode: "class"` via `@custom-variant dark (&:is(.dark *))` in `global.css`.
 4. Shiki dual themes: `.shiki-light` / `.shiki-dark` CSS classes.
+5. **Dark palette is dark slate blue, not default shadcn grey.** All `.dark` vars in `global.css` use blue-tinted hex values (e.g., `--background: #0e1821`, `--card: #182838`, `--border: #243a4e`), not neutral `oklch(0.x 0 0)` greys.
+6. For hardcoded `text-slate-blue-*` or `bg-slate-blue-*` colors, add explicit `dark:` variants (e.g., `text-slate-blue-700 dark:text-slate-blue-300`). Semantic tokens auto-adapt.
 
 ---
 
@@ -1153,7 +1155,7 @@ export default defineConfig({
 - **PM2 restart is not zero-downtime by default.** Use `pm2 reload` (not `pm2 restart`) for graceful reload in production.
 - **Changing Shiki themes requires regenerating all highlights.** Update themes in both `scripts/generate-highlights.ts` and `src/lib/shiki.ts`, delete existing `.highlighted.html` files, then re-run the script. The mtime-based skip won't detect theme changes.
 - **eCFR title `_meta.json` has flat `parts[]`, not nested chapters.** Chapter grouping for the sidebar is derived from filesystem `chapter-X/` directories, not from metadata. The `generate-nav.ts` script walks the directory tree to build the chapter → part → section hierarchy.
-- **Tailwind v4 `@theme inline` variables are NOT runtime CSS custom properties.** Variables defined in `@theme inline` (e.g., `--color-slate-blue-600`) are inlined into generated utility classes at build time and do NOT exist as CSS custom properties in the browser. Scoped `<style>` blocks in `.astro` components cannot use `var(--color-slate-blue-600)` — use the hex value directly (e.g., `#5285a3`). Only variables defined in `:root` or `.dark` blocks (like `--background`, `--border`, `--muted`) are available at runtime.
+- **Tailwind v4 `@theme inline` variables are NOT runtime CSS custom properties.** Variables defined in `@theme inline` (e.g., `--color-slate-blue-600`) are inlined into generated utility classes at build time and do NOT exist as CSS custom properties in the browser. However, if an `@theme inline` var references a `:root`/`.dark` runtime var via `var()`, the reference is preserved — e.g., `--color-surface: var(--surface)` generates `bg-surface` as `background-color: var(--surface)`, which resolves at runtime and responds to `.dark` class changes. This is how semantic tokens work. Scoped `<style>` blocks in `.astro` components must use `:root`/`.dark` runtime vars (e.g., `var(--primary)`, `var(--border)`) or hex values directly — never reference `@theme inline` vars like `var(--color-slate-blue-600)`.
 - **Tailwind v4 utility classes may not generate from `.astro` scoped content.** Some Tailwind utilities (notably `grid-cols-*`) have been observed to silently fail to generate CSS when used in `.astro` files, even though other utilities in the same file work. If a Tailwind utility isn't taking effect, verify with DevTools that the CSS rule exists. For layout-critical properties, use scoped `<style>` blocks with plain CSS as a reliable fallback. `FrontmatterPanel.astro` uses this approach for its grid layout.
 - **ContentViewer uses shadcn Tabs, not custom buttons.** The source/preview toggle in `ContentViewer.tsx` uses Radix-based `Tabs`/`TabsList`/`TabsTrigger`/`TabsContent` from `@/components/ui/tabs`. The TabsTrigger styles have been customized to use slate-blue text for active/hover states.
 
@@ -1304,7 +1306,11 @@ shadcn/ui is initialized with the `radix-nova` preset and zinc color theme. Comp
 **Design conventions**:
 - Zinc base theme for neutral surfaces (background, card, muted, border)
 - Slate-blue accent palette for headings, labels, active states, and interactive highlights
-- Summer-green, putty palettes available in `global.css` `@theme inline` block for future use
+- Summer-green palette used for "Published" labels; putty palette used for sample output code highlighting
+- **Two-tier color system**: shadcn tokens (`bg-background`, `text-foreground`, `bg-card`, `border-border`) for shadcn components and generic UI. Semantic tokens (`bg-surface`, `text-ink-muted`, `border-border-base`, `bg-code-surface`) for custom page layouts — these are dark-mode-aware via `:root`/`.dark` runtime vars. Only 4 semantic tokens exist; add new ones sparingly.
+- **Card pattern**: Navigation cards use `border border-slate-blue-200 rounded-sm p-5 bg-white hover:border-slate-blue-400 dark:bg-card dark:border-border dark:hover:border-slate-blue-600 transition-colors`. Do NOT use shadcn `Card` component for navigation cards — use plain HTML with this pattern for consistency with the home page.
+- **Page headings**: Use `font-display text-2xl font-semibold tracking-tight text-slate-blue-800 dark:text-slate-blue-200` for all page-level h1 headings. Section descriptions use `text-ink-muted text-[15px]`.
+- **External links**: Always use `rel="noopener noreferrer"` on `target="_blank"` links.
 - `prose prose-zinc` with `@tailwindcss/typography` for rendered legal HTML content
 - Icons via `lucide-react` with `data-icon` attributes per shadcn convention
 - TabsTrigger customized: active state uses `text-slate-blue-700` (light) / `text-slate-blue-300` (dark); hover uses `text-slate-blue-600` / `dark:text-slate-blue-300`
