@@ -1,7 +1,5 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { getSource } from "@/lib/sources";
 import { getTitles } from "@/lib/nav";
 import { toTitleCase } from "@/lib/utils";
@@ -13,39 +11,35 @@ const titles = await getTitles("usc");
 <BaseLayout title="U.S. Code" source="usc" description="Browse all 54 titles of the U.S. Code as structured Markdown.">
   <div class="flex flex-col gap-6">
     <div>
-      <h1 class="text-3xl font-bold text-slate-blue-800 dark:text-slate-blue-200">{source.name}</h1>
-      <p class="mt-2 leading-relaxed text-muted-foreground">{source.description}</p>
+      <h1 class="font-display text-2xl font-semibold tracking-tight text-slate-blue-900 dark:text-slate-blue-200">{source.name}</h1>
+      <p class="mt-2 text-ink-muted text-[15px] leading-relaxed">{source.description}</p>
     </div>
 
     {titles.length > 0 ? (
       <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {titles.map((t) => (
-          <a href={`/usc/${t.directory}`} class="group">
-            <Card size="sm" className="h-full transition-[box-shadow] group-hover:ring-primary/30 group-hover:shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg font-bold text-slate-blue-700 dark:text-slate-blue-400">
-                  Title {t.number}
-                </CardTitle>
-                <CardDescription className="text-sm font-medium text-foreground">
-                  {toTitleCase(t.name)}
-                </CardDescription>
-                <div class="flex flex-wrap gap-2 pt-1">
-                  <Badge variant="secondary">{t.chapterCount} chapters</Badge>
-                  <Badge variant="secondary">{t.sectionCount.toLocaleString()} sections</Badge>
-                  <Badge variant="secondary">{t.tokenEstimate.toLocaleString()} tokens</Badge>
-                </div>
-              </CardHeader>
-            </Card>
+          <a href={`/usc/${t.directory}`} class="flex flex-col border border-slate-blue-200 rounded-sm p-5 bg-white hover:border-slate-blue-400 dark:bg-card dark:border-border dark:hover:border-slate-blue-600 transition-colors">
+            <div class="font-display text-base font-semibold text-slate-blue-800 dark:text-slate-blue-300 mb-1">
+              Title {t.number}
+            </div>
+            <div class="text-sm text-foreground">
+              {toTitleCase(t.name)}
+            </div>
+            <div class="flex flex-wrap items-center gap-2 mt-auto pt-2 text-xs font-medium text-slate-blue-700 dark:text-slate-blue-400">
+              <span>{t.chapterCount} chapters</span>
+              <span class="w-px h-3 bg-slate-blue-300 dark:bg-slate-blue-700" />
+              <span>{t.sectionCount.toLocaleString()} sections</span>
+              <span class="w-px h-3 bg-slate-blue-300 dark:bg-slate-blue-700" />
+              <span>{t.tokenEstimate.toLocaleString()} tokens</span>
+            </div>
           </a>
         ))}
       </div>
     ) : (
-      <Card>
-        <CardHeader className="items-center py-12">
-          <CardTitle className="text-muted-foreground">No navigation data available.</CardTitle>
-          <CardDescription>Run <code class="text-foreground">scripts/generate-nav.ts</code> after converting content.</CardDescription>
-        </CardHeader>
-      </Card>
+      <div class="border border-slate-blue-200 rounded-sm p-12 bg-white dark:bg-card dark:border-border text-center">
+        <p class="text-muted-foreground font-medium">No navigation data available.</p>
+        <p class="mt-1 text-sm text-muted-foreground">Run <code class="text-foreground">scripts/generate-nav.ts</code> after converting content.</p>
+      </div>
     )}
   </div>
 </BaseLayout>

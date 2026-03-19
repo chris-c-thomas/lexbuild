@@ -180,7 +180,7 @@ const isIndexPage = route.granularity !== "section";
   ) : frontmatter ? (
     <div class="flex flex-col gap-6">
       <div class="flex flex-col gap-4">
-        <h1 class="text-2xl font-bold text-slate-blue-800 dark:text-slate-blue-200">{toTitleCase(frontmatter.title)}</h1>
+        <h1 class="font-display text-2xl font-semibold tracking-tight text-slate-blue-800 dark:text-slate-blue-200">{toTitleCase(frontmatter.title)}</h1>
         <FrontmatterPanel frontmatter={frontmatter} source={SOURCE_ID} />
       </div>
       <ContentViewer

@@ -75,7 +75,7 @@ if (frontmatter.authority) {
 
 <style>
   .frontmatter-panel {
-    border-radius: var(--radius);
+    border-radius: calc(var(--radius) * 0.6);
     border: 1px solid var(--border);
     background: color-mix(in oklch, var(--muted) 30%, transparent);
   }
@@ -110,7 +110,7 @@ if (frontmatter.authority) {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--brand-slate-blue);
+    color: var(--primary);
   }
 
   .frontmatter-value {
