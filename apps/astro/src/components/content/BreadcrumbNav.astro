@@ -20,19 +20,22 @@ const { breadcrumbs, currentPageName } = Astro.props;
 
 <Breadcrumb className="mb-4">
   <BreadcrumbList>
-    {breadcrumbs.map((crumb, i) => (
-      <>
-        {i > 0 && <BreadcrumbSeparator />}
-        <BreadcrumbItem>
-          {i === breadcrumbs.length - 1 ? (
-            <BreadcrumbPage>
-              {crumb.label}{currentPageName ? ` — ${currentPageName}` : ""}
-            </BreadcrumbPage>
-          ) : (
-            <BreadcrumbLink href={crumb.href}>{crumb.label}</BreadcrumbLink>
-          )}
-        </BreadcrumbItem>
-      </>
-    ))}
+    {
+      breadcrumbs.map((crumb, i) => (
+        <>
+          {i > 0 && <BreadcrumbSeparator />}
+          <BreadcrumbItem>
+            {i === breadcrumbs.length - 1 ? (
+              <BreadcrumbPage>
+                {crumb.label}
+                {currentPageName ? ` — ${currentPageName}` : ""}
+              </BreadcrumbPage>
+            ) : (
+              <BreadcrumbLink href={crumb.href}>{crumb.label}</BreadcrumbLink>
+            )}
+          </BreadcrumbItem>
+        </>
+      ))
+    }
   </BreadcrumbList>
 </Breadcrumb>

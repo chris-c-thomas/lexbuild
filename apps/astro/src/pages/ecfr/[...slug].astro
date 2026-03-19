@@ -76,7 +76,6 @@ if (route.granularity === "title") {
       ],
     };
   });
-
 } else if (route.granularity === "chapter") {
   // ── Chapter index: show part cards ──
   const titleDir = route.segments["title"]!;
@@ -101,11 +100,8 @@ if (route.granularity === "title") {
     label: `Part ${p.number}`,
     sublabel: p.name,
     href: `/ecfr/${titleDir}/${chapterDir}/${p.directory}`,
-    stats: [
-      { label: "sections", value: p.sections.length },
-    ],
+    stats: [{ label: "sections", value: p.sections.length }],
   }));
-
 } else if (route.granularity === "part") {
   // ── Part index: show section cards ──
   const titleDir = route.segments["title"]!;
@@ -138,7 +134,6 @@ if (route.granularity === "title") {
     href: `/ecfr/${titleDir}/${chapterDir}/${partDir}/${s.file}`,
     stats: s.status !== "current" ? [{ label: s.status, value: "" }] : [],
   }));
-
 } else {
   // ── Section content page ──
   const rawFile = await getFile(route.contentPath);
@@ -157,7 +152,9 @@ if (route.granularity === "title") {
 
   pageTitle = frontmatter.title ? toTitleCase(frontmatter.title) : `eCFR - ${slug}`;
   const sectionName = frontmatter.section_name ? toTitleCase(frontmatter.section_name) : "";
-  const partCtx = frontmatter.part_name ? `Part ${frontmatter.part_number}, ${toTitleCase(frontmatter.part_name)}` : "";
+  const partCtx = frontmatter.part_name
+    ? `Part ${frontmatter.part_number}, ${toTitleCase(frontmatter.part_name)}`
+    : "";
   pageDescription = `${frontmatter.title_number} CFR § ${frontmatter.section_number ?? ""}${sectionName ? ` — ${sectionName}` : ""}. ${partCtx ? `${partCtx}. ` : ""}Title ${frontmatter.title_number}, ${toTitleCase(frontmatter.title_name)}.`;
 }
 
@@ -165,33 +162,40 @@ const isIndexPage = route.granularity !== "section";
 ---
 
 <BaseLayout title={pageTitle} source={SOURCE_ID} description={pageDescription}>
-  <BreadcrumbNav breadcrumbs={route.breadcrumbs} currentPageName={frontmatter?.section_name ? toTitleCase(frontmatter.section_name) : undefined} />
+  <BreadcrumbNav
+    breadcrumbs={route.breadcrumbs}
+    currentPageName={frontmatter?.section_name ? toTitleCase(frontmatter.section_name) : undefined}
+  />
 
-  {isIndexPage ? (
-    <HierarchyIndex
-      source={SOURCE_ID}
-      granularity={route.granularity}
-      heading={pageTitle}
-      description={indexDescription}
-      children={indexChildren}
-      downloadPath={downloadPath}
-      downloadFilename={downloadFilename}
-    />
-  ) : frontmatter ? (
-    <div class="flex flex-col gap-6">
-      <div class="flex flex-col gap-4">
-        <h1 class="font-display text-2xl font-semibold tracking-tight text-slate-blue-800 dark:text-slate-blue-200">{toTitleCase(frontmatter.title)}</h1>
-        <FrontmatterPanel frontmatter={frontmatter} source={SOURCE_ID} />
-      </div>
-      <ContentViewer
-        client:load
-        rawMarkdown={body}
-        highlightedSource={highlightedSource}
-        renderedHtml={renderedHtml}
-        frontmatter={frontmatter}
+  {
+    isIndexPage ? (
+      <HierarchyIndex
+        source={SOURCE_ID}
         granularity={route.granularity}
-        downloadFilename={`${slug?.split("/").pop() ?? "content"}.md`}
+        heading={pageTitle}
+        description={indexDescription}
+        children={indexChildren}
+        downloadPath={downloadPath}
+        downloadFilename={downloadFilename}
       />
-    </div>
-  ) : null}
+    ) : frontmatter ? (
+      <div class="flex flex-col gap-6">
+        <div class="flex flex-col gap-4">
+          <h1 class="font-display text-slate-blue-800 dark:text-slate-blue-200 text-2xl font-semibold tracking-tight">
+            {toTitleCase(frontmatter.title)}
+          </h1>
+          <FrontmatterPanel frontmatter={frontmatter} source={SOURCE_ID} />
+        </div>
+        <ContentViewer
+          client:load
+          rawMarkdown={body}
+          highlightedSource={highlightedSource}
+          renderedHtml={renderedHtml}
+          frontmatter={frontmatter}
+          granularity={route.granularity}
+          downloadFilename={`${slug?.split("/").pop() ?? "content"}.md`}
+        />
+      </div>
+    ) : null
+  }
 </BaseLayout>

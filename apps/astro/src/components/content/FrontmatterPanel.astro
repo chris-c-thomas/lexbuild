@@ -29,16 +29,20 @@ if (source === "ecfr" && frontmatter.agency) {
 }
 
 if ((isSection || !isTitle) && frontmatter.chapter_name) {
-  const chapterLabel = frontmatter.chapter_number !== undefined
-    ? `${frontmatter.chapter_number} — ${toTitleCase(frontmatter.chapter_name)}`
-    : toTitleCase(frontmatter.chapter_name);
+  const chapterLabel =
+    frontmatter.chapter_number !== undefined
+      ? `${frontmatter.chapter_number} — ${toTitleCase(frontmatter.chapter_name)}`
+      : toTitleCase(frontmatter.chapter_name);
   fields.push({ label: "Chapter", value: chapterLabel });
 }
 
 if (isTitle) {
-  if (frontmatter.chapter_count !== undefined) fields.push({ label: "Chapters", value: String(frontmatter.chapter_count) });
-  if (frontmatter.section_count !== undefined) fields.push({ label: "Sections", value: String(frontmatter.section_count) });
-  if (frontmatter.total_token_estimate !== undefined) fields.push({ label: "Est. Tokens", value: frontmatter.total_token_estimate.toLocaleString() });
+  if (frontmatter.chapter_count !== undefined)
+    fields.push({ label: "Chapters", value: String(frontmatter.chapter_count) });
+  if (frontmatter.section_count !== undefined)
+    fields.push({ label: "Sections", value: String(frontmatter.section_count) });
+  if (frontmatter.total_token_estimate !== undefined)
+    fields.push({ label: "Est. Tokens", value: frontmatter.total_token_estimate.toLocaleString() });
 }
 
 // Full-width fields shown below the grid
@@ -53,24 +57,24 @@ if (frontmatter.authority) {
 
 <div class="frontmatter-panel">
   <dl class="frontmatter-grid">
-    {fields.map((field) => (
-      <div class="frontmatter-cell">
-        <dt class="frontmatter-label">
-          {field.label}
-        </dt>
-        <dd class="frontmatter-value">{field.value}</dd>
-      </div>
-    ))}
+    {
+      fields.map((field) => (
+        <div class="frontmatter-cell">
+          <dt class="frontmatter-label">{field.label}</dt>
+          <dd class="frontmatter-value">{field.value}</dd>
+        </div>
+      ))
+    }
   </dl>
 
-  {fullWidthFields.map((field) => (
-    <div class="frontmatter-full">
-      <dt class="frontmatter-label">
-        {field.label}
-      </dt>
-      <dd class="frontmatter-value">{field.value}</dd>
-    </div>
-  ))}
+  {
+    fullWidthFields.map((field) => (
+      <div class="frontmatter-full">
+        <dt class="frontmatter-label">{field.label}</dt>
+        <dd class="frontmatter-value">{field.value}</dd>
+      </div>
+    ))
+  }
 </div>
 
 <style>

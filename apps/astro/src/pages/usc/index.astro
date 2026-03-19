@@ -8,38 +8,52 @@ const source = getSource("usc");
 const titles = await getTitles("usc");
 ---
 
-<BaseLayout title="U.S. Code" source="usc" description="Browse all 54 titles of the U.S. Code as structured Markdown.">
+<BaseLayout
+  title="U.S. Code"
+  source="usc"
+  description="Browse all 54 titles of the U.S. Code as structured Markdown."
+>
   <div class="flex flex-col gap-6">
     <div>
-      <h1 class="font-display text-2xl font-semibold tracking-tight text-slate-blue-900 dark:text-slate-blue-200">{source.name}</h1>
-      <p class="mt-2 text-ink-muted text-[15px] leading-relaxed">{source.description}</p>
+      <h1
+        class="font-display text-slate-blue-900 dark:text-slate-blue-200 text-2xl font-semibold tracking-tight"
+      >
+        {source.name}
+      </h1>
+      <p class="text-ink-muted mt-2 text-[15px] leading-relaxed">{source.description}</p>
     </div>
 
-    {titles.length > 0 ? (
-      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {titles.map((t) => (
-          <a href={`/usc/${t.directory}`} class="flex flex-col border border-slate-blue-200 rounded-sm p-5 bg-white hover:border-slate-blue-400 dark:bg-card dark:border-border dark:hover:border-slate-blue-600 transition-colors">
-            <div class="font-display text-base font-semibold text-slate-blue-800 dark:text-slate-blue-300 mb-1">
-              Title {t.number}
-            </div>
-            <div class="text-sm text-foreground">
-              {toTitleCase(t.name)}
-            </div>
-            <div class="flex flex-wrap items-center gap-2 mt-auto pt-2 text-xs font-medium text-slate-blue-700 dark:text-slate-blue-400">
-              <span>{t.chapterCount} chapters</span>
-              <span class="w-px h-3 bg-slate-blue-300 dark:bg-slate-blue-700" />
-              <span>{t.sectionCount.toLocaleString()} sections</span>
-              <span class="w-px h-3 bg-slate-blue-300 dark:bg-slate-blue-700" />
-              <span>{t.tokenEstimate.toLocaleString()} tokens</span>
-            </div>
-          </a>
-        ))}
-      </div>
-    ) : (
-      <div class="border border-slate-blue-200 rounded-sm p-12 bg-white dark:bg-card dark:border-border text-center">
-        <p class="text-muted-foreground font-medium">No navigation data available.</p>
-        <p class="mt-1 text-sm text-muted-foreground">Run <code class="text-foreground">scripts/generate-nav.ts</code> after converting content.</p>
-      </div>
-    )}
+    {
+      titles.length > 0 ? (
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {titles.map((t) => (
+            <a
+              href={`/usc/${t.directory}`}
+              class="border-slate-blue-200 hover:border-slate-blue-400 dark:bg-card dark:border-border dark:hover:border-slate-blue-600 flex flex-col rounded-sm border bg-white p-5 transition-colors"
+            >
+              <div class="font-display text-slate-blue-800 dark:text-slate-blue-300 mb-1 text-base font-semibold">
+                Title {t.number}
+              </div>
+              <div class="text-foreground text-sm">{toTitleCase(t.name)}</div>
+              <div class="text-slate-blue-700 dark:text-slate-blue-400 mt-auto flex flex-wrap items-center gap-2 pt-2 text-xs font-medium">
+                <span>{t.chapterCount} chapters</span>
+                <span class="bg-slate-blue-300 dark:bg-slate-blue-700 h-3 w-px" />
+                <span>{t.sectionCount.toLocaleString()} sections</span>
+                <span class="bg-slate-blue-300 dark:bg-slate-blue-700 h-3 w-px" />
+                <span>{t.tokenEstimate.toLocaleString()} tokens</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="border-slate-blue-200 dark:bg-card dark:border-border rounded-sm border bg-white p-12 text-center">
+          <p class="text-muted-foreground font-medium">No navigation data available.</p>
+          <p class="text-muted-foreground mt-1 text-sm">
+            Run <code class="text-foreground">scripts/generate-nav.ts</code> after converting
+            content.
+          </p>
+        </div>
+      )
+    }
   </div>
 </BaseLayout>
