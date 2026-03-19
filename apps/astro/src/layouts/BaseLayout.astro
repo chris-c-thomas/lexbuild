@@ -44,7 +44,8 @@ const meiliSearchKey = import.meta.env.MEILI_SEARCH_KEY ?? "";
       (function () {
         var d = document.documentElement;
         var theme = localStorage.getItem("theme");
-        var isDark = theme === "dark" || (!theme && matchMedia("(prefers-color-scheme: dark)").matches);
+        var isDark =
+          theme === "dark" || (!theme && matchMedia("(prefers-color-scheme: dark)").matches);
         if (isDark) {
           d.classList.add("dark");
           d.style.colorScheme = "dark";
@@ -73,8 +74,23 @@ const meiliSearchKey = import.meta.env.MEILI_SEARCH_KEY ?? "";
       <div class="mx-auto flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8">
         <div class="flex items-center gap-6">
           <MobileNav client:load source={source} currentPath={currentPath} />
-          <a href="/" class="inline-flex items-center gap-2 font-display text-2xl font-semibold text-slate-blue-800 dark:text-slate-blue-200">
-            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"></path><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path></svg>
+          <a
+            href="/"
+            class="inline-flex items-center gap-2 font-display text-2xl font-semibold text-slate-blue-800 dark:text-slate-blue-200"
+          >
+            <svg
+              class="w-6 h-6"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              ><path
+                d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"
+              ></path><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path><path
+                d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path></svg
+            >
             LexBuild
           </a>
           <nav class="hidden pl-2 items-center gap-5 text-md font-regular lg:flex">
@@ -128,7 +144,9 @@ const meiliSearchKey = import.meta.env.MEILI_SEARCH_KEY ?? "";
             aria-label="GitHub repository"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12Z"/>
+              <path
+                d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12Z"
+              ></path>
             </svg>
           </a>
           <ThemeToggle client:load />
@@ -152,15 +170,47 @@ const meiliSearchKey = import.meta.env.MEILI_SEARCH_KEY ?? "";
     <footer class="border-t border-border py-6 text-sm text-muted-foreground">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <svg class="w-5 h-5 text-slate-blue-800 dark:text-slate-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"></path><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path></svg>
-          <span class="font-display font-semibold text-slate-blue-800 dark:text-slate-blue-200">LexBuild</span>
+          <svg
+            class="w-5 h-5 text-slate-blue-800 dark:text-slate-blue-500"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            ><path
+              d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"
+            ></path><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path><path
+              d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path></svg
+          >
+          <span class="font-display font-semibold text-slate-blue-800 dark:text-slate-blue-200"
+            >LexBuild</span
+          >
           <span class="text-muted-foreground">&mdash;</span>
           <span class="text-ink-muted">U.S. legal text as structured Markdown · 2026</span>
         </div>
         <nav class="hidden items-center gap-6 sm:flex">
-          <a href="https://www.npmjs.com/package/@lexbuild/cli" target="_blank" rel="noopener noreferrer" class="transition-colors hover:text-slate-blue-700 dark:hover:text-slate-blue-300">CLI</a>
-          <a href="https://github.com/chris-c-thomas/LexBuild/tree/main/docs" target="_blank" rel="noopener noreferrer" class="transition-colors hover:text-slate-blue-700 dark:hover:text-slate-blue-300">Docs</a>
-          <a href="https://github.com/chris-c-thomas/LexBuild" target="_blank" rel="noopener noreferrer" class="transition-colors hover:text-slate-blue-700 dark:hover:text-slate-blue-300">GitHub</a>
+          <a
+            href="https://www.npmjs.com/package/@lexbuild/cli"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="transition-colors hover:text-slate-blue-700 dark:hover:text-slate-blue-300"
+            >CLI</a
+          >
+          <a
+            href="https://github.com/chris-c-thomas/LexBuild/tree/main/docs"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="transition-colors hover:text-slate-blue-700 dark:hover:text-slate-blue-300"
+            >Docs</a
+          >
+          <a
+            href="https://github.com/chris-c-thomas/LexBuild"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="transition-colors hover:text-slate-blue-700 dark:hover:text-slate-blue-300"
+            >GitHub</a
+          >
         </nav>
       </div>
     </footer>
