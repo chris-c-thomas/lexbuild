@@ -77,6 +77,16 @@ Options:
 
 When using `ecfr-api` source, the currency date is auto-detected from `/api/versioner/v1/titles` unless `--date` is specified. Output files use the same naming (`ECFR-title{N}.xml`) regardless of source, so `convert-ecfr` works identically with either.
 
+### Convert Summary Footer
+
+The multi-title conversion summary footer shows only the primary converted unit:
+- `section` granularity: `Converted 60,215 sections in 21.1s`
+- `chapter` granularity: `Converted 2,880 chapters in 10.1s`
+- `title` granularity: `Converted 53 titles in 10.4s`
+- eCFR `part` granularity: `Converted 8,305 parts in ...`
+
+Do NOT include the title count in the footer — the per-title table already shows that.
+
 ### `lexbuild convert-ecfr`
 
 Converts eCFR XML to Markdown. Calls `convertEcfrTitle()` from `@lexbuild/ecfr`.

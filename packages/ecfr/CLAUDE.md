@@ -246,6 +246,7 @@ eCFR sections include all standard fields plus:
 - **CFR chapter numbers are Roman numerals** — `chapter_number` (typed as `number`) is only set when the value parses as an integer. Roman numeral chapter designators (I, II, IV) are captured in `chapter_name` instead.
 - **Reserved titles** — Title 35 (Panama Canal) has no bulk XML on govinfo and returns 404 from the eCFR API. Both downloaders silently skip reserved titles via the `RESERVED_TITLES` set.
 - **eCFR API vs govinfo XML** — both use the same element vocabulary but differ in wrappers. The builder handles both transparently: `ECFR` root (API) is passthrough, `VOLUME` element (API) is skipped, `§` prefix stripping handles both `"§ 1.1"` (govinfo) and `"1.1"` (API), NODE absence is handled gracefully.
+- **eCFR API import-in-progress** — The `/titles` endpoint's `meta.import_in_progress` flag means the global `meta.date` may return 404. The downloader falls back to the previous day. Individual titles can also have `processing_in_progress: true`, returning 503 for ANY date until processing completes. The downloader uses per-title `up_to_date_as_of` dates and retries transient errors (503/504) with exponential backoff.
 
 ## Dependency on @lexbuild/core
 
