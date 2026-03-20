@@ -16,7 +16,9 @@ lexbuild/
 ├── apps/
 │   └── astro/       # LexBuild web app — Astro 6, SSR, browse U.S. Code + eCFR as Markdown
 ├── scripts/
-│   └── deploy.sh    # Production deploy script (code, content, or full remote pipeline)
+│   ├── deploy.sh           # Production deploy (code, content, or full remote pipeline)
+│   ├── setup-secrets.sh    # Initialize ~/.lexbuild-secrets on VPS
+│   └── .deploy.env.example # Template for .deploy.env (VPS_HOST config)
 ├── downloads/
 │   ├── usc/
 │   │   └── xml/     # Full USC XML files (usc01.xml ... usc54.xml) — gitignored
@@ -452,6 +454,8 @@ Where `{N}` is the title number (1-50, not zero-padded). Example: `ECFR-title17.
 - **Quoted content sections**: `<section>` elements inside `<quotedContent>` (quoted bills in statutory notes) must not be emitted as standalone files. Track `quotedContentDepth` to suppress emission.
 - **Duplicate section numbers**: Some titles have multiple sections with the same number within a chapter (e.g., Title 5). Output files are disambiguated with `-2` suffixes.
 - **CLI `-o` flag appends source subdirectories**: `convert-usc -o /some/path` writes to `/some/path/usc/...`, not `/some/path/...` directly. Same for eCFR. The deploy script handles this by converting to monorepo output dirs then copying to the final content structure.
+- **Volta PATH must be in `.zshenv`, not `.zshrc`**: SSH heredoc commands (`ssh host << 'EOF'`) run non-interactive shells that don't source `.zshrc`. Volta's PATH (`$VOLTA_HOME/bin`) must be in `~/.zshenv` on the VPS for deploy scripts to find `pnpm`/`node`/`pm2`.
+- **PM2 reload requires `--update-env`**: Without it, `pm2 reload` keeps cached env vars from the original `pm2 start`. Always use `pm2 reload lexbuild-astro --update-env` to pick up changes from `ecosystem.config.cjs` or shell environment.
 
 ## When Adding New Source Types
 

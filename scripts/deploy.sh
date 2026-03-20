@@ -103,7 +103,7 @@ EOF
     pnpm turbo build:astro --filter=@lexbuild/web
 
     echo "--- Reloading PM2"
-    pm2 reload lexbuild-astro
+    pm2 reload lexbuild-astro --update-env
     echo "==> Code deploy complete"
 REMOTE
 }
@@ -261,7 +261,7 @@ EOF
     pnpm turbo build:astro --filter=@lexbuild/web
 
     echo "--- Reloading PM2"
-    pm2 reload lexbuild-astro
+    pm2 reload lexbuild-astro --update-env
 
     echo "==> Remote deploy complete"
 REMOTE
