@@ -334,6 +334,7 @@ dump_and_push() {
 
   DUMP_PATH=""
   for SEARCH_DIR in \
+    "$HOME/dumps" \
     "$HOME/.meilisearch/data.ms/dumps" \
     "/opt/homebrew/var/meilisearch/data.ms/dumps" \
     "$HOME/data.ms/dumps"; do
@@ -368,6 +369,10 @@ dump_and_push() {
 
     echo "--- Stopping Meilisearch"
     pm2 stop meilisearch
+
+    echo "--- Clearing existing database for dump import..."
+    rm -rf /var/lib/meilisearch/data
+    mkdir -p /var/lib/meilisearch/data
 
     echo "--- Importing dump (this may take a few minutes)..."
     /usr/local/bin/meilisearch \
