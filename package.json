@@ -75,7 +75,7 @@
     ],
     "overrides": {
       "undici": "^6.24.1",
-      "flatted": ">=3.4.2"
+      "flatted": "^3.4.2"
     }
   }
 }

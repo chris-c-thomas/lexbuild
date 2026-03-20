@@ -98,7 +98,12 @@ Sources:
     // For ecfr-api, fetch metadata upfront to resolve dates and display status
     let meta: EcfrTitlesResponse | undefined;
     if (options.source === "ecfr-api" && !options.date) {
-      meta = await fetchEcfrTitlesMeta();
+      try {
+        meta = await fetchEcfrTitlesMeta();
+      } catch (err) {
+        console.error(error(err instanceof Error ? err.message : String(err)));
+        process.exit(1);
+      }
     }
 
     // Build spinner label with date info

@@ -251,7 +251,7 @@ export async function downloadEcfrTitlesFromApi(
   return { titlesDownloaded: files.length, files, totalBytes, asOfDate: primaryDate, failed };
 }
 
-/** Download a single title with retry on transient errors */
+/** Download a single title with retry on transient and network errors */
 async function downloadWithRetry(
   titleNum: number,
   date: string,
@@ -260,29 +260,39 @@ async function downloadWithRetry(
   const url = buildEcfrApiDownloadUrl(titleNum, date);
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    const response = await fetch(url);
+    try {
+      const response = await fetch(url);
 
-    if (response.ok) {
-      const body = response.body;
-      if (!body) return { ok: false, status: 0 };
+      if (response.ok) {
+        const body = response.body;
+        if (!body) return { ok: false, status: 0 };
 
-      const dest = createWriteStream(filePath);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ReadableStream type bridge
-      await pipeline(Readable.fromWeb(body as any), dest);
+        const dest = createWriteStream(filePath);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ReadableStream type bridge
+        await pipeline(Readable.fromWeb(body as any), dest);
 
-      const fileStat = await stat(filePath);
-      return { ok: true, size: fileStat.size };
+        const fileStat = await stat(filePath);
+        return { ok: true, size: fileStat.size };
+      }
+
+      // Retry on transient HTTP errors (503 Service Unavailable, 504 Gateway Timeout)
+      if ((response.status === 503 || response.status === 504) && attempt < MAX_RETRIES) {
+        const delay = RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+
+      // Non-retryable HTTP error or retries exhausted
+      return { ok: false, status: response.status };
+    } catch {
+      // Network-level error (DNS, TLS, connection reset) — retry
+      if (attempt < MAX_RETRIES) {
+        const delay = RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+      return { ok: false, status: 0 };
     }
-
-    // Retry on transient errors (503 Service Unavailable, 504 Gateway Timeout)
-    if ((response.status === 503 || response.status === 504) && attempt < MAX_RETRIES) {
-      const delay = RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
-      await new Promise((resolve) => setTimeout(resolve, delay));
-      continue;
-    }
-
-    // Non-retryable error or retries exhausted
-    return { ok: false, status: response.status };
   }
 
   return { ok: false, status: 0 };

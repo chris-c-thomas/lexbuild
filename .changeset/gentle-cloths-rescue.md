@@ -5,4 +5,4 @@
 "@lexbuild/usc": patch
 ---
 
-Implement hierarchical filenames for downloaded .md files (i.e. usc-title-01-chapter-01-section-1.md)
+Address PR review feedback for download, highlights, and packaging

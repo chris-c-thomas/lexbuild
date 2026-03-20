@@ -88,8 +88,12 @@ async function isUpToDate(mdPath: string, htmlPath: string): Promise<boolean> {
 // ---------------------------------------------------------------------------
 
 async function runWorker(): Promise<void> {
-  const files: string[] = JSON.parse(process.env.HIGHLIGHT_FILES!);
-  const contentDir = process.env.HIGHLIGHT_CONTENT_DIR!;
+  // Receive file list via IPC from parent (avoids OS env size limits)
+  const { files, contentDir } = await new Promise<{ files: string[]; contentDir: string }>(
+    (resolve) => {
+      process.once("message", (msg) => resolve(msg as { files: string[]; contentDir: string }));
+    },
+  );
 
   const { createHighlighter } = await import("shiki");
   const highlighter = await createHighlighter({
@@ -178,7 +182,9 @@ async function main(): Promise<void> {
 
   // Split into chunks and process each in a child process
   const totalChunks = Math.ceil(toProcess.length / CHUNK_SIZE);
-  console.log(`\nProcessing ${toProcess.length} files in ${totalChunks} chunks of ${CHUNK_SIZE}...`);
+  console.log(
+    `\nProcessing ${toProcess.length} files in ${totalChunks} chunks of ${CHUNK_SIZE}...`,
+  );
 
   const startTime = performance.now();
   let totalProcessed = 0;
@@ -193,13 +199,11 @@ async function main(): Promise<void> {
 
     const result = await new Promise<{ processed: number; errors: number }>((res, rej) => {
       const child = fork(scriptPath, ["--worker"], {
-        env: {
-          ...process.env,
-          HIGHLIGHT_FILES: JSON.stringify(chunkFiles),
-          HIGHLIGHT_CONTENT_DIR: resolvedDir,
-        },
         stdio: ["pipe", "inherit", "inherit", "ipc"],
       });
+
+      // Send file list via IPC (avoids OS env/arg size limits for large chunks)
+      child.send({ files: chunkFiles, contentDir: resolvedDir });
 
       child.on("message", (msg) => res(msg as { processed: number; errors: number }));
       child.on("error", rej);

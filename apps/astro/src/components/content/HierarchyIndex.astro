@@ -58,9 +58,9 @@ const granularityLabel =
             <Download data-icon="inline-start" />
             Download {granularityLabel}
           </Button>
-          <template id="download-content" data-filename={downloadFilename}>
+          <script id="download-content" type="text/plain" data-filename={downloadFilename}>
             {downloadContent}
-          </template>
+          </script>
         </>
       )
     }
@@ -109,15 +109,15 @@ const granularityLabel =
 
 <script>
   document.getElementById("download-btn")?.addEventListener("click", () => {
-    const tmpl = document.getElementById("download-content") as HTMLTemplateElement | null;
-    if (!tmpl) return;
-    const blob = new Blob([tmpl.content.textContent || ""], {
+    const container = document.getElementById("download-content");
+    if (!container) return;
+    const blob = new Blob([container.textContent || ""], {
       type: "text/markdown;charset=utf-8",
     });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = tmpl.getAttribute("data-filename") || "download.md";
+    a.download = container.getAttribute("data-filename") || "download.md";
     a.click();
     URL.revokeObjectURL(url);
   });
