@@ -16,7 +16,7 @@ module.exports = {
         SITE_URL: "https://lexbuild.dev",
       },
       instances: 1,
-      max_memory_restart: "512M",
+      max_memory_restart: "1G",
       log_date_format: "YYYY-MM-DD HH:mm:ss",
     },
     {
@@ -27,7 +27,7 @@ module.exports = {
         MEILI_MASTER_KEY: process.env.MEILI_MASTER_KEY || "",
       },
       instances: 1,
-      max_memory_restart: "5G",
+      max_memory_restart: "4G",
       log_date_format: "YYYY-MM-DD HH:mm:ss",
     },
   ],
