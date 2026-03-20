@@ -126,7 +126,7 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
             <input
               ref={inputRef}
               type="text"
-              placeholder="Search LexBuild\u2026"
+              placeholder="Search LexBuild"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               aria-label="Search"
@@ -180,7 +180,7 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
           >
             {loading && (
               <div className="text-muted-foreground px-4 py-8 text-center text-sm">
-                Searching\u2026
+                Searching...
               </div>
             )}
 

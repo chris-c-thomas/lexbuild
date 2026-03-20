@@ -138,6 +138,7 @@ Key points:
 ### TypeScript
 
 - pnpm workspaces with `workspace:*` protocol for internal deps
+- **Transitive dependency vulnerabilities**: Dependabot cannot update transitive deps in pnpm monorepos. Use `pnpm.overrides` in root `package.json` (e.g., `"flatted": "^3.4.2"`). Use `^` ranges (not `>=`) for determinism.
 - ESM only (`"type": "module"` in all package.json files)
 - Strict mode: `strict: true`, `noUncheckedIndexedAccess: true`, `exactOptionalPropertyTypes: true`
 - Use `import type` for type-only imports
