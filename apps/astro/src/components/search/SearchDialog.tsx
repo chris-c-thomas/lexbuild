@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { Search, X, ArrowRight } from "lucide-react";
-import { getClient, type SearchResult } from "@/lib/search";
+import { getClient, search, type SearchResult } from "@/lib/search";
 
 interface SearchDialogProps {
   meiliUrl: string;
@@ -59,7 +59,6 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
     setLoading(true);
     setError(null);
     try {
-      const { search } = await import("@/lib/search");
       const result = await search(q, {
         source: source ?? undefined,
         limit: 20,
