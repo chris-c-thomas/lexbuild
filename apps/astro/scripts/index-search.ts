@@ -351,6 +351,7 @@ async function main(): Promise<void> {
   console.log(`Meilisearch URL: ${MEILI_URL}`);
   console.log(`Index name: ${INDEX_NAME}`);
   console.log(`Batch size: ${BATCH_SIZE}`);
+  console.log(`Mode: full reindex (deletes existing index, rebuilds from scratch)`);
 
   const client = new Meilisearch({
     host: MEILI_URL,
@@ -372,7 +373,7 @@ async function main(): Promise<void> {
     await client.tasks.waitForTask(task.taskUid);
     console.log("  Deleted existing index.");
   } catch {
-    // Index may not exist yet
+    console.log("  No existing index to delete.");
   }
 
   await configureIndex(client);
@@ -380,11 +381,13 @@ async function main(): Promise<void> {
   const indexer = new BatchIndexer(client, INDEX_NAME, BATCH_SIZE);
 
   console.log("\nIndexing USC documents...");
+  console.log("  Reading .md files, extracting frontmatter, sending to Meilisearch in batches...");
   const uscCount = await indexUscDocuments(contentDir, indexer);
   await indexer.flush();
   console.log(`  ${uscCount} USC documents indexed`);
 
   console.log("\nIndexing eCFR documents...");
+  console.log("  Reading .md files, extracting frontmatter, sending to Meilisearch in batches...");
   const ecfrCount = await indexEcfrDocuments(contentDir, indexer);
   await indexer.flush();
   console.log(`  ${ecfrCount} eCFR documents indexed`);

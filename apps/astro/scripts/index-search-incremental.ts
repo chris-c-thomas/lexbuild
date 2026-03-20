@@ -448,7 +448,8 @@ async function main(): Promise<void> {
   console.log(`Content directory: ${resolvedDir}`);
   console.log(`Meilisearch URL: ${MEILI_URL}`);
   console.log(`Index name: ${INDEX_NAME}`);
-  console.log(`Mode: incremental${prune ? " + prune" : ""}`);
+  console.log(`Mode: incremental upsert${prune ? " + prune" : ""}`);
+  console.log(`  Preserves the existing index. Adds new documents and updates existing ones.`);
 
   const client = new Meilisearch({
     host: MEILI_URL,
@@ -484,9 +485,12 @@ async function main(): Promise<void> {
   if (checkpoint > 0) {
     const checkpointDate = new Date(checkpoint).toISOString();
     console.log(`\nCheckpoint: ${checkpointDate}`);
-    console.log("  Indexing files modified after this timestamp.");
+    console.log("  Only files modified after this timestamp will be sent to Meilisearch.");
+    console.log("  Unchanged files will be skipped (not re-sent).");
   } else {
-    console.log("\nNo checkpoint found — indexing all files.");
+    console.log("\nNo checkpoint found — scanning all files.");
+    console.log("  Every .md file will be sent to Meilisearch as an upsert (add or update).");
+    console.log("  Documents already in the index with the same ID will be updated, not duplicated.");
   }
 
   const indexer = new BatchIndexer(client, INDEX_NAME, BATCH_SIZE);
@@ -498,13 +502,13 @@ async function main(): Promise<void> {
   console.log("\nScanning USC documents...");
   const usc = await indexUscIncremental(resolvedDir, indexer, checkpoint, expectedIds);
   await indexer.flush();
-  console.log(`  USC: ${usc.indexed} indexed, ${usc.skipped} unchanged`);
+  console.log(`  USC: ${usc.indexed} upserted, ${usc.skipped} skipped (unchanged since checkpoint)`);
 
   // Index eCFR
   console.log("\nScanning eCFR documents...");
   const ecfr = await indexEcfrIncremental(resolvedDir, indexer, checkpoint, expectedIds);
   await indexer.flush();
-  console.log(`  eCFR: ${ecfr.indexed} indexed, ${ecfr.skipped} unchanged`);
+  console.log(`  eCFR: ${ecfr.indexed} upserted, ${ecfr.skipped} skipped (unchanged since checkpoint)`);
 
   const totalIndexed = usc.indexed + ecfr.indexed;
   const totalSkipped = usc.skipped + ecfr.skipped;
@@ -522,9 +526,9 @@ async function main(): Promise<void> {
   const index = client.index(INDEX_NAME);
   const stats = await index.getStats();
   console.log(`\nDone in ${indexer.elapsed}s`);
-  console.log(`  Indexed: ${totalIndexed}`);
-  console.log(`  Unchanged: ${totalSkipped}`);
-  if (prune) console.log(`  Pruned: ${pruned}`);
+  console.log(`  Upserted: ${totalIndexed} (added or updated in Meilisearch)`);
+  console.log(`  Skipped: ${totalSkipped} (unchanged since last checkpoint)`);
+  if (prune) console.log(`  Pruned: ${pruned} (removed from index — files no longer on disk)`);
   console.log(`  Total documents in index: ${stats.numberOfDocuments}`);
 }
 
