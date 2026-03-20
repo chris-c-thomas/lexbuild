@@ -1,5 +1,17 @@
 # @lexbuild/core
 
+## 1.10.1
+
+### Patch Changes
+
+- 59c12a1: feat: per title data resolution and retry logic for eCFR API downloads
+- 275f041: Address PR review feedback for download, highlights, and packaging
+- c735a6f: Update convert command summary footer for titles, chapters, parts, and sections
+- 82fb6cc: Manage Shiki's memory with forked child processes instead of a single process. Each child is 10k files and its memory is released back to the OS once highlighting is complete.
+- 7fde270: Implement hierarchical filenames for downloaded .md files (i.e. usc-title-01-chapter-01-section-1.md)
+- 95e44f5: eCFR data api fallbacks for when update is in progress; display date info during download
+- 0305588: Prettier formatting issue fixes; pnpm format
+
 ## 1.10.0
 
 ### Minor Changes
