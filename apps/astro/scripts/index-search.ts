@@ -180,7 +180,7 @@ class BatchIndexer {
     this.batchesSent++;
     this.batch = []; // Release memory
 
-    if (this.batchesSent % 10 === 0) {
+    if (this.batchesSent % 5 === 0) {
       const elapsed = ((performance.now() - this.startTime) / 1000).toFixed(1);
       const mem = (process.memoryUsage.rss() / 1024 / 1024).toFixed(0);
       console.log(`  ${this.totalSent} docs sent (${elapsed}s, ${mem}MB RSS)`);
