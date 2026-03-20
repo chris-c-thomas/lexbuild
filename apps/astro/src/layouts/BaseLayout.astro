@@ -39,13 +39,14 @@ const meiliSearchKey = import.meta.env.MEILI_SEARCH_KEY ?? "";
     <meta property="og:url" content={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="theme-color" content="#ffffff" id="theme-color" />
-    <!-- Prevent flash of wrong theme -->
+    <!-- Prevent flash of wrong theme — supports system/light/dark -->
     <script is:inline>
       (function () {
         var d = document.documentElement;
-        var theme = localStorage.getItem("theme");
+        var theme = localStorage.getItem("theme"); // "light" | "dark" | "system" | null
         var isDark =
-          theme === "dark" || (!theme && matchMedia("(prefers-color-scheme: dark)").matches);
+          theme === "dark" ||
+          ((!theme || theme === "system") && matchMedia("(prefers-color-scheme: dark)").matches);
         if (isDark) {
           d.classList.add("dark");
           d.style.colorScheme = "dark";
@@ -84,7 +85,7 @@ const meiliSearchKey = import.meta.env.MEILI_SEARCH_KEY ?? "";
           <MobileNav client:load source={source} currentPath={currentPath} />
           <a
             href="/"
-            class="font-display text-slate-blue-800 dark:text-slate-blue-200 inline-flex items-center gap-2 text-2xl font-semibold"
+            class="font-display text-slate-blue-900 dark:text-slate-blue-200 inline-flex items-center gap-2 text-2xl font-semibold"
           >
             <svg
               class="h-6 w-6"
@@ -105,7 +106,7 @@ const meiliSearchKey = import.meta.env.MEILI_SEARCH_KEY ?? "";
             <a
               href="/usc"
               class:list={[
-                "hover:text-slate-blue-700 dark:hover:text-slate-blue-300 inline-flex items-center gap-1.5 transition-colors",
+                "nav-link hover:text-slate-blue-700 dark:hover:text-slate-blue-300 inline-flex items-center gap-1.5 transition-colors",
                 source === "usc" ? "text-foreground" : "text-muted-foreground",
               ]}
             >
@@ -114,7 +115,7 @@ const meiliSearchKey = import.meta.env.MEILI_SEARCH_KEY ?? "";
             <a
               href="/ecfr"
               class:list={[
-                "hover:text-slate-blue-700 dark:hover:text-slate-blue-300 inline-flex items-center gap-1.5 transition-colors",
+                "nav-link hover:text-slate-blue-700 dark:hover:text-slate-blue-300 inline-flex items-center gap-1.5 transition-colors",
                 source === "ecfr" ? "text-foreground" : "text-muted-foreground",
               ]}
             >
@@ -124,7 +125,7 @@ const meiliSearchKey = import.meta.env.MEILI_SEARCH_KEY ?? "";
               href="https://www.npmjs.com/package/@lexbuild/cli"
               target="_blank"
               rel="noopener noreferrer"
-              class="text-muted-foreground hover:text-slate-blue-700 dark:hover:text-slate-blue-300 inline-flex items-center gap-1.5 transition-colors"
+              class="nav-link text-muted-foreground hover:text-slate-blue-700 dark:hover:text-slate-blue-300 inline-flex items-center gap-1.5 transition-colors"
             >
               CLI
             </a>
@@ -132,7 +133,7 @@ const meiliSearchKey = import.meta.env.MEILI_SEARCH_KEY ?? "";
               href="https://github.com/chris-c-thomas/LexBuild/tree/main/docs"
               target="_blank"
               rel="noopener noreferrer"
-              class="text-muted-foreground hover:text-slate-blue-700 dark:hover:text-slate-blue-300 inline-flex items-center gap-1.5 transition-colors"
+              class="nav-link text-muted-foreground hover:text-slate-blue-700 dark:hover:text-slate-blue-300 inline-flex items-center gap-1.5 transition-colors"
             >
               Docs
             </a>
