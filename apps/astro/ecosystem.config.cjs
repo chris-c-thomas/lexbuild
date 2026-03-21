@@ -1,8 +1,10 @@
+const LOG_DIR = "/home/ubuntu/pm2/logs/lexbuild";
+
 module.exports = {
   apps: [
     {
       name: "lexbuild-astro",
-      cwd: __dirname,
+      cwd: "/home/ubuntu/lexbuild/apps/astro",
       script: "./dist/server/entry.mjs",
       env: {
         NODE_ENV: "production",
@@ -16,19 +18,50 @@ module.exports = {
         SITE_URL: "https://lexbuild.dev",
       },
       instances: 1,
-      max_memory_restart: "1G",
+      exec_mode: "fork",
+
+      // Logging
+      out_file: `${LOG_DIR}/astro-out.log`,
+      error_file: `${LOG_DIR}/astro-error.log`,
       log_date_format: "YYYY-MM-DD HH:mm:ss",
+      merge_logs: true,
+
+      // Stability
+      max_memory_restart: "1536M",
+      max_restarts: 10,
+      min_uptime: "10s",
+      restart_delay: 1000,
+      exp_backoff_restart_delay: 100,
+
+      // Graceful shutdown — allow in-flight SSR requests to complete
+      kill_timeout: 5000,
     },
     {
       name: "meilisearch",
+      cwd: "/home/ubuntu/lexbuild",
       script: "/usr/local/bin/meilisearch",
-      args: "--db-path /var/lib/meilisearch/data --env production --http-addr 127.0.0.1:7700",
+      args: "--db-path /var/lib/meilisearch/data --env production --http-addr 127.0.0.1:7700 --log-level WARN",
       env: {
         MEILI_MASTER_KEY: process.env.MEILI_MASTER_KEY || "",
       },
       instances: 1,
-      max_memory_restart: "4G",
+      exec_mode: "fork",
+
+      // Logging
+      out_file: `${LOG_DIR}/meilisearch-out.log`,
+      error_file: `${LOG_DIR}/meilisearch-error.log`,
       log_date_format: "YYYY-MM-DD HH:mm:ss",
+      merge_logs: true,
+
+      // Stability
+      max_memory_restart: "4G",
+      max_restarts: 5,
+      min_uptime: "10s",
+      restart_delay: 2000,
+      exp_backoff_restart_delay: 100,
+
+      // Meilisearch needs time to flush data on shutdown
+      kill_timeout: 10000,
     },
   ],
 };
