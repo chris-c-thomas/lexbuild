@@ -207,19 +207,33 @@ async function generateUscNav(contentDir: string, outDir: string): Promise<void>
       tokenEstimate: meta.stats.total_tokens_estimate,
     });
 
-    // Build per-title nav JSON
-    const chapters: ChapterNav[] = meta.chapters.map((ch) => ({
-      number: String(ch.number),
-      name: ch.name,
-      directory: ch.directory,
-      sections: ch.sections.map((s) => ({
+    // Build per-title nav JSON, merging subchapters that share the same
+    // directory (e.g. Title 5 Chapter 89 has three subchapters all in
+    // chapter-89/). Without merging, duplicate React keys and broken
+    // expand/collapse result.
+    const chapterMap = new Map<string, ChapterNav>();
+    for (const ch of meta.chapters) {
+      const sections: SectionNavEntry[] = ch.sections.map((s) => ({
         number: s.number,
         name: s.name,
         file: s.file.replace(/\.md$/, ""),
         status: s.status,
         hasNotes: s.has_notes,
-      })),
-    }));
+      }));
+
+      const existing = chapterMap.get(ch.directory);
+      if (existing) {
+        existing.sections!.push(...sections);
+      } else {
+        chapterMap.set(ch.directory, {
+          number: String(ch.number),
+          name: ch.name,
+          directory: ch.directory,
+          sections,
+        });
+      }
+    }
+    const chapters: ChapterNav[] = [...chapterMap.values()];
 
     const titleNav: TitleNav = { chapters };
     await writeFile(
