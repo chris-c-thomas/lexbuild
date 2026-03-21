@@ -116,7 +116,7 @@ SITE_URL=https://lexbuild.dev
 EOF
 
     echo "--- Building Astro app"
-    pnpm turbo build:astro --filter=@lexbuild/web
+    pnpm turbo build:astro --filter=@lexbuild/astro
 
     echo "--- Reloading PM2"
     pm2 reload lexbuild-astro --update-env
@@ -274,7 +274,7 @@ EOF
     # --- Build and reload ---
 
     echo "--- Building Astro app"
-    pnpm turbo build:astro --filter=@lexbuild/web
+    pnpm turbo build:astro --filter=@lexbuild/astro
 
     echo "--- Reloading PM2"
     pm2 reload lexbuild-astro --update-env
