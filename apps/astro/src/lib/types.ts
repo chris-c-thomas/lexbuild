@@ -137,6 +137,7 @@ export interface SectionNavEntry {
 /** Props passed from Astro pages to the ContentViewer React island */
 export interface ContentViewerProps {
   rawMarkdown: string;
+  rawYaml: string;
   highlightedSource: string;
   renderedHtml: string;
   frontmatter: ContentFrontmatter;

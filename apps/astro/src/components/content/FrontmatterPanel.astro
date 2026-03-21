@@ -5,9 +5,10 @@ import { toTitleCase } from "@/lib/utils";
 interface Props {
   frontmatter: ContentFrontmatter;
   source: SourceId;
+  rawYaml?: string;
 }
 
-const { frontmatter, source } = Astro.props;
+const { frontmatter, source, rawYaml } = Astro.props;
 
 const isTitle = frontmatter.chapter_count !== undefined;
 const isSection = frontmatter.section_number !== undefined;
@@ -53,35 +54,185 @@ if (isSection && frontmatter.source_credit) {
 if (frontmatter.authority) {
   fullWidthFields.push({ label: "Authority", value: frontmatter.authority });
 }
+
+const rawYamlBlock = rawYaml ? `---\n${rawYaml.trim()}\n---` : "";
+const hasToggle = !!rawYaml;
 ---
 
-<div class="frontmatter-panel">
-  <dl class="frontmatter-grid">
+<div class="frontmatter-wrapper" data-frontmatter-toggle>
+  <!-- Toolbar header — matches ContentViewer toolbar style -->
+  {hasToggle ? (
+    <div class="fm-toolbar">
+      <div class="fm-tabs-list">
+        <button
+          class="fm-tabs-trigger active"
+          data-view="raw"
+          type="button"
+          aria-pressed="true"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+          YAML
+        </button>
+        <button
+          class="fm-tabs-trigger"
+          data-view="rendered"
+          type="button"
+          aria-pressed="false"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+          Preview
+        </button>
+      </div>
+    </div>
+  ) : null}
+
+  <!-- Raw YAML view (shown by default when toggle present) -->
+  {hasToggle ? (
+    <div class="fm-content fm-content-bottom" data-frontmatter-view="raw">
+      <pre class="frontmatter-raw-pre"><code>{rawYamlBlock}</code></pre>
+    </div>
+  ) : null}
+
+  <!-- Rendered view (hidden by default when toggle present, shown when no toggle) -->
+  <div
+    class:list={[hasToggle ? "fm-content fm-content-bottom" : "fm-content fm-content-standalone"]}
+    data-frontmatter-view="rendered"
+    style={hasToggle ? "display: none;" : undefined}
+  >
+    <dl class="frontmatter-grid">
+      {
+        fields.map((field) => (
+          <div class="frontmatter-cell">
+            <dt class="frontmatter-label">{field.label}</dt>
+            <dd class="frontmatter-value">{field.value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+
     {
-      fields.map((field) => (
-        <div class="frontmatter-cell">
+      fullWidthFields.map((field) => (
+        <div class="frontmatter-full">
           <dt class="frontmatter-label">{field.label}</dt>
           <dd class="frontmatter-value">{field.value}</dd>
         </div>
       ))
     }
-  </dl>
-
-  {
-    fullWidthFields.map((field) => (
-      <div class="frontmatter-full">
-        <dt class="frontmatter-label">{field.label}</dt>
-        <dd class="frontmatter-value">{field.value}</dd>
-      </div>
-    ))
-  }
+  </div>
 </div>
 
+<script>
+  document.querySelectorAll("[data-frontmatter-toggle]").forEach((wrapper) => {
+    const buttons = wrapper.querySelectorAll<HTMLButtonElement>(".fm-tabs-trigger");
+    const views = wrapper.querySelectorAll<HTMLElement>("[data-frontmatter-view]");
+
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.view;
+        buttons.forEach((b) => {
+          const isActive = b.dataset.view === target;
+          b.classList.toggle("active", isActive);
+          b.setAttribute("aria-pressed", String(isActive));
+        });
+        views.forEach((v) => {
+          v.style.display = v.dataset.frontmatterView === target ? "" : "none";
+        });
+      });
+    });
+  });
+</script>
+
 <style>
-  .frontmatter-panel {
-    border-radius: calc(var(--radius) * 0.6);
+  .frontmatter-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* Toolbar — matches ContentViewer's border-border bg-muted/40 rounded-t-md border */
+  .fm-toolbar {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 2px) calc(var(--radius) - 2px) 0 0;
+    background: color-mix(in oklch, var(--muted) 40%, transparent);
+    padding: 0.5rem 1rem;
+  }
+
+  /* Tabs list inside toolbar — matches shadcn TabsList */
+  .fm-tabs-list {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    border-radius: 0.5rem;
+    padding: 0.25rem;
+    background: var(--muted);
+    color: var(--muted-foreground);
+  }
+
+  /* Tab trigger — matches shadcn TabsTrigger */
+  .fm-tabs-trigger {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    border-radius: calc(var(--radius) - 2px);
+    border: 1px solid transparent;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    background: transparent;
+    color: color-mix(in oklch, var(--foreground) 60%, transparent);
+    cursor: pointer;
+    transition: all 150ms;
+  }
+
+  .fm-tabs-trigger:hover {
+    color: var(--color-slate-blue-600, #5285a3);
+  }
+
+  .fm-tabs-trigger.active {
+    background: var(--background);
+    color: var(--color-slate-blue-700, #476c85);
+    border-color: transparent;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  }
+
+  :global(.dark) .fm-tabs-trigger {
+    color: var(--muted-foreground);
+  }
+
+  :global(.dark) .fm-tabs-trigger:hover {
+    color: var(--color-slate-blue-300, #b4cfda);
+  }
+
+  :global(.dark) .fm-tabs-trigger.active {
+    background: color-mix(in oklch, var(--input) 30%, transparent);
+    color: var(--color-slate-blue-300, #b4cfda);
+    border-color: var(--input);
+    box-shadow: none;
+  }
+
+  .fm-tabs-trigger svg {
+    pointer-events: none;
+    flex-shrink: 0;
+  }
+
+  /* Content area below toolbar */
+  .fm-content {
     border: 1px solid var(--border);
     background: color-mix(in oklch, var(--muted) 30%, transparent);
+  }
+
+  .fm-content-bottom {
+    border-top: none;
+    border-radius: 0 0 calc(var(--radius) - 2px) calc(var(--radius) - 2px);
+  }
+
+  .fm-content-standalone {
+    border-radius: calc(var(--radius) * 0.6);
   }
 
   .frontmatter-grid {
@@ -94,7 +245,6 @@ if (frontmatter.authority) {
     border-bottom: 1px solid var(--border);
   }
 
-  /* Vertical dividers between cells on the same row via box-shadow trick */
   .frontmatter-cell + .frontmatter-cell {
     border-left: 1px solid var(--border);
   }
@@ -104,7 +254,6 @@ if (frontmatter.authority) {
     border-top: 1px solid var(--border);
   }
 
-  /* Remove bottom border on last row of grid cells when full-width fields follow */
   .frontmatter-grid:last-child .frontmatter-cell {
     border-bottom: none;
   }
@@ -122,5 +271,16 @@ if (frontmatter.authority) {
     font-size: 0.875rem;
     color: var(--foreground);
     overflow-wrap: break-word;
+  }
+
+  .frontmatter-raw-pre {
+    margin: 0;
+    padding: 1rem;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--foreground);
+    white-space: pre-wrap;
+    word-break: break-word;
   }
 </style>
