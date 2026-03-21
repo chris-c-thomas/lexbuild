@@ -1,14 +1,16 @@
 import matter from "gray-matter";
 import type { ContentFrontmatter } from "./types";
 
-/** Parse a raw .md file into frontmatter and body. */
+/** Parse a raw .md file into frontmatter, body, and raw YAML. */
 export function parseFrontmatter(raw: string): {
   frontmatter: ContentFrontmatter;
   body: string;
+  rawYaml: string;
 } {
-  const { data, content } = matter(raw);
+  const result = matter(raw);
   return {
-    frontmatter: data as ContentFrontmatter,
-    body: content,
+    frontmatter: result.data as ContentFrontmatter,
+    body: result.content,
+    rawYaml: result.matter,
   };
 }
