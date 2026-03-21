@@ -110,7 +110,7 @@ deploy_code() {
 CONTENT_DIR=/srv/lexbuild/content
 NAV_DIR=/srv/lexbuild/nav
 ENABLE_SEARCH=${ENABLE_SEARCH:-false}
-MEILI_URL=http://127.0.0.1:7700
+MEILI_URL=/api
 MEILI_SEARCH_KEY=${MEILI_SEARCH_KEY:-}
 SITE_URL=https://lexbuild.dev
 EOF
@@ -199,7 +199,7 @@ deploy_remote() {
 CONTENT_DIR=/srv/lexbuild/content
 NAV_DIR=/srv/lexbuild/nav
 ENABLE_SEARCH=${ENABLE_SEARCH:-false}
-MEILI_URL=http://127.0.0.1:7700
+MEILI_URL=/api
 MEILI_SEARCH_KEY=${MEILI_SEARCH_KEY:-}
 SITE_URL=https://lexbuild.dev
 EOF

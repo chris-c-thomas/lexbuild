@@ -1,29 +1,37 @@
 /**
- * Meilisearch client wrapper for search functionality.
+ * Meilisearch search wrapper.
  *
- * Gated behind the ENABLE_SEARCH environment variable. When disabled,
- * the client is not instantiated and search functions return empty results.
+ * In production, searches go through Caddy's /api/search proxy (which handles
+ * auth via server-side MEILI_SEARCH_KEY). The Meilisearch JS client is only
+ * used in local dev where the browser can reach Meilisearch directly.
+ *
+ * Gated behind the ENABLE_SEARCH environment variable.
  */
 
 import { Meilisearch } from "meilisearch";
 
 const INDEX_NAME = "lexbuild";
 
-/** Singleton Meilisearch client (browser-side, search-only key). */
 let client: Meilisearch | null = null;
+let searchMode: "proxy" | "direct" = "direct";
+let proxyBase = "";
 
 /**
- * Initialize or return the Meilisearch client.
- * Config is passed at call time to avoid import.meta.env issues in non-Astro contexts.
+ * Initialize the search client.
+ * - If meiliUrl starts with "/" or is a relative path, use proxy mode (fetch to /api/search).
+ * - Otherwise, use the Meilisearch client directly (local dev).
  */
-export function getClient(config?: { host?: string; apiKey?: string }): Meilisearch {
-  if (!client) {
+export function initSearch(config: { host: string; apiKey: string }): void {
+  if (config.host === "/api" || config.host.startsWith("/")) {
+    searchMode = "proxy";
+    proxyBase = config.host;
+  } else {
+    searchMode = "direct";
     client = new Meilisearch({
-      host: config?.host ?? "http://127.0.0.1:7700",
-      apiKey: config?.apiKey ?? "",
+      host: config.host,
+      apiKey: config.apiKey,
     });
   }
-  return client;
 }
 
 /** Search document shape returned by Meilisearch. */
@@ -59,15 +67,13 @@ export async function search(
     offset?: number;
   },
 ): Promise<SearchResult> {
-  const client = getClient();
-  const index = client.index<SearchDocument>(INDEX_NAME);
-
   const filters: string[] = [];
   if (options?.source) filters.push(`source = "${options.source}"`);
   if (options?.titleNumber) filters.push(`title_number = ${options.titleNumber}`);
   if (options?.status) filters.push(`status = "${options.status}"`);
 
-  const result = await index.search(query, {
+  const body = {
+    q: query,
     filter: filters.length > 0 ? filters.join(" AND ") : undefined,
     facets: ["source", "status"],
     limit: options?.limit ?? 20,
@@ -75,8 +81,34 @@ export async function search(
     attributesToHighlight: ["heading", "identifier"],
     highlightPreTag: "<mark>",
     highlightPostTag: "</mark>",
-  });
+  };
 
+  if (searchMode === "proxy") {
+    // Production: fetch through Caddy proxy (no API key needed, Caddy injects it)
+    const res = await fetch(`${proxyBase}/search`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      throw new Error(`Search failed: ${res.status} ${res.statusText}`);
+    }
+    const result = await res.json();
+    return {
+      hits: result.hits ?? [],
+      query: result.query ?? query,
+      processingTimeMs: result.processingTimeMs ?? 0,
+      estimatedTotalHits: result.estimatedTotalHits ?? 0,
+      facetDistribution: result.facetDistribution,
+    };
+  }
+
+  // Local dev: use Meilisearch client directly
+  if (!client) {
+    throw new Error("Search client not initialized. Call initSearch() first.");
+  }
+  const index = client.index<SearchDocument>(INDEX_NAME);
+  const result = await index.search(query, body);
   return {
     hits: result.hits as SearchDocument[],
     query: result.query,

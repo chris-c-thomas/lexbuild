@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { Search, X, ArrowRight } from "lucide-react";
-import { getClient, search, type SearchResult } from "@/lib/search";
+import { initSearch, search, type SearchResult } from "@/lib/search";
 
 interface SearchDialogProps {
   meiliUrl: string;
@@ -18,9 +18,9 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  // Initialize client with config from Astro
+  // Initialize search (proxy mode in production, direct in local dev)
   useEffect(() => {
-    getClient({ host: meiliUrl, apiKey: meiliSearchKey });
+    initSearch({ host: meiliUrl, apiKey: meiliSearchKey });
   }, [meiliUrl, meiliSearchKey]);
 
   // Cmd+K / Ctrl+K to open
