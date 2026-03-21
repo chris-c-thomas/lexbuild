@@ -146,7 +146,7 @@ pnpm run preview        # Preview production build locally
 From the monorepo root:
 
 ```bash
-pnpm turbo build:astro --filter=@lexbuild/web
+pnpm turbo build:astro --filter=@lexbuild/astro
 ```
 
 > **Note:** This app is intentionally excluded from the default `pnpm turbo build` pipeline. It has no `build` script in `package.json` — only `build:astro`. This prevents CI failures since the app requires content files that aren't in git.

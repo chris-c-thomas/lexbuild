@@ -1,5 +1,5 @@
 {
-  "name": "@lexbuild/web",
+  "name": "@lexbuild/astro",
   "type": "module",
   "private": true,
   "scripts": {
