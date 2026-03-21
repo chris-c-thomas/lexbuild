@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { SidebarContent } from "./SidebarContent";
 import type { SourceId } from "@/lib/types";
 
@@ -12,20 +12,23 @@ const MIN_WIDTH = 200;
 const MAX_WIDTH = 500;
 const DEFAULT_WIDTH = 288; // w-72
 
-function getStoredWidth(): number {
-  if (typeof window === "undefined") return DEFAULT_WIDTH;
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) {
-    const parsed = parseInt(stored, 10);
-    if (parsed >= MIN_WIDTH && parsed <= MAX_WIDTH) return parsed;
-  }
-  return DEFAULT_WIDTH;
-}
-
 export function Sidebar({ sourceId, currentPath }: SidebarProps) {
-  const [width, setWidth] = useState(getStoredWidth);
+  const [width, setWidth] = useState(DEFAULT_WIDTH);
   const isDragging = useRef(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
+
+  // Apply stored width before first paint — no hydration mismatch (initial
+  // render matches server at DEFAULT_WIDTH), no visible flash (runs before
+  // the browser paints).
+  useLayoutEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = parseInt(stored, 10);
+      if (parsed >= MIN_WIDTH && parsed <= MAX_WIDTH) {
+        setWidth(parsed);
+      }
+    }
+  }, []);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
