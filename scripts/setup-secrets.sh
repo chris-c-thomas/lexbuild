@@ -144,16 +144,27 @@ if [ "$DO_SEARCH" = true ]; then
     fi
     echo "--- Meilisearch is healthy"
 
-    # Retrieve the search-only API key
+    # Retrieve a search-capable API key.
+    # Meilisearch v1.39+ has multiple keys with 'search' in actions:
+    #   - "Default Search API Key" (search only)
+    #   - "Default Chat API Key" (chatCompletions + search)
+    # The Chat API Key works more reliably through Caddy's reverse proxy,
+    # so we prefer it. Fall back to any key with search permissions.
     SEARCH_KEY=$(curl -sf http://127.0.0.1:7700/keys \
       -H "Authorization: Bearer ${MEILI_MASTER_KEY}" \
       | python3 -c "
 import sys, json
 keys = json.load(sys.stdin)['results']
+# Prefer the Chat API Key (has both chatCompletions and search)
 for k in keys:
-    if 'search' in k['actions']:
+    if 'chatCompletions' in k['actions'] and 'search' in k['actions']:
         print(k['key'])
-        break
+        sys.exit(0)
+# Fall back to any key with search
+for k in keys:
+    if 'search' in k['actions'] and '*' not in k['actions']:
+        print(k['key'])
+        sys.exit(0)
 ")
 
     if [ -z "${SEARCH_KEY:-}" ]; then

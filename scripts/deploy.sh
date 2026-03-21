@@ -375,13 +375,31 @@ dump_and_push() {
     mkdir -p /var/lib/meilisearch/data
 
     echo "--- Importing dump (this may take a few minutes)..."
+    # --import-dump imports then keeps running as a server.
+    # Run in background, wait for the "All documents successfully imported" log,
+    # then kill it so PM2 can manage the process.
     /usr/local/bin/meilisearch \
       --import-dump /tmp/lexbuild-search.dump \
       --db-path /var/lib/meilisearch/data \
       --env production \
       --http-addr 127.0.0.1:7700 \
-      --master-key "$MEILI_MASTER_KEY"
-    # Meilisearch imports then exits
+      --master-key "$MEILI_MASTER_KEY" &
+    MEILI_PID=$!
+
+    # Wait for import to complete (poll health endpoint)
+    echo "--- Waiting for import to complete and server to be ready..."
+    for i in $(seq 1 120); do
+      if curl -sf http://127.0.0.1:7700/health > /dev/null 2>&1; then
+        echo "--- Import complete, Meilisearch is responding."
+        break
+      fi
+      sleep 5
+    done
+
+    # Kill the foreground Meilisearch process so PM2 can manage it
+    kill "$MEILI_PID" 2>/dev/null || true
+    wait "$MEILI_PID" 2>/dev/null || true
+    sleep 1
 
     echo "--- Starting Meilisearch via PM2"
     pm2 start meilisearch
