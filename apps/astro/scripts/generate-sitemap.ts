@@ -16,7 +16,7 @@
  * Usage: npx tsx scripts/generate-sitemap.ts [content-dir]
  */
 
-import { readdir, readFile, writeFile } from "node:fs/promises";
+import { access, copyFile, readdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
 const SITE_URL = process.env.SITE_URL ?? "https://lexbuild.dev";
@@ -232,6 +232,21 @@ async function main(): Promise<void> {
   await writeFile(indexPath, indexXml, "utf-8");
 
   console.log(`\nWrote sitemap index: ${indexPath} (${allFilenames.length} sitemaps)`);
+
+  // If dist/client/ exists (post-build), copy sitemaps there so the running
+  // Astro SSR server can serve them without a rebuild.
+  const distClientDir = resolve("./dist/client");
+  try {
+    await access(distClientDir);
+    const sitemapFiles = ["sitemap.xml", ...allFilenames];
+    for (const file of sitemapFiles) {
+      await copyFile(join(outputDir, file), join(distClientDir, file));
+    }
+    console.log(`Copied ${sitemapFiles.length} sitemap files to ${distClientDir}`);
+  } catch {
+    // dist/client/ doesn't exist (pre-build run) — sitemaps will be
+    // picked up automatically when the Astro build copies public/.
+  }
 }
 
 main().catch((err) => {
