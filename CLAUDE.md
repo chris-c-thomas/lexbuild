@@ -464,6 +464,7 @@ Where `{N}` is the title number (1-50, not zero-padded). Example: `ECFR-title17.
 - **Caddy `EnvironmentFile` override required for search**: `{$MEILI_SEARCH_KEY}` in the Caddyfile requires `EnvironmentFile=/etc/caddy/environment` in a systemd override (`sudo systemctl edit caddy`). Without it, Caddy passes an empty auth header.
 - **Meilisearch `--import-dump` doesn't exit**: It imports then keeps running as a foreground server. The deploy script backgrounds it, polls health, then kills it before restarting via PM2.
 - **Local Meilisearch dumps**: Use `--dump-dir ~/.meilisearch/dumps` to consolidate dumps alongside data. Without it, dumps default to `dumps/` relative to CWD. The deploy script searches multiple candidate locations as a fallback.
+- **Duplicate chapter directories in USC `_meta.json`**: Many USC titles have subchapters that share the same `chapter-NN/` directory (e.g., Title 5 Chapter 89 has three subchapters). The nav generator (`generate-nav.ts`) merges these by directory to avoid duplicate React keys in the sidebar.
 
 ## When Adding New Source Types
 

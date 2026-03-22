@@ -171,7 +171,9 @@ Initialized with radix-nova preset, zinc theme. Components in `src/components/ui
 - **Page headings**: `font-display text-2xl font-semibold tracking-tight text-slate-blue-800 dark:text-slate-blue-200`
 - **Download**: `<script type="text/plain">` + Blob URL. NOT `<template>` (corrupts Markdown HTML).
 - **ContentViewer tabs**: Customized `TabsTrigger` with slate-blue active/hover states.
-- **FrontmatterPanel grid**: Scoped `<style>` with plain CSS (Tailwind v4 `grid-cols-*` can silently fail in `.astro` files).
+- **FrontmatterPanel**: Has YAML/Preview toggle (Astro inline `<script>`, not React island). Toolbar matches shadcn TabsList/TabsTrigger styling via scoped CSS with `--color-slate-blue-*` vars. Uses `data-frontmatter-toggle` / `data-frontmatter-view` attributes for JS toggle. Grid view uses scoped `<style>` with plain CSS (Tailwind v4 `grid-cols-*` can silently fail in `.astro` files).
+- **Copy/Download buttons**: Standalone React islands in the route pages (not inside ContentViewer). Receive the full reconstructed file (`---\n${rawYaml}\n---\n${body}`) so users get the complete `.md` with frontmatter.
+- **Sidebar is resizable**: Drag handle via pointer events, width persisted to localStorage (`lexbuild-sidebar-width`), 200–500px range. Two-div structure: outer positioning container + inner scrollable area with `scrollbar-gutter: stable`.
 
 ## Common Pitfalls
 
@@ -189,6 +191,10 @@ Initialized with radix-nova preset, zinc theme. Components in `src/components/ui
 - **External links**: Always use `rel="noopener noreferrer"` on `target="_blank"`.
 - **Search in production uses Caddy proxy, not direct Meilisearch access.** `MEILI_URL=/api` in `.env.production` — the browser's `127.0.0.1:7700` is the user's machine, not the VPS.
 - **After dump import, API keys change.** Update `~/.lexbuild-secrets`, `.env.production` (via deploy.sh), AND `/etc/caddy/environment`.
+- **Astro conditionals with strings**: `{str && <jsx>}` can silently fail in `.astro` templates. Use `{str ? <jsx> : null}` with explicit `: null` for ternary conditionals.
+- **gray-matter `matter` field starts with `\n`**: When displaying raw YAML from `result.matter`, use `.trim()` to avoid a blank line between `---` and the first field.
+- **React hydration with localStorage**: Don't read localStorage in `useState()` initializer — SSR renders the default, client reads stored value, causing hydration mismatch. Use `useLayoutEffect` to apply stored value after hydration but before paint.
+- **`--content` deploy doesn't regenerate anything**: It only rsyncs existing local files. To update nav/sitemap after code changes, either regenerate locally then `--content`, or SSH into VPS and regenerate there. `--remote` runs the full pipeline.
 
 ## SEO
 
