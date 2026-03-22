@@ -1,0 +1,741 @@
+# Output Format Specification
+
+LexBuild produces structured Markdown files with YAML frontmatter and JSON sidecar indexes, designed for RAG pipelines, vector databases, and LLM context windows. This document is the authoritative specification for the output format.
+
+## Format Versioning
+
+The current format version is **1.1.0**, defined by the `FORMAT_VERSION` constant in `@lexbuild/core` (`packages/core/src/markdown/frontmatter.ts`). Breaking changes to the output format increment the major version.
+
+The format version is recorded in two places:
+
+- The `format_version` field in every Markdown file's YAML frontmatter.
+- The `format_version` field in every `_meta.json` sidecar index.
+
+## Directory Layout
+
+### USC Output
+
+LexBuild supports three output granularities for U.S. Code content. The granularity determines how content is partitioned into files.
+
+**Section granularity** (default):
+
+```
+output/usc/
+├── title-01/
+│   ├── chapter-01/
+│   │   ├── section-1.md
+│   │   ├── section-2.md
+│   │   └── _meta.json
+│   ├── chapter-02/
+│   │   ├── section-101.md
+│   │   └── _meta.json
+│   ├── _meta.json
+│   └── README.md
+└── title-54/
+    └── ...
+```
+
+**Chapter granularity**:
+
+```
+output/usc/
+├── title-01/
+│   ├── chapter-01/
+│   │   └── chapter-01.md
+│   ├── chapter-02/
+│   │   └── chapter-02.md
+│   ├── _meta.json
+│   └── README.md
+└── ...
+```
+
+**Title granularity**:
+
+```
+output/usc/
+├── title-01.md
+├── title-02.md
+└── ...
+```
+
+Title granularity produces flat files with no subdirectories and no sidecar files. The frontmatter is enriched with aggregate statistics (`chapter_count`, `section_count`, `total_token_estimate`).
+
+### eCFR Output
+
+LexBuild supports four output granularities for Code of Federal Regulations content.
+
+**Section granularity** (default):
+
+```
+output/ecfr/
+├── title-01/
+│   ├── chapter-I/
+│   │   ├── part-1/
+│   │   │   ├── section-1.1.md
+│   │   │   ├── section-1.2.md
+│   │   │   └── _meta.json
+│   │   └── part-2/
+│   │       ├── section-2.1.md
+│   │       └── _meta.json
+│   ├── _meta.json
+│   └── README.md
+└── title-50/
+    └── ...
+```
+
+**Part granularity**:
+
+```
+output/ecfr/
+├── title-17/
+│   ├── chapter-II/
+│   │   ├── part-240.md
+│   │   └── part-249.md
+│   └── ...
+└── ...
+```
+
+**Chapter granularity**:
+
+```
+output/ecfr/
+├── title-17/
+│   ├── chapter-I/
+│   │   └── chapter-I.md
+│   ├── chapter-II/
+│   │   └── chapter-II.md
+│   └── ...
+└── ...
+```
+
+**Title granularity**:
+
+```
+output/ecfr/
+├── title-01.md
+├── title-17.md
+└── ...
+```
+
+### Naming Conventions
+
+| Component | Pattern | Examples | Notes |
+|-----------|---------|----------|-------|
+| Title dir (USC) | `title-{NN}` | `title-01`, `title-54` | 2-digit zero-padded |
+| Title dir (eCFR) | `title-{NN}` | `title-01`, `title-50` | 2-digit zero-padded |
+| Appendix dir | `title-{NN}-appendix` | `title-05-appendix` | USC only: titles 5, 11, 18, 28 |
+| Chapter dir (USC) | `chapter-{NN}` | `chapter-01`, `chapter-99` | 2-digit zero-padded |
+| Chapter dir (eCFR) | `chapter-{X}` | `chapter-I`, `chapter-IV` | Roman numerals |
+| Part dir (eCFR) | `part-{N}` | `part-1`, `part-240` | Not zero-padded |
+| Section file (USC) | `section-{ID}.md` | `section-1.md`, `section-7801.md`, `section-202a.md` | Not zero-padded; may be alphanumeric |
+| Section file (eCFR) | `section-{N.N}.md` | `section-1.1.md`, `section-240.10b-5.md` | Part-prefixed section number |
+| Duplicate sections | `section-{ID}-2.md` | `section-3598-2.md` | USC only; `-2`, `-3` suffix for subsequent occurrences |
+
+## Frontmatter Schema
+
+Every output file begins with a YAML frontmatter block delimited by `---`. Fields are serialized in a controlled order using double-quoted string values for consistency.
+
+### Common Fields
+
+Every file, regardless of source or granularity, includes these fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `identifier` | `string` | Canonical URI identifier (e.g., `"/us/usc/t1/s1"`, `"/us/cfr/t17/s240.10b-5"`) |
+| `source` | `string` | Content source: `"usc"` or `"ecfr"` |
+| `legal_status` | `string` | Legal provenance (see [Legal Status Values](#legal-status-values)) |
+| `title` | `string` | Human-readable display title |
+| `title_number` | `number` | Numeric title designation |
+| `title_name` | `string` | Title heading text |
+| `positive_law` | `boolean` | Whether the title is enacted as positive law |
+| `currency` | `string` | Release point (USC: `"119-73"`) or date (eCFR: `"2025-03-15"`) |
+| `last_updated` | `string` | ISO date from XML generation timestamp |
+| `format_version` | `string` | Output format version (`"1.1.0"`) |
+| `generator` | `string` | Generator identifier (e.g., `"lexbuild@1.5.0"`) |
+
+### USC Section-Level Frontmatter
+
+A complete USC section file includes all common fields plus section-specific context:
+
+```yaml
+---
+identifier: "/us/usc/t1/s1"
+source: "usc"
+legal_status: "official_legal_evidence"
+title: "1 USC § 1 - Words denoting number, gender, and so forth"
+title_number: 1
+title_name: "GENERAL PROVISIONS"
+section_number: "1"
+section_name: "Words denoting number, gender, and so forth"
+chapter_number: 1
+chapter_name: "RULES OF CONSTRUCTION"
+positive_law: true
+currency: "119-73"
+last_updated: "2025-12-03"
+format_version: "1.1.0"
+generator: "lexbuild@1.5.0"
+source_credit: "(July 30, 1947, ch. 388, 61 Stat. 633.)"
+---
+```
+
+Optional fields that appear when applicable:
+
+| Field | Type | Condition |
+|-------|------|-----------|
+| `subchapter_number` | `string` | Present when section is within a subchapter |
+| `subchapter_name` | `string` | Present when section is within a subchapter |
+| `source_credit` | `string` | Present when the section has a source credit annotation |
+| `status` | `string` | Present for non-current sections (see [Section Status Values](#section-status-values)) |
+
+### eCFR Section-Level Frontmatter
+
+eCFR sections include additional regulatory metadata:
+
+```yaml
+---
+identifier: "/us/cfr/t17/s240.10b-5"
+source: "ecfr"
+legal_status: "authoritative_unofficial"
+title: "17 CFR § 240.10b-5 - Employment of manipulative and deceptive devices"
+title_number: 17
+title_name: "Commodity and Securities Exchanges"
+section_number: "240.10b-5"
+section_name: "Employment of manipulative and deceptive devices"
+chapter_name: "Securities and Exchange Commission"
+part_number: "240"
+part_name: "General Rules and Regulations, Securities Exchange Act of 1934"
+positive_law: false
+currency: "2025-03-15"
+last_updated: "2025-03-15"
+format_version: "1.1.0"
+generator: "lexbuild@1.5.0"
+authority: "15 U.S.C. 78a et seq."
+regulatory_source: "[37 FR 23603, Nov. 4, 1972]"
+cfr_part: "240"
+---
+```
+
+eCFR-specific optional fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `part_number` | `string` | CFR part number (e.g., `"240"`) |
+| `part_name` | `string` | Part heading text |
+| `chapter_number` | `number` | Only set when the chapter designator is a parseable integer (CFR chapters use Roman numerals, which are captured in `chapter_name` instead) |
+| `chapter_name` | `string` | Chapter heading text |
+| `authority` | `string` | Regulatory authority citation (from part-level `AUTH` element) |
+| `regulatory_source` | `string` | Publication source (from part-level `SOURCE` element) |
+| `cfr_part` | `string` | CFR part number |
+| `cfr_subpart` | `string` | CFR subpart identifier |
+| `source_credit` | `string` | Citation for the section (from `CITA` element) |
+
+### Title-Level Enriched Frontmatter
+
+Title granularity files include aggregate statistics instead of section/chapter context fields:
+
+```yaml
+---
+identifier: "/us/usc/t1"
+source: "usc"
+legal_status: "official_legal_evidence"
+title: "Title 1 — GENERAL PROVISIONS"
+title_number: 1
+title_name: "GENERAL PROVISIONS"
+positive_law: true
+currency: "119-73"
+last_updated: "2025-12-03"
+format_version: "1.1.0"
+generator: "lexbuild@1.5.0"
+chapter_count: 3
+section_count: 15
+total_token_estimate: 12500
+---
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `chapter_count` | `number` | Number of chapters in the title |
+| `section_count` | `number` | Total sections across all chapters |
+| `total_token_estimate` | `number` | Estimated token count for the entire title |
+| `part_count` | `number` | Number of parts (eCFR title-level only) |
+
+### Legal Status Values
+
+| Value | Meaning | Applies To |
+|-------|---------|------------|
+| `official_legal_evidence` | Positive law titles; the text itself is legal evidence | USC titles enacted as positive law |
+| `official_prima_facie` | Non-positive law titles; prima facie evidence of the law | USC titles not enacted as positive law |
+| `authoritative_unofficial` | Authoritative but not official; derived from official sources | All eCFR content |
+
+### Identifier Format
+
+USC identifiers use the canonical URI scheme from USLM `identifier` attributes:
+
+```
+/us/usc/t{title}                   Title level
+/us/usc/t{title}/ch{chapter}       Chapter level
+/us/usc/t{title}/s{section}        Section level
+/us/usc/t{title}/s{section}/{sub}  Subsection level
+```
+
+CFR identifiers are constructed from eCFR XML attributes and use `/us/cfr/` (content type), not `/us/ecfr/` (data source):
+
+```
+/us/cfr/t{title}                   Title level
+/us/cfr/t{title}/ch{chapter}       Chapter level
+/us/cfr/t{title}/pt{part}          Part level
+/us/cfr/t{title}/s{section}        Section level
+```
+
+Both eCFR and future annual CFR sources share the `/us/cfr/` identifier space.
+
+## Content Structure
+
+### Section Heading
+
+Every section file begins with a level-1 heading displaying the section number and name:
+
+```markdown
+# § 1. Words denoting number, gender, and so forth
+```
+
+For eCFR content:
+
+```markdown
+# § 240.10b-5 Employment of manipulative and deceptive devices
+```
+
+### Inline Hierarchy (Small Levels)
+
+Subsections and all levels below use bold inline numbering rather than Markdown headings. This is a deliberate design choice: headings would imply document structure, but legal subsections are subordinate to the section and should not appear in a table of contents.
+
+```markdown
+**(a)** For the purposes of any Federal law, an individual shall be
+considered married if that individual's marriage is between 2 individuals
+and is valid in the State where the marriage was entered into.
+
+**(b)** In this section, the term "State" means a State, the District of
+Columbia, the Commonwealth of Puerto Rico, or any other territory or
+possession of the United States.
+```
+
+When a subsection has a heading, it follows the number in bold:
+
+```markdown
+**(a)** **In general.** — The Secretary shall prescribe regulations...
+```
+
+The numbering scheme communicates hierarchical depth:
+
+| Level | Style | Example |
+|-------|-------|---------|
+| Subsection | Lowercase letter | `**(a)**` |
+| Paragraph | Arabic numeral | `**(1)**` |
+| Subparagraph | Uppercase letter | `**(A)**` |
+| Clause | Lowercase Roman numeral | `**(i)**` |
+| Subclause | Uppercase Roman numeral | `**(I)**` |
+| Item | Double lowercase | `**(aa)**` |
+| Subitem | Double uppercase | `**(AA)**` |
+| Subsubitem | Triple lowercase | `**(aaa)**` |
+
+Content is never indented with leading spaces. Markdown indentation would create code blocks, defeating the purpose. Hierarchy is communicated exclusively through the numbering scheme.
+
+### Title-Level Heading Hierarchy
+
+When rendering at title or chapter granularity (multiple sections in a single file), structural headings use an increasing depth:
+
+| Element | Heading Level |
+|---------|--------------|
+| Title | `#` (H1) |
+| Chapter | `##` (H2) |
+| Section | `###` (H3) |
+| Subchapter | `##` or `###` depending on nesting |
+
+Structural headings cap at H5. Big-level headings that would exceed H5 render as bold text instead.
+
+### Source Credits
+
+Source credits are separated from the body by a horizontal rule and rendered with a bold label:
+
+```markdown
+---
+
+**Source Credit**: (July 30, 1947, ch. 388, 61 Stat. 633.)
+```
+
+### Notes
+
+Notes appear after the source credit. Cross-heading notes that categorize groups of notes render as level-2 headings. Individual note headings render as level-3 headings:
+
+```markdown
+## Editorial Notes
+
+### Amendments
+
+2022—Pub. L. 117–228 amended section generally.
+
+1996—Pub. L. 104–199 added this section.
+
+## Statutory Notes and Related Subsidiaries
+
+### Severability
+
+If any provision of this Act is held to be unconstitutional,
+the remainder shall not be affected.
+```
+
+Notes are included by default and can be controlled with CLI flags:
+
+- `--no-include-notes` disables all notes.
+- `--include-editorial-notes` enables only editorial notes.
+- `--include-statutory-notes` enables only statutory notes.
+- `--include-amendments` enables only amendment history.
+
+### Quoted Content
+
+Quoted legal text (from `<quotedContent>` elements, typically quoted bills in statutory notes) renders as Markdown blockquotes:
+
+```markdown
+> (a) The Secretary shall establish a program...
+>
+> (b) The program shall include...
+```
+
+### Footnotes
+
+Footnotes use Markdown footnote syntax. References appear inline as `[^N]` and definitions appear at the bottom of the section file:
+
+```markdown
+The term applies to all cases[^1] under this section.
+
+[^1]: As defined in section 101 of title 5.
+```
+
+### Defined Terms
+
+Terms being defined (from `<term>` elements) render in bold:
+
+```markdown
+The term **employee** means an individual employed by the Government.
+```
+
+### Inline Formatting
+
+| Source Element | Markdown Output |
+|---------------|----------------|
+| `<b>` / bold | `**text**` |
+| `<i>` / italic | `*text*` |
+| `<sup>` | `<sup>text</sup>` |
+| `<sub>` | `<sub>text</sub>` |
+| `<term>` | `**text**` |
+| `<quotedContent>` | `> blockquote` |
+
+## Tables
+
+### Simple Tables
+
+Tables without colspan or rowspan render as standard Markdown pipe tables:
+
+```markdown
+| Rate | Amount | Date |
+| --- | --- | --- |
+| Basic | $100 | 2024-01-01 |
+| Premium | $250 | 2024-06-01 |
+| Enterprise | $500 | 2024-12-01 |
+```
+
+Pipe characters within cell content are escaped as `\|`. Backslashes are escaped as `\\`.
+
+### Layout Tables
+
+USLM `<layout>` elements (column-oriented display, common in pay schedules) also render as Markdown pipe tables when their structure is compatible:
+
+```markdown
+| Grade | Step 1 | Step 2 |
+| --- | --- | --- |
+| GS-1 | $20,000 | $21,000 |
+| GS-2 | $25,000 | $26,500 |
+```
+
+### Complex Tables
+
+Tables with colspan, rowspan, or other features that cannot be represented in Markdown pipe syntax are omitted from the rendered output. The underlying data is preserved in the AST for consumers that need it.
+
+## Cross-Reference Links
+
+Cross-reference rendering is controlled by the `linkStyle` option. Three styles are available:
+
+### Plaintext (default)
+
+References render as unlinked text:
+
+```markdown
+section 101 of title 5
+```
+
+### Relative
+
+References to sections within the converted corpus resolve to relative Markdown links. References outside the corpus fall back to external URLs:
+
+```markdown
+[section 101 of title 5](../title-05/chapter-01/section-101.md)
+```
+
+The link resolver uses a two-pass approach: all section identifiers are registered before any rendering occurs, enabling both forward and backward cross-references to resolve.
+
+### Canonical
+
+References link to the source website. USC references link to the OLRC (uscode.house.gov). CFR references link to eCFR (ecfr.gov):
+
+```markdown
+[section 101 of title 5](https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title5-section101)
+```
+
+### Link Resolution Rules
+
+| Identifier Prefix | Resolved As |
+|-------------------|-------------|
+| `/us/usc/` | Relative link or OLRC fallback URL |
+| `/us/cfr/` | Relative link or ecfr.gov fallback URL |
+| `/us/stat/` | Always plain text (Statutes at Large) |
+| `/us/pl/` | Always plain text (Public Law) |
+
+Fallback URLs for unresolved references:
+
+- **USC**: `https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title{N}-section{N}`
+- **CFR**: `https://www.ecfr.gov/current/title-{N}/section-{N}`
+
+## Metadata Index (`_meta.json`)
+
+Sidecar JSON index files are generated at section and chapter/part granularity only. Title granularity uses enriched frontmatter instead. These files enable index-based retrieval without parsing individual Markdown files.
+
+### Title-Level Index
+
+Each title directory contains a `_meta.json` with aggregate metadata and a listing of all chapters (USC) or parts (eCFR).
+
+**USC title-level `_meta.json`**:
+
+```json
+{
+  "format_version": "1.1.0",
+  "generator": "lexbuild@1.5.0",
+  "generated_at": "2025-12-03T12:00:00.000Z",
+  "identifier": "/us/usc/t1",
+  "title_number": 1,
+  "title_name": "GENERAL PROVISIONS",
+  "positive_law": true,
+  "currency": "119-73",
+  "release_point": "us/pl/119/73not60",
+  "source_xml": "usc01.xml",
+  "granularity": "section",
+  "stats": {
+    "chapter_count": 3,
+    "section_count": 15,
+    "total_files": 15,
+    "total_tokens_estimate": 12500
+  },
+  "chapters": [
+    {
+      "identifier": "/us/usc/t1/ch1",
+      "number": 1,
+      "name": "RULES OF CONSTRUCTION",
+      "directory": "chapter-01",
+      "sections": [
+        {
+          "identifier": "/us/usc/t1/s1",
+          "number": "1",
+          "name": "Words denoting number, gender, and so forth",
+          "file": "section-1.md",
+          "token_estimate": 250,
+          "has_notes": true,
+          "status": "current"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**eCFR title-level `_meta.json`**:
+
+```json
+{
+  "format_version": "1.1.0",
+  "generator": "lexbuild@1.5.0",
+  "generated_at": "2025-03-15T12:00:00.000Z",
+  "identifier": "/us/cfr/t17",
+  "title_number": 17,
+  "title_name": "Commodity and Securities Exchanges",
+  "source": "ecfr",
+  "legal_status": "authoritative_unofficial",
+  "currency": "2025-03-15",
+  "source_xml": "ECFR-title17.xml",
+  "granularity": "section",
+  "stats": {
+    "part_count": 42,
+    "section_count": 3500,
+    "total_files": 3500,
+    "total_tokens_estimate": 2500000
+  },
+  "parts": [
+    {
+      "identifier": "/us/cfr/t17/pt240",
+      "number": "240",
+      "name": "General Rules and Regulations, Securities Exchange Act of 1934",
+      "directory": "part-240",
+      "sections": [
+        {
+          "identifier": "/us/cfr/t17/s240.10b-5",
+          "number": "240.10b-5",
+          "name": "Employment of manipulative and deceptive devices",
+          "file": "section-240.10b-5.md",
+          "token_estimate": 150,
+          "has_notes": false,
+          "status": "current"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Chapter-Level Index (USC)
+
+Each chapter directory contains a `_meta.json` with section listings:
+
+```json
+{
+  "format_version": "1.1.0",
+  "identifier": "/us/usc/t1/ch1",
+  "chapter_number": 1,
+  "chapter_name": "RULES OF CONSTRUCTION",
+  "title_number": 1,
+  "section_count": 8,
+  "sections": [
+    {
+      "identifier": "/us/usc/t1/s1",
+      "number": "1",
+      "name": "Words denoting number, gender, and so forth",
+      "file": "section-1.md",
+      "token_estimate": 250,
+      "has_notes": true,
+      "status": "current"
+    }
+  ]
+}
+```
+
+### Part-Level Index (eCFR)
+
+Each part directory contains a `_meta.json` with section listings:
+
+```json
+{
+  "format_version": "1.1.0",
+  "identifier": "/us/cfr/t17/pt240",
+  "part_number": "240",
+  "part_name": "General Rules and Regulations, Securities Exchange Act of 1934",
+  "title_number": 17,
+  "section_count": 450,
+  "sections": [
+    {
+      "identifier": "/us/cfr/t17/s240.10b-5",
+      "number": "240.10b-5",
+      "name": "Employment of manipulative and deceptive devices",
+      "file": "section-240.10b-5.md",
+      "token_estimate": 150,
+      "has_notes": false,
+      "status": "current"
+    }
+  ]
+}
+```
+
+### Section Entry Schema
+
+Each section entry in a `_meta.json` sections array contains:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `identifier` | `string` | Canonical URI identifier |
+| `number` | `string` | Section number (may be alphanumeric) |
+| `name` | `string` | Section heading text |
+| `file` | `string` | Filename within the containing directory |
+| `token_estimate` | `number` | Estimated token count for the section |
+| `has_notes` | `boolean` | Whether the section contains editorial or statutory notes |
+| `status` | `string` | Section status (e.g., `"current"`, `"repealed"`) |
+
+## Token Estimation
+
+Token counts use a character-divided-by-four heuristic:
+
+```
+token_estimate = Math.ceil(contentLength / 4)
+```
+
+The `contentLength` is the byte length of the rendered Markdown content (excluding the YAML frontmatter). This approximation is intentionally simple and errs on the side of overestimation. It is suitable for capacity planning and chunking decisions, not precise billing.
+
+Token estimates appear in three places:
+
+1. `token_estimate` per section in `_meta.json` section entries.
+2. `total_tokens_estimate` in `_meta.json` `stats` objects.
+3. `total_token_estimate` in title-level enriched frontmatter.
+
+## Section Status Values
+
+Sections may carry a `status` field in both frontmatter and `_meta.json` entries. The status reflects the legal state of the section as recorded in the source XML.
+
+| Status | Meaning | Rendered Content |
+|--------|---------|-----------------|
+| `current` | Active, in-force provision | Full section text |
+| `repealed` | Explicitly repealed by legislation | `[Repealed]` |
+| `transferred` | Moved to a different location in the code | `[Transferred to section N of title N]` |
+| `omitted` | Omitted from the code (e.g., expired appropriations) | `[Omitted]` |
+| `reserved` | Placeholder reserved for future use | `[Reserved]` |
+| `renumbered` | Renumbered to a different section | Note text indicating new designation |
+| `redesignated` | Redesignated with a new number | Note text indicating new designation |
+| `expired` | Expired by its own terms | `[Expired]` or note text |
+| `terminated` | Terminated by operation of law | `[Terminated]` or note text |
+| `suspended` | Temporarily suspended | Note text indicating suspension |
+
+When a section is not current, its frontmatter includes a `status` field. Current sections omit the field entirely (the absence of `status` implies `"current"`).
+
+## README Files
+
+At section granularity, each title directory receives a `README.md` providing a human-readable summary table and chapter/part listing. These files are generated artifacts and are not intended for RAG ingestion.
+
+## RAG Integration Guidance
+
+### Chunking Strategy
+
+The output is designed to align with common RAG chunking strategies:
+
+- **Section level**: Individual section files range from approximately 500 to 3,000 tokens each, fitting naturally into most embedding models' context windows. Each file is a self-contained, citable legal provision with rich metadata. This is the recommended granularity for vector storage.
+
+- **Chapter/part level**: When using chapter or part granularity files, split on `# §` heading patterns to recover individual sections. Each `# §` heading begins a new logical unit.
+
+- **Title level**: Best suited for direct LLM context window injection (e.g., "read Title 1 in its entirety"). Title files can exceed model context limits for large titles (Title 26 or Title 42 produce multi-million-token output). Not recommended for vector storage.
+
+### Metadata for Vector Stores
+
+When indexing section-level files into a vector database, extract these frontmatter fields as structured metadata for filtering and retrieval:
+
+| Field | Purpose |
+|-------|---------|
+| `identifier` | Unique key; stable across conversions of the same source data |
+| `source` | Filter by corpus (`"usc"` vs `"ecfr"`) |
+| `title_number` | Filter by title |
+| `section_number` | Section-level lookup |
+| `legal_status` | Filter by legal authority level |
+| `status` | Exclude non-current sections from search results |
+| `currency` | Track data freshness |
+
+### File Path Stability
+
+Output file paths are deterministic: converting the same source XML at the same granularity always produces the same directory structure and filenames. Paths change only when:
+
+- The source data itself changes (new release point or updated eCFR date).
+- The output format version changes.
+- The granularity option changes.
+
+This stability makes file paths suitable as document identifiers in vector stores, provided the source version is also tracked.
