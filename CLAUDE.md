@@ -27,7 +27,7 @@ lexbuild/
 ├── fixtures/
 │   ├── fragments/   # Small synthetic XML snippets for unit tests
 │   └── expected/    # Expected output snapshots for integration tests
-├── docs/            # Architecture, output format spec, extension guide
+├── docs/            # Public-facing documentation (architecture, packages, development, reference)
 ├── turbo.json       # Turborepo pipeline config
 └── CLAUDE.md        # This file
 ```
@@ -105,8 +105,8 @@ node packages/cli/dist/index.js convert-ecfr ./downloads/ecfr/xml/ECFR-title1.xm
 node packages/cli/dist/index.js convert-ecfr --titles 17 -g part -o ./test-output
 
 # Astro app (apps/astro/) — NOT included in default `pnpm turbo build`
-pnpm turbo dev:astro --filter=astro   # Dev server (http://localhost:4321)
-pnpm turbo build:astro --filter=astro # Production build
+pnpm turbo dev:astro --filter=@lexbuild/astro   # Dev server (http://localhost:4321)
+pnpm turbo build:astro --filter=@lexbuild/astro # Production build
 
 # Astro content pipeline scripts (run from apps/astro/)
 cd apps/astro
@@ -152,7 +152,7 @@ Key points:
 ### TypeScript
 
 - pnpm workspaces with `workspace:*` protocol for internal deps
-- **Transitive dependency vulnerabilities**: Dependabot cannot update transitive deps in pnpm monorepos. Use `pnpm.overrides` in root `package.json` (e.g., `"flatted": "^3.4.2"`). Use `^` ranges (not `>=`) for determinism.
+- **Transitive dependency vulnerabilities**: Dependabot cannot update transitive deps in pnpm monorepos. Use `pnpm.overrides` in root `package.json` (e.g., `"h3": "^1.15.9"`). Use `^` ranges (not `>=`) for determinism.
 - ESM only (`"type": "module"` in all package.json files)
 - Strict mode: `strict: true`, `noUncheckedIndexedAccess: true`, `exactOptionalPropertyTypes: true`
 - Use `import type` for type-only imports
