@@ -27,6 +27,7 @@ The app serves U.S. Code (54 titles, ~60k sections) and eCFR (50 titles, ~200k+ 
 | Sidebar | @tanstack/react-virtual for large section lists |
 | Search | Meilisearch, gated behind `ENABLE_SEARCH` |
 | Production | PM2 + Caddy + Cloudflare (see ops guide) |
+| Monitoring | Uptime Kuma at `status.lexbuild.dev` (PM2-managed, port 3001) |
 
 ## Architecture
 
@@ -186,6 +187,7 @@ Initialized with radix-nova preset, zinc theme. Components in `src/components/ui
 - **Caddy handles TLS.** Astro listens on HTTP localhost only.
 - **`rehype-sanitize` is critical.** Defense-in-depth against injection in Markdown content.
 - **PM2 reload not restart.** Use `pm2 reload lexbuild-astro --update-env` for zero-downtime.
+- **`ecosystem.config.cjs` manages 3 services**: `lexbuild-astro` (port 4321), `meilisearch` (port 7700), `uptime-kuma` (port 3001). Uptime Kuma is installed at `/srv/uptime-kuma`, not in the monorepo.
 - **Changing Shiki themes**: Update `generate-highlights.ts` AND `src/lib/shiki.ts`, delete `.highlighted.html` files, re-run.
 - **Shiki word wrapping**: `.shiki-wrap` in `global.css` forces `pre-wrap` on Shiki output with `!important`.
 - **External links**: Always use `rel="noopener noreferrer"` on `target="_blank"`.
