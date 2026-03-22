@@ -1,5 +1,11 @@
 # @lexbuild/core
 
+## 1.11.0
+
+### Minor Changes
+
+- d22de4d: Bump version
+
 ## 1.10.1
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # @lexbuild/usc
 
+## 1.11.0
+
+### Minor Changes
+
+- d22de4d: Bump version
+
+### Patch Changes
+
+- Updated dependencies [d22de4d]
+  - @lexbuild/core@1.11.0
+
 ## 1.10.1
 
 ### Patch Changes
