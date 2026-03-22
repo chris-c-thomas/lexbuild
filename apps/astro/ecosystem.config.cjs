@@ -63,5 +63,30 @@ module.exports = {
       // Meilisearch needs time to flush data on shutdown
       kill_timeout: 10000,
     },
+    {
+      name: "uptime-kuma",
+      cwd: "/srv/uptime-kuma",
+      script: "server/server.js",
+      env: {
+        NODE_ENV: "production",
+      },
+      instances: 1,
+      exec_mode: "fork",
+
+      // Logging
+      out_file: `${LOG_DIR}/uptime-kuma-out.log`,
+      error_file: `${LOG_DIR}/uptime-kuma-error.log`,
+      log_date_format: "YYYY-MM-DD HH:mm:ss",
+      merge_logs: true,
+
+      // Stability
+      max_memory_restart: "512M",
+      max_restarts: 10,
+      min_uptime: "10s",
+      restart_delay: 1000,
+      exp_backoff_restart_delay: 100,
+
+      kill_timeout: 5000,
+    },
   ],
 };
