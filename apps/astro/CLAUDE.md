@@ -95,7 +95,7 @@ scripts/
 | `CONTENT_DIR` | `./content` | Root content directory |
 | `NAV_DIR` | `./public/nav` | Sidebar JSON directory |
 | `ENABLE_SEARCH` | `false` | Show search UI |
-| `MEILI_URL` | `http://127.0.0.1:7700` (dev) / `/api` (prod) | Meilisearch endpoint (starts with `/` = proxy mode) |
+| `MEILI_URL` | `http://127.0.0.1:7700` (dev) / `/search` (prod) | Meilisearch endpoint (starts with `/` = proxy mode) |
 | `MEILI_SEARCH_KEY` | — | Search-only API key |
 | `SITE_URL` | `https://lexbuild.dev` | Base URL for sitemap/OG |
 
@@ -139,9 +139,9 @@ Gated behind `ENABLE_SEARCH`. When `false`, SearchDialog is not rendered.
 - Index: `lexbuild`, searchable: `identifier` > `heading` > `body`
 - Filterable: `source`, `title_number`, `granularity`, `status`
 - Body truncated to 5000 chars, excluded from displayed attributes
-- **Production** (`MEILI_URL=/api`): `search.ts` uses `fetch("/api/search")` — Caddy proxies to Meilisearch and injects the auth header. No API key exposed client-side.
+- **Production** (`MEILI_URL=/search`): `search.ts` uses `fetch("/search")` — Caddy proxies to Meilisearch and injects the auth header. No API key exposed client-side.
 - **Local dev** (`MEILI_URL=http://127.0.0.1:7700`): `search.ts` uses the Meilisearch JS client directly from the browser.
-- The proxy/direct switch is automatic based on whether `MEILI_URL` starts with `/` or `http`.
+- The proxy/direct switch is automatic based on whether `MEILI_URL` starts with `/` (proxy) or `http` (direct).
 
 ## Dark Mode
 
@@ -191,7 +191,7 @@ Initialized with radix-nova preset, zinc theme. Components in `src/components/ui
 - **Changing Shiki themes**: Update `generate-highlights.ts` AND `src/lib/shiki.ts`, delete `.highlighted.html` files, re-run.
 - **Shiki word wrapping**: `.shiki-wrap` in `global.css` forces `pre-wrap` on Shiki output with `!important`.
 - **External links**: Always use `rel="noopener noreferrer"` on `target="_blank"`.
-- **Search in production uses Caddy proxy, not direct Meilisearch access.** `MEILI_URL=/api` in `.env.production` — the browser's `127.0.0.1:7700` is the user's machine, not the VPS.
+- **Search in production uses Caddy proxy, not direct Meilisearch access.** `MEILI_URL=/search` in `.env.production` — the browser's `127.0.0.1:7700` is the user's machine, not the VPS.
 - **After dump import, API keys change.** Update `~/.lexbuild-secrets`, `.env.production` (via deploy.sh), AND `/etc/caddy/environment`.
 - **Astro conditionals with strings**: `{str && <jsx>}` can silently fail in `.astro` templates. Use `{str ? <jsx> : null}` with explicit `: null` for ternary conditionals.
 - **gray-matter `matter` field starts with `\n`**: When displaying raw YAML from `result.matter`, use `.trim()` to avoid a blank line between `---` and the first field.
