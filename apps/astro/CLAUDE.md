@@ -188,8 +188,10 @@ Initialized with radix-nova preset, zinc theme. Components in `src/components/ui
 - **`rehype-sanitize` is critical.** Defense-in-depth against injection in Markdown content.
 - **PM2 reload not restart.** Use `pm2 reload lexbuild-astro --update-env` for zero-downtime.
 - **`ecosystem.config.cjs` manages 3 services**: `lexbuild-astro` (port 4321), `meilisearch` (port 7700), `uptime-kuma` (port 3001). Uptime Kuma is installed at `/srv/uptime-kuma`, not in the monorepo.
-- **Changing Shiki themes**: Update `generate-highlights.ts` AND `src/lib/shiki.ts`, delete `.highlighted.html` files, re-run.
+- **Shiki uses LexBuild brand themes** (`lexbuild-light`/`lexbuild-dark` in `src/lib/shiki.ts`), NOT GitHub default themes. Both YAML frontmatter and Markdown source highlighting use the brand palette (slate-blue, summer-green, putty). The `generate-highlights.ts` script must use matching themes — if themes change, delete `.highlighted.html` files and re-run.
+- **Changing Shiki themes**: Both `generate-highlights.ts` and `src/lib/shiki.ts` must use the same themes (`lexbuild-light`/`lexbuild-dark`). Delete existing `.highlighted.html` files and re-run the script after changes.
 - **Shiki word wrapping**: `.shiki-wrap` in `global.css` forces `pre-wrap` on Shiki output with `!important`.
+- **`<pre>` whitespace in Astro templates**: Template indentation inside `<pre>`/`<code>` tags renders as literal whitespace. Always collapse `<pre><code>{content}</code></pre>` onto one line with no surrounding whitespace.
 - **External links**: Always use `rel="noopener noreferrer"` on `target="_blank"`.
 - **Search in production uses Caddy proxy, not direct Meilisearch access.** `MEILI_URL=/search` in `.env.production` — the browser's `127.0.0.1:7700` is the user's machine, not the VPS.
 - **`MEILI_SEARCH_KEY` is not passed to the browser in proxy mode.** `BaseLayout.astro` detects proxy mode (`meiliUrl.startsWith("/")`) and passes `undefined` for the key prop. Only Caddy has the key. In direct mode (local dev), the key is passed to the Meilisearch client.
