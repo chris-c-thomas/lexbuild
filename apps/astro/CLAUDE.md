@@ -188,14 +188,18 @@ Initialized with radix-nova preset, zinc theme. Components in `src/components/ui
 - **`rehype-sanitize` is critical.** Defense-in-depth against injection in Markdown content.
 - **PM2 reload not restart.** Use `pm2 reload lexbuild-astro --update-env` for zero-downtime.
 - **`ecosystem.config.cjs` manages 3 services**: `lexbuild-astro` (port 4321), `meilisearch` (port 7700), `uptime-kuma` (port 3001). Uptime Kuma is installed at `/srv/uptime-kuma`, not in the monorepo.
-- **Changing Shiki themes**: Update `generate-highlights.ts` AND `src/lib/shiki.ts`, delete `.highlighted.html` files, re-run.
+- **Shiki uses LexBuild brand themes** (`lexbuild-light`/`lexbuild-dark`) defined in `src/lib/shiki-themes.ts` — the single source of truth imported by both `src/lib/shiki.ts` (runtime) and `scripts/generate-highlights.ts` (pre-render). Uses 3 palettes: putty for headings, slate-blue for body/punctuation, summer-green for bold/code.
+- **Changing Shiki themes**: Edit `src/lib/shiki-themes.ts`. Delete existing `.highlighted.html` files and re-run `generate-highlights.ts` after changes.
+- **Delete `.highlighted.html` from `output/` dirs, not `content/`**: The `content/` directory is symlinked. `find content/ -delete` silently fails on symlink targets. Always delete from `output/`, `output-chapter/`, `output-title/` directly: `find /path/to/output -name "*.highlighted.html" -type f -delete`.
 - **Shiki word wrapping**: `.shiki-wrap` in `global.css` forces `pre-wrap` on Shiki output with `!important`.
+- **`<pre>` whitespace in Astro templates**: Template indentation inside `<pre>`/`<code>` tags renders as literal whitespace. Always collapse `<pre><code>{content}</code></pre>` onto one line with no surrounding whitespace.
 - **External links**: Always use `rel="noopener noreferrer"` on `target="_blank"`.
 - **Search in production uses Caddy proxy, not direct Meilisearch access.** `MEILI_URL=/search` in `.env.production` — the browser's `127.0.0.1:7700` is the user's machine, not the VPS.
 - **`MEILI_SEARCH_KEY` is not passed to the browser in proxy mode.** `BaseLayout.astro` detects proxy mode (`meiliUrl.startsWith("/")`) and passes `undefined` for the key prop. Only Caddy has the key. In direct mode (local dev), the key is passed to the Meilisearch client.
 - **After dump import, API keys change.** Update `~/.lexbuild-secrets`, `.env.production` (via deploy.sh), AND `/etc/caddy/environment`.
 - **Astro conditionals with strings**: `{str && <jsx>}` can silently fail in `.astro` templates. Use `{str ? <jsx> : null}` with explicit `: null` for ternary conditionals.
 - **gray-matter `matter` field starts with `\n`**: When displaying raw YAML from `result.matter`, use `.trim()` to avoid a blank line between `---` and the first field.
+- **gray-matter cache corrupts `.matter`**: `gray-matter` caches results by input string. The `.matter` property is a lazy getter consumed by `.data` access. On the second SSR request with the same file, the cached object returns `undefined` for `.matter`. Always use `matter(raw, { cache: false })` when reading `.matter`.
 - **React hydration with localStorage**: Don't read localStorage in `useState()` initializer — SSR renders the default, client reads stored value, causing hydration mismatch. Use `useLayoutEffect` to apply stored value after hydration but before paint.
 - **`--content` deploy doesn't regenerate anything**: It only rsyncs existing local files. To update nav/sitemap after code changes, either regenerate locally then `--content`, or SSH into VPS and regenerate there. `--remote` runs the full pipeline.
 

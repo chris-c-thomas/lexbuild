@@ -38,17 +38,16 @@ const meiliSearchKey = isProxyMode ? undefined : (import.meta.env.MEILI_SEARCH_K
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={`${siteUrl}/og-image.png`} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="theme-color" content="#ffffff" id="theme-color" />
-    <!-- Prevent flash of wrong theme — supports system/light/dark -->
+    <!-- Prevent flash of wrong theme — default is light, dark only if explicitly stored -->
     <script is:inline>
       (function () {
         var d = document.documentElement;
-        var theme = localStorage.getItem("theme"); // "light" | "dark" | "system" | null
-        var isDark =
-          theme === "dark" ||
-          ((!theme || theme === "system") && matchMedia("(prefers-color-scheme: dark)").matches);
-        if (isDark) {
+        if (localStorage.getItem("theme") === "dark") {
           d.classList.add("dark");
           d.style.colorScheme = "dark";
           document.getElementById("theme-color").setAttribute("content", "#0e1821");
@@ -100,7 +99,7 @@ const meiliSearchKey = isProxyMode ? undefined : (import.meta.env.MEILI_SEARCH_K
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="2"
+              stroke-width="1.75"
               stroke-linecap="round"
               stroke-linejoin="round"
               ><path
@@ -174,7 +173,7 @@ const meiliSearchKey = isProxyMode ? undefined : (import.meta.env.MEILI_SEARCH_K
       source ? (
         <div class="flex">
           <Sidebar client:load sourceId={source} currentPath={currentPath} />
-          <main class="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
+          <main class="bg-slate-blue-50 dark:bg-background min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
             <slot />
           </main>
         </div>
@@ -192,7 +191,7 @@ const meiliSearchKey = isProxyMode ? undefined : (import.meta.env.MEILI_SEARCH_K
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            stroke-width="2"
+            stroke-width="1.75"
             stroke-linecap="round"
             stroke-linejoin="round"
             ><path

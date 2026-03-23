@@ -163,7 +163,7 @@ if (route.granularity === "title") {
 }
 
 const isIndexPage = route.granularity !== "section";
-const fullFileContent = rawYaml ? `---\n${rawYaml}\n---\n${body}` : body;
+const fullFileContent = rawYaml ? `---\n${rawYaml.trim()}\n---\n${body}` : body;
 const sectionDownloadFilename = `ecfr-${slug?.replace(/\//g, "-") ?? "content"}.md`;
 ---
 

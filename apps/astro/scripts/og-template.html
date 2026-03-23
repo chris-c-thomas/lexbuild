@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+  <head>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600&display=swap");
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        width: 1200px;
+        height: 630px;
+        background: #f5f9fa;
+        background-image:
+          linear-gradient(rgba(71, 108, 133, 0.08) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(71, 108, 133, 0.08) 1px, transparent 1px);
+        background-size: 48px 48px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        overflow: hidden;
+      }
+
+      .icon {
+        color: #354754;
+        margin-bottom: 16px;
+      }
+
+      .title {
+        font-family: "IBM Plex Serif", Georgia, serif;
+        font-weight: 600;
+        font-size: 80px;
+        color: #354754;
+        letter-spacing: -0.025em;
+        line-height: 1;
+        margin-bottom: 16px;
+      }
+
+      .tagline {
+        font-family: "IBM Plex Serif", Georgia, serif;
+        font-weight: 500;
+        font-size: 32px;
+        color: #476c85;
+        letter-spacing: -0.015em;
+      }
+    </style>
+  </head>
+  <body>
+    <svg
+      class="icon"
+      width="72"
+      height="72"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.75"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path
+        d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"
+      ></path>
+      <path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path>
+      <path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path>
+    </svg>
+    <div class="title">LexBuild</div>
+    <div class="tagline">U.S. Legal Text as Structured Markdown</div>
+  </body>
+</html>

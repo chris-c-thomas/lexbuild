@@ -7,10 +7,13 @@ export function parseFrontmatter(raw: string): {
   body: string;
   rawYaml: string;
 } {
-  const result = matter(raw);
+  // cache: false prevents gray-matter from returning a cached object whose
+  // .matter property was cleared by a previous .data access (lazy getter bug)
+  const result = matter(raw, { cache: false });
+  const rawYaml = result.matter;
   return {
     frontmatter: result.data as ContentFrontmatter,
     body: result.content,
-    rawYaml: result.matter,
+    rawYaml,
   };
 }

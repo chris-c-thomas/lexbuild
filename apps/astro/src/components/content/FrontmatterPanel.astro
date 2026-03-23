@@ -1,6 +1,7 @@
 ---
 import type { ContentFrontmatter, SourceId } from "@/lib/types";
 import { toTitleCase } from "@/lib/utils";
+import { highlightYaml } from "@/lib/shiki";
 
 interface Props {
   frontmatter: ContentFrontmatter;
@@ -56,6 +57,7 @@ if (frontmatter.authority) {
 }
 
 const rawYamlBlock = rawYaml ? `---\n${rawYaml.trim()}\n---` : "";
+const highlightedYaml = rawYamlBlock ? await highlightYaml(rawYamlBlock) : "";
 const hasToggle = !!rawYaml;
 ---
 
@@ -114,10 +116,8 @@ const hasToggle = !!rawYaml;
   <!-- Raw YAML view (shown by default when toggle present) -->
   {
     hasToggle ? (
-      <div class="fm-content fm-content-bottom" data-frontmatter-view="raw">
-        <pre class="frontmatter-raw-pre">
-          <code>{rawYamlBlock}</code>
-        </pre>
+      <div class="fm-content fm-content-bottom frontmatter-yaml-view" data-frontmatter-view="raw">
+        <Fragment set:html={highlightedYaml} />
       </div>
     ) : null
   }
@@ -140,30 +140,59 @@ const hasToggle = !!rawYaml;
     </dl>
 
     {
-      fullWidthFields.map((field) => (
-        <div class="frontmatter-full">
-          <dt class="frontmatter-label">{field.label}</dt>
-          <dd class="frontmatter-value">{field.value}</dd>
-        </div>
-      ))
+      fullWidthFields.map((field) => {
+        const isLong = field.value.length > 200;
+        return (
+          <dl class="frontmatter-full">
+            <dt class="frontmatter-label">{field.label}</dt>
+            {isLong ? (
+              <dd class="frontmatter-value frontmatter-collapsible" data-collapsed="true">
+                <span class="frontmatter-collapsed-text">{field.value.slice(0, 200)}...</span>
+                <span class="frontmatter-expanded-text" style="display:none;">
+                  {field.value}
+                </span>
+                <button class="frontmatter-show-more" type="button">
+                  Show more
+                </button>
+              </dd>
+            ) : (
+              <dd class="frontmatter-value">{field.value}</dd>
+            )}
+          </dl>
+        );
+      })
     }
   </div>
 </div>
 
-<script>
-  document.querySelectorAll("[data-frontmatter-toggle]").forEach((wrapper) => {
-    const buttons = wrapper.querySelectorAll<HTMLButtonElement>(".fm-tabs-trigger");
-    const views = wrapper.querySelectorAll<HTMLElement>("[data-frontmatter-view]");
+<script is:inline>
+  document.querySelectorAll(".frontmatter-show-more").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      var dd = btn.closest(".frontmatter-collapsible");
+      if (!dd) return;
+      var isCollapsed = dd.dataset.collapsed === "true";
+      dd.dataset.collapsed = isCollapsed ? "false" : "true";
+      var collapsed = dd.querySelector(".frontmatter-collapsed-text");
+      var expanded = dd.querySelector(".frontmatter-expanded-text");
+      if (collapsed) collapsed.style.display = isCollapsed ? "none" : "";
+      if (expanded) expanded.style.display = isCollapsed ? "" : "none";
+      btn.textContent = isCollapsed ? "Show less" : "Show more";
+    });
+  });
 
-    buttons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const target = btn.dataset.view;
-        buttons.forEach((b) => {
-          const isActive = b.dataset.view === target;
+  document.querySelectorAll("[data-frontmatter-toggle]").forEach((wrapper) => {
+    var buttons = wrapper.querySelectorAll(".fm-tabs-trigger");
+    var views = wrapper.querySelectorAll("[data-frontmatter-view]");
+
+    buttons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var target = btn.dataset.view;
+        buttons.forEach(function (b) {
+          var isActive = b.dataset.view === target;
           b.classList.toggle("active", isActive);
           b.setAttribute("aria-pressed", String(isActive));
         });
-        views.forEach((v) => {
+        views.forEach(function (v) {
           v.style.display = v.dataset.frontmatterView === target ? "" : "none";
         });
       });
@@ -252,7 +281,7 @@ const hasToggle = !!rawYaml;
   /* Content area below toolbar */
   .fm-content {
     border: 1px solid var(--border);
-    background: color-mix(in oklch, var(--muted) 30%, transparent);
+    background: var(--background);
   }
 
   .fm-content-bottom {
@@ -302,14 +331,34 @@ const hasToggle = !!rawYaml;
     overflow-wrap: break-word;
   }
 
-  .frontmatter-raw-pre {
+  .frontmatter-show-more {
+    display: inline;
+    margin-left: 0.375rem;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-slate-blue-600, #5285a3);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .frontmatter-show-more:hover {
+    text-decoration: underline;
+  }
+
+  :global(.dark) .frontmatter-show-more {
+    color: var(--color-slate-blue-400, #8ab8d0);
+  }
+
+  .frontmatter-yaml-view :global(pre.shiki) {
     margin: 0;
     padding: 1rem;
-    font-family: var(--font-mono, ui-monospace, monospace);
     font-size: 0.8rem;
     line-height: 1.6;
-    color: var(--foreground);
     white-space: pre-wrap;
     word-break: break-word;
+    border-radius: 0;
+    background: transparent !important;
   }
 </style>

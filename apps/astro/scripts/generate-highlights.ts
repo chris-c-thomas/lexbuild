@@ -24,14 +24,13 @@ import { readdir } from "node:fs/promises";
 import { fork } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import matter from "gray-matter";
-
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
 
-const THEMES = {
-  light: "github-light-default" as const,
-  dark: "github-dark-default" as const,
+const THEME_NAMES = {
+  light: "lexbuild-light" as const,
+  dark: "lexbuild-dark" as const,
 };
 
 /** Files per child process. Each child gets its own Shiki instance and exits
@@ -96,8 +95,9 @@ async function runWorker(): Promise<void> {
   );
 
   const { createHighlighter } = await import("shiki");
+  const { lexbuildLight: light, lexbuildDark: dark } = await import("../src/lib/shiki-themes");
   const highlighter = await createHighlighter({
-    themes: [THEMES.light, THEMES.dark],
+    themes: [light, dark],
     langs: ["markdown"],
   });
 
@@ -111,7 +111,7 @@ async function runWorker(): Promise<void> {
 
       const html = highlighter.codeToHtml(body, {
         lang: "markdown",
-        themes: { light: THEMES.light, dark: THEMES.dark },
+        themes: { light: THEME_NAMES.light, dark: THEME_NAMES.dark },
       });
 
       const htmlPath = mdPath.replace(/\.md$/, ".highlighted.html");

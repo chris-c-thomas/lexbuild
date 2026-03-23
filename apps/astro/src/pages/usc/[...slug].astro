@@ -124,7 +124,7 @@ if (route.granularity === "title") {
 }
 
 const isIndexPage = route.granularity === "title" || route.granularity === "chapter";
-const fullFileContent = rawYaml ? `---\n${rawYaml}\n---\n${body}` : body;
+const fullFileContent = rawYaml ? `---\n${rawYaml.trim()}\n---\n${body}` : body;
 const sectionDownloadFilename = `usc-${slug?.replace(/\//g, "-") ?? "content"}.md`;
 ---
 
