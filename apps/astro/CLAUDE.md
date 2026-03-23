@@ -60,7 +60,8 @@ src/
 │   ├── index.astro                 # Landing page
 │   ├── usc/[...slug].astro        # USC catch-all (3 slug segments)
 │   ├── ecfr/[...slug].astro       # eCFR catch-all (4 slug segments)
-│   └── 404.astro
+│   ├── 400–504.astro              # HTTP error pages (11 total, see Error Pages below)
+│   └── health.ts                  # Health check endpoint
 ├── components/
 │   ├── content/                    # ContentViewer, FrontmatterPanel, BreadcrumbNav
 │   ├── sidebar/                    # Sidebar, MobileNav, SidebarContent, SectionList
@@ -151,6 +152,15 @@ Gated behind `ENABLE_SEARCH`. When `false`, SearchDialog is not rendered.
 4. **Dark palette is dark slate blue**, not default shadcn grey. All `.dark` vars use blue-tinted hex values.
 5. Hardcoded `text-slate-blue-*` colors need explicit `dark:` variants. Semantic tokens auto-adapt.
 
+## Error Pages
+
+11 error pages using a shared `ErrorPage.astro` component: 400, 403, 404, 405, 410, 429, 451, 500, 502, 503, 504.
+
+- **`404.astro` and `500.astro` must stay at `src/pages/` root** — Astro auto-routes only these two (404 for unmatched routes, 500 as SSR error boundary). Other error pages are regular pages at their numeric URL paths.
+- **`ErrorPage.astro`** component: `status` (decorative large number, `aria-hidden`), `title` (`<h1>`), `description`, optional `showHomeLink`.
+- **BaseLayout `title` includes status code** for browser tab clarity: e.g., `title="404 Not Found"` → `<title>404 Not Found | LexBuild</title>`.
+- **Cloudflare 5xx codes (520–526) are NOT Astro pages** — Cloudflare intercepts these before reaching the origin. See `.claude/todo/http-error-pages.md` for reference.
+
 ## Design Conventions
 
 ### shadcn/ui
@@ -205,6 +215,7 @@ Initialized with radix-nova preset, zinc theme. Components in `src/components/ui
 - **gray-matter cache corrupts `.matter`**: `gray-matter` caches results by input string. The `.matter` property is a lazy getter consumed by `.data` access. On the second SSR request with the same file, the cached object returns `undefined` for `.matter`. Always use `matter(raw, { cache: false })` when reading `.matter`.
 - **React hydration with localStorage**: Don't read localStorage in `useState()` initializer — SSR renders the default, client reads stored value, causing hydration mismatch. Use `useLayoutEffect` to apply stored value after hydration but before paint.
 - **`--content` deploy doesn't regenerate anything**: It only rsyncs existing local files. To update nav/sitemap after code changes, either regenerate locally then `--content`, or SSH into VPS and regenerate there. `--remote` runs the full pipeline.
+- **Error pages must be at `src/pages/` root** — Astro's 404/500 auto-routing only works for `src/pages/404.astro` and `src/pages/500.astro`. Subdirectories (e.g., `src/pages/errors/`) would change the URL path and break auto-routing.
 
 ## SEO
 
