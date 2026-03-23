@@ -188,8 +188,9 @@ Initialized with radix-nova preset, zinc theme. Components in `src/components/ui
 - **`rehype-sanitize` is critical.** Defense-in-depth against injection in Markdown content.
 - **PM2 reload not restart.** Use `pm2 reload lexbuild-astro --update-env` for zero-downtime.
 - **`ecosystem.config.cjs` manages 3 services**: `lexbuild-astro` (port 4321), `meilisearch` (port 7700), `uptime-kuma` (port 3001). Uptime Kuma is installed at `/srv/uptime-kuma`, not in the monorepo.
-- **Shiki uses LexBuild brand themes** (`lexbuild-light`/`lexbuild-dark` in `src/lib/shiki.ts`), NOT GitHub default themes. Both YAML frontmatter and Markdown source highlighting use the brand palette (slate-blue, summer-green, putty). The `generate-highlights.ts` script must use matching themes — if themes change, delete `.highlighted.html` files and re-run.
-- **Changing Shiki themes**: Both `generate-highlights.ts` and `src/lib/shiki.ts` must use the same themes (`lexbuild-light`/`lexbuild-dark`). Delete existing `.highlighted.html` files and re-run the script after changes.
+- **Shiki uses LexBuild brand themes** (`lexbuild-light`/`lexbuild-dark`) defined in `src/lib/shiki-themes.ts` — the single source of truth imported by both `src/lib/shiki.ts` (runtime) and `scripts/generate-highlights.ts` (pre-render). Uses 3 palettes: putty for headings, slate-blue for body/punctuation, summer-green for bold/code.
+- **Changing Shiki themes**: Edit `src/lib/shiki-themes.ts`. Delete existing `.highlighted.html` files and re-run `generate-highlights.ts` after changes.
+- **Delete `.highlighted.html` from `output/` dirs, not `content/`**: The `content/` directory is symlinked. `find content/ -delete` silently fails on symlink targets. Always delete from `output/`, `output-chapter/`, `output-title/` directly: `find /path/to/output -name "*.highlighted.html" -type f -delete`.
 - **Shiki word wrapping**: `.shiki-wrap` in `global.css` forces `pre-wrap` on Shiki output with `!important`.
 - **`<pre>` whitespace in Astro templates**: Template indentation inside `<pre>`/`<code>` tags renders as literal whitespace. Always collapse `<pre><code>{content}</code></pre>` onto one line with no surrounding whitespace.
 - **External links**: Always use `rel="noopener noreferrer"` on `target="_blank"`.
