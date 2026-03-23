@@ -1,24 +1,18 @@
 ---
 import "@/styles/global.css";
+import SEOHead from "@/components/seo/SEOHead.astro";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import { Sidebar } from "@/components/sidebar/Sidebar";
 import { MobileNav } from "@/components/sidebar/MobileNav";
 import { SearchDialog } from "@/components/search/SearchDialog";
-import type { SourceId } from "@/lib/types";
+import type { SourceId, PageSEO } from "@/lib/types";
 
 interface Props {
-  title: string;
-  description?: string;
+  seo: PageSEO;
   source?: SourceId;
 }
 
-const {
-  title,
-  description = "U.S. legal code as structured Markdown — LexBuild",
-  source,
-} = Astro.props;
-const siteUrl = import.meta.env.SITE_URL ?? "https://lexbuild.dev";
-const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
+const { seo, source } = Astro.props;
 const currentPath = Astro.url.pathname;
 const enableSearch = (import.meta.env.ENABLE_SEARCH ?? "false") === "true";
 const meiliUrl = import.meta.env.MEILI_URL ?? "http://127.0.0.1:7700";
@@ -31,16 +25,7 @@ const meiliSearchKey = isProxyMode ? undefined : (import.meta.env.MEILI_SEARCH_K
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title} | LexBuild</title>
-    <meta name="description" content={description} />
-    <link rel="canonical" href={canonicalUrl} />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content={canonicalUrl} />
-    <meta property="og:image" content={`${siteUrl}/og-image.png`} />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    <SEOHead seo={seo} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="theme-color" content="#ffffff" id="theme-color" />
     <!-- Prevent flash of wrong theme — default is light, dark only if explicitly stored -->

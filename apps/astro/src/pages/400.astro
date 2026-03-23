@@ -1,9 +1,21 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import ErrorPage from "@/components/ErrorPage.astro";
+import type { PageSEO } from "@/lib/types";
+
+const siteUrl = import.meta.env.SITE_URL ?? "https://lexbuild.dev";
+const seo: PageSEO = {
+  title: "400 Bad Request",
+  description: "The URL or parameters couldn't be processed. Check the address and try again.",
+  canonicalUrl: `${siteUrl}/400`,
+  ogType: "website",
+  ogImage: `${siteUrl}/og-image.png`,
+  robots: "noindex",
+  jsonLd: { "@type": "WebPage", name: "Bad Request" },
+};
 ---
 
-<BaseLayout title="400 Bad Request" description="The URL or parameters couldn't be processed. Check the address and try again.">
+<BaseLayout seo={seo}>
   <ErrorPage
     status={400}
     title="Bad Request"

@@ -1,9 +1,21 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import ErrorPage from "@/components/ErrorPage.astro";
+import type { PageSEO } from "@/lib/types";
+
+const siteUrl = import.meta.env.SITE_URL ?? "https://lexbuild.dev";
+const seo: PageSEO = {
+  title: "502 Bad Gateway",
+  description: "The server received an invalid response. Please try again shortly.",
+  canonicalUrl: `${siteUrl}/502`,
+  ogType: "website",
+  ogImage: `${siteUrl}/og-image.png`,
+  robots: "noindex",
+  jsonLd: { "@type": "WebPage", name: "Bad Gateway" },
+};
 ---
 
-<BaseLayout title="502 Bad Gateway" description="The server received an invalid response.">
+<BaseLayout seo={seo}>
   <ErrorPage
     status={502}
     title="Bad Gateway"

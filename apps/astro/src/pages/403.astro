@@ -1,9 +1,21 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import ErrorPage from "@/components/ErrorPage.astro";
+import type { PageSEO } from "@/lib/types";
+
+const siteUrl = import.meta.env.SITE_URL ?? "https://lexbuild.dev";
+const seo: PageSEO = {
+  title: "403 Forbidden",
+  description: "You don't have permission to view this page.",
+  canonicalUrl: `${siteUrl}/403`,
+  ogType: "website",
+  ogImage: `${siteUrl}/og-image.png`,
+  robots: "noindex",
+  jsonLd: { "@type": "WebPage", name: "Forbidden" },
+};
 ---
 
-<BaseLayout title="403 Forbidden" description="You don't have permission to view this page.">
+<BaseLayout seo={seo}>
   <ErrorPage
     status={403}
     title="Forbidden"

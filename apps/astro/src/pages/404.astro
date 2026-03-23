@@ -1,9 +1,21 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import ErrorPage from "@/components/ErrorPage.astro";
+import type { PageSEO } from "@/lib/types";
+
+const siteUrl = import.meta.env.SITE_URL ?? "https://lexbuild.dev";
+const seo: PageSEO = {
+  title: "404 Not Found",
+  description: "The page you're looking for doesn't exist.",
+  canonicalUrl: `${siteUrl}/404`,
+  ogType: "website",
+  ogImage: `${siteUrl}/og-image.png`,
+  robots: "noindex",
+  jsonLd: { "@type": "WebPage", name: "Not Found" },
+};
 ---
 
-<BaseLayout title="404 Not Found" description="The page you're looking for doesn't exist.">
+<BaseLayout seo={seo}>
   <ErrorPage
     status={404}
     title="Not Found"

@@ -131,6 +131,30 @@ export interface SectionNavEntry {
 }
 
 // ---------------------------------------------------------------------------
+// SEO types
+// ---------------------------------------------------------------------------
+
+/** Fully resolved SEO metadata for a single page. */
+export interface PageSEO {
+  /** Page title (without " | LexBuild" suffix — SEOHead appends it). */
+  title: string;
+  /** Meta description. Max ~155 chars for Google snippet display. */
+  description: string;
+  /** Fully qualified canonical URL. */
+  canonicalUrl: string;
+  /** Open Graph type. "website" for index/navigation pages, "article" for content pages. */
+  ogType: "website" | "article";
+  /** Fully qualified OG image URL. */
+  ogImage: string;
+  /** Optional robots directive override (default: none, which means index/follow). */
+  robots?: string;
+  /** JSON-LD structured data object(s). Serialized into <script type="application/ld+json">. */
+  jsonLd: Record<string, unknown> | Record<string, unknown>[];
+  /** When true, render title verbatim without " | LexBuild" suffix. */
+  rawTitle?: boolean;
+}
+
+// ---------------------------------------------------------------------------
 // Component props
 // ---------------------------------------------------------------------------
 

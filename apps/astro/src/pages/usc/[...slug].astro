@@ -14,6 +14,7 @@ import { parseFrontmatter } from "@/lib/frontmatter";
 import { getTitleSummary, getTitleNav, getChapterNav } from "@/lib/nav";
 import type { SourceId, ContentFrontmatter } from "@/lib/types";
 import { toTitleCase } from "@/lib/utils";
+import { buildPageSEO } from "@/lib/seo";
 
 const SOURCE_ID: SourceId = "usc";
 const { slug } = Astro.params;
@@ -31,8 +32,10 @@ Astro.response.headers.set(
 
 // ── Prepare data based on granularity ──
 
+const siteUrl = import.meta.env.SITE_URL ?? "https://lexbuild.dev";
+
 let pageTitle = "";
-let pageDescription = "";
+let navContext: Parameters<typeof buildPageSEO>[0]["nav"];
 let indexChildren: Array<{
   label: string;
   sublabel?: string;
@@ -62,7 +65,13 @@ if (route.granularity === "title") {
 
   const titleName = toTitleCase(titleSummary.name);
   pageTitle = `Title ${titleSummary.number} — ${titleName}`;
-  pageDescription = `Title ${titleSummary.number}, ${titleName} — U.S. Code.`;
+  navContext = {
+    titleNumber: titleSummary.number,
+    titleName: titleSummary.name,
+    chapterCount: titleSummary.chapterCount,
+    sectionCount: titleSummary.sectionCount,
+    tokenEstimate: titleSummary.tokenEstimate,
+  };
   indexDescription = `${titleSummary.chapterCount} chapters, ${titleSummary.sectionCount.toLocaleString()} sections, ${titleSummary.tokenEstimate.toLocaleString()} tokens`;
   downloadPath = route.contentPath;
   downloadFilename = `usc-${titleDir}.md`;
@@ -87,7 +96,13 @@ if (route.granularity === "title") {
   const titleName = toTitleCase(titleSummary.name);
   const chapterName = toTitleCase(chapter.name);
   pageTitle = `Title ${titleSummary.number}, Chapter ${chapter.number} — ${chapterName}`;
-  pageDescription = `Chapter ${chapter.number}, ${chapterName}. Title ${titleSummary.number}, ${titleName} — U.S. Code.`;
+  navContext = {
+    titleNumber: titleSummary.number,
+    titleName: titleSummary.name,
+    chapterNumber: String(chapter.number),
+    chapterName: chapter.name,
+    sectionCount: chapter.sections?.length ?? 0,
+  };
   indexDescription = `${chapter.sections?.length ?? 0} sections`;
   downloadPath = route.contentPath;
   downloadFilename = `usc-${titleDir}-${chapterDir}.md`;
@@ -116,19 +131,24 @@ if (route.granularity === "title") {
   ]);
 
   pageTitle = frontmatter.title ? toTitleCase(frontmatter.title) : `USC - ${slug}`;
-  const sectionName = frontmatter.section_name ? toTitleCase(frontmatter.section_name) : "";
-  const chapterCtx = frontmatter.chapter_name
-    ? `Chapter ${frontmatter.chapter_number}, ${toTitleCase(frontmatter.chapter_name)}`
-    : "";
-  pageDescription = `${frontmatter.title_number} U.S.C. § ${frontmatter.section_number ?? ""}${sectionName ? ` — ${sectionName}` : ""}. ${chapterCtx ? `${chapterCtx}. ` : ""}Title ${frontmatter.title_number}, ${toTitleCase(frontmatter.title_name)}.`;
 }
 
 const isIndexPage = route.granularity === "title" || route.granularity === "chapter";
 const fullFileContent = rawYaml ? `---\n${rawYaml.trim()}\n---\n${body}` : body;
 const sectionDownloadFilename = `usc-${slug?.replace(/\//g, "-") ?? "content"}.md`;
+
+const seo = buildPageSEO({
+  source: SOURCE_ID,
+  granularity: route.granularity,
+  frontmatter,
+  breadcrumbs: route.breadcrumbs,
+  canonicalUrl: route.canonicalUrl,
+  siteUrl,
+  nav: navContext,
+});
 ---
 
-<BaseLayout title={pageTitle} source={SOURCE_ID} description={pageDescription}>
+<BaseLayout seo={seo} source={SOURCE_ID}>
   <BreadcrumbNav
     breadcrumbs={route.breadcrumbs}
     currentPageName={frontmatter?.section_name ? toTitleCase(frontmatter.section_name) : undefined}

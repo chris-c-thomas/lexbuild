@@ -7,9 +7,21 @@
  */
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import ErrorPage from "@/components/ErrorPage.astro";
+import type { PageSEO } from "@/lib/types";
+
+const siteUrl = import.meta.env.SITE_URL ?? "https://lexbuild.dev";
+const seo: PageSEO = {
+  title: "500 Internal Server Error",
+  description: "An unexpected error occurred. Please try again later.",
+  canonicalUrl: `${siteUrl}/500`,
+  ogType: "website",
+  ogImage: `${siteUrl}/og-image.png`,
+  robots: "noindex",
+  jsonLd: { "@type": "WebPage", name: "Internal Server Error" },
+};
 ---
 
-<BaseLayout title="500 Internal Server Error" description="An unexpected error occurred.">
+<BaseLayout seo={seo}>
   <ErrorPage
     status={500}
     title="Internal Server Error"

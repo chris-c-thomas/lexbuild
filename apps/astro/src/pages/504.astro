@@ -1,9 +1,21 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import ErrorPage from "@/components/ErrorPage.astro";
+import type { PageSEO } from "@/lib/types";
+
+const siteUrl = import.meta.env.SITE_URL ?? "https://lexbuild.dev";
+const seo: PageSEO = {
+  title: "504 Gateway Timeout",
+  description: "The server took too long to respond. Please try again.",
+  canonicalUrl: `${siteUrl}/504`,
+  ogType: "website",
+  ogImage: `${siteUrl}/og-image.png`,
+  robots: "noindex",
+  jsonLd: { "@type": "WebPage", name: "Gateway Timeout" },
+};
 ---
 
-<BaseLayout title="504 Gateway Timeout" description="The server took too long to respond. Please try again.">
+<BaseLayout seo={seo}>
   <ErrorPage
     status={504}
     title="Gateway Timeout"

@@ -14,6 +14,7 @@ import { parseFrontmatter } from "@/lib/frontmatter";
 import { getTitleSummary, getTitleNav, getChapterNav } from "@/lib/nav";
 import type { SourceId, ContentFrontmatter, PartNav } from "@/lib/types";
 import { toTitleCase } from "@/lib/utils";
+import { buildPageSEO } from "@/lib/seo";
 
 const SOURCE_ID: SourceId = "ecfr";
 const { slug } = Astro.params;
@@ -31,8 +32,10 @@ Astro.response.headers.set(
 
 // ── Prepare data based on granularity ──
 
+const siteUrl = import.meta.env.SITE_URL ?? "https://lexbuild.dev";
+
 let pageTitle = "";
-let pageDescription = "";
+let navContext: Parameters<typeof buildPageSEO>[0]["nav"];
 let indexChildren: Array<{
   label: string;
   sublabel?: string;
@@ -61,7 +64,14 @@ if (route.granularity === "title") {
 
   const titleName = toTitleCase(titleSummary.name);
   pageTitle = `Title ${titleSummary.number} — ${titleName}`;
-  pageDescription = `Title ${titleSummary.number}, ${titleName} — Code of Federal Regulations.`;
+  navContext = {
+    titleNumber: titleSummary.number,
+    titleName: titleSummary.name,
+    chapterCount: titleSummary.chapterCount,
+    sectionCount: titleSummary.sectionCount,
+    partCount: titleSummary.partCount ?? 0,
+    tokenEstimate: titleSummary.tokenEstimate,
+  };
   indexDescription = `${titleSummary.chapterCount} chapters, ${titleSummary.partCount ?? 0} parts, ${titleSummary.sectionCount.toLocaleString()} sections`;
   downloadPath = route.contentPath;
   downloadFilename = `ecfr-${titleDir}.md`;
@@ -94,7 +104,14 @@ if (route.granularity === "title") {
   const chapterNumber = chapterDir.replace("chapter-", "");
   const chapterName = toTitleCase(chapter.name);
   pageTitle = `Title ${titleSummary.number}, Chapter ${chapterNumber} — ${chapterName}`;
-  pageDescription = `Chapter ${chapterNumber}, ${chapterName}. Title ${titleSummary.number}, ${titleName} — Code of Federal Regulations.`;
+  navContext = {
+    titleNumber: titleSummary.number,
+    titleName: titleSummary.name,
+    chapterNumber,
+    chapterName: chapter.name,
+    partCount: chapter.parts?.length ?? 0,
+    sectionCount: chapter.parts?.reduce((s, p) => s + p.sections.length, 0) ?? 0,
+  };
   indexDescription = `${chapter.parts?.length ?? 0} parts`;
   downloadPath = route.contentPath;
   downloadFilename = `ecfr-${titleDir}-${chapterDir}.md`;
@@ -126,7 +143,14 @@ if (route.granularity === "title") {
   const partName = toTitleCase(part.name);
   const chapterNumber = chapterDir.replace("chapter-", "");
   pageTitle = `Title ${titleSummary.number}, Part ${part.number} — ${partName}`;
-  pageDescription = `Part ${part.number}, ${partName}. Chapter ${chapterNumber}, Title ${titleSummary.number}, ${titleName} — Code of Federal Regulations.`;
+  navContext = {
+    titleNumber: titleSummary.number,
+    titleName: titleSummary.name,
+    chapterNumber,
+    partNumber: part.number,
+    partName: part.name,
+    sectionCount: part.sections.length,
+  };
   indexDescription = `${part.sections.length} sections`;
   downloadPath = route.contentPath;
   downloadFilename = `ecfr-${titleDir}-${chapterDir}-${partDir}.md`;
@@ -155,19 +179,24 @@ if (route.granularity === "title") {
   ]);
 
   pageTitle = frontmatter.title ? toTitleCase(frontmatter.title) : `eCFR - ${slug}`;
-  const sectionName = frontmatter.section_name ? toTitleCase(frontmatter.section_name) : "";
-  const partCtx = frontmatter.part_name
-    ? `Part ${frontmatter.part_number}, ${toTitleCase(frontmatter.part_name)}`
-    : "";
-  pageDescription = `${frontmatter.title_number} CFR § ${frontmatter.section_number ?? ""}${sectionName ? ` — ${sectionName}` : ""}. ${partCtx ? `${partCtx}. ` : ""}Title ${frontmatter.title_number}, ${toTitleCase(frontmatter.title_name)}.`;
 }
 
 const isIndexPage = route.granularity !== "section";
 const fullFileContent = rawYaml ? `---\n${rawYaml.trim()}\n---\n${body}` : body;
 const sectionDownloadFilename = `ecfr-${slug?.replace(/\//g, "-") ?? "content"}.md`;
+
+const seo = buildPageSEO({
+  source: SOURCE_ID,
+  granularity: route.granularity,
+  frontmatter,
+  breadcrumbs: route.breadcrumbs,
+  canonicalUrl: route.canonicalUrl,
+  siteUrl,
+  nav: navContext,
+});
 ---
 
-<BaseLayout title={pageTitle} source={SOURCE_ID} description={pageDescription}>
+<BaseLayout seo={seo} source={SOURCE_ID}>
   <BreadcrumbNav
     breadcrumbs={route.breadcrumbs}
     currentPageName={frontmatter?.section_name ? toTitleCase(frontmatter.section_name) : undefined}

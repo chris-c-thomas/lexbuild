@@ -1,9 +1,21 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import ErrorPage from "@/components/ErrorPage.astro";
+import type { PageSEO } from "@/lib/types";
+
+const siteUrl = import.meta.env.SITE_URL ?? "https://lexbuild.dev";
+const seo: PageSEO = {
+  title: "451 Unavailable for Legal Reasons",
+  description: "Access to this page has been restricted.",
+  canonicalUrl: `${siteUrl}/451`,
+  ogType: "website",
+  ogImage: `${siteUrl}/og-image.png`,
+  robots: "noindex",
+  jsonLd: { "@type": "WebPage", name: "Unavailable for Legal Reasons" },
+};
 ---
 
-<BaseLayout title="451 Unavailable for Legal Reasons" description="Access to this page has been restricted.">
+<BaseLayout seo={seo}>
   <ErrorPage
     status={451}
     title="Unavailable for Legal Reasons"

@@ -2,6 +2,7 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { SOURCES } from "@/lib/sources";
 import { highlightYaml, highlightMarkdown } from "@/lib/shiki";
+import type { PageSEO } from "@/lib/types";
 
 const sources = Object.values(SOURCES);
 
@@ -49,9 +50,27 @@ The fact that a work is unpublished shall not itself bar a finding of fair use i
 
 const highlightedYaml = await highlightYaml(sampleYaml);
 const highlightedMarkdown = await highlightMarkdown(sampleMarkdown);
+
+const siteUrl = import.meta.env.SITE_URL ?? "https://lexbuild.dev";
+const seo: PageSEO = {
+  title: "LexBuild — U.S. Law as Structured Markdown",
+  rawTitle: true,
+  description:
+    "U.S. federal law and regulations as structured Markdown. Browse, search, copy, and download the U.S. Code and Code of Federal Regulations for LLMs, RAG pipelines, and semantic search.",
+  canonicalUrl: siteUrl,
+  ogType: "website",
+  ogImage: `${siteUrl}/og-image.png`,
+  jsonLd: {
+    "@type": "WebSite",
+    name: "LexBuild",
+    url: siteUrl,
+    description:
+      "U.S. federal law and regulations as structured Markdown for LLMs, RAG, and semantic search.",
+  },
+};
 ---
 
-<BaseLayout title="LexBuild" description="U.S. legal text as structured Markdown">
+<BaseLayout seo={seo}>
   <section class="bg-surface border-border-base bg-grid-pattern border-b">
     <div class="mx-auto max-w-[1200px] px-6 py-12 text-center sm:py-16">
       <div

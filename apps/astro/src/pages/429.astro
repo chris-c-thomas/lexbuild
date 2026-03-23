@@ -1,9 +1,21 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import ErrorPage from "@/components/ErrorPage.astro";
+import type { PageSEO } from "@/lib/types";
+
+const siteUrl = import.meta.env.SITE_URL ?? "https://lexbuild.dev";
+const seo: PageSEO = {
+  title: "429 Too Many Requests",
+  description: "Please wait a moment before trying again. If you need bulk access, consider using the CLI toolchain instead.",
+  canonicalUrl: `${siteUrl}/429`,
+  ogType: "website",
+  ogImage: `${siteUrl}/og-image.png`,
+  robots: "noindex",
+  jsonLd: { "@type": "WebPage", name: "Too Many Requests" },
+};
 ---
 
-<BaseLayout title="429 Too Many Requests" description="You're sending requests too quickly.">
+<BaseLayout seo={seo}>
   <ErrorPage
     status={429}
     title="Too Many Requests"

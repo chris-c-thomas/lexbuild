@@ -3,16 +3,38 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getSource } from "@/lib/sources";
 import { getTitles } from "@/lib/nav";
 import { toTitleCase } from "@/lib/utils";
+import type { PageSEO } from "@/lib/types";
 
 const source = getSource("usc");
 const titles = await getTitles("usc");
+
+const siteUrl = import.meta.env.SITE_URL ?? "https://lexbuild.dev";
+const seo: PageSEO = {
+  title: "U.S. Code",
+  description:
+    "Browse all 54 titles of the U.S. Code as structured Markdown. Full text with frontmatter metadata for LLMs, RAG, and semantic search.",
+  canonicalUrl: `${siteUrl}/usc`,
+  ogType: "website",
+  ogImage: `${siteUrl}/og-image.png`,
+  jsonLd: [
+    {
+      "@type": "WebPage",
+      name: "U.S. Code",
+      url: `${siteUrl}/usc`,
+      description: "Browse all 54 titles of the U.S. Code as structured Markdown.",
+      isPartOf: { "@type": "WebSite", name: "LexBuild", url: siteUrl },
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "U.S. Code" },
+      ],
+    },
+  ],
+};
 ---
 
-<BaseLayout
-  title="U.S. Code"
-  source="usc"
-  description="Browse all 54 titles of the U.S. Code as structured Markdown."
->
+<BaseLayout seo={seo} source="usc">
   <div class="flex flex-col gap-6">
     <div>
       <h1

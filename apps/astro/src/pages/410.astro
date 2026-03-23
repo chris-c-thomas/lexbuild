@@ -1,9 +1,21 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import ErrorPage from "@/components/ErrorPage.astro";
+import type { PageSEO } from "@/lib/types";
+
+const siteUrl = import.meta.env.SITE_URL ?? "https://lexbuild.dev";
+const seo: PageSEO = {
+  title: "410 Gone",
+  description: "This content is no longer available.",
+  canonicalUrl: `${siteUrl}/410`,
+  ogType: "website",
+  ogImage: `${siteUrl}/og-image.png`,
+  robots: "noindex",
+  jsonLd: { "@type": "WebPage", name: "Gone" },
+};
 ---
 
-<BaseLayout title="410 Gone" description="This content is no longer available.">
+<BaseLayout seo={seo}>
   <ErrorPage
     status={410}
     title="Gone"

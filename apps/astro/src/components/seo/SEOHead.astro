@@ -1,0 +1,35 @@
+---
+import JsonLd from "./JsonLd.astro";
+import type { PageSEO } from "@/lib/types";
+
+interface Props {
+  seo: PageSEO;
+}
+
+const { seo } = Astro.props;
+---
+
+<!-- Primary meta -->
+<title>{seo.rawTitle ? seo.title : `${seo.title} | LexBuild`}</title>
+<meta name="description" content={seo.description} />
+<link rel="canonical" href={seo.canonicalUrl} />
+{seo.robots ? <meta name="robots" content={seo.robots} /> : null}
+
+<!-- Open Graph -->
+<meta property="og:title" content={seo.title} />
+<meta property="og:description" content={seo.description} />
+<meta property="og:type" content={seo.ogType} />
+<meta property="og:url" content={seo.canonicalUrl} />
+<meta property="og:image" content={seo.ogImage} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:site_name" content="LexBuild" />
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={seo.title} />
+<meta name="twitter:description" content={seo.description} />
+<meta name="twitter:image" content={seo.ogImage} />
+
+<!-- JSON-LD -->
+<JsonLd data={seo.jsonLd} />
