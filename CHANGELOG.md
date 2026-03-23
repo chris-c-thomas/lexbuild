@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.13.0]
+
+### Added
+
+- SEO module (`lib/seo.ts`) with pure, testable builder functions — `buildPageSEO()`, `buildTitle()`, `buildDescription()`, `buildJsonLd()`, `buildBreadcrumbJsonLd()`
+- `SEOHead.astro` component — renders all SEO `<head>` tags from a `PageSEO` prop, replacing inline tags in BaseLayout
+- `JsonLd.astro` component — renders JSON-LD structured data via `@graph` approach with HTML-safe serialization
+- JSON-LD structured data on all pages: `Legislation` type for sections (USC=Statute, eCFR=Regulation), `WebPage` for indexes, `BreadcrumbList` on all pages
+- Twitter/X card meta tags (`summary_large_image`) on all pages
+- `og:site_name` ("LexBuild") and per-page `og:type` differentiation (`article` for sections, `website` for indexes)
+- `robots.txt` with sitemap reference and Cloudflare CDN cache rules
+- HTTP error pages: 400, 403, 404 (refactored), 405, 410, 429, 451, 500, 502, 503, 504 — shared `ErrorPage.astro` component
+- `<meta name="robots" content="noindex">` on all error pages
+- `PageSEO` interface in `lib/types.ts` with `rawTitle` flag for landing page
+- Vitest unit tests for all SEO builder functions (27 tests)
+- `test` script added to Astro app `package.json`
+
+### Changed
+
+- `BaseLayout.astro` props simplified from `{title, description?, source?}` to `{seo: PageSEO, source?}` — all SEO concerns now in `SEOHead`
+- Catch-all routes (`usc/[...slug].astro`, `ecfr/[...slug].astro`) use `buildPageSEO()` with `NavContext` instead of inline title/description construction
+- Landing page `<title>` renders as "LexBuild — U.S. Law as Structured Markdown" (no redundant suffix)
+- Improved meta descriptions for index pages with chapter/section/part counts
+
+### Fixed
+
+- XSS vector in JSON-LD serialization — `<`, `>`, `&` now escaped to unicode in `<script>` output
+- Unused variables in `buildJsonLd()` removed
+- `vitest.config.ts` uses `fileURLToPath` instead of `import.meta.dirname` for cross-environment compatibility
+
+### Documentation
+
+- Updated `apps/astro/CLAUDE.md` with Error Pages section, directory structure, and pitfall about Astro error page routing
+- Updated `docs/apps/astro.md` directory listing
+
 ## [1.12.0]
 
 ### Added
