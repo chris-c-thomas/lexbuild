@@ -14,7 +14,7 @@ src/
 ├── snapshot.test.ts      # Output stability snapshots
 ├── downloader.ts         # OLRC XML download + bulk zip handling + auto-detection
 ├── downloader.test.ts    # 15+ test cases
-└── release-points.ts     # OLRC release point auto-detection (scrapes download page)
+└── release-points.ts     # OLRC release point auto-detection and history (scrapes OLRC pages)
 ```
 
 ## Public API
@@ -24,7 +24,9 @@ src/
 | `convertTitle()` | Function | Convert a USC XML file to Markdown at any granularity |
 | `downloadTitles()` | Function | Download USC XML from OLRC (auto-detects latest release point) |
 | `detectLatestReleasePoint()` | Function | Scrape OLRC download page for current release point |
+| `fetchReleasePointHistory()` | Function | Scrape OLRC prior releases page for full release history |
 | `parseReleasePointFromHtml()` | Function | Parse release point from HTML (exported for testing) |
+| `parseReleasePointHistoryFromHtml()` | Function | Parse release point history from HTML (exported for testing) |
 | `buildDownloadUrl()` | Function | Build download URL for a single title |
 | `buildAllTitlesUrl()` | Function | Build download URL for all titles as one zip |
 | `releasePointToPath()` | Function | Convert `"119-73not60"` → `"119/73not60"` |
@@ -39,6 +41,7 @@ src/
 | `DownloadedFile` | Type | Metadata for a single downloaded file (path, title, size, release point) |
 | `DownloadError` | Type | Error type for download failures (wraps underlying I/O/network errors) |
 | `ReleasePointInfo` | Type | Detected release point with description |
+| `HistoricalReleasePointInfo` | Type | Historical release point with date and affected titles |
 
 ## Conversion Pipeline
 

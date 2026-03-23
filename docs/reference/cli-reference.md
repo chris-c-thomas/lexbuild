@@ -4,12 +4,13 @@ Complete reference for the `lexbuild` command-line tool. Install via `npm instal
 
 ## Commands
 
-The CLI uses a `{action}-{source}` naming pattern. Four commands are available:
+The CLI uses a `{action}-{source}` naming pattern for download and convert commands, plus utility commands for inspecting data sources.
 
 | Command | Description |
 |---------|-------------|
 | `download-usc` | Download U.S. Code XML from OLRC |
 | `convert-usc` | Convert U.S. Code XML to Markdown |
+| `list-release-points` | List available OLRC release points for the U.S. Code |
 | `download-ecfr` | Download eCFR XML from ecfr.gov or govinfo |
 | `convert-ecfr` | Convert eCFR XML to Markdown |
 
@@ -68,6 +69,41 @@ lexbuild download-usc --all -o ./my-xml
 
 # Pin a specific release point
 lexbuild download-usc --all --release-point 119-73not60
+```
+
+---
+
+## list-release-points
+
+List available OLRC release points for the U.S. Code. Fetches the current (latest) release point and the full history of prior releases, then displays them in a table with dates and affected titles.
+
+```
+lexbuild list-release-points [options]
+```
+
+### Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `-n, --limit <count>` | `20` | Maximum number of release points to show (0 = all) |
+
+### Examples
+
+```bash
+# Show the 20 most recent release points
+lexbuild list-release-points
+
+# Show the 5 most recent
+lexbuild list-release-points -n 5
+
+# Show all available release points
+lexbuild list-release-points -n 0
+```
+
+Use the release point ID from the output with `download-usc`:
+
+```bash
+lexbuild download-usc --all --release-point 119-72not60
 ```
 
 ---
@@ -330,6 +366,10 @@ lexbuild convert-ecfr --titles 1-5 -o ./output
 # Convert both sources with relative cross-reference links
 lexbuild convert-usc --all --link-style relative -o ./output
 lexbuild convert-ecfr --all --link-style relative -o ./output
+
+# Browse prior release points and download a specific one
+lexbuild list-release-points -n 10
+lexbuild download-usc --all --release-point 119-72not60
 ```
 
 ## Output Directory Structure

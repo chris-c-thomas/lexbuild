@@ -14,6 +14,7 @@ src/
 └── commands/
     ├── download-usc.ts         # lexbuild download-usc command
     ├── convert-usc.ts          # lexbuild convert-usc command
+    ├── list-release-points.ts  # lexbuild list-release-points command
     ├── download-ecfr.ts        # lexbuild download-ecfr command
     └── convert-ecfr.ts         # lexbuild convert-ecfr command
 ```
@@ -86,6 +87,17 @@ The multi-title conversion summary footer shows only the primary converted unit:
 - eCFR `part` granularity: `Converted 8,305 parts in ...`
 
 Do NOT include the title count in the footer — the per-title table already shows that.
+
+### `lexbuild list-release-points`
+
+Lists available OLRC release points for the U.S. Code. Fetches the current release point and the full history of prior releases in parallel, then displays them in a table. Delegates to `detectLatestReleasePoint()` and `fetchReleasePointHistory()` from `@lexbuild/usc`.
+
+```
+Options:
+  -n, --limit <count>      Maximum number of release points to show (default: "20", 0 = all)
+```
+
+Output includes the latest release point, total count of prior releases, and a table with Release Point ID, Date, and Affected Titles columns. A footer hints at the `download-usc --release-point <id>` usage.
 
 ### `lexbuild convert-ecfr`
 

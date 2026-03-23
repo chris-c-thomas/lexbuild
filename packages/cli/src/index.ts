@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { Command } from "commander";
 import { convertUscCommand } from "./commands/convert-usc.js";
 import { downloadUscCommand } from "./commands/download-usc.js";
+import { listReleasePointsCommand } from "./commands/list-release-points.js";
 import { convertEcfrCommand } from "./commands/convert-ecfr.js";
 import { downloadEcfrCommand } from "./commands/download-ecfr.js";
 import { error } from "./ui.js";
@@ -36,6 +37,7 @@ Documentation: https://github.com/chris-c-thomas/LexBuild`,
 // Source-specific commands
 program.addCommand(downloadUscCommand);
 program.addCommand(convertUscCommand);
+program.addCommand(listReleasePointsCommand);
 program.addCommand(downloadEcfrCommand);
 program.addCommand(convertEcfrCommand);
 

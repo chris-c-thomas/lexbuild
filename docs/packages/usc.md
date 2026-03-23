@@ -21,7 +21,9 @@ packages/usc/src/
 | `convertTitle(options)` | Convert a USC XML file to Markdown at any granularity |
 | `downloadTitles(options)` | Download USC XML from OLRC (auto-detects latest release point) |
 | `detectLatestReleasePoint()` | Scrape the OLRC download page for the current release point |
+| `fetchReleasePointHistory()` | Scrape the OLRC prior releases page for the full history of release points |
 | `parseReleasePointFromHtml(html)` | Parse release point from HTML (exported for testing) |
+| `parseReleasePointHistoryFromHtml(html)` | Parse release point history from HTML (exported for testing) |
 | `buildDownloadUrl(titleNumber, releasePoint)` | Build the download URL for a single title's ZIP |
 | `buildAllTitlesUrl(releasePoint)` | Build the download URL for the all-titles bulk ZIP |
 | `releasePointToPath(releasePoint)` | Convert `"119-73not60"` to URL path `"119/73not60"` |
@@ -36,7 +38,7 @@ packages/usc/src/
 
 ### Types
 
-`ConvertOptions`, `ConvertResult`, `DownloadOptions`, `DownloadResult`, `DownloadedFile`, `DownloadError`, `ReleasePointInfo`
+`ConvertOptions`, `ConvertResult`, `DownloadOptions`, `DownloadResult`, `DownloadedFile`, `DownloadError`, `ReleasePointInfo`, `HistoricalReleasePointInfo`
 
 ## Converter
 
@@ -115,6 +117,12 @@ Title numbers in directory names are zero-padded to 2 digits (`title-01` through
 Returns a `ReleasePointInfo` with the `releasePoint` string and a human-readable `description` parsed from the page heading. Returns `null` if the page is unreachable or its format has changed, in which case the caller falls back to `FALLBACK_RELEASE_POINT`.
 
 The `--release-point` CLI flag overrides auto-detection for reproducible builds.
+
+### Release Point History
+
+`fetchReleasePointHistory()` scrapes `https://uscode.house.gov/download/priorreleasepoints.htm` and returns an array of `HistoricalReleasePointInfo` objects ordered newest-first. Each entry includes the release point ID, description, date, and affected title numbers. Returns an empty array if the page is unreachable.
+
+The CLI's `list-release-points` command uses this to display available release points for use with `download-usc --release-point <id>`.
 
 ### Download Modes
 

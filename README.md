@@ -160,6 +160,22 @@ lexbuild convert-usc ./downloads/usc/xml/usc01.xml           # Direct file path
 | `--dry-run` | — | Parse and report without writing |
 | `-v, --verbose` | — | Verbose output |
 
+### `list-release-points`
+
+Browse available OLRC release points for the U.S. Code. Useful for discovering prior versions to download.
+
+```bash
+lexbuild list-release-points                     # 20 most recent
+lexbuild list-release-points -n 5                # 5 most recent
+lexbuild list-release-points -n 0                # All available release points
+```
+
+Use a release point ID from the output to pin a specific version:
+
+```bash
+lexbuild download-usc --all --release-point 119-72not60
+```
+
 ### `download-ecfr`
 
 Fetch eCFR XML. Defaults to the ecfr.gov API (daily-updated); govinfo bulk data available as fallback.

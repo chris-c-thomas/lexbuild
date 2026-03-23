@@ -12,15 +12,16 @@ packages/cli/src/
   commands/
     download-usc.ts           # lexbuild download-usc command
     convert-usc.ts            # lexbuild convert-usc command
+    list-release-points.ts    # lexbuild list-release-points command
     download-ecfr.ts          # lexbuild download-ecfr command
     convert-ecfr.ts           # lexbuild convert-ecfr command
 ```
 
 ## Command Architecture
 
-The entry point creates a [Commander](https://github.com/tj/commander.js) program, sets the name, description, and version (read from `package.json`), and registers four source-specific commands plus bare `download` and `convert` stubs. Running `lexbuild download` or `lexbuild convert` without a source suffix prints an error listing the available source-specific commands and exits with code 1.
+The entry point creates a [Commander](https://github.com/tj/commander.js) program, sets the name, description, and version (read from `package.json`), and registers source-specific commands, utility commands, and bare `download`/`convert` stubs. Running `lexbuild download` or `lexbuild convert` without a source suffix prints an error listing the available source-specific commands and exits with code 1.
 
-Commands follow the `{action}-{source}` naming pattern: `download-usc`, `convert-usc`, `download-ecfr`, `convert-ecfr`. Each command is defined in its own module under `commands/` and registered via `program.addCommand()`.
+Download and convert commands follow the `{action}-{source}` naming pattern: `download-usc`, `convert-usc`, `download-ecfr`, `convert-ecfr`. Utility commands like `list-release-points` provide data source inspection. Each command is defined in its own module under `commands/` and registered via `program.addCommand()`.
 
 ## Commands
 
@@ -63,6 +64,16 @@ Converts USC XML to Markdown. Delegates to `convertTitle()` from `@lexbuild/usc`
 **Note flag logic.** If any selective note flag is set (`--include-editorial-notes`, `--include-statutory-notes`, or `--include-amendments`), the broad `--include-notes` flag is automatically disabled to prevent conflicts.
 
 **Output directory.** The `-o` flag appends a source subdirectory: `convert-usc -o /path` writes to `/path/usc/...`, not `/path/...` directly.
+
+### `lexbuild list-release-points`
+
+Lists available OLRC release points for the U.S. Code. Fetches the current release point and the full history of prior releases from the OLRC website, then displays them in a table with dates and affected titles. Delegates to `detectLatestReleasePoint()` and `fetchReleasePointHistory()` from `@lexbuild/usc`.
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `-n, --limit <count>` | `20` | Maximum number of release points to show (0 = all) |
+
+Useful for discovering valid release point IDs to pass to `download-usc --release-point <id>`.
 
 ### `lexbuild download-ecfr`
 
