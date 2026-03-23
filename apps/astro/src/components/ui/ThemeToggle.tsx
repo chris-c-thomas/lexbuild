@@ -5,7 +5,11 @@ type Theme = "light" | "dark";
 
 function getStoredTheme(): Theme {
   if (typeof window === "undefined") return "light";
-  return localStorage.getItem("theme") === "dark" ? "dark" : "light";
+  const stored = localStorage.getItem("theme");
+  if (stored === "dark" || stored === "light") return stored;
+  // Migrate legacy "system" or unknown values to "light"
+  localStorage.setItem("theme", "light");
+  return "light";
 }
 
 function applyTheme(theme: Theme) {

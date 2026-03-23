@@ -331,14 +331,14 @@ const highlightedMarkdown = await highlightMarkdown(sampleMarkdown);
                 ))
               }
             </dl>
-            <div class="sample-preview-full">
+            <dl class="sample-preview-full">
               <dt class="sample-preview-label">Source</dt>
               <dd class="sample-preview-value">
                 (Pub. L. 94-553, title I, § 101, Oct. 19, 1976, 90 Stat. 2546; Pub. L. 101-650,
                 title VI, § 607, Dec. 1, 1990, 104 Stat. 5132; Pub. L. 102-492, Oct. 24, 1992, 106
                 Stat. 3145.)
               </dd>
-            </div>
+            </dl>
           </div>
         </div>
 
@@ -646,8 +646,8 @@ const highlightedMarkdown = await highlightMarkdown(sampleMarkdown);
 
 <script>
   document.querySelectorAll("[data-sample-tabs]").forEach((panel) => {
-    const buttons = panel.querySelectorAll<HTMLButtonElement>(".sample-tab");
-    const contents = panel.querySelectorAll<HTMLElement>("[data-tab-content]");
+    const buttons = panel.querySelectorAll(".sample-tab");
+    const contents = panel.querySelectorAll("[data-tab-content]");
     buttons.forEach((btn) => {
       btn.addEventListener("click", () => {
         const target = btn.dataset.tab;

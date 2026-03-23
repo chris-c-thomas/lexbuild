@@ -24,16 +24,9 @@ import { readdir } from "node:fs/promises";
 import { fork } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import matter from "gray-matter";
-import { lexbuildLight, lexbuildDark } from "../src/lib/shiki-themes";
-
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
-
-const THEMES = {
-  light: lexbuildLight,
-  dark: lexbuildDark,
-};
 
 const THEME_NAMES = {
   light: "lexbuild-light" as const,
