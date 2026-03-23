@@ -25,7 +25,10 @@ export const lexbuildLight: ThemeRegistration = {
     { scope: ["constant.numeric", "constant.language"], settings: { foreground: "#558b75" } },
     { scope: ["punctuation", "keyword.control.flow"], settings: { foreground: "#94b7c7" } },
     // Markdown — headings (putty palette — warm brown, distinct from cool body text)
-    { scope: ["markup.heading", "entity.name.section.markdown"], settings: { foreground: "#643c21", fontStyle: "bold" } },
+    {
+      scope: ["markup.heading", "entity.name.section.markdown"],
+      settings: { foreground: "#643c21", fontStyle: "bold" },
+    },
     { scope: ["punctuation.definition.heading"], settings: { foreground: "#975826" } },
     // Markdown — emphasis (summer-green for bold, slate-blue for italic)
     { scope: ["markup.bold"], settings: { foreground: "#3e5b51", fontStyle: "bold" } },
@@ -63,7 +66,10 @@ export const lexbuildDark: ThemeRegistration = {
     { scope: ["constant.numeric", "constant.language"], settings: { foreground: "#98b8ab" } },
     { scope: ["punctuation", "keyword.control.flow"], settings: { foreground: "#ffffff40" } },
     // Markdown — headings (putty palette — warm gold, distinct from cool body text)
-    { scope: ["markup.heading", "entity.name.section.markdown"], settings: { foreground: "#e7c788", fontStyle: "bold" } },
+    {
+      scope: ["markup.heading", "entity.name.section.markdown"],
+      settings: { foreground: "#e7c788", fontStyle: "bold" },
+    },
     { scope: ["punctuation.definition.heading"], settings: { foreground: "#dca756" } },
     // Markdown — emphasis (summer-green for bold, slate-blue for italic)
     { scope: ["markup.bold"], settings: { foreground: "#b8d1c5", fontStyle: "bold" } },

@@ -132,13 +132,17 @@ const highlightedMarkdown = await highlightMarkdown(sampleMarkdown);
   <section id="quickstart" class="border-border-base border-b py-14">
     <div class="mx-auto max-w-3xl px-6">
       <div class="mb-6">
-        <h2 class="font-display text-slate-blue-900 dark:text-slate-blue-200 mb-1 text-xl font-semibold tracking-tight">CLI Quick Start</h2>
+        <h2
+          class="font-display text-slate-blue-900 dark:text-slate-blue-200 mb-1 text-xl font-semibold tracking-tight"
+        >
+          CLI Quick Start
+        </h2>
         <p class="text-ink-muted text-[15px]">
           No complex configuration required. Advanced CLI options are available.
         </p>
       </div>
       <div
-        class="bg-slate-blue-50 border-slate-blue-200 shadow-sm dark:bg-card dark:border-border rounded-sm border p-5 sm:p-6"
+        class="bg-slate-blue-50 border-slate-blue-200 dark:bg-card dark:border-border rounded-sm border p-5 shadow-sm sm:p-6"
       >
         <div class="mb-3 flex flex-col gap-1.5">
           <span
@@ -199,10 +203,17 @@ const highlightedMarkdown = await highlightMarkdown(sampleMarkdown);
     </div>
   </section>
 
-  <section id="sources" class="bg-slate-blue-50 dark:bg-slate-blue-950/50 border-border-base border-b py-14">
+  <section
+    id="sources"
+    class="bg-slate-blue-50 dark:bg-slate-blue-950/50 border-border-base border-b py-14"
+  >
     <div class="mx-auto max-w-4xl px-6">
       <div class="mb-6">
-        <h2 class="font-display text-slate-blue-900 dark:text-slate-blue-200 mb-1 text-xl font-semibold tracking-tight">Browse Sources</h2>
+        <h2
+          class="font-display text-slate-blue-900 dark:text-slate-blue-200 mb-1 text-xl font-semibold tracking-tight"
+        >
+          Browse Sources
+        </h2>
         <p class="text-ink-muted text-[15px]">
           Explore U.S. federal law and regulations as structured Markdown, no CLI required. Browse,
           copy, or download entire titles, chapters, parts, or sections straight from the browser.
@@ -250,10 +261,15 @@ const highlightedMarkdown = await highlightMarkdown(sampleMarkdown);
     </div>
   </section>
 
-  <section id="sample-output" class="bg-[#FAFAFA] dark:bg-background border-border-base border-b py-14">
+  <section
+    id="sample-output"
+    class="dark:bg-background border-border-base border-b bg-[#FAFAFA] py-14"
+  >
     <div class="mx-auto max-w-4xl px-6">
       <div class="mb-6">
-        <h2 class="font-display text-slate-blue-900 dark:text-slate-blue-200 mb-1 text-xl font-semibold tracking-tight">
+        <h2
+          class="font-display text-slate-blue-900 dark:text-slate-blue-200 mb-1 text-xl font-semibold tracking-tight"
+        >
           Sample Output
         </h2>
         <p class="text-ink-muted text-[15px]">
@@ -266,11 +282,37 @@ const highlightedMarkdown = await highlightMarkdown(sampleMarkdown);
           <div class="sample-toolbar">
             <div class="sample-tabs-list">
               <button class="sample-tab active" data-tab="yaml" type="button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  ><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path
+                    d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"
+                  ></path><path d="M16 17H8"></path></svg
+                >
                 YAML
               </button>
               <button class="sample-tab" data-tab="preview" type="button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  ><path
+                    d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"
+                  ></path><circle cx="12" cy="12" r="3"></circle></svg
+                >
                 Preview
               </button>
             </div>
@@ -280,16 +322,22 @@ const highlightedMarkdown = await highlightMarkdown(sampleMarkdown);
           </div>
           <div class="sample-content" data-tab-content="preview" style="display:none;">
             <dl class="sample-preview-grid">
-              {samplePreviewFields.map((field) => (
-                <div class="sample-preview-cell">
-                  <dt class="sample-preview-label">{field.label}</dt>
-                  <dd class="sample-preview-value">{field.value}</dd>
-                </div>
-              ))}
+              {
+                samplePreviewFields.map((field) => (
+                  <div class="sample-preview-cell">
+                    <dt class="sample-preview-label">{field.label}</dt>
+                    <dd class="sample-preview-value">{field.value}</dd>
+                  </div>
+                ))
+              }
             </dl>
             <div class="sample-preview-full">
               <dt class="sample-preview-label">Source</dt>
-              <dd class="sample-preview-value">(Pub. L. 94-553, title I, § 101, Oct. 19, 1976, 90 Stat. 2546; Pub. L. 101-650, title VI, § 607, Dec. 1, 1990, 104 Stat. 5132; Pub. L. 102-492, Oct. 24, 1992, 106 Stat. 3145.)</dd>
+              <dd class="sample-preview-value">
+                (Pub. L. 94-553, title I, § 101, Oct. 19, 1976, 90 Stat. 2546; Pub. L. 101-650,
+                title VI, § 607, Dec. 1, 1990, 104 Stat. 5132; Pub. L. 102-492, Oct. 24, 1992, 106
+                Stat. 3145.)
+              </dd>
             </div>
           </div>
         </div>
@@ -299,11 +347,37 @@ const highlightedMarkdown = await highlightMarkdown(sampleMarkdown);
           <div class="sample-toolbar">
             <div class="sample-tabs-list">
               <button class="sample-tab active" data-tab="markdown" type="button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  ><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path
+                    d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"
+                  ></path><path d="M16 17H8"></path></svg
+                >
                 Markdown
               </button>
               <button class="sample-tab" data-tab="rendered" type="button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  ><path
+                    d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"
+                  ></path><circle cx="12" cy="12" r="3"></circle></svg
+                >
                 Preview
               </button>
             </div>
@@ -311,17 +385,45 @@ const highlightedMarkdown = await highlightMarkdown(sampleMarkdown);
           <div class="sample-content sample-content-scroll" data-tab-content="markdown">
             <div class="sample-shiki"><Fragment set:html={highlightedMarkdown} /></div>
           </div>
-          <div class="sample-content sample-content-scroll" data-tab-content="rendered" style="display:none;">
+          <div
+            class="sample-content sample-content-scroll"
+            data-tab-content="rendered"
+            style="display:none;"
+          >
             <div class="prose prose-zinc dark:prose-invert max-w-none p-4 text-sm">
               <h1>§ 107. Limitations on exclusive rights: Fair use</h1>
-              <p>Notwithstanding the provisions of sections 106 and 106A, the fair use of a copyrighted work, including such use by reproduction in copies or phonorecords or by any other means specified by that section, for purposes such as criticism, comment, news reporting, teaching (including multiple copies for classroom use), scholarship, or research, is not an infringement of copyright. In determining whether the use made of a work in any particular case is a fair use the factors to be considered shall include—</p>
-              <p><strong>(1)</strong> the purpose and character of the use, including whether such use is of a commercial nature or is for nonprofit educational purposes;</p>
+              <p>
+                Notwithstanding the provisions of sections 106 and 106A, the fair use of a
+                copyrighted work, including such use by reproduction in copies or phonorecords or by
+                any other means specified by that section, for purposes such as criticism, comment,
+                news reporting, teaching (including multiple copies for classroom use), scholarship,
+                or research, is not an infringement of copyright. In determining whether the use
+                made of a work in any particular case is a fair use the factors to be considered
+                shall include—
+              </p>
+              <p>
+                <strong>(1)</strong> the purpose and character of the use, including whether such use
+                is of a commercial nature or is for nonprofit educational purposes;
+              </p>
               <p><strong>(2)</strong> the nature of the copyrighted work;</p>
-              <p><strong>(3)</strong> the amount and substantiality of the portion used in relation to the copyrighted work as a whole; and</p>
-              <p><strong>(4)</strong> the effect of the use upon the potential market for or value of the copyrighted work.</p>
-              <p>The fact that a work is unpublished shall not itself bar a finding of fair use if such finding is made upon consideration of all the above factors.</p>
+              <p>
+                <strong>(3)</strong> the amount and substantiality of the portion used in relation to
+                the copyrighted work as a whole; and
+              </p>
+              <p>
+                <strong>(4)</strong> the effect of the use upon the potential market for or value of the
+                copyrighted work.
+              </p>
+              <p>
+                The fact that a work is unpublished shall not itself bar a finding of fair use if
+                such finding is made upon consideration of all the above factors.
+              </p>
               <hr />
-              <p><strong>Source Credit</strong>: (Pub. L. 94–553, title I, § 101, Oct. 19, 1976, 90 Stat. 2546; Pub. L. 101–650, title VI, § 607, Dec. 1, 1990, 104 Stat. 5132; Pub. L. 102–492, Oct. 24, 1992, 106 Stat. 3145.)</p>
+              <p>
+                <strong>Source Credit</strong>: (Pub. L. 94–553, title I, § 101, Oct. 19, 1976, 90
+                Stat. 2546; Pub. L. 101–650, title VI, § 607, Dec. 1, 1990, 104 Stat. 5132; Pub. L.
+                102–492, Oct. 24, 1992, 106 Stat. 3145.)
+              </p>
             </div>
           </div>
         </div>
@@ -329,10 +431,17 @@ const highlightedMarkdown = await highlightMarkdown(sampleMarkdown);
     </div>
   </section>
 
-  <section id="packages" class="bg-summer-green-50/75 dark:bg-slate-blue-950/50 border-border-base border-b py-14">
+  <section
+    id="packages"
+    class="bg-summer-green-50/75 dark:bg-slate-blue-950/50 border-border-base border-b py-14"
+  >
     <div class="mx-auto max-w-4xl px-6">
       <div class="mb-6">
-        <h2 class="font-display text-slate-blue-900 dark:text-slate-blue-200 mb-1 text-xl font-semibold tracking-tight">Packages</h2>
+        <h2
+          class="font-display text-slate-blue-900 dark:text-slate-blue-200 mb-1 text-xl font-semibold tracking-tight"
+        >
+          Packages
+        </h2>
         <p class="text-ink-muted text-[15px]">
           A monorepo of composable packages. Source-specific parsers are separate from the shared
           core.
@@ -343,7 +452,7 @@ const highlightedMarkdown = await highlightMarkdown(sampleMarkdown);
           href="https://www.npmjs.com/package/@lexbuild/core"
           target="_blank"
           rel="noopener"
-          class="group border-slate-blue-200 hover:border-slate-blue-400 dark:bg-card dark:border-border dark:hover:border-slate-blue-600 relative flex flex-col shadow-sm rounded-sm border bg-white p-5 transition-colors"
+          class="group border-slate-blue-200 hover:border-slate-blue-400 dark:bg-card dark:border-border dark:hover:border-slate-blue-600 relative flex flex-col rounded-sm border bg-white p-5 shadow-sm transition-colors"
         >
           <svg
             class="text-slate-blue-300 dark:text-slate-blue-600 group-hover:text-slate-blue-500 dark:group-hover:text-slate-blue-400 absolute top-3.5 right-3.5 h-3.5 w-3.5 transition-colors"
@@ -376,7 +485,7 @@ const highlightedMarkdown = await highlightMarkdown(sampleMarkdown);
           href="https://www.npmjs.com/package/@lexbuild/cli"
           target="_blank"
           rel="noopener"
-          class="group border-slate-blue-200 hover:border-slate-blue-400 dark:bg-card dark:border-border dark:hover:border-slate-blue-600 relative flex flex-col shadow-sm rounded-sm border bg-white p-5 transition-colors"
+          class="group border-slate-blue-200 hover:border-slate-blue-400 dark:bg-card dark:border-border dark:hover:border-slate-blue-600 relative flex flex-col rounded-sm border bg-white p-5 shadow-sm transition-colors"
         >
           <svg
             class="text-slate-blue-300 dark:text-slate-blue-600 group-hover:text-slate-blue-500 dark:group-hover:text-slate-blue-400 absolute top-3.5 right-3.5 h-3.5 w-3.5 transition-colors"
@@ -442,7 +551,7 @@ const highlightedMarkdown = await highlightMarkdown(sampleMarkdown);
           href="https://www.npmjs.com/package/@lexbuild/ecfr"
           target="_blank"
           rel="noopener"
-          class="group border-slate-blue-200 hover:border-slate-blue-400 dark:bg-card dark:border-border dark:hover:border-slate-blue-600 relative flex flex-col shadow-sm rounded-sm border bg-white p-5 transition-colors"
+          class="group border-slate-blue-200 hover:border-slate-blue-400 dark:bg-card dark:border-border dark:hover:border-slate-blue-600 relative flex flex-col rounded-sm border bg-white p-5 shadow-sm transition-colors"
         >
           <svg
             class="text-slate-blue-300 dark:text-slate-blue-600 group-hover:text-slate-blue-500 dark:group-hover:text-slate-blue-400 absolute top-3.5 right-3.5 h-3.5 w-3.5 transition-colors"
@@ -474,7 +583,7 @@ const highlightedMarkdown = await highlightMarkdown(sampleMarkdown);
       </div>
       <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div
-          class="border-slate-blue-300 bg-slate-blue-50 hover:border-slate-blue-500 dark:bg-muted dark:border-slate-blue-700 dark:hover:border-slate-blue-500 rounded-sm border border-dashed p-5 transition-colors shadow-sm"
+          class="border-slate-blue-300 bg-slate-blue-50 hover:border-slate-blue-500 dark:bg-muted dark:border-slate-blue-700 dark:hover:border-slate-blue-500 rounded-sm border border-dashed p-5 shadow-sm transition-colors"
         >
           <div
             class="text-slate-blue-700 dark:text-slate-blue-300 mb-1.5 font-mono text-[13px] font-medium"
@@ -488,7 +597,7 @@ const highlightedMarkdown = await highlightMarkdown(sampleMarkdown);
           <div class="text-slate-blue-400 mt-2.5 font-mono text-[12px] font-semibold">Planned</div>
         </div>
         <div
-          class="border-slate-blue-300 bg-slate-blue-50 hover:border-slate-blue-500 dark:bg-muted dark:border-slate-blue-700 dark:hover:border-slate-blue-500 rounded-sm border border-dashed p-5 transition-colors shadow-sm"
+          class="border-slate-blue-300 bg-slate-blue-50 hover:border-slate-blue-500 dark:bg-muted dark:border-slate-blue-700 dark:hover:border-slate-blue-500 rounded-sm border border-dashed p-5 shadow-sm transition-colors"
         >
           <div
             class="text-slate-blue-700 dark:text-slate-blue-300 mb-1.5 font-mono text-[13px] font-medium"
@@ -502,7 +611,7 @@ const highlightedMarkdown = await highlightMarkdown(sampleMarkdown);
           <div class="text-slate-blue-400 mt-2.5 font-mono text-[12px] font-semibold">Planned</div>
         </div>
         <div
-          class="border-slate-blue-300 bg-slate-blue-50 hover:border-slate-blue-500 dark:bg-muted dark:border-slate-blue-700 dark:hover:border-slate-blue-500 rounded-sm border border-dashed p-5 transition-colors sm:col-span-2 shadow-sm"
+          class="border-slate-blue-300 bg-slate-blue-50 hover:border-slate-blue-500 dark:bg-muted dark:border-slate-blue-700 dark:hover:border-slate-blue-500 rounded-sm border border-dashed p-5 shadow-sm transition-colors sm:col-span-2"
         >
           <div
             class="text-slate-blue-700 dark:text-slate-blue-300 mb-1.5 font-mono text-[13px] font-medium"
@@ -602,7 +711,9 @@ const highlightedMarkdown = await highlightMarkdown(sampleMarkdown);
     background: var(--background);
     color: var(--color-slate-blue-700, #476c85);
     border-color: var(--border);
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+    box-shadow:
+      0 1px 3px 0 rgb(0 0 0 / 0.06),
+      0 1px 2px -1px rgb(0 0 0 / 0.06);
   }
 
   :global(.dark) .sample-tab {

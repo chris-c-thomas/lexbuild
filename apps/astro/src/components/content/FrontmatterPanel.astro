@@ -148,8 +148,12 @@ const hasToggle = !!rawYaml;
             {isLong ? (
               <dd class="frontmatter-value frontmatter-collapsible" data-collapsed="true">
                 <span class="frontmatter-collapsed-text">{field.value.slice(0, 200)}...</span>
-                <span class="frontmatter-expanded-text" style="display:none;">{field.value}</span>
-                <button class="frontmatter-show-more" type="button">Show more</button>
+                <span class="frontmatter-expanded-text" style="display:none;">
+                  {field.value}
+                </span>
+                <button class="frontmatter-show-more" type="button">
+                  Show more
+                </button>
               </dd>
             ) : (
               <dd class="frontmatter-value">{field.value}</dd>
@@ -180,15 +184,15 @@ const hasToggle = !!rawYaml;
     var buttons = wrapper.querySelectorAll(".fm-tabs-trigger");
     var views = wrapper.querySelectorAll("[data-frontmatter-view]");
 
-    buttons.forEach(function(btn) {
-      btn.addEventListener("click", function() {
+    buttons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
         var target = btn.dataset.view;
-        buttons.forEach(function(b) {
+        buttons.forEach(function (b) {
           var isActive = b.dataset.view === target;
           b.classList.toggle("active", isActive);
           b.setAttribute("aria-pressed", String(isActive));
         });
-        views.forEach(function(v) {
+        views.forEach(function (v) {
           v.style.display = v.dataset.frontmatterView === target ? "" : "none";
         });
       });
