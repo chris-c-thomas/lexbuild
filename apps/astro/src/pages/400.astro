@@ -1,0 +1,13 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ErrorPage from "@/components/ErrorPage.astro";
+---
+
+<BaseLayout title="Bad Request" description="Something was wrong with the request.">
+  <ErrorPage
+    status={400}
+    title="Bad Request"
+    description="Something was wrong with the request."
+    detail="The URL or parameters couldn't be processed. Check the address and try again."
+  />
+</BaseLayout>

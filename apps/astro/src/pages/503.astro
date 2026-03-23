@@ -1,0 +1,13 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ErrorPage from "@/components/ErrorPage.astro";
+---
+
+<BaseLayout title="Service Unavailable" description="LexBuild is temporarily unavailable.">
+  <ErrorPage
+    status={503}
+    title="Service Unavailable"
+    description="LexBuild is temporarily unavailable."
+    detail="The server is undergoing maintenance or is temporarily overloaded. Please try again shortly."
+  />
+</BaseLayout>

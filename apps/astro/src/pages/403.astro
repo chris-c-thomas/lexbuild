@@ -1,0 +1,13 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ErrorPage from "@/components/ErrorPage.astro";
+---
+
+<BaseLayout title="Forbidden" description="Access denied.">
+  <ErrorPage
+    status={403}
+    title="Forbidden"
+    description="Access denied."
+    detail="You don't have permission to view this page. This may be due to rate limiting or access restrictions."
+  />
+</BaseLayout>

@@ -1,0 +1,13 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ErrorPage from "@/components/ErrorPage.astro";
+---
+
+<BaseLayout title="Unavailable for Legal Reasons" description="This content is restricted.">
+  <ErrorPage
+    status={451}
+    title="Unavailable for Legal Reasons"
+    description="This content is restricted."
+    detail="Access to this page has been restricted due to a legal demand or court order."
+  />
+</BaseLayout>

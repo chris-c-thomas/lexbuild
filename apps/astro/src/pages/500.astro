@@ -1,0 +1,19 @@
+---
+/**
+ * Astro's SSR error boundary — rendered when an unhandled exception occurs
+ * during server-side rendering. Keep imports minimal to avoid cascading
+ * failures. If BaseLayout itself ever becomes a failure point, inline a
+ * minimal HTML shell here instead.
+ */
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ErrorPage from "@/components/ErrorPage.astro";
+---
+
+<BaseLayout title="Internal Server Error" description="Something went wrong on our end.">
+  <ErrorPage
+    status={500}
+    title="Internal Server Error"
+    description="Something went wrong on our end."
+    detail="An unexpected error occurred while processing your request. The issue has been logged."
+  />
+</BaseLayout>

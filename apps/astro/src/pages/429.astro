@@ -1,0 +1,13 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ErrorPage from "@/components/ErrorPage.astro";
+---
+
+<BaseLayout title="Too Many Requests" description="You're sending requests too quickly.">
+  <ErrorPage
+    status={429}
+    title="Too Many Requests"
+    description="You're sending requests too quickly."
+    detail="Please wait a moment before trying again. If you need bulk access, consider using the CLI toolchain instead."
+  />
+</BaseLayout>
