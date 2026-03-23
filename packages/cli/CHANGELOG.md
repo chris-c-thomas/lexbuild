@@ -1,5 +1,18 @@
 # @lexbuild/cli
 
+## 1.12.0
+
+### Minor Changes
+
+- 17cf9bf: add list-release-points to CLI command and release point history API
+
+### Patch Changes
+
+- Updated dependencies [17cf9bf]
+  - @lexbuild/usc@1.12.0
+  - @lexbuild/core@1.12.0
+  - @lexbuild/ecfr@1.12.0
+
 ## 1.11.0
 
 ### Minor Changes
