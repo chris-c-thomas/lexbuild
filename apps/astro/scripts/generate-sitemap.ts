@@ -20,7 +20,7 @@ import { access, copyFile, readdir, readFile, writeFile } from "node:fs/promises
 import { join, resolve } from "node:path";
 
 const SITE_URL = process.env.SITE_URL ?? "https://lexbuild.dev";
-const MAX_URLS_PER_FILE = 50_000;
+const MAX_URLS_PER_FILE = 25_000;
 
 // ---------------------------------------------------------------------------
 // _meta.json shapes (subset of fields we need)
