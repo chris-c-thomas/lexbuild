@@ -167,7 +167,7 @@ Browse available OLRC release points for the U.S. Code. Useful for discovering p
 ```bash
 lexbuild list-release-points                     # 20 most recent
 lexbuild list-release-points -n 5                # 5 most recent
-lexbuild list-release-points -n 0                # All (~370+ releases since 2013)
+lexbuild list-release-points -n 0                # All available release points
 ```
 
 Use a release point ID from the output to pin a specific version:
