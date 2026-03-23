@@ -104,6 +104,10 @@ node packages/cli/dist/index.js convert-ecfr --titles 1 -o ./test-output
 node packages/cli/dist/index.js convert-ecfr ./downloads/ecfr/xml/ECFR-title1.xml -o ./test-output
 node packages/cli/dist/index.js convert-ecfr --titles 17 -g part -o ./test-output
 
+# List available OLRC release points
+node packages/cli/dist/index.js list-release-points
+node packages/cli/dist/index.js list-release-points -n 5
+
 # Astro app (apps/astro/) — NOT included in default `pnpm turbo build`
 pnpm turbo dev:astro --filter=@lexbuild/astro   # Dev server (http://localhost:4321)
 pnpm turbo build:astro --filter=@lexbuild/astro # Production build

@@ -20,6 +20,11 @@ export type {
   DownloadError,
 } from "./downloader.js";
 
-// Release point detection
-export { detectLatestReleasePoint, parseReleasePointFromHtml } from "./release-points.js";
-export type { ReleasePointInfo } from "./release-points.js";
+// Release point detection and history
+export {
+  detectLatestReleasePoint,
+  parseReleasePointFromHtml,
+  fetchReleasePointHistory,
+  parseReleasePointHistoryFromHtml,
+} from "./release-points.js";
+export type { ReleasePointInfo, HistoricalReleasePointInfo } from "./release-points.js";
