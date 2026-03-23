@@ -108,9 +108,10 @@ function parseDescription(html: string): string {
  *
  * Scrapes `https://uscode.house.gov/download/priorreleasepoints.htm` and
  * returns an array of historical release points ordered newest-first
- * (matching the page order).
+ * (matching the page order). Parsing is best-effort — malformed entries
+ * are skipped and valid entries are still returned.
  *
- * Returns an empty array if the page cannot be fetched or parsed.
+ * Returns an empty array if the page cannot be fetched.
  */
 export async function fetchReleasePointHistory(): Promise<HistoricalReleasePointInfo[]> {
   let html: string;
@@ -154,16 +155,25 @@ export function parseReleasePointHistoryFromHtml(html: string): HistoricalReleas
     // Extract the release point ID: everything between "usc-rp@" and ".htm"
     const idStart = hrefIdx + hrefMarker.length;
     const htmIdx = html.indexOf(".htm", idStart);
-    if (htmIdx === -1) break;
+    if (htmIdx === -1) {
+      searchStart = hrefIdx + hrefMarker.length;
+      continue;
+    }
     const releasePoint = html.slice(idStart, htmIdx);
 
     // Find the closing </a> tag to extract the description text
     const anchorCloseIdx = html.indexOf("</a>", htmIdx);
-    if (anchorCloseIdx === -1) break;
+    if (anchorCloseIdx === -1) {
+      searchStart = hrefIdx + hrefMarker.length;
+      continue;
+    }
 
     // Find the ">" that ends the opening <a> tag (search forward from href)
     const tagCloseIdx = html.indexOf(">", htmIdx);
-    if (tagCloseIdx === -1 || tagCloseIdx >= anchorCloseIdx) break;
+    if (tagCloseIdx === -1 || tagCloseIdx >= anchorCloseIdx) {
+      searchStart = hrefIdx + hrefMarker.length;
+      continue;
+    }
 
     const description = html
       .slice(tagCloseIdx + 1, anchorCloseIdx)
