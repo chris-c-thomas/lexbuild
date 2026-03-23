@@ -140,7 +140,8 @@ apps/astro/
 │   │   ├── index.astro                 # Landing page
 │   │   ├── usc/[...slug].astro        # USC catch-all route
 │   │   ├── ecfr/[...slug].astro       # eCFR catch-all route
-│   │   └── 404.astro
+│   │   ├── 400–504.astro              # HTTP error pages (11 total)
+│   │   └── health.ts                  # Health check endpoint
 │   ├── components/
 │   │   ├── content/                    # ContentViewer, FrontmatterPanel, BreadcrumbNav
 │   │   ├── sidebar/                    # Sidebar, MobileNav, SidebarContent, SectionList
