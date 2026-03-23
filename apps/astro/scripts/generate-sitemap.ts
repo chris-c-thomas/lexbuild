@@ -147,16 +147,15 @@ async function collectEcfrUrls(contentDir: string): Promise<string[]> {
 // Sitemap XML generation
 // ---------------------------------------------------------------------------
 
-function buildUrlset(urls: string[], today: string): string {
+function buildUrlset(urls: string[], today: string, sourceChangefreq: string): string {
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
   xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
 
   for (const path of urls) {
     const depth = path.split("/").length - 1;
     const priority = depth <= 1 ? "1.0" : depth <= 2 ? "0.8" : depth <= 3 ? "0.6" : "0.5";
-    const changefreq = depth <= 2 ? "monthly" : "yearly";
 
-    xml += `  <url>\n    <loc>${xmlEscape(SITE_URL)}${path}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>\n`;
+    xml += `  <url>\n    <loc>${xmlEscape(SITE_URL)}${path}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>${sourceChangefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>\n`;
   }
 
   xml += "</urlset>\n";
@@ -181,6 +180,7 @@ async function writeChunkedSitemaps(
   prefix: string,
   outputDir: string,
   today: string,
+  changefreq: string,
 ): Promise<string[]> {
   const filenames: string[] = [];
 
@@ -188,7 +188,7 @@ async function writeChunkedSitemaps(
     const chunk = urls.slice(i, i + MAX_URLS_PER_FILE);
     const chunkIndex = Math.floor(i / MAX_URLS_PER_FILE);
     const filename = `sitemap-${prefix}-${chunkIndex}.xml`;
-    const xml = buildUrlset(chunk, today);
+    const xml = buildUrlset(chunk, today, changefreq);
     await writeFile(join(outputDir, filename), xml, "utf-8");
     filenames.push(filename);
     console.log(`  Wrote ${filename} (${chunk.length.toLocaleString()} URLs)`);
@@ -222,9 +222,9 @@ async function main(): Promise<void> {
   const miscUrls = ["/"];
   const allFilenames: string[] = [];
 
-  allFilenames.push(...(await writeChunkedSitemaps(miscUrls, "misc", outputDir, today)));
-  allFilenames.push(...(await writeChunkedSitemaps(uscUrls, "usc", outputDir, today)));
-  allFilenames.push(...(await writeChunkedSitemaps(ecfrUrls, "ecfr", outputDir, today)));
+  allFilenames.push(...(await writeChunkedSitemaps(miscUrls, "misc", outputDir, today, "weekly")));
+  allFilenames.push(...(await writeChunkedSitemaps(uscUrls, "usc", outputDir, today, "monthly")));
+  allFilenames.push(...(await writeChunkedSitemaps(ecfrUrls, "ecfr", outputDir, today, "weekly")));
 
   // Write sitemap index
   const indexXml = buildSitemapIndex(allFilenames, today);
