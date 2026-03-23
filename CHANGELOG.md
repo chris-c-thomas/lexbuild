@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.12.0]
+
+### Added
+
+- `lexbuild list-release-points` CLI command — lists available OLRC release points with dates and affected titles, making it easy to discover valid IDs for `download-usc --release-point <id>`
+- `fetchReleasePointHistory()` and `parseReleasePointHistoryFromHtml()` in `@lexbuild/usc` — scrapes the OLRC prior release points page for the full history (~370+ releases since 2013)
+- `HistoricalReleasePointInfo` type in `@lexbuild/usc` — release point ID, description, date, and affected title numbers
+- Three-way theme toggle (system/light/dark) for the Astro web app
+- "Show more" expansion for long `source_credit` values in frontmatter panel
+- Homepage sample output tabs for YAML frontmatter and Markdown preview
+- Shiki theme overrides for consistent code highlighting across light/dark modes
+- OG image for social sharing
+
+### Changed
+
+- Homepage styling refresh — updated card borders, shadows, dark mode palette
+- Shiki syntax highlighting theme updated for better contrast
+
+### Fixed
+
+- `gray-matter` cache bug causing stale YAML and preview display
+- YAML frontmatter `---` delimiter display issue in preview panel
+- CLI docs link pointing to wrong URL
+- Copilot review issues in release point parser — malformed HTML entries now skipped (best-effort parsing) instead of truncating results
+
+### Documentation
+
+- Updated CLI reference, package docs, READMEs, and CLAUDE.md files for `list-release-points` command and release point history API
+
 ## [1.11.0]
 
 ### Added
