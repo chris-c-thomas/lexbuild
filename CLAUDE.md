@@ -153,7 +153,7 @@ Key points:
 ### TypeScript
 
 - pnpm workspaces with `workspace:*` protocol for internal deps
-- **Transitive dependency vulnerabilities**: Dependabot cannot update transitive deps in pnpm monorepos. Use `pnpm.overrides` in root `package.json` (e.g., `"h3": "^1.15.9"`). Use `^` ranges (not `>=`) for determinism.
+- **Transitive dependency vulnerabilities**: Dependabot cannot update transitive deps in pnpm monorepos. Use `pnpm.overrides` in root `package.json` (e.g., `"flatted": "^3.4.2"`). Use `^` ranges (not `>=`) for determinism.
 - ESM only (`"type": "module"` in all package.json files)
 - Strict mode: `strict: true`, `noUncheckedIndexedAccess: true`, `exactOptionalPropertyTypes: true`
 - Use `import type` for type-only imports
@@ -459,8 +459,8 @@ Where `{N}` is the title number (1-50, not zero-padded). Example: `ECFR-title17.
 - **CLI `-o` flag appends source subdirectories**: `convert-usc -o /some/path` writes to `/some/path/usc/...`, not `/some/path/...` directly. Same for eCFR. The deploy script handles this by converting to monorepo output dirs then copying to the final content structure.
 - **Volta PATH must be in `.zshenv`, not `.zshrc`**: SSH heredoc commands (`ssh host << 'EOF'`) run non-interactive shells that don't source `.zshrc`. Volta's PATH (`$VOLTA_HOME/bin`) must be in `~/.zshenv` on the VPS for deploy scripts to find `pnpm`/`node`/`pm2`.
 - **PM2 reload requires `--update-env`**: Without it, `pm2 reload` keeps cached env vars from the original `pm2 start`. Always use `pm2 reload lexbuild-astro --update-env` to pick up changes from `ecosystem.config.cjs` or shell environment.
-- **Meilisearch `max_memory_restart` in `ecosystem.config.cjs`**: Must be sized to the VPS RAM. Set to `"3G"` for the current 8 GB Lightsail. If PM2 kills Meilisearch during indexing (`↺` restart counter increments, `ECONNREFUSED` errors), this limit is too low.
-- **Search proxy required in production**: `MEILI_URL=/search` in `.env.production` — the browser cannot reach `127.0.0.1:7700` (that's the user's localhost). Caddy proxies `/search` to Meilisearch and injects the auth header. The `/api/` namespace is reserved for the data API (Hono).
+- **Meilisearch `max_memory_restart` in `ecosystem.config.cjs`**: Must be sized to the VPS RAM. Set to `"4G"` for the current 8 GB Lightsail. If PM2 kills Meilisearch during indexing (`↺` restart counter increments, `ECONNREFUSED` errors), this limit is too low.
+- **Search proxy required in production**: `MEILI_URL=/search` in `.env.production` — the browser cannot reach `127.0.0.1:7700` (that's the user's localhost). Caddy proxies `/search` to Meilisearch and injects the auth header.
 - **Meilisearch dump import regenerates API keys**: Importing a dump created with a different master key regenerates all keys. After `--search-dump` or `--search-push`, retrieve the new key (`setup-secrets.sh --search`) and update `~/.lexbuild-secrets`, `.env.production`, AND `/etc/caddy/environment`.
 - **Turbo `--filter` uses `package.json` `name`**: The Astro app is `@lexbuild/astro` (NOT `@lexbuild/web` — that was the old Next.js app, removed 2026-03-15). Always verify with `grep '"name"' apps/astro/package.json`.
 - **Caddyfile formatting**: Inconsistent whitespace (spaces vs tabs) can cause `handle_path` to silently fail. Always run `sudo caddy fmt --overwrite /etc/caddy/Caddyfile` after manual edits, then `sudo systemctl reload caddy`.
