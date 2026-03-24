@@ -20,6 +20,11 @@
     "lint:fix": {
       "dependsOn": ["transit"]
     },
+    "tasks": {
+      "lint:knip": {
+        "cache": false
+      }
+    },
     "dev": {
       "cache": false,
       "persistent": true
