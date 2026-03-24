@@ -42,8 +42,8 @@ const meiliSearchKey = isProxyMode ? undefined : (import.meta.env.MEILI_SEARCH_K
       })();
     </script>
     <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2S71DGYMWR"></script>
-    <script>
+    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-2S71DGYMWR"></script>
+    <script is:inline>
       window.dataLayer = window.dataLayer || [];
       function gtag() {
         dataLayer.push(arguments);
@@ -53,7 +53,7 @@ const meiliSearchKey = isProxyMode ? undefined : (import.meta.env.MEILI_SEARCH_K
       gtag("config", "G-2S71DGYMWR");
     </script>
     <!-- Microsoft Clarity -->
-    <script type="text/javascript">
+    <script is:inline>
       (function (c, l, a, r, i, t, y) {
         c[a] =
           c[a] ||
