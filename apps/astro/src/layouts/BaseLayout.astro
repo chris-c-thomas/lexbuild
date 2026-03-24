@@ -69,6 +69,12 @@ const meiliSearchKey = isProxyMode ? undefined : (import.meta.env.MEILI_SEARCH_K
     </script>
   </head>
   <body class="bg-background text-foreground min-h-screen antialiased">
+    <a
+      href="#main-content"
+      class="bg-background text-foreground ring-ring fixed top-2 left-2 z-[100] rounded-md px-4 py-2 text-sm font-medium opacity-0 ring-2 transition-opacity focus:opacity-100"
+    >
+      Skip to content
+    </a>
     <header
       class="border-border bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 border-b backdrop-blur"
     >
@@ -158,12 +164,12 @@ const meiliSearchKey = isProxyMode ? undefined : (import.meta.env.MEILI_SEARCH_K
       source ? (
         <div class="flex">
           <Sidebar client:load sourceId={source} currentPath={currentPath} />
-          <main class="bg-background dark:bg-background min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
+          <main id="main-content" class="bg-background dark:bg-background min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
             <slot />
           </main>
         </div>
       ) : (
-        <main>
+        <main id="main-content">
           <slot />
         </main>
       )

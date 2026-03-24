@@ -151,7 +151,7 @@ const hasToggle = !!rawYaml;
                 <span class="frontmatter-expanded-text" style="display:none;">
                   {field.value}
                 </span>
-                <button class="frontmatter-show-more" type="button">
+                <button class="frontmatter-show-more" type="button" aria-expanded="false">
                   Show more
                 </button>
               </dd>
@@ -177,6 +177,7 @@ const hasToggle = !!rawYaml;
       if (collapsed) collapsed.style.display = isCollapsed ? "none" : "";
       if (expanded) expanded.style.display = isCollapsed ? "" : "none";
       btn.textContent = isCollapsed ? "Show less" : "Show more";
+      btn.setAttribute("aria-expanded", isCollapsed ? "true" : "false");
     });
   });
 
@@ -248,7 +249,7 @@ const hasToggle = !!rawYaml;
   }
 
   .fm-tabs-trigger:hover {
-    color: var(--color-slate-blue-600, #5285a3);
+    color: var(--color-slate-blue-700, #476c85);
   }
 
   .fm-tabs-trigger.active {
@@ -337,7 +338,7 @@ const hasToggle = !!rawYaml;
     padding: 0;
     border: none;
     background: none;
-    color: var(--color-slate-blue-600, #5285a3);
+    color: var(--color-slate-blue-700, #476c85);
     font-size: 0.8rem;
     font-weight: 500;
     cursor: pointer;

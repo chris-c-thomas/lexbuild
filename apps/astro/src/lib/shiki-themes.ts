@@ -34,21 +34,21 @@ export const lexbuildLight: ThemeRegistration = {
     { scope: ["markup.bold"], settings: { foreground: "#3e5b51", fontStyle: "bold" } },
     { scope: ["punctuation.definition.bold"], settings: { foreground: "#6fa48e" } },
     { scope: ["markup.italic"], settings: { foreground: "#476c85", fontStyle: "italic" } },
-    { scope: ["punctuation.definition.italic"], settings: { foreground: "#5285a3" } },
+    { scope: ["punctuation.definition.italic"], settings: { foreground: "#476c85" } },
     // Markdown — links
     { scope: ["string.other.link.title", "meta.link.inline"], settings: { foreground: "#476c85" } },
-    { scope: ["markup.underline.link"], settings: { foreground: "#5285a3" } },
+    { scope: ["markup.underline.link"], settings: { foreground: "#476c85" } },
     // Markdown — code
     { scope: ["markup.inline.raw"], settings: { foreground: "#487061" } },
     // Markdown — lists
-    { scope: ["punctuation.definition.list"], settings: { foreground: "#5285a3" } },
+    { scope: ["punctuation.definition.list"], settings: { foreground: "#476c85" } },
     { scope: ["markup.list"], settings: { foreground: "#1f2c38" } },
     // Markdown — blockquotes
     { scope: ["markup.quote"], settings: { foreground: "#476c85", fontStyle: "italic" } },
-    { scope: ["punctuation.definition.quote"], settings: { foreground: "#5285a3" } },
+    { scope: ["punctuation.definition.quote"], settings: { foreground: "#476c85" } },
     // Markdown — horizontal rule / separators
-    { scope: ["markup.heading.setext"], settings: { foreground: "#5285a3" } },
-    { scope: ["meta.separator"], settings: { foreground: "#5285a3" } },
+    { scope: ["markup.heading.setext"], settings: { foreground: "#476c85" } },
+    { scope: ["meta.separator"], settings: { foreground: "#476c85" } },
   ],
 };
 
