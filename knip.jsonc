@@ -3,14 +3,10 @@
   "workspaces": {
     "packages/*": {
       "entry": ["src/index.ts"],
-      "project": ["src/**/*.ts"]
+      "project": ["src/**/*.ts"],
     },
     "apps/astro": {
-      "entry": [
-        "src/pages/**/*.astro",
-        "src/env.d.ts",
-        "astro.config.ts"
-      ],
+      "entry": ["src/pages/**/*.astro", "src/env.d.ts", "astro.config.ts"],
       "project": ["src/**/*.{ts,tsx,astro}"],
       "ignoreDependencies": [
         "prettier-plugin-tailwindcss",
@@ -21,9 +17,9 @@
         "@tailwindcss/typography",
         "shadcn",
         "tailwindcss",
-        "tw-animate-css"
-      ]
-    }
+        "tw-animate-css",
+      ],
+    },
   },
   "ignore": [
     "apps/astro/scripts/**",
@@ -34,11 +30,8 @@
     "apps/astro/src/components/ui/separator.tsx",
     "apps/astro/src/components/ui/skeleton.tsx",
     "apps/astro/src/components/ui/breadcrumb.tsx",
-    "apps/astro/src/components/ui/sheet.tsx"
+    "apps/astro/src/components/ui/sheet.tsx",
   ],
-  "ignoreDependencies": [
-    "prettier-plugin-astro",
-    "@changesets/changelog-github"
-  ],
-  "ignoreExportsUsedInFile": true
+  "ignoreDependencies": ["prettier-plugin-astro", "@changesets/changelog-github"],
+  "ignoreExportsUsedInFile": true,
 }
