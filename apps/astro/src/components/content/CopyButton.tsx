@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -9,12 +9,16 @@ interface CopyButtonProps {
 /** Copies raw Markdown text to the clipboard. */
 export function CopyButton({ text }: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(null);
+
+  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
 
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(text);
+      if (timerRef.current) clearTimeout(timerRef.current);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      timerRef.current = setTimeout(() => setCopied(false), 2000);
     } catch {
       // Clipboard API may be unavailable (non-HTTPS, permission denied)
     }
