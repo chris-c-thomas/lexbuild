@@ -24,6 +24,7 @@ export function SectionList({ sections, basePath, currentPath }: SectionListProp
             <li key={section.file}>
               <a
                 href={href}
+                aria-current={isActive ? "page" : undefined}
                 className={`flex items-baseline gap-1.5 rounded-md px-2 py-1 text-xs transition-colors ${
                   isActive
                     ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
@@ -90,6 +91,7 @@ function VirtualizedSectionList({ sections, basePath, currentPath }: SectionList
             >
               <a
                 href={href}
+                aria-current={isActive ? "page" : undefined}
                 className={`flex items-baseline gap-1.5 rounded-md px-2 py-1 text-xs transition-colors ${
                   isActive
                     ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"

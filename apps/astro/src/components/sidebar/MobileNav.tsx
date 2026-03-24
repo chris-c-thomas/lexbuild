@@ -81,7 +81,7 @@ export function MobileNav({ source, currentPath }: MobileNavProps) {
 
         {/* Footer: secondary links */}
         <div className="mt-auto">
-          <nav className="border-sidebar-border flex items-center gap-4 border-t px-4 py-2.5">
+          <nav className="border-sidebar-border flex items-center gap-4 border-t px-4 py-2.5" aria-label="External links">
             <a
               href="https://www.npmjs.com/package/@lexbuild/cli"
               target="_blank"

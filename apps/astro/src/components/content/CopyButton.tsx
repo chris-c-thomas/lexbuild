@@ -25,7 +25,7 @@ export function CopyButton({ text }: CopyButtonProps) {
       {copied ? (
         <>
           <Check className="size-3.5" />
-          Copied
+          <span role="status">Copied</span>
         </>
       ) : (
         <>

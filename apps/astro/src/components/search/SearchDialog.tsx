@@ -118,7 +118,12 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
 
       {/* Dialog */}
       <div className="fixed inset-x-0 top-[15vh] z-50 mx-auto w-full max-w-xl px-4">
-        <div className="border-border bg-background overflow-hidden rounded-xl border shadow-2xl">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Search LexBuild"
+          className="border-border bg-background overflow-hidden rounded-xl border shadow-2xl"
+        >
           {/* Search input */}
           <div className="border-border flex items-center border-b px-4">
             <Search className="text-muted-foreground size-4 shrink-0" />
