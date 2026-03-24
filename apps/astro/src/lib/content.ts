@@ -1,4 +1,4 @@
-import { readFile, access } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { resolve, relative } from "node:path";
 
 const CONTENT_ROOT = resolve(process.env.CONTENT_DIR ?? "./content");
@@ -19,15 +19,5 @@ export async function getFile(path: string): Promise<string | null> {
     return await readFile(safePath(path), "utf-8");
   } catch {
     return null;
-  }
-}
-
-/** Check if a content file exists. */
-export async function fileExists(path: string): Promise<boolean> {
-  try {
-    await access(safePath(path));
-    return true;
-  } catch {
-    return false;
   }
 }

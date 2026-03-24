@@ -30,12 +30,6 @@ import { detectLatestReleasePoint } from "./release-points.js";
  */
 export const FALLBACK_RELEASE_POINT = "119-73not60";
 
-/**
- * @deprecated Use `FALLBACK_RELEASE_POINT` instead.
- * Kept for backward compatibility with existing consumers.
- */
-export const CURRENT_RELEASE_POINT = FALLBACK_RELEASE_POINT;
-
 /** OLRC base URL for release point downloads */
 const OLRC_BASE_URL = "https://uscode.house.gov/download/releasepoints/us/pl";
 

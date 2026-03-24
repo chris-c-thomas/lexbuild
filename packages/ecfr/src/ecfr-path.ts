@@ -57,21 +57,6 @@ export function buildEcfrOutputPath(
 }
 
 /**
- * Build the directory path for a part (used for _meta.json placement).
- */
-export function buildPartDir(context: EmitContext, partNum: string, outputRoot: string): string {
-  const titleNum = findAncestorValue(context, "title") ?? "0";
-  const chapterNum = findAncestorValue(context, "chapter");
-  const titleDir = `title-${padTwo(titleNum)}`;
-  const segments = [outputRoot, "ecfr", titleDir];
-  if (chapterNum) {
-    segments.push(`chapter-${chapterNum}`);
-  }
-  segments.push(`part-${partNum}`);
-  return join(...segments);
-}
-
-/**
  * Build the directory path for a title (used for _meta.json placement).
  */
 export function buildTitleDir(titleNum: string, outputRoot: string): string {

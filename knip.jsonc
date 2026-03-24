@@ -1,0 +1,44 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "workspaces": {
+    "packages/*": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"]
+    },
+    "apps/astro": {
+      "entry": [
+        "src/pages/**/*.astro",
+        "src/env.d.ts",
+        "astro.config.ts"
+      ],
+      "project": ["src/**/*.{ts,tsx,astro}"],
+      "ignoreDependencies": [
+        "prettier-plugin-tailwindcss",
+        "@fontsource-variable/ibm-plex-sans",
+        "@fontsource/ibm-plex-mono",
+        "@fontsource/ibm-plex-serif",
+        "@fontsource/jetbrains-mono",
+        "@tailwindcss/typography",
+        "shadcn",
+        "tailwindcss",
+        "tw-animate-css"
+      ]
+    }
+  },
+  "ignore": [
+    "apps/astro/scripts/**",
+    "apps/astro/ecosystem.config.cjs",
+    "apps/astro/src/components/ui/badge.tsx",
+    "apps/astro/src/components/ui/card.tsx",
+    "apps/astro/src/components/ui/scroll-area.tsx",
+    "apps/astro/src/components/ui/separator.tsx",
+    "apps/astro/src/components/ui/skeleton.tsx",
+    "apps/astro/src/components/ui/breadcrumb.tsx",
+    "apps/astro/src/components/ui/sheet.tsx"
+  ],
+  "ignoreDependencies": [
+    "prettier-plugin-astro",
+    "@changesets/changelog-github"
+  ],
+  "ignoreExportsUsedInFile": true
+}

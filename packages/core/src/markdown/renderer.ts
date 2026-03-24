@@ -42,7 +42,7 @@ export interface RenderOptions {
 }
 
 /** Default render options */
-export const DEFAULT_RENDER_OPTIONS: RenderOptions = {
+const DEFAULT_RENDER_OPTIONS: RenderOptions = {
   headingOffset: 0,
   linkStyle: "plaintext",
 };

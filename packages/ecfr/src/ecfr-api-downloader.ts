@@ -139,7 +139,7 @@ export interface EcfrApiDownloadedFile {
 }
 
 /** A title that failed to download */
-export interface EcfrDownloadFailure {
+interface EcfrDownloadFailure {
   /** Title number */
   titleNumber: number;
   /** HTTP status code of the final attempt */

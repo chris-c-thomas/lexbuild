@@ -110,7 +110,7 @@ const TABLE_STYLE: {
 };
 
 /** Render a styled heading line. */
-export function heading(text: string): string {
+function heading(text: string): string {
   return chalk.bold(text);
 }
 

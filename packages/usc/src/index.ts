@@ -9,7 +9,6 @@ export {
   buildAllTitlesUrl,
   releasePointToPath,
   isAllTitles,
-  CURRENT_RELEASE_POINT,
   FALLBACK_RELEASE_POINT,
   USC_TITLE_NUMBERS,
 } from "./downloader.js";
