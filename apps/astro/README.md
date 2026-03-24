@@ -16,7 +16,7 @@ The web application for [LexBuild](https://github.com/chris-c-thomas/LexBuild) â
 | Markdown | unified + remark + rehype pipeline |
 | Sidebar | `@tanstack/react-virtual` for virtualized section lists |
 | Search | [Meilisearch](https://www.meilisearch.com/) (optional, gated behind `ENABLE_SEARCH`) |
-| Fonts | Google Sans, JetBrains Mono (self-hosted via `@fontsource`) |
+| Fonts | IBM Plex Sans (body) / Serif (display) / Mono (code) via `@fontsource` |
 
 ## Prerequisites
 

@@ -13,7 +13,7 @@ const { status, title, description, showHomeLink = true } = Astro.props;
 <div
   class="mx-auto flex max-w-7xl flex-col items-center justify-center px-4 py-24 text-center sm:px-6 lg:px-8"
 >
-  <p class="text-slate-blue-300 dark:text-slate-blue-700 text-6xl font-bold" aria-hidden="true">
+  <p class="text-slate-blue-200/60 dark:text-slate-blue-300/40 text-6xl font-bold" aria-hidden="true">
     {status}
   </p>
   <h1 class="text-foreground mt-4 text-lg font-medium">{title}</h1>
@@ -22,7 +22,7 @@ const { status, title, description, showHomeLink = true } = Astro.props;
     showHomeLink ? (
       <a
         href="/"
-        class="text-slate-blue-600 hover:text-slate-blue-700 dark:text-slate-blue-400 dark:hover:text-slate-blue-300 mt-6 inline-flex items-center gap-1.5 text-sm font-medium transition-colors"
+        class="text-slate-blue-700 hover:text-slate-blue-800 dark:text-slate-blue-400 dark:hover:text-slate-blue-300 mt-6 inline-flex items-center gap-1.5 text-sm font-medium transition-colors"
       >
         &larr; Back to home
       </a>

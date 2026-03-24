@@ -21,7 +21,7 @@ The app serves U.S. Code (54 titles, ~60k sections) and eCFR (50 titles, ~200k+ 
 | Islands | React 19.x via `@astrojs/react` |
 | Styling | Tailwind CSS 4.x via `@tailwindcss/vite` (NOT `@astrojs/tailwind`) + `@tailwindcss/typography` |
 | Components | shadcn/ui (radix-nova preset, zinc theme) |
-| Fonts | IBM Plex Sans / Serif / Mono, JetBrains Mono via `@fontsource` |
+| Fonts | IBM Plex Sans (body) / Serif (display) / Mono (code) via `@fontsource` |
 | Highlighting | Shiki 4.x (pre-rendered HTML, runtime fallback for dev) |
 | Markdown | unified + remark + rehype pipeline with `rehype-sanitize` |
 | Sidebar | @tanstack/react-virtual for large section lists |
