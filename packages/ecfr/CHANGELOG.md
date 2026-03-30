@@ -1,5 +1,12 @@
 # @lexbuild/ecfr
 
+## 1.13.1
+
+### Patch Changes
+
+- Updated dependencies [f89a4ee]
+  - @lexbuild/core@1.13.1
+
 ## 1.13.0
 
 ### Minor Changes
