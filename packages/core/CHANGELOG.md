@@ -1,5 +1,11 @@
 # @lexbuild/core
 
+## 1.13.1
+
+### Patch Changes
+
+- f89a4ee: chore(deps): bump yaml from ^2.7.0 to ^2.8.3
+
 ## 1.13.0
 
 ### Minor Changes

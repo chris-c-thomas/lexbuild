@@ -1,5 +1,12 @@
 # @lexbuild/cli
 
+## 1.13.1
+
+### Patch Changes
+
+- @lexbuild/ecfr@1.13.1
+- @lexbuild/usc@1.13.1
+
 ## 1.13.0
 
 ### Minor Changes
