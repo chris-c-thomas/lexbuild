@@ -1,5 +1,11 @@
 # @lexbuild/core
 
+## 1.14.1
+
+### Patch Changes
+
+- da51df3: bump version
+
 ## 1.14.0
 
 ### Minor Changes

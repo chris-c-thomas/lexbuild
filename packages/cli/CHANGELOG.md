@@ -1,5 +1,15 @@
 # @lexbuild/cli
 
+## 1.14.1
+
+### Patch Changes
+
+- da51df3: bump version
+- Updated dependencies [da51df3]
+  - @lexbuild/ecfr@1.14.1
+  - @lexbuild/fr@1.14.1
+  - @lexbuild/usc@1.14.1
+
 ## 1.14.0
 
 ### Minor Changes
