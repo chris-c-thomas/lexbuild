@@ -107,7 +107,7 @@ export const FR_INLINE_ELEMENTS = new Set([
 export const FR_EMPHASIS_MAP: Readonly<Record<string, InlineType>> = {
   "01": "bold",
   "02": "italic",
-  "03": "bold", // bold italic in print — treat as bold for Markdown
+  "03": "italic", // bold italic in print — FR uses T="03" for case names, citations, and publication titles which render as italic
   "04": "italic", // italic in headings
   "05": "italic", // small caps — render as italic
   "51": "sub", // subscript

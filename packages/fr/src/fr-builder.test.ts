@@ -120,28 +120,28 @@ describe("FrASTBuilder", () => {
       expect(textContent).toBeDefined();
     });
 
-    it("handles E emphasis codes (bold)", async () => {
+    it("handles E emphasis codes (T=03 as italic for citations)", async () => {
       const { collected } = await parseFixture("simple-rule.xml");
       const { node } = collected[0]!;
 
       // The DATES section has <E T="03">Effective date:</E>
-      // T="03" maps to bold
+      // T="03" maps to italic in FR (used for case names, citations, publication titles)
       const contentNodes = node.children.filter((c) => c.type === "content") as ContentNode[];
-      let foundBoldEmphasis = false;
+      let foundItalicEmphasis = false;
       for (const content of contentNodes) {
         for (const inline of content.children) {
-          if (inline.type === "inline" && (inline as InlineNode).inlineType === "bold") {
-            const boldNode = inline as InlineNode;
-            const text = boldNode.text ?? "";
+          if (inline.type === "inline" && (inline as InlineNode).inlineType === "italic") {
+            const italicNode = inline as InlineNode;
+            const text = italicNode.text ?? "";
             const childText =
-              boldNode.children?.map((c) => (c as InlineNode).text ?? "").join("") ?? "";
+              italicNode.children?.map((c) => (c as InlineNode).text ?? "").join("") ?? "";
             if (text.includes("Effective date") || childText.includes("Effective date")) {
-              foundBoldEmphasis = true;
+              foundItalicEmphasis = true;
             }
           }
         }
       }
-      expect(foundBoldEmphasis).toBe(true);
+      expect(foundItalicEmphasis).toBe(true);
     });
 
     it("handles italic inline elements", async () => {

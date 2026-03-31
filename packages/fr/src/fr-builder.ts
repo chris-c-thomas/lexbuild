@@ -220,14 +220,23 @@ export class FrASTBuilder {
       return;
     }
 
-    // Footnote reference
+    // Footnote reference marker — FTREF is empty and follows <SU>N</SU>.
+    // Convert the preceding SU (rendered as sup) to a footnoteRef.
     if (name === FR_FTREF_ELEMENT) {
-      const node: InlineNode = {
-        type: "inline",
-        inlineType: "footnoteRef",
-        idref: attrs["ID"],
-      };
-      this.stack.push({ kind: "inline", elementName: name, node, textBuffer: "" });
+      const parentFrame = this.stack[this.stack.length - 1];
+      if (parentFrame?.kind === "content" && parentFrame.node?.type === "content") {
+        const contentNode = parentFrame.node as ContentNode;
+        // Find the last sup child and convert it to footnoteRef
+        for (let i = contentNode.children.length - 1; i >= 0; i--) {
+          const child = contentNode.children[i];
+          if (child?.type === "inline" && (child as InlineNode).inlineType === "sup") {
+            (child as InlineNode).inlineType = "footnoteRef";
+            break;
+          }
+        }
+      }
+      // FTREF is self-closing, push+pop to maintain balance
+      this.ignoredContainerDepth = 1;
       return;
     }
 
@@ -414,11 +423,13 @@ export class FrASTBuilder {
     // Content frames → create inline text node
     if (frame.kind === "content" && frame.node?.type === "content") {
       const contentNode = frame.node as ContentNode;
-      if (text) {
+      // Normalize XML indentation whitespace: collapse runs of whitespace to single spaces
+      const normalized = text.replace(/\s+/g, " ");
+      if (normalized && normalized !== " ") {
         contentNode.children.push({
           type: "inline",
           inlineType: "text",
-          text,
+          text: normalized,
         });
       }
       return;
@@ -427,14 +438,17 @@ export class FrASTBuilder {
     // Inline frames → set text or add child
     if (frame.kind === "inline" && frame.node?.type === "inline") {
       const inlineNode = frame.node as InlineNode;
+      const normalized = text.replace(/\s+/g, " ");
       if (inlineNode.children) {
-        inlineNode.children.push({
-          type: "inline",
-          inlineType: "text",
-          text,
-        });
+        if (normalized && normalized !== " ") {
+          inlineNode.children.push({
+            type: "inline",
+            inlineType: "text",
+            text: normalized,
+          });
+        }
       } else {
-        inlineNode.text = (inlineNode.text ?? "") + text;
+        inlineNode.text = (inlineNode.text ?? "") + normalized;
       }
       return;
     }
@@ -641,7 +655,10 @@ export class FrASTBuilder {
     } else if (elementName === "B") {
       inlineType = "bold";
     } else if (elementName === "SU") {
-      inlineType = "sup";
+      // SU inside a footnote (FTNT) is the footnote marker, not a generic superscript.
+      // Check if we're inside a note frame to determine the correct type.
+      const insideFootnote = this.findFrame("note") !== undefined;
+      inlineType = insideFootnote ? "footnoteRef" : "sup";
     } else if (elementName === "FR") {
       inlineType = "text"; // Fractions render as text
     } else if (elementName === "E") {
