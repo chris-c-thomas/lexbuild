@@ -268,7 +268,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           copy, or download entire titles, chapters, parts, or sections straight from the browser.
         </p>
       </div>
-      <div class="grid gap-6 sm:grid-cols-2">
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {
           sources.map((source) => (
             <a
@@ -287,17 +287,27 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
               <p class="text-muted-foreground mt-2 text-sm leading-relaxed">{source.description}</p>
               <div class="mt-4 flex items-center justify-between">
                 <div class="text-slate-blue-700 dark:text-slate-blue-400 flex items-center gap-2 text-xs font-medium">
-                  <span>{source.titleCount.toLocaleString()} titles</span>
-                  <span class="bg-slate-blue-300 dark:bg-slate-blue-700 h-3 w-px" />
-                  <span>{source.chapterCount.toLocaleString()} chapters</span>
-                  {source.partCount && (
+                  {source.id === "fr" ? (
                     <>
+                      <span>~28k documents/year</span>
                       <span class="bg-slate-blue-300 dark:bg-slate-blue-700 h-3 w-px" />
-                      <span>{source.partCount.toLocaleString()} parts</span>
+                      <span>Published daily</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{source.titleCount.toLocaleString()} titles</span>
+                      <span class="bg-slate-blue-300 dark:bg-slate-blue-700 h-3 w-px" />
+                      <span>{source.chapterCount.toLocaleString()} chapters</span>
+                      {source.partCount ? (
+                        <>
+                          <span class="bg-slate-blue-300 dark:bg-slate-blue-700 h-3 w-px" />
+                          <span>{source.partCount.toLocaleString()} parts</span>
+                        </>
+                      ) : null}
+                      <span class="bg-slate-blue-300 dark:bg-slate-blue-700 h-3 w-px" />
+                      <span>{source.sectionCount.toLocaleString()} sections</span>
                     </>
                   )}
-                  <span class="bg-slate-blue-300 dark:bg-slate-blue-700 h-3 w-px" />
-                  <span>{source.sectionCount.toLocaleString()} sections</span>
                 </div>
                 <span class="text-slate-blue-400 dark:text-slate-blue-300 text-sm transition-transform duration-200 group-hover:translate-x-1 group-hover:scale-125">
                   &rarr;

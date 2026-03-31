@@ -30,6 +30,28 @@ if (source === "ecfr" && frontmatter.agency) {
   fields.push({ label: "Agency", value: frontmatter.agency });
 }
 
+// FR-specific fields
+if (source === "fr") {
+  if (frontmatter.document_type) {
+    fields.push({ label: "Type", value: frontmatter.document_type.replace(/_/g, " ") });
+  }
+  if (frontmatter.fr_citation) {
+    fields.push({ label: "Citation", value: frontmatter.fr_citation });
+  }
+  if (frontmatter.publication_date) {
+    fields.push({ label: "Published", value: frontmatter.publication_date });
+  }
+  if (frontmatter.agencies && frontmatter.agencies.length > 0) {
+    fields.push({ label: "Agencies", value: frontmatter.agencies.join(", ") });
+  }
+  if (frontmatter.effective_date) {
+    fields.push({ label: "Effective", value: frontmatter.effective_date });
+  }
+  if (frontmatter.comments_close_date) {
+    fields.push({ label: "Comments Close", value: frontmatter.comments_close_date });
+  }
+}
+
 if ((isSection || !isTitle) && frontmatter.chapter_name) {
   const chapterLabel =
     frontmatter.chapter_number !== undefined
@@ -54,6 +76,12 @@ if (isSection && frontmatter.source_credit) {
 }
 if (frontmatter.authority) {
   fullWidthFields.push({ label: "Authority", value: frontmatter.authority });
+}
+if (frontmatter.docket_ids && frontmatter.docket_ids.length > 0) {
+  fullWidthFields.push({ label: "Docket IDs", value: frontmatter.docket_ids.join(", ") });
+}
+if (frontmatter.rin) {
+  fullWidthFields.push({ label: "RIN", value: frontmatter.rin });
 }
 
 const rawYamlBlock = rawYaml ? `---\n${rawYaml.trim()}\n---` : "";

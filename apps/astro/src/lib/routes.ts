@@ -1,6 +1,21 @@
 import type { SourceId, Granularity, ResolvedRoute, Breadcrumb } from "./types";
 import { getSource } from "./sources";
 
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
 /**
  * Resolve a source + slug array into a content path and metadata.
  * Returns null if the slug doesn't match expected patterns.
@@ -15,6 +30,11 @@ import { getSource } from "./sources";
  *   2 segments → chapter   (title-NN/chapter-X)
  *   3 segments → part      (title-NN/chapter-X/part-N)
  *   4 segments → section   (title-NN/chapter-X/part-N/section-N.N)
+ *
+ * FR:
+ *   1 segment  → year      (YYYY)
+ *   2 segments → month     (YYYY/MM)
+ *   3 segments → document  (YYYY/MM/document-number)
  */
 export function resolveRoute(sourceId: SourceId, slug: string[] | undefined): ResolvedRoute | null {
   if (!slug || slug.length === 0) return null;
@@ -24,11 +44,11 @@ export function resolveRoute(sourceId: SourceId, slug: string[] | undefined): Re
   if (!granularity) return null;
 
   // Validate each segment
-  for (const segment of slug) {
-    if (!isValidSegment(segment)) return null;
+  for (const [i, segment] of slug.entries()) {
+    if (!isValidSegment(segment, sourceId, i)) return null;
   }
 
-  const segments = parseSegments(slug);
+  const segments = parseSegments(slug, sourceId);
   const contentPath = buildContentPath(sourceId, granularity, slug);
   const highlightPath = contentPath.replace(/\.md$/, ".highlighted.html");
   const breadcrumbs = buildBreadcrumbs(sourceId, slug);
@@ -45,37 +65,56 @@ export function resolveRoute(sourceId: SourceId, slug: string[] | undefined): Re
   };
 }
 
-function isValidSegment(segment: string): boolean {
-  // Allow: title-NN, chapter-NN, chapter-IV, part-NNN, section-NNN.NNN, section-NNNa
-  // Block: .., /, \, null bytes
-  return (
-    /^(title|chapter|part|section)-[\w.-]+$/.test(segment) &&
-    !segment.includes("..") &&
-    !segment.includes("\0")
-  );
+function isValidSegment(segment: string, sourceId: SourceId, index: number): boolean {
+  if (segment.includes("..") || segment.includes("\0")) return false;
+
+  if (sourceId === "fr") {
+    if (index === 0) return /^\d{4}$/.test(segment);
+    if (index === 1) return /^\d{2}$/.test(segment);
+    if (index === 2) return /^\d{4}-\d{4,6}$/.test(segment);
+    return false;
+  }
+
+  // USC/eCFR: title-NN, chapter-NN, chapter-IV, part-NNN, section-NNN.NNN
+  return /^(title|chapter|part|section)-[\w.-]+$/.test(segment);
 }
 
 function buildContentPath(sourceId: SourceId, granularity: Granularity, slug: string[]): string {
-  // Path format: {source}/{granularity}s/{path}.md (source-first, plural granularity)
-  const granularityDir = `${granularity}s`; // section → sections, title → titles, etc.
+  // FR uses documents/ directory, not granularity-plural
+  if (sourceId === "fr") {
+    if (granularity === "document") {
+      return `fr/documents/${slug.join("/")}.md`;
+    }
+    // Year and month index pages have no content file
+    return `fr/documents/${slug.join("/")}/_index`;
+  }
+
+  // USC/eCFR: {source}/{granularity}s/{path}.md (source-first, plural granularity)
+  const granularityDir = `${granularity}s`;
   switch (granularity) {
     case "title":
-      // usc/titles/title-01.md
       return `${sourceId}/${granularityDir}/${slug[0]}.md`;
     case "chapter":
-      // usc/chapters/title-01/chapter-01/chapter-01.md (file inside its own dir)
       return `${sourceId}/${granularityDir}/${slug.join("/")}/${slug[slug.length - 1]}.md`;
     case "part":
-      // ecfr/parts/title-17/chapter-IV/part-240.md (file directly in parent dir)
       return `${sourceId}/${granularityDir}/${slug.join("/")}.md`;
     case "section":
-      // usc/sections/title-01/chapter-01/section-1.md (file directly in parent dir)
-      // ecfr/sections/title-17/chapter-IV/part-240/section-240.10b-5.md (same pattern)
+      return `${sourceId}/${granularityDir}/${slug.join("/")}.md`;
+    default:
       return `${sourceId}/${granularityDir}/${slug.join("/")}.md`;
   }
 }
 
-function parseSegments(slug: string[]): Record<string, string> {
+function parseSegments(slug: string[], sourceId: SourceId): Record<string, string> {
+  if (sourceId === "fr") {
+    const segments: Record<string, string> = {};
+    if (slug[0]) segments["year"] = slug[0];
+    if (slug[1]) segments["month"] = slug[1];
+    if (slug[2]) segments["document"] = slug[2];
+    return segments;
+  }
+
+  // USC/eCFR: key by prefix (title, chapter, part, section)
   const segments: Record<string, string> = {};
   for (const s of slug) {
     const prefix = s.split("-")[0];
@@ -89,15 +128,16 @@ function buildBreadcrumbs(sourceId: SourceId, slug: string[]): Breadcrumb[] {
   const crumbs: Breadcrumb[] = [{ label: source.shortName, href: source.basePath }];
 
   let path = source.basePath;
-  for (const segment of slug) {
+  for (const [i, segment] of slug.entries()) {
     path = `${path}/${segment}`;
-    crumbs.push({ label: formatSegmentLabel(segment), href: path });
+    const label = sourceId === "fr" ? formatFrSegmentLabel(segment, i) : formatSegmentLabel(segment);
+    crumbs.push({ label, href: path });
   }
 
   return crumbs;
 }
 
-/** Format a slug segment into a readable label. */
+/** Format a USC/eCFR slug segment into a readable label. */
 function formatSegmentLabel(segment: string): string {
   const [prefix, ...rest] = segment.split("-");
   const value = rest.join("-");
@@ -114,4 +154,19 @@ function formatSegmentLabel(segment: string): string {
     default:
       return segment;
   }
+}
+
+/** Format an FR slug segment into a readable label. */
+function formatFrSegmentLabel(segment: string, index: number): string {
+  if (index === 0) return segment; // Year: "2026"
+  if (index === 1) {
+    const monthNum = parseInt(segment, 10);
+    return MONTH_NAMES[monthNum - 1] ?? segment; // "03" → "March"
+  }
+  return segment; // Document number: "2026-04000"
+}
+
+/** Get month name from 1-based month number. Exported for use in FR pages. */
+export function getMonthName(month: number): string {
+  return MONTH_NAMES[month - 1] ?? String(month);
 }

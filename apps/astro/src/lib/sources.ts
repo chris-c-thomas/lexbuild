@@ -12,6 +12,7 @@ export const SOURCES: Record<SourceId, SourceConfig> = {
     titleCount: 54,
     chapterCount: 2883,
     sectionCount: 60215,
+    hasSidebar: true,
     slugGranularity: { 1: "title", 2: "chapter", 3: "section" },
   },
   ecfr: {
@@ -26,7 +27,23 @@ export const SOURCES: Record<SourceId, SourceConfig> = {
     chapterCount: 453,
     sectionCount: 227479,
     partCount: 8305,
+    hasSidebar: true,
     slugGranularity: { 1: "title", 2: "chapter", 3: "part", 4: "section" },
+  },
+  fr: {
+    id: "fr",
+    name: "Federal Register",
+    shortName: "FR",
+    description:
+      "The daily journal of the United States Government containing rules, proposed rules, notices, and presidential documents.",
+    basePath: "/fr",
+    granularities: ["document"],
+    hierarchy: ["year", "month", "document"],
+    titleCount: 0,
+    chapterCount: 0,
+    sectionCount: 0,
+    hasSidebar: false,
+    slugGranularity: { 1: "year", 2: "month", 3: "document" },
   },
 };
 
