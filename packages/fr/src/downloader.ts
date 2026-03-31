@@ -328,6 +328,7 @@ async function downloadSingleDocument(
     throw new Error(
       `Failed to write XML for document ${doc.document_number} from ${doc.full_text_xml_url}: ` +
         `${err instanceof Error ? err.message : String(err)}`,
+      { cause: err },
     );
   }
 
@@ -392,6 +393,7 @@ async function fetchWithRetry(url: string, attempt = 0): Promise<Response> {
     }
     throw new Error(
       `Network error after ${MAX_RETRIES + 1} attempts for ${url}: ${err instanceof Error ? err.message : String(err)}`,
+      { cause: err },
     );
   }
 

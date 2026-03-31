@@ -284,6 +284,7 @@ async function discoverXmlFiles(
   } catch (err) {
     throw new Error(
       `Cannot access input path "${input}": ${err instanceof Error ? err.message : String(err)}`,
+      { cause: err },
     );
   }
 
