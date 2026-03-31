@@ -60,6 +60,7 @@ interface SearchDocument {
   hierarchy: string[];
   url: string;
   document_type?: string;
+  publication_date?: string;
 }
 
 interface UscTitleMeta {
@@ -425,6 +426,7 @@ async function indexFrIncremental(
             body,
             status: docType,
             document_type: docType,
+            publication_date: pubDate || undefined,
             hierarchy: [
               yearDir,
               pubDate || `${yearDir}-${monthDir}`,
@@ -507,9 +509,10 @@ async function configureIndex(client: Meilisearch): Promise<void> {
       "granularity",
       "status",
       "document_type",
+      "publication_date",
     ]),
   );
-  await wait(await index.updateSortableAttributes(["title_number", "identifier"]));
+  await wait(await index.updateSortableAttributes(["title_number", "identifier", "publication_date"]));
   await wait(
     await index.updateDisplayedAttributes([
       "id",
@@ -522,6 +525,7 @@ async function configureIndex(client: Meilisearch): Promise<void> {
       "hierarchy",
       "url",
       "document_type",
+      "publication_date",
     ]),
   );
   await wait(
