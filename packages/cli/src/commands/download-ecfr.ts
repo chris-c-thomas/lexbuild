@@ -171,9 +171,9 @@ async function downloadFromGovinfo(
     titles,
     onProgress: ({ current, total, titleNumber }) => {
       if (total === 1) {
-        spinner.text = `Downloading eCFR Title ${titleNumber} from govinfo...`;
+        spinner.text = `Downloading eCFR Title ${titleNumber} from govinfo`;
       } else {
-        spinner.text = `Downloading eCFR titles from govinfo (${current}/${total}) — Title ${titleNumber}...`;
+        spinner.text = `Downloading eCFR titles from govinfo (${current}/${total}) — Title ${titleNumber}`;
       }
     },
   });
@@ -229,9 +229,9 @@ async function downloadFromApi(
     titlesMeta: meta,
     onProgress: ({ current, total, titleNumber }) => {
       if (total === 1) {
-        spinner.text = `Downloading eCFR Title ${titleNumber} from eCFR API...`;
+        spinner.text = `Downloading eCFR Title ${titleNumber} from eCFR API`;
       } else {
-        spinner.text = `Downloading eCFR titles from eCFR API (${current}/${total}) — Title ${titleNumber}...`;
+        spinner.text = `Downloading eCFR titles from eCFR API (${current}/${total}) — Title ${titleNumber}`;
       }
     },
   });

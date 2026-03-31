@@ -96,13 +96,13 @@ Source: https://uscode.house.gov/download/download.shtml`,
         releasePoint,
         onProgress: ({ current, total, titleNumber, phase }) => {
           if (phase === "extracting") {
-            spinner.text = `Extracting USC titles (${current}/${total}) — Title ${titleNumber}...`;
+            spinner.text = `Extracting USC titles (${current}/${total}) — Title ${titleNumber}`;
           } else if (total === 1) {
-            spinner.text = `Downloading USC Title ${titleNumber}...`;
+            spinner.text = `Downloading USC Title ${titleNumber}`;
           } else if (current === 0) {
-            spinner.text = "Downloading USC bulk archive...";
+            spinner.text = "Downloading USC bulk archive";
           } else {
-            spinner.text = `Downloading USC titles (${current}/${total}) — Title ${titleNumber}...`;
+            spinner.text = `Downloading USC titles (${current}/${total}) — Title ${titleNumber}`;
           }
         },
       });
