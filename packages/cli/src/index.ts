@@ -7,6 +7,8 @@ import { downloadUscCommand } from "./commands/download-usc.js";
 import { listReleasePointsCommand } from "./commands/list-release-points.js";
 import { convertEcfrCommand } from "./commands/convert-ecfr.js";
 import { downloadEcfrCommand } from "./commands/download-ecfr.js";
+import { downloadFrCommand } from "./commands/download-fr.js";
+import { convertFrCommand } from "./commands/convert-fr.js";
 import { error } from "./ui.js";
 
 const require = createRequire(import.meta.url);
@@ -31,6 +33,10 @@ Quick start (eCFR):
   $ lexbuild convert-ecfr --all          Convert all downloaded eCFR titles
   $ lexbuild convert-ecfr --titles 17    Convert eCFR Title 17 only
 
+Quick start (Federal Register):
+  $ lexbuild download-fr --recent 30     Download last 30 days of FR documents
+  $ lexbuild convert-fr --all            Convert all downloaded FR documents
+
 Documentation: https://github.com/chris-c-thomas/LexBuild`,
   );
 
@@ -40,6 +46,8 @@ program.addCommand(convertUscCommand);
 program.addCommand(listReleasePointsCommand);
 program.addCommand(downloadEcfrCommand);
 program.addCommand(convertEcfrCommand);
+program.addCommand(downloadFrCommand);
+program.addCommand(convertFrCommand);
 
 // Bare "download" and "convert" stubs — guide users to source-specific commands
 program.addCommand(
@@ -51,6 +59,7 @@ program.addCommand(
       console.error(error("Please specify a source:\n"));
       console.error("  lexbuild download-usc     Download U.S. Code XML from OLRC");
       console.error("  lexbuild download-ecfr    Download eCFR XML from govinfo");
+      console.error("  lexbuild download-fr      Download Federal Register XML from federalregister.gov");
       console.error("");
       process.exit(1);
     }),
@@ -65,6 +74,7 @@ program.addCommand(
       console.error(error("Please specify a source:\n"));
       console.error("  lexbuild convert-usc      Convert U.S. Code XML to Markdown");
       console.error("  lexbuild convert-ecfr     Convert eCFR XML to Markdown");
+      console.error("  lexbuild convert-fr       Convert Federal Register XML to Markdown");
       console.error("");
       process.exit(1);
     }),

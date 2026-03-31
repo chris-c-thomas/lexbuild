@@ -1,0 +1,40 @@
+<RULE>
+  <PREAMB>
+    <AGENCY TYPE="F">SECURITIES AND EXCHANGE COMMISSION</AGENCY>
+    <SUBAGY>Division of Trading and Markets</SUBAGY>
+    <CFR>17 CFR Part 240</CFR>
+    <RIN>RIN 3235-AM00</RIN>
+    <SUBJECT>Amendments to Exchange Act Rule 10b-5</SUBJECT>
+    <AGY>
+      <HD SOURCE="HED">AGENCY:</HD>
+      <P>Securities and Exchange Commission.</P>
+    </AGY>
+    <ACT>
+      <HD SOURCE="HED">ACTION:</HD>
+      <P>Final rule.</P>
+    </ACT>
+    <SUM>
+      <HD SOURCE="HED">SUMMARY:</HD>
+      <P>The Commission is adopting amendments to Rule 10b-5 under the Securities Exchange Act of 1934.</P>
+    </SUM>
+    <DATES>
+      <HD SOURCE="HED">DATES:</HD>
+      <P><E T="03">Effective date:</E> March 30, 2026.</P>
+    </DATES>
+  </PREAMB>
+  <SUPLINF>
+    <HD SOURCE="HED">SUPPLEMENTARY INFORMATION:</HD>
+    <HD SOURCE="HD1">I. Background</HD>
+    <P>The Securities Exchange Act of 1934 governs the trading of securities.</P>
+    <P>Section 10(b) of the Exchange Act makes it unlawful to use <I>any manipulative or deceptive device</I>.</P>
+    <HD SOURCE="HD1">II. Discussion</HD>
+    <P>The Commission has determined that these amendments are necessary.</P>
+  </SUPLINF>
+  <SIG>
+    <DATED>March 25, 2026.</DATED>
+    <NAME>Jane Smith,</NAME>
+    <TITLE>Chair.</TITLE>
+  </SIG>
+  <FRDOC>[FR Doc. 2026-06029 Filed 3-27-26; 8:45 am]</FRDOC>
+  <BILCOD>BILLING CODE 8011-01-P</BILCOD>
+</RULE>

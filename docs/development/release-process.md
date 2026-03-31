@@ -1,6 +1,6 @@
 # Release Process
 
-LexBuild uses [Changesets](https://github.com/changesets/changesets) for versioning and GitHub Actions for automated npm releases. All four published packages (`@lexbuild/core`, `@lexbuild/usc`, `@lexbuild/ecfr`, `@lexbuild/cli`) are versioned in lockstep -- when any package gets a version bump, all four move to the same version number.
+LexBuild uses [Changesets](https://github.com/changesets/changesets) for versioning and GitHub Actions for automated npm releases. All five published packages (`@lexbuild/core`, `@lexbuild/usc`, `@lexbuild/ecfr`, `@lexbuild/fr`, `@lexbuild/cli`) are versioned in lockstep -- when any package gets a version bump, all five move to the same version number.
 
 ## Lockstep Versioning
 
@@ -8,11 +8,11 @@ Lockstep versioning is configured via the `fixed` array in `.changeset/config.js
 
 ```json
 {
-  "fixed": [["@lexbuild/core", "@lexbuild/usc", "@lexbuild/ecfr", "@lexbuild/cli"]]
+  "fixed": [["@lexbuild/core", "@lexbuild/usc", "@lexbuild/ecfr", "@lexbuild/fr", "@lexbuild/cli"]]
 }
 ```
 
-This means a changeset targeting any one of these packages causes all four to receive the same version bump. The Astro web app is excluded from versioning entirely -- it is listed in the `ignore` array and marked `"private": true`.
+This means a changeset targeting any one of these packages causes all five to receive the same version bump. The Astro web app is excluded from versioning entirely -- it is listed in the `ignore` array and marked `"private": true`.
 
 ## Creating a Changeset
 
@@ -60,7 +60,7 @@ Standard GitHub merge. The changeset file is now on `main`.
 
 The [Publish pipeline](ci-cd.md) runs on every push to `main`. When it finds unreleased changeset files, it runs `pnpm version-packages` (`changeset version`), which:
 
-- Bumps versions in all four `package.json` files (lockstep)
+- Bumps versions in all five `package.json` files (lockstep)
 - Updates `CHANGELOG.md` in each package
 - Consumes (deletes) the `.changeset/*.md` files
 
@@ -74,7 +74,7 @@ Review the version bumps and changelog entries, then merge. This puts the update
 
 ### 7. Publish to npm
 
-The Publish workflow runs again on the merge commit. With no changeset files remaining, it enters publish mode: `pnpm release` (`changeset publish`) publishes all four packages to npm with provenance attestation.
+The Publish workflow runs again on the merge commit. With no changeset files remaining, it enters publish mode: `pnpm release` (`changeset publish`) publishes all five packages to npm with provenance attestation.
 
 ## Workspace Protocol
 
@@ -98,7 +98,7 @@ The full `.changeset/config.json`:
 
 | Setting | Value | Purpose |
 |---------|-------|---------|
-| `fixed` | `[["@lexbuild/core", "@lexbuild/usc", "@lexbuild/ecfr", "@lexbuild/cli"]]` | Lockstep versioning across all published packages |
+| `fixed` | `[["@lexbuild/core", "@lexbuild/usc", "@lexbuild/ecfr", "@lexbuild/fr", "@lexbuild/cli"]]` | Lockstep versioning across all published packages |
 | `access` | `"public"` | Publish as public npm packages |
 | `baseBranch` | `"main"` | Compare changesets against `main` |
 | `commit` | `false` | The GitHub Action handles commits, not the CLI |

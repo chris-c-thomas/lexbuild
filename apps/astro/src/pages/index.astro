@@ -348,7 +348,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           <!-- CLI depends on core -->
           <div class="pipeline-depends pipeline-depends-cli" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pipeline-depends-arrow"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></svg>
-            <span class="pipeline-depends-label">depends on</span>
+            <span class="pipeline-depends-label">CLI depends on</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pipeline-depends-arrow"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></svg>
           </div>
           <div class="pipeline-flow">
@@ -414,9 +414,9 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
               </div>
               <!-- Dependency connector -->
               <div class="pipeline-depends" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pipeline-depends-arrow"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></svg>
-                <span class="pipeline-depends-label">used by</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pipeline-depends-arrow"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pipeline-depends-arrow"><path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path></svg>
+                <span class="pipeline-depends-label">parsers use</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pipeline-depends-arrow"><path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path></svg>
               </div>
               <div class="pipeline-stage-label">Source Parsers</div>
               <div class="pipeline-source-stack">

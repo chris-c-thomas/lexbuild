@@ -1,0 +1,151 @@
+# CLAUDE.md — @lexbuild/fr
+
+## Package Overview
+
+`@lexbuild/fr` converts Federal Register XML to structured Markdown. It depends on `@lexbuild/core` for XML parsing, AST types, and Markdown rendering. The FR uses GPO/SGML-derived XML — the same format family as eCFR but with a flat, document-centric structure instead of hierarchical titles/sections.
+
+## Module Structure
+
+```
+src/
+├── index.ts                 # Barrel exports
+├── fr-elements.ts           # FR XML element classification (~92 elements) + FrDocumentType
+├── fr-builder.ts            # SAX → AST state machine for FR XML
+├── fr-builder.test.ts       # 16 unit tests
+├── fr-frontmatter.ts        # Build FrontmatterData from FR context + API JSON
+├── fr-frontmatter.test.ts   # 27 unit tests
+├── fr-path.ts               # Output path builder (date-based)
+├── fr-path.test.ts          # 8 unit tests
+├── converter.ts             # Conversion orchestrator
+├── converter.test.ts        # 6 integration tests
+└── downloader.ts            # FederalRegister.gov API client
+```
+
+## Public API
+
+| Export | Type | Purpose |
+|--------|------|---------|
+| `convertFrDocuments()` | Function | Convert FR XML files to Markdown |
+| `downloadFrDocuments()` | Function | Download FR documents by date range |
+| `downloadSingleFrDocument()` | Function | Download a single document by number |
+| `buildFrApiListUrl()` | Function | Build API listing URL |
+| `buildFrFrontmatter()` | Function | Build FrontmatterData from node + JSON |
+| `buildFrOutputPath()` | Function | Build output file path |
+| `FrASTBuilder` | Class | SAX→AST builder for FR XML |
+| Element classification sets | Constants | `FR_DOCUMENT_ELEMENTS`, etc. |
+
+## FR XML Schema
+
+**Source**: FederalRegister.gov API — `https://www.federalregister.gov/api/v1/`
+
+Per-document XML + rich JSON metadata. No authentication required. ~28k-31k documents/year, ~750K total with XML (2000-present).
+
+**Format**: GPO/SGML-derived XML, no namespace. Schema: `FRMergedXML.xsd`.
+
+### Document Structure
+
+Individual document XML (from API):
+```xml
+<RULE>
+  <PREAMB>
+    <AGENCY TYPE="F">SECURITIES AND EXCHANGE COMMISSION</AGENCY>
+    <SUBAGY>Division of Trading and Markets</SUBAGY>
+    <CFR>17 CFR Part 240</CFR>
+    <RIN>RIN 3235-AM00</RIN>
+    <SUBJECT>Amendments to Rule 10b-5</SUBJECT>
+    <AGY><HD SOURCE="HED">AGENCY:</HD><P>SEC.</P></AGY>
+    <ACT><HD SOURCE="HED">ACTION:</HD><P>Final rule.</P></ACT>
+    <SUM><HD SOURCE="HED">SUMMARY:</HD><P>...</P></SUM>
+    <DATES><HD SOURCE="HED">DATES:</HD><P>...</P></DATES>
+    <ADD>...</ADD>
+    <FURINF>...</FURINF>
+  </PREAMB>
+  <SUPLINF>
+    <HD SOURCE="HED">SUPPLEMENTARY INFORMATION:</HD>
+    <HD SOURCE="HD1">I. Background</HD>
+    <P>...</P>
+    <REGTEXT TITLE="17" PART="240">
+      <AMDPAR>1. Amend § 240.10b-5...</AMDPAR>
+    </REGTEXT>
+  </SUPLINF>
+  <SIG><DATED>...</DATED><NAME>...</NAME><TITLE>...</TITLE></SIG>
+  <FRDOC>[FR Doc. 2026-06029 Filed 3-27-26; 8:45 am]</FRDOC>
+  <BILCOD>BILLING CODE 8011-01-P</BILCOD>
+</RULE>
+```
+
+### Document Types
+
+| Element | Type | Annual Volume |
+|---------|------|--------------|
+| `RULE` | Final rules | ~3,000-3,200 |
+| `PRORULE` | Proposed rules | ~1,700-2,100 |
+| `NOTICE` | Notices | ~22,000-25,000 |
+| `PRESDOCU` | Presidential documents | ~300-470 |
+
+### Key Differences from eCFR
+
+1. **Flat, document-centric** — no DIV hierarchy, each document self-contained
+2. **Temporal corpus** — ever-growing historical record, not current-state snapshot
+3. **Dual ingestion** — JSON metadata (40+ fields from API) + XML body
+4. **GPOTABLE** — FR uses GPOTABLE format (BOXHD/CHED/ROW/ENT), not HTML tables
+5. **Shared inline formatting** — same `E T="nn"` emphasis, SU, FTNT as eCFR
+
+## Conversion Pipeline
+
+```
+FR XML → [XMLParser(defaultNamespace: "")] → SAX events
+  → [FrASTBuilder] → emitted document nodes (one per RULE/NOTICE/etc.)
+  → Load JSON sidecar (if present) for rich metadata
+  → [buildFrFrontmatter] → FrontmatterData from XML meta + JSON meta
+  → [renderDocument] → Markdown + YAML frontmatter
+  → Write to output/fr/{YYYY}/{MM}/{document_number}.md
+```
+
+## Output Structure
+
+```
+output/fr/
+├── 2026/
+│   ├── 01/
+│   │   └── 2026-00123.md
+│   └── 03/
+│       └── 2026-06029.md
+└── 2025/
+    └── ...
+```
+
+## Download URLs
+
+**FederalRegister.gov API (primary)**:
+```
+GET /documents.json?conditions[publication_date][gte]=...&conditions[publication_date][lte]=...
+GET /documents/{number}.json
+GET /documents/{number}/full_text/xml
+```
+
+No API key required. Auto-chunks by month for large date ranges (10K result cap).
+
+## Frontmatter Fields
+
+FR documents include all standard fields plus:
+- `source: "fr"`
+- `legal_status: "authoritative_unofficial"`
+- `title_number: 0` (FR documents don't belong to a USC/CFR title)
+- `title_name: "Federal Register"`
+- `document_number` — FR document number
+- `document_type` — rule, proposed_rule, notice, presidential_document
+- `fr_citation` — e.g., "91 FR 14523"
+- `fr_volume` — volume number
+- `publication_date` — YYYY-MM-DD
+- `agencies` — list of agency names
+- `cfr_references` — affected CFR titles/parts
+- `docket_ids` — docket numbers
+- `rin` — Regulation Identifier Number
+- `effective_date`, `comments_close_date`, `fr_action`
+
+## Dependency on @lexbuild/core
+
+Imports: `XMLParser`, `LevelNode`, `EmitContext`, `renderDocument`, `createLinkResolver`, `writeFile`, `mkdir`, `FORMAT_VERSION`, `GENERATOR`.
+
+Does NOT import from `@lexbuild/usc` or `@lexbuild/ecfr`. Source packages are independent. Element classification (emphasis maps, etc.) is duplicated per package boundary rules.

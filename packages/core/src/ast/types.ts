@@ -284,9 +284,8 @@ export type LegalStatus =
   | "authoritative_unofficial"; // eCFR-sourced content
 
 /** Discriminator for content source */
-export type SourceType = "usc" | "ecfr";
-// Future additions: "cfr" (annual edition), "fr" (Federal Register),
-// "state-il" (Illinois statutes), etc.
+export type SourceType = "usc" | "ecfr" | "fr";
+// Future additions: "cfr" (annual edition), "state-il" (Illinois statutes), etc.
 
 /** Data used to generate YAML frontmatter for a section file */
 export interface FrontmatterData {
@@ -349,4 +348,31 @@ export interface FrontmatterData {
   cfr_subpart?: string | undefined;
   /** Number of parts (title-level granularity only, eCFR) */
   part_count?: number | undefined;
+
+  // --- FR-specific optional fields ---
+
+  /** FR: document number (e.g., "2026-06029") */
+  document_number?: string | undefined;
+  /** FR: document type (rule, proposed_rule, notice, presidential_document) */
+  document_type?: string | undefined;
+  /** FR: full citation (e.g., "91 FR 14523") */
+  fr_citation?: string | undefined;
+  /** FR: volume number */
+  fr_volume?: number | undefined;
+  /** FR: publication date (YYYY-MM-DD) */
+  publication_date?: string | undefined;
+  /** FR: publishing/responsible agencies */
+  agencies?: string[] | undefined;
+  /** FR: CFR title/part references */
+  cfr_references?: string[] | undefined;
+  /** FR: docket identifiers */
+  docket_ids?: string[] | undefined;
+  /** FR: Regulation Identifier Number */
+  rin?: string | undefined;
+  /** FR: effective date of rule */
+  effective_date?: string | undefined;
+  /** FR: comment period closing date */
+  comments_close_date?: string | undefined;
+  /** FR: action description (e.g., "Final rule") */
+  fr_action?: string | undefined;
 }

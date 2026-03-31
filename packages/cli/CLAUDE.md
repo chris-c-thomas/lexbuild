@@ -16,7 +16,9 @@ src/
     ├── convert-usc.ts          # lexbuild convert-usc command
     ├── list-release-points.ts  # lexbuild list-release-points command
     ├── download-ecfr.ts        # lexbuild download-ecfr command
-    └── convert-ecfr.ts         # lexbuild convert-ecfr command
+    ├── convert-ecfr.ts         # lexbuild convert-ecfr command
+    ├── download-fr.ts          # lexbuild download-fr command
+    └── convert-fr.ts           # lexbuild convert-fr command
 ```
 
 ## Commands
@@ -123,6 +125,45 @@ Options:
   -v, --verbose            Print detailed file output
 ```
 
+### `lexbuild download-fr`
+
+Downloads Federal Register documents (XML + JSON metadata) from the FederalRegister.gov API. Date-range based (not title-based like USC/eCFR).
+
+```
+Options:
+  --output <dir>           Default: "./downloads/fr"
+  --from <YYYY-MM-DD>      Start date (inclusive)
+  --to <YYYY-MM-DD>        End date (inclusive, defaults to today)
+  --types <types>          Document types: rule, proposed_rule, notice, presidential_document
+  --recent <days>          Convenience: download last N days
+  --document <number>      Single document mode (e.g., 2026-06029)
+  --limit <n>              Maximum documents (for testing)
+```
+
+Requires `--from`, `--recent`, or `--document`. Auto-chunks date ranges by month to stay under the API's 10,000 result cap. Downloads both `.xml` and `.json` per document.
+
+### `lexbuild convert-fr`
+
+Converts downloaded FR XML to Markdown. Reads JSON sidecar files for enriched frontmatter.
+
+```
+Arguments:
+  [input]                  Path to single FR XML file (optional)
+
+Options:
+  --output <dir>           Default: "./output"
+  --input-dir <dir>        Default: "./downloads/fr"
+  --all                    Convert all downloaded documents
+  --from <YYYY-MM-DD>      Filter: start date
+  --to <YYYY-MM-DD>        Filter: end date
+  --types <types>          Filter: document types
+  --link-style             relative | canonical | plaintext (default: plaintext)
+  --dry-run                Parse only, no files written
+  -v, --verbose            Print detailed file output
+```
+
+No `--granularity` option — FR documents are already atomic (one file per document). No `--titles` option — FR is date-based, not title-based.
+
 ### Bare `download` / `convert`
 
 Running `lexbuild download` or `lexbuild convert` without a source suffix prints an error listing available source-specific commands and exits with code 1.
@@ -153,7 +194,7 @@ Validates range 1–`maxTitle` (default 54 for USC, 50 for eCFR), rejects floats
 
 - **tsup**: ESM output with `#!/usr/bin/env node` shebang banner injected at build time
 - **Binary**: `"lexbuild": "./dist/index.js"` in package.json `bin` field
-- **Dependencies**: `commander`, `chalk`, `ora`, `cli-table3` for CLI; `@lexbuild/core`, `@lexbuild/usc`, and `@lexbuild/ecfr` via `workspace:*`
+- **Dependencies**: `commander`, `chalk`, `ora`, `cli-table3` for CLI; `@lexbuild/core`, `@lexbuild/usc`, `@lexbuild/ecfr`, and `@lexbuild/fr` via `workspace:*`
 
 ## Error Handling
 

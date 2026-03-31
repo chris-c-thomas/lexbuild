@@ -13,6 +13,8 @@ The CLI uses a `{action}-{source}` naming pattern for download and convert comma
 | `list-release-points` | List available OLRC release points for the U.S. Code |
 | `download-ecfr` | Download eCFR XML from ecfr.gov or govinfo |
 | `convert-ecfr` | Convert eCFR XML to Markdown |
+| `download-fr` | Download Federal Register XML and metadata from federalregister.gov |
+| `convert-fr` | Convert Federal Register XML to Markdown |
 
 Bare `download` and `convert` commands (without a source suffix) display an error prompting you to specify a source.
 
@@ -344,6 +346,111 @@ lexbuild convert-ecfr --all --dry-run
 
 ---
 
+## download-fr
+
+Download Federal Register documents (XML full text and JSON metadata) from the FederalRegister.gov API.
+
+```
+lexbuild download-fr [options]
+```
+
+### Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `-o, --output <dir>` | `./downloads/fr` | Download directory |
+| `--from <YYYY-MM-DD>` | -- | Start date (inclusive) |
+| `--to <YYYY-MM-DD>` | today | End date (inclusive) |
+| `--types <types>` | all | Document types: `rule`, `proposed_rule`, `notice`, `presidential_document` |
+| `--recent <days>` | -- | Download last N days (convenience shorthand) |
+| `--document <number>` | -- | Download a single document by number |
+| `--limit <n>` | -- | Maximum number of documents (for testing) |
+
+Requires one of `--from`, `--recent`, or `--document`.
+
+Unlike USC and eCFR, the Federal Register is organized by date rather than by title. The downloader fetches both a `.json` metadata sidecar and a `.xml` full text file per document. Large date ranges are automatically chunked by month to stay under the API's 10,000-result cap per query.
+
+No API key is required. Documents before January 2000 have JSON metadata but no XML full text and are skipped during download.
+
+### Examples
+
+```bash
+# Download last 30 days of documents
+lexbuild download-fr --recent 30
+
+# Download a specific date range
+lexbuild download-fr --from 2026-01-01 --to 2026-03-31
+
+# Download only final rules
+lexbuild download-fr --from 2026-01-01 --types rule
+
+# Download rules and proposed rules
+lexbuild download-fr --from 2026-01-01 --types rule,proposed_rule
+
+# Download a single document by number
+lexbuild download-fr --document 2026-06029
+
+# Limit download for testing
+lexbuild download-fr --from 2026-03-01 --limit 10
+```
+
+---
+
+## convert-fr
+
+Convert Federal Register XML files to Markdown.
+
+```
+lexbuild convert-fr [input] [options]
+```
+
+### Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `-o, --output <dir>` | `./output` | Output directory |
+| `-i, --input-dir <dir>` | `./downloads/fr` | Directory containing downloaded FR files |
+| `--all` | `false` | Convert all downloaded documents found in `--input-dir` |
+| `--from <YYYY-MM-DD>` | -- | Filter: start date |
+| `--to <YYYY-MM-DD>` | -- | Filter: end date |
+| `--types <types>` | all | Filter: document types |
+| `--link-style <style>` | `plaintext` | Link style: `plaintext`, `relative`, or `canonical` |
+| `--dry-run` | `false` | Parse and report without writing files |
+| `-v, --verbose` | `false` | Print detailed file output |
+
+### Input Modes
+
+| Mode | Usage | Description |
+|------|-------|-------------|
+| Positional argument | `lexbuild convert-fr ./path/to/doc.xml` | Convert a single XML file |
+| `--all` | `lexbuild convert-fr --all` | Discover and convert all XML files in `--input-dir` |
+| `--from` | `lexbuild convert-fr --from 2026-01-01` | Filter by date range within `--input-dir` |
+
+No `--granularity` option -- FR documents are already atomic (one file per document). No `--titles` option -- the Federal Register is date-based, not title-based.
+
+When a `.json` sidecar file exists alongside the `.xml` (same basename), frontmatter is enriched with structured agency, CFR reference, docket, and date information from the API.
+
+### Examples
+
+```bash
+# Convert all downloaded documents
+lexbuild convert-fr --all
+
+# Convert a specific date range
+lexbuild convert-fr --from 2026-01-01 --to 2026-03-31
+
+# Convert only rules
+lexbuild convert-fr --all --types rule
+
+# Convert a single file
+lexbuild convert-fr ./downloads/fr/2026/03/2026-06029.xml -o ./output
+
+# Dry run
+lexbuild convert-fr --all --dry-run
+```
+
+---
+
 ## Combined Workflows
 
 Full pipeline examples for downloading and converting from both sources.
@@ -363,9 +470,14 @@ lexbuild convert-usc --titles 1-5 -o ./output
 lexbuild download-ecfr --titles 1-5
 lexbuild convert-ecfr --titles 1-5 -o ./output
 
-# Convert both sources with relative cross-reference links
+# Full FR pipeline (recent documents)
+lexbuild download-fr --recent 30
+lexbuild convert-fr --all -o ./output
+
+# Convert all sources with relative cross-reference links
 lexbuild convert-usc --all --link-style relative -o ./output
 lexbuild convert-ecfr --all --link-style relative -o ./output
+lexbuild convert-fr --all --link-style relative -o ./output
 
 # Browse prior release points and download a specific one
 lexbuild list-release-points -n 10
@@ -378,8 +490,9 @@ The `-o` flag specifies the output root. The converter appends source subdirecto
 
 - `convert-usc -o /path` writes to `/path/usc/...`
 - `convert-ecfr -o /path` writes to `/path/ecfr/...`
+- `convert-fr -o /path` writes to `/path/fr/...`
 
-This means both converters can safely target the same output root without conflicts.
+This means all converters can safely target the same output root without conflicts.
 
 ### USC Output Paths
 
@@ -397,6 +510,14 @@ This means both converters can safely target the same output root without confli
 | Part | `{output}/ecfr/title-{NN}/chapter-{X}/part-{N}.md` |
 | Chapter | `{output}/ecfr/title-{NN}/chapter-{X}.md` |
 | Title | `{output}/ecfr/title-{NN}.md` |
+
+### FR Output Paths
+
+| Path Pattern |
+|-------------|
+| `{output}/fr/{YYYY}/{MM}/{document_number}.md` |
+
+FR documents are organized by publication date. Example: `{output}/fr/2026/03/2026-06029.md`. No granularity options -- FR documents are always one file per document.
 
 Title directories use zero-padded two-digit numbers (`title-01`). USC chapter directories are zero-padded (`chapter-01`). eCFR chapter directories use Roman numerals (`chapter-I`, `chapter-IV`). Section numbers are not zero-padded and may contain alphanumeric characters (e.g., `section-240.10b-5.md`).
 

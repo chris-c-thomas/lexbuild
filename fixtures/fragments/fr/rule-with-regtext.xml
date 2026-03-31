@@ -1,0 +1,39 @@
+<RULE>
+  <PREAMB>
+    <AGENCY TYPE="F">FEDERAL AVIATION ADMINISTRATION</AGENCY>
+    <CFR>14 CFR Part 71</CFR>
+    <SUBJECT>Amendment of Class D Airspace; Teterboro, NJ</SUBJECT>
+    <AGY>
+      <HD SOURCE="HED">AGENCY:</HD>
+      <P>Federal Aviation Administration (FAA), DOT.</P>
+    </AGY>
+    <ACT>
+      <HD SOURCE="HED">ACTION:</HD>
+      <P>Final rule.</P>
+    </ACT>
+  </PREAMB>
+  <SUPLINF>
+    <HD SOURCE="HED">SUPPLEMENTARY INFORMATION:</HD>
+    <P>The FAA is amending Class D airspace.</P>
+    <LSTSUB>
+      <HD SOURCE="HED">List of Subjects in 14 CFR Part 71</HD>
+      <P>Airspace, Incorporation by reference, Navigation (air).</P>
+    </LSTSUB>
+    <REGTEXT TITLE="14" PART="71">
+      <AMDPAR>1. The authority citation for part 71 continues to read as follows:</AMDPAR>
+      <AUTH>
+        <HD SOURCE="HED">Authority:</HD>
+        <P>49 U.S.C. 106(f), 106(g); 40103, 40113, 40120.</P>
+      </AUTH>
+    </REGTEXT>
+    <REGTEXT TITLE="14" PART="71">
+      <AMDPAR>2. The incorporation by reference in 14 CFR 71.1 is amended as follows:</AMDPAR>
+      <SECTION>
+        <SECTNO>71.1</SECTNO>
+        <P>Class D airspace is amended for Teterboro Airport.</P>
+      </SECTION>
+    </REGTEXT>
+  </SUPLINF>
+  <FRDOC>[FR Doc. 2026-06086 Filed 3-27-26; 8:45 am]</FRDOC>
+  <BILCOD>BILLING CODE 4910-13-P</BILCOD>
+</RULE>

@@ -4,7 +4,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/chris-c-thomas/LexBuild/ci.yml?style=for-the-badge&label=CI)](https://github.com/chris-c-thomas/LexBuild/actions/workflows/ci.yml)
 [![license](https://img.shields.io/github/license/chris-c-thomas/LexBuild?style=for-the-badge)](https://github.com/chris-c-thomas/LexBuild/blob/main/LICENSE)
 
-Download and convert U.S. legal XML into structured Markdown optimized for AI, RAG pipelines, and semantic search. Supports the [U.S. Code](https://uscode.house.gov/) (54 titles, 60,000+ sections) and the [eCFR](https://www.ecfr.gov/) (50 titles, 200,000+ sections).
+Download and convert U.S. legal XML into structured Markdown optimized for AI, RAG pipelines, and semantic search. Supports the [U.S. Code](https://uscode.house.gov/) (54 titles, 60,000+ sections), the [eCFR](https://www.ecfr.gov/) (50 titles, 200,000+ sections), and the [Federal Register](https://www.federalregister.gov/) (~30,000 documents/year).
 
 ## Install
 
@@ -27,9 +27,14 @@ lexbuild convert-usc --all
 lexbuild download-ecfr --all
 lexbuild convert-ecfr --all
 
-# Start small — a single title
+# Federal Register — download and convert recent documents
+lexbuild download-fr --recent 30
+lexbuild convert-fr --all
+
+# Start small — a single title or document
 lexbuild download-usc --titles 1 && lexbuild convert-usc --titles 1
 lexbuild download-ecfr --titles 17 && lexbuild convert-ecfr --titles 17
+lexbuild download-fr --document 2026-06029 && lexbuild convert-fr --all
 ```
 
 ## Commands
@@ -140,6 +145,50 @@ lexbuild convert-ecfr ./downloads/ecfr/xml/ECFR-title17.xml  # Direct file path
 | `--dry-run` | — | Parse and report without writing |
 | `-v, --verbose` | — | Verbose file output |
 
+### `download-fr`
+
+Download Federal Register XML and metadata from the FederalRegister.gov API.
+
+```bash
+lexbuild download-fr --recent 30                                    # Last 30 days
+lexbuild download-fr --from 2026-01-01 --to 2026-03-31              # Date range
+lexbuild download-fr --from 2026-01-01 --types rule,proposed_rule   # Filter by type
+lexbuild download-fr --document 2026-06029                          # Single document
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--from <YYYY-MM-DD>` | — | Start date (inclusive) |
+| `--to <YYYY-MM-DD>` | today | End date (inclusive) |
+| `--recent <days>` | — | Download last N days |
+| `--document <number>` | — | Download single document by number |
+| `-o, --output <dir>` | `./downloads/fr` | Output directory |
+| `--types` | all | `rule`, `proposed_rule`, `notice`, `presidential_document` |
+| `--limit <n>` | — | Max documents (for testing) |
+
+### `convert-fr`
+
+Convert downloaded FR XML to Markdown.
+
+```bash
+lexbuild convert-fr --all                                           # All downloaded documents
+lexbuild convert-fr --from 2026-01-01 --to 2026-03-31               # Filter by date range
+lexbuild convert-fr --all --types rule                               # Filter by type
+lexbuild convert-fr ./downloads/fr/2026/03/2026-06029.xml           # Single file
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--all` | — | Convert all documents in input directory |
+| `--from <YYYY-MM-DD>` | — | Filter start date |
+| `--to <YYYY-MM-DD>` | — | Filter end date |
+| `-i, --input-dir <dir>` | `./downloads/fr` | Input directory |
+| `-o, --output <dir>` | `./output` | Output directory |
+| `--types` | all | Filter by document type |
+| `--link-style` | `plaintext` | `plaintext`, `canonical`, or `relative` |
+| `--dry-run` | — | Parse and report without writing |
+| `-v, --verbose` | — | Verbose file output |
+
 ## Output Structure
 
 ### U.S. Code
@@ -159,6 +208,14 @@ lexbuild convert-ecfr ./downloads/ecfr/xml/ECFR-title17.xml  # Direct file path
 | `chapter` | `output/ecfr/title-17/chapter-IV/chapter-IV.md` |
 | `title` | `output/ecfr/title-17.md` |
 
+### Federal Register
+
+| Example Path |
+|---|
+| `output/fr/2026/03/2026-06029.md` |
+
+FR documents are atomic — one file per document, organized by year and month. No granularity options.
+
 Every file includes YAML frontmatter with source metadata (`source`, `legal_status`, identifier, hierarchy context) followed by the legal text in Markdown. Section and chapter/part granularities generate `_meta.json` sidecar files and `README.md` summaries per title.
 
 ## Performance
@@ -172,7 +229,7 @@ The full U.S. Code — all 54 titles, 60,000+ sections, ~85 million estimated to
 
 ## Monorepo Context
 
-This is the published CLI for the [LexBuild](https://github.com/chris-c-thomas/LexBuild) monorepo. It depends on [`@lexbuild/core`](https://www.npmjs.com/package/@lexbuild/core), [`@lexbuild/usc`](https://www.npmjs.com/package/@lexbuild/usc), and [`@lexbuild/ecfr`](https://www.npmjs.com/package/@lexbuild/ecfr) for all conversion and download logic.
+This is the published CLI for the [LexBuild](https://github.com/chris-c-thomas/LexBuild) monorepo. It depends on [`@lexbuild/core`](https://www.npmjs.com/package/@lexbuild/core), [`@lexbuild/usc`](https://www.npmjs.com/package/@lexbuild/usc), [`@lexbuild/ecfr`](https://www.npmjs.com/package/@lexbuild/ecfr), and [`@lexbuild/fr`](https://www.npmjs.com/package/@lexbuild/fr) for all conversion and download logic.
 
 ```bash
 pnpm turbo build --filter=@lexbuild/cli
@@ -186,6 +243,7 @@ pnpm turbo typecheck --filter=@lexbuild/cli
 | [`@lexbuild/core`](https://www.npmjs.com/package/@lexbuild/core) | Shared parsing, AST, and rendering infrastructure |
 | [`@lexbuild/usc`](https://www.npmjs.com/package/@lexbuild/usc) | U.S. Code converter — programmatic API |
 | [`@lexbuild/ecfr`](https://www.npmjs.com/package/@lexbuild/ecfr) | eCFR converter — programmatic API |
+| [`@lexbuild/fr`](https://www.npmjs.com/package/@lexbuild/fr) | Federal Register converter — programmatic API |
 
 ## License
 

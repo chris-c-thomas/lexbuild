@@ -115,6 +115,44 @@ export function generateFrontmatter(data: FrontmatterData): string {
     fm["cfr_subpart"] = data.cfr_subpart;
   }
 
+  // FR-specific optional fields
+  if (data.document_number !== undefined) {
+    fm["document_number"] = data.document_number;
+  }
+  if (data.document_type !== undefined) {
+    fm["document_type"] = data.document_type;
+  }
+  if (data.fr_citation !== undefined) {
+    fm["fr_citation"] = data.fr_citation;
+  }
+  if (data.fr_volume !== undefined) {
+    fm["fr_volume"] = data.fr_volume;
+  }
+  if (data.publication_date !== undefined) {
+    fm["publication_date"] = data.publication_date;
+  }
+  if (data.agencies !== undefined) {
+    fm["agencies"] = data.agencies;
+  }
+  if (data.cfr_references !== undefined) {
+    fm["cfr_references"] = data.cfr_references;
+  }
+  if (data.docket_ids !== undefined) {
+    fm["docket_ids"] = data.docket_ids;
+  }
+  if (data.rin !== undefined) {
+    fm["rin"] = data.rin;
+  }
+  if (data.effective_date !== undefined) {
+    fm["effective_date"] = data.effective_date;
+  }
+  if (data.comments_close_date !== undefined) {
+    fm["comments_close_date"] = data.comments_close_date;
+  }
+  if (data.fr_action !== undefined) {
+    fm["fr_action"] = data.fr_action;
+  }
+
   const yamlStr = stringify(fm, {
     lineWidth: 0, // Don't wrap long lines
     defaultStringType: "QUOTE_DOUBLE",

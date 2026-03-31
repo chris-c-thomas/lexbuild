@@ -31,7 +31,7 @@ export default tseslint.config(
         "error",
         {
           patterns: [
-            { group: ["@lexbuild/usc", "@lexbuild/ecfr", "@lexbuild/cli"], message: "core must not import from source packages" },
+            { group: ["@lexbuild/usc", "@lexbuild/ecfr", "@lexbuild/fr", "@lexbuild/cli"], message: "core must not import from source packages" },
           ],
         },
       ],
@@ -44,7 +44,7 @@ export default tseslint.config(
         "error",
         {
           patterns: [
-            { group: ["@lexbuild/ecfr", "@lexbuild/cli"], message: "source packages must not import from each other" },
+            { group: ["@lexbuild/ecfr", "@lexbuild/fr", "@lexbuild/cli"], message: "source packages must not import from each other" },
           ],
         },
       ],
@@ -57,7 +57,20 @@ export default tseslint.config(
         "error",
         {
           patterns: [
-            { group: ["@lexbuild/usc", "@lexbuild/cli"], message: "source packages must not import from each other" },
+            { group: ["@lexbuild/usc", "@lexbuild/fr", "@lexbuild/cli"], message: "source packages must not import from each other" },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["packages/fr/src/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            { group: ["@lexbuild/usc", "@lexbuild/ecfr", "@lexbuild/cli"], message: "source packages must not import from each other" },
           ],
         },
       ],

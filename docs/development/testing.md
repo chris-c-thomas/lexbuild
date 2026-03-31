@@ -27,6 +27,7 @@ The `globals: false` setting means all Vitest functions (`describe`, `it`, `expe
 | `pnpm turbo test --filter=@lexbuild/core` | Core package only |
 | `pnpm turbo test --filter=@lexbuild/usc` | USC package only |
 | `pnpm turbo test --filter=@lexbuild/ecfr` | eCFR package only |
+| `pnpm turbo test --filter=@lexbuild/fr` | FR package only |
 | `pnpm turbo test --filter=@lexbuild/cli` | CLI package only |
 
 To run a single test file or use watch mode, `cd` into the package directory:
@@ -105,6 +106,14 @@ eCFR-specific fixtures live in `fixtures/fragments/ecfr/`:
 | `appendix.xml` | Appendix structure |
 | `title-structure.xml` | Full title/chapter/part/section hierarchy |
 
+FR-specific fixtures live in `fixtures/fragments/fr/`:
+
+| Fixture | Tests |
+|---|---|
+| `simple-rule.xml` | Basic RULE document with preamble and SUPLINF |
+| `notice.xml` | NOTICE document type parsing |
+| `rule-with-regtext.xml` | REGTEXT amendment paragraphs and CFR labels |
+
 ### `fixtures/expected/` -- Pinned Output
 
 Expected Markdown output for snapshot comparison. Each file corresponds to a test case:
@@ -130,11 +139,12 @@ Expected Markdown output for snapshot comparison. Each file corresponds to a tes
 
 ### `downloads/` -- Full XML Files (Gitignored)
 
-Full title XML files downloaded via the CLI. These are not committed to the repository due to their size (approximately 650 MB for all USC titles, 830 MB for all eCFR titles). Download them locally when needed for integration testing:
+Full source files downloaded via the CLI. These are not committed to the repository due to their size (approximately 650 MB for all USC titles, 830 MB for all eCFR titles, ~600 MB/year for FR). Download them locally when needed for integration testing:
 
 ```bash
 node packages/cli/dist/index.js download-usc --all
 node packages/cli/dist/index.js download-ecfr --all
+node packages/cli/dist/index.js download-fr --recent 30
 ```
 
 ## Snapshot Tests

@@ -115,6 +115,24 @@ output/ecfr/
 └── ...
 ```
 
+### FR Output
+
+Federal Register documents produce one file per document, organized by publication date:
+
+```
+output/fr/
+├── 2026/
+│   ├── 01/
+│   │   └── 2026-00123.md
+│   └── 03/
+│       ├── 2026-06029.md
+│       └── 2026-06048.md
+└── 2025/
+    └── ...
+```
+
+No granularity options — FR documents are already atomic (one file per document).
+
 ### Naming Conventions
 
 | Component | Pattern | Examples | Notes |
@@ -128,6 +146,9 @@ output/ecfr/
 | Section file (USC) | `section-{ID}.md` | `section-1.md`, `section-7801.md`, `section-202a.md` | Not zero-padded; may be alphanumeric |
 | Section file (eCFR) | `section-{N.N}.md` | `section-1.1.md`, `section-240.10b-5.md` | Part-prefixed section number |
 | Duplicate sections | `section-{ID}-2.md` | `section-3598-2.md` | USC only; `-2`, `-3` suffix for subsequent occurrences |
+| Year dir (FR) | `{YYYY}` | `2026` | 4-digit year |
+| Month dir (FR) | `{MM}` | `01`, `03` | 2-digit zero-padded month |
+| Document file (FR) | `{doc_number}.md` | `2026-06029.md` | FR document number |
 
 ## Frontmatter Schema
 
@@ -140,7 +161,7 @@ Every file, regardless of source or granularity, includes these fields:
 | Field | Type | Description |
 |-------|------|-------------|
 | `identifier` | `string` | Canonical URI identifier (e.g., `"/us/usc/t1/s1"`, `"/us/cfr/t17/s240.10b-5"`) |
-| `source` | `string` | Content source: `"usc"` or `"ecfr"` |
+| `source` | `string` | Content source: `"usc"`, `"ecfr"`, or `"fr"` |
 | `legal_status` | `string` | Legal provenance (see [Legal Status Values](#legal-status-values)) |
 | `title` | `string` | Human-readable display title |
 | `title_number` | `number` | Numeric title designation |
@@ -227,6 +248,59 @@ eCFR-specific optional fields:
 | `cfr_subpart` | `string` | CFR subpart identifier |
 | `source_credit` | `string` | Citation for the section (from `CITA` element) |
 
+### FR Document-Level Frontmatter
+
+FR documents include all common fields plus FR-specific metadata. When a JSON sidecar from the API is available, frontmatter is enriched with structured agency, CFR reference, docket, and date information:
+
+```yaml
+---
+identifier: "/us/fr/2026-06029"
+source: "fr"
+legal_status: "authoritative_unofficial"
+title: "Amendments to Exchange Act Rule 10b-5"
+title_number: 0
+title_name: "Federal Register"
+section_number: "2026-06029"
+section_name: "Amendments to Exchange Act Rule 10b-5"
+positive_law: false
+currency: "2026-03-28"
+last_updated: "2026-03-28"
+format_version: "1.1.0"
+generator: "lexbuild@1.5.0"
+document_number: "2026-06029"
+document_type: "rule"
+fr_citation: "91 FR 14523"
+fr_volume: 91
+publication_date: "2026-03-28"
+agencies:
+  - "Securities and Exchange Commission"
+cfr_references:
+  - "17 CFR Part 240"
+docket_ids:
+  - "Release No. 34-99999"
+rin: "3235-AM00"
+effective_date: "2026-05-27"
+fr_action: "Final rule."
+---
+```
+
+FR-specific optional fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `document_number` | `string` | FR document number (e.g., `"2026-06029"`) |
+| `document_type` | `string` | Normalized type: `"rule"`, `"proposed_rule"`, `"notice"`, `"presidential_document"` |
+| `fr_citation` | `string` | Full FR citation (e.g., `"91 FR 14523"`) |
+| `fr_volume` | `number` | FR volume number |
+| `publication_date` | `string` | Publication date (`YYYY-MM-DD`) |
+| `agencies` | `string[]` | Issuing agency names |
+| `cfr_references` | `string[]` | Affected CFR titles/parts |
+| `docket_ids` | `string[]` | Docket identifiers |
+| `rin` | `string` | Regulation Identifier Number |
+| `effective_date` | `string` | When the rule takes effect |
+| `comments_close_date` | `string` | Comment period end date (proposed rules) |
+| `fr_action` | `string` | Action description (e.g., `"Final rule."`) |
+
 ### Title-Level Enriched Frontmatter
 
 Title granularity files include aggregate statistics instead of section/chapter context fields:
@@ -263,7 +337,7 @@ total_token_estimate: 12500
 |-------|---------|------------|
 | `official_legal_evidence` | Positive law titles; the text itself is legal evidence | USC titles enacted as positive law |
 | `official_prima_facie` | Non-positive law titles; prima facie evidence of the law | USC titles not enacted as positive law |
-| `authoritative_unofficial` | Authoritative but not official; derived from official sources | All eCFR content |
+| `authoritative_unofficial` | Authoritative but not official; derived from official sources | All eCFR and FR content |
 
 ### Identifier Format
 
@@ -286,6 +360,12 @@ CFR identifiers are constructed from eCFR XML attributes and use `/us/cfr/` (con
 ```
 
 Both eCFR and future annual CFR sources share the `/us/cfr/` identifier space.
+
+FR identifiers use document numbers (unique, stable, API primary key):
+
+```
+/us/fr/{document_number}           Document level
+```
 
 ## Content Structure
 
@@ -495,6 +575,7 @@ USC references link to the OLRC website (uscode.house.gov):
 |-------------------|-------------|
 | `/us/usc/` | Relative link when resolved; otherwise OLRC fallback URL |
 | `/us/cfr/` | Relative link when resolved; otherwise plain text |
+| `/us/fr/` | Relative link when resolved; otherwise federalregister.gov fallback URL |
 | `/us/stat/` | Always plain text (Statutes at Large) |
 | `/us/pl/` | Always plain text (Public Law) |
 
@@ -722,7 +803,7 @@ When indexing section-level files into a vector database, extract these frontmat
 | Field | Purpose |
 |-------|---------|
 | `identifier` | Unique key; stable across conversions of the same source data |
-| `source` | Filter by corpus (`"usc"` vs `"ecfr"`) |
+| `source` | Filter by corpus (`"usc"`, `"ecfr"`, or `"fr"`) |
 | `title_number` | Filter by title |
 | `section_number` | Section-level lookup |
 | `legal_status` | Filter by legal authority level |

@@ -117,7 +117,7 @@ The following table summarizes all tasks:
 
 ## tsup Configuration
 
-All four packages use tsup for bundling. The library packages (`core`, `usc`, `ecfr`) share an identical configuration:
+All five packages use tsup for bundling. The library packages (`core`, `usc`, `ecfr`, `fr`) share an identical configuration:
 
 ```typescript
 import { defineConfig } from "tsup";
@@ -192,7 +192,7 @@ The app has no code dependency on `@lexbuild/core`, `@lexbuild/usc`, or `@lexbui
 
 Running `pnpm turbo dev` starts tsup in watch mode for all library packages simultaneously. File changes trigger incremental rebuilds:
 
-- A change in `packages/core/src/` triggers a core rebuild, which cascades to `usc`, `ecfr`, and `cli` as they detect updated output in core's `dist/`.
+- A change in `packages/core/src/` triggers a core rebuild, which cascades to `usc`, `ecfr`, `fr`, and `cli` as they detect updated output in core's `dist/`.
 - A change in `packages/usc/src/` triggers only a `usc` rebuild and downstream `cli` rebuild.
 
 ## Turborepo Caching
@@ -203,9 +203,10 @@ Cache invalidation follows the dependency graph:
 
 | Change location | Packages invalidated |
 |-----------------|---------------------|
-| `packages/core/` | core, usc, ecfr, cli |
+| `packages/core/` | core, usc, ecfr, fr, cli |
 | `packages/usc/` | usc, cli |
 | `packages/ecfr/` | ecfr, cli |
+| `packages/fr/` | fr, cli |
 | `packages/cli/` | cli only |
 
 Lint task caches are independent of the build graph. A source change invalidates the lint cache only for the package containing the change, regardless of dependency relationships.

@@ -2,7 +2,7 @@
 
 ## Package Overview
 
-`@lexbuild/core` is the foundational package of the LexBuild monorepo. It provides XML parsing, AST types/builder, Markdown rendering, frontmatter generation, and cross-reference link resolution. All source-specific packages (`@lexbuild/usc`, `@lexbuild/ecfr`) depend on core.
+`@lexbuild/core` is the foundational package of the LexBuild monorepo. It provides XML parsing, AST types/builder, Markdown rendering, frontmatter generation, and cross-reference link resolution. All source-specific packages (`@lexbuild/usc`, `@lexbuild/ecfr`, `@lexbuild/fr`) depend on core.
 
 ## Module Structure
 
@@ -98,18 +98,21 @@ Cross-heading notes (`<note role="crossHeading">`) act as category markers insid
 
 ### Link Resolution
 
-`links.ts` provides a `LinkResolver` with register/resolve/fallback. Supports both `/us/usc/` and `/us/cfr/` identifier schemes:
+`links.ts` provides a `LinkResolver` with register/resolve/fallback. Supports `/us/usc/`, `/us/cfr/`, and `/us/fr/` identifier schemes:
 1. Exact identifier match in registry → relative path
 2. Strip subsection path, try section-level → relative path
 3. USC not found → OLRC fallback URL (`uscode.house.gov/view.xhtml?req=granuleid:...`)
 4. CFR not found → eCFR fallback URL (`ecfr.gov/current/title-N/section-N`)
-5. Non-USC/CFR refs (stat, pl, act) → always plaintext
+5. FR not found → FederalRegister.gov fallback URL (`federalregister.gov/d/{doc_number}`)
+6. Non-USC/CFR/FR refs (stat, pl, act) → always plaintext
 
 ## Frontmatter
 
 `frontmatter.ts` generates ordered YAML using the `yaml` package. Field order is controlled manually. `FORMAT_VERSION` (`"1.1.0"`) and `GENERATOR` (read from package.json) are exported constants.
 
 The `FrontmatterData` interface includes required `source` (`SourceType`) and `legal_status` (`LegalStatus`) fields, plus optional source-specific fields (`authority`, `regulatory_source`, `cfr_part`, etc.) that are included when defined.
+
+`SourceType` is `"usc" | "ecfr" | "fr"`. FR-specific optional fields on `FrontmatterData`: `document_number`, `document_type`, `fr_citation`, `fr_volume`, `publication_date`, `agencies` (string[]), `cfr_references` (string[]), `docket_ids` (string[]), `rin`, `effective_date`, `comments_close_date`, `fr_action`.
 
 ## Implementation Details
 

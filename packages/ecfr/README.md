@@ -189,6 +189,7 @@ pnpm turbo test --filter=@lexbuild/ecfr
 | [`@lexbuild/cli`](https://www.npmjs.com/package/@lexbuild/cli) | CLI tool — the easiest way to use LexBuild |
 | [`@lexbuild/core`](https://www.npmjs.com/package/@lexbuild/core) | Shared parsing, AST, and rendering infrastructure |
 | [`@lexbuild/usc`](https://www.npmjs.com/package/@lexbuild/usc) | U.S. Code (USLM XML) converter |
+| [`@lexbuild/fr`](https://www.npmjs.com/package/@lexbuild/fr) | Federal Register converter |
 
 ## License
 

@@ -58,6 +58,7 @@
   },
   "dependencies": {
     "@lexbuild/ecfr": "workspace:*",
+    "@lexbuild/fr": "workspace:*",
     "@lexbuild/usc": "workspace:*",
     "chalk": "^5.6.2",
     "cli-table3": "^0.6.5",

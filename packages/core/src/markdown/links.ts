@@ -27,10 +27,23 @@ export interface ParsedIdentifier {
  * Handles:
  * - USC: /us/usc/t{N}, /us/usc/t{N}/s{N}, /us/usc/t{N}/s{N}/{sub}
  * - CFR: /us/cfr/t{N}, /us/cfr/t{N}/s{N}
+ * - FR: /us/fr/{document_number}
  *
- * Returns null for non-USC/CFR identifiers (stat, pl, act).
+ * Returns null for non-USC/CFR/FR identifiers (stat, pl, act).
  */
 export function parseIdentifier(identifier: string): ParsedIdentifier | null {
+  // FR: /us/fr/{document_number}
+  const frMatch = /^\/(\w+)\/(fr)\/([^/]+)$/.exec(identifier);
+  if (frMatch) {
+    return {
+      jurisdiction: frMatch[1] ?? "",
+      code: "fr",
+      titleNum: undefined,
+      sectionNum: frMatch[3],
+      subPath: undefined,
+    };
+  }
+
   // Match: /us/{code}/t{title}[/s{section}[/subpath]]
   const match = /^\/(\w+)\/(\w+)\/t(\w+)(?:\/s([^/]+)(?:\/(.+))?)?$/.exec(identifier);
   if (!match) return null;
@@ -122,6 +135,13 @@ export function createLinkResolver(): LinkResolver {
         }
         if (parsed.titleNum) {
           return `https://www.ecfr.gov/current/title-${parsed.titleNum}`;
+        }
+      }
+
+      // FR: link to federalregister.gov
+      if (parsed.code === "fr") {
+        if (parsed.sectionNum) {
+          return `https://www.federalregister.gov/d/${parsed.sectionNum}`;
         }
       }
 
