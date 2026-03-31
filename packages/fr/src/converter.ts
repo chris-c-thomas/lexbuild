@@ -329,13 +329,24 @@ async function walkDir(dir: string, results: string[]): Promise<void> {
 }
 
 /**
- * Infer a date string from the file path (e.g., "downloads/fr/2026/03/doc.xml" → "2026-03-01").
- * Used when no JSON sidecar is available.
+ * Infer a date string from the file path. Used when no JSON sidecar is available.
+ *
+ * Supports two patterns:
+ *   - Per-document: "downloads/fr/2026/03/doc.xml" → "2026-03-01"
+ *   - Govinfo bulk: "downloads/fr/bulk/2026/FR-2026-03-02.xml" → "2026-03-02"
  */
 function inferDateFromPath(filePath: string): string {
-  const match = /(\d{4})\/(\d{2})\/[^/]+\.xml$/.exec(filePath);
-  if (match) {
-    return `${match[1]}-${match[2]}-01`;
+  // Govinfo bulk: FR-YYYY-MM-DD.xml
+  const bulkMatch = /FR-(\d{4})-(\d{2})-(\d{2})\.xml$/.exec(filePath);
+  if (bulkMatch) {
+    return `${bulkMatch[1]}-${bulkMatch[2]}-${bulkMatch[3]}`;
   }
+
+  // Per-document: YYYY/MM/doc.xml
+  const perDocMatch = /(\d{4})\/(\d{2})\/[^/]+\.xml$/.exec(filePath);
+  if (perDocMatch) {
+    return `${perDocMatch[1]}-${perDocMatch[2]}-01`;
+  }
+
   return "";
 }
