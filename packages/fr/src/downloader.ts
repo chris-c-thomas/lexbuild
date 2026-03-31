@@ -290,6 +290,17 @@ async function downloadSingleDocument(
   outputDir: string,
   fetchDelay: number,
 ): Promise<FrDownloadedFile> {
+  if (!doc.document_number || !doc.publication_date) {
+    throw new Error(
+      `Invalid document in API response: missing document_number or publication_date`,
+    );
+  }
+  if (!doc.full_text_xml_url) {
+    throw new Error(
+      `Document ${doc.document_number} has no full_text_xml_url — cannot download XML`,
+    );
+  }
+
   const xmlPath = buildFrDownloadXmlPath(doc.document_number, doc.publication_date, outputDir);
   const jsonPath = buildFrDownloadJsonPath(doc.document_number, doc.publication_date, outputDir);
 
@@ -372,6 +383,10 @@ async function fetchWithRetry(url: string, attempt = 0): Promise<Response> {
     // Network-level error (DNS, TLS, connection reset) — retry
     if (attempt < MAX_RETRIES) {
       const delay = RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
+      console.warn(
+        `Network error for ${url}: ${err instanceof Error ? err.message : String(err)}. ` +
+          `Retrying in ${delay}ms (attempt ${attempt + 1}/${MAX_RETRIES})...`,
+      );
       await sleep(delay);
       return fetchWithRetry(url, attempt + 1);
     }
@@ -389,6 +404,9 @@ async function fetchWithRetry(url: string, attempt = 0): Promise<Response> {
     const delay = !isNaN(parsedRetry) && parsedRetry > 0
       ? parsedRetry * 1000
       : RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
+    console.warn(
+      `HTTP ${response.status} for ${url}. Retrying in ${delay}ms (attempt ${attempt + 1}/${MAX_RETRIES})...`,
+    );
     await sleep(delay);
     return fetchWithRetry(url, attempt + 1);
   }

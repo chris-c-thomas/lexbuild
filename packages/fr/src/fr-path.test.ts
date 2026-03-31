@@ -18,10 +18,9 @@ describe("buildFrOutputPath", () => {
     expect(result).toBe("/srv/output/fr/2025/01/2025-00123.md");
   });
 
-  it("produces degenerate path for empty date", () => {
-    // Empty string splits to [""], so year="" and month defaults to "00"
+  it("falls back to 0000/00 for empty date", () => {
     const result = buildFrOutputPath("2026-06029", "", "./output");
-    expect(result).toBe("output/fr/00/2026-06029.md");
+    expect(result).toBe("output/fr/0000/00/2026-06029.md");
   });
 
   it("falls back to 0000/00 for malformed date", () => {

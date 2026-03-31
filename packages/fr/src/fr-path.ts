@@ -82,7 +82,7 @@ export function buildYearDir(year: string, outputRoot: string): string {
 function parseDateComponents(date: string): { year: string; month: string } {
   const parts = date.split("-");
   return {
-    year: parts[0] ?? "0000",
-    month: parts[1] ?? "00",
+    year: parts[0] || "0000",
+    month: parts[1] || "00",
   };
 }

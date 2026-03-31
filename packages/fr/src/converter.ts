@@ -128,7 +128,14 @@ export async function convertFrDocuments(options: FrConvertOptions): Promise<FrC
   if (options.dryRun) {
     let count = 0;
     for (const [, collected] of parsedFiles) {
-      count += collected.length;
+      for (const doc of collected) {
+        if (options.types && options.types.length > 0) {
+          if (!FR_DOC_TYPE_SET.has(doc.xmlMeta.documentType) || !options.types.includes(doc.xmlMeta.documentType as FrDocumentType)) {
+            continue;
+          }
+        }
+        count++;
+      }
     }
     return {
       documentsConverted: count,
@@ -204,6 +211,12 @@ async function parseXmlFile(xmlPath: string): Promise<CollectedDoc[]> {
       // Snapshot metas at emit time
       const currentMetas = builder.getDocumentMetas();
       const meta = currentMetas[currentMetas.length - 1];
+      if (!meta) {
+        console.warn(
+          `Warning: No XML metadata extracted for emitted document in ${xmlPath}. ` +
+            `Frontmatter will have empty document_type and document_number.`,
+        );
+      }
       collected.push({
         node,
         context,
