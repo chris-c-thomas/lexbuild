@@ -1,5 +1,15 @@
 # @lexbuild/usc
 
+## 1.13.2
+
+### Patch Changes
+
+- cab1c2c: Add download progress indicators
+- f6d7281: fix: address PR review findings for download progress
+- Updated dependencies [cab1c2c]
+- Updated dependencies [f6d7281]
+  - @lexbuild/core@1.13.2
+
 ## 1.13.1
 
 ### Patch Changes

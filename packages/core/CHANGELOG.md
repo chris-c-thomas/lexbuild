@@ -1,5 +1,12 @@
 # @lexbuild/core
 
+## 1.13.2
+
+### Patch Changes
+
+- cab1c2c: Add download progress indicators
+- f6d7281: fix: address PR review findings for download progress
+
 ## 1.13.1
 
 ### Patch Changes
