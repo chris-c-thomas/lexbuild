@@ -9,7 +9,8 @@ The pipeline transforms legislative XML into structured Markdown through four st
 input.xml ──> [1. SAX Parser] ──> [2. AST Builder] ──> [3. Renderer] ──> [4. File Writer] ──> output/
               XMLParser/saxes      ASTBuilder (USLM)    Markdown +        writeFile/mkdir      source/
               namespace            EcfrASTBuilder         Frontmatter +                         title-NN/
-              normalization        (GPO/SGML)             Link Resolver                         .../section-N.md
+              normalization        FrASTBuilder           Link Resolver                         .../section-N.md
+                                   (GPO/SGML)
 ```
 
 Stage 1 is shared across all sources. Stage 2 is source-specific -- each XML format has its own builder that produces the same shared AST node types. Stage 3 (rendering) and Stage 4 (file writing) are source-agnostic; the renderer operates on the common AST, and file I/O uses the same resilient wrappers regardless of source.

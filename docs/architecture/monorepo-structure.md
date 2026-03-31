@@ -10,6 +10,7 @@ lexbuild/
 │   ├── core/                    # @lexbuild/core — XML parsing, AST, Markdown rendering
 │   ├── usc/                     # @lexbuild/usc — U.S. Code converter and downloader
 │   ├── ecfr/                    # @lexbuild/ecfr — eCFR converter and downloader
+│   ├── fr/                      # @lexbuild/fr — Federal Register converter and downloader
 │   └── cli/                     # @lexbuild/cli — CLI binary
 ├── apps/                        # Private applications (never published)
 │   └── astro/                   # Web app — Astro 6 SSR
@@ -19,7 +20,8 @@ lexbuild/
 ├── docs/                        # Project documentation
 ├── downloads/                   # Downloaded source data (gitignored)
 │   ├── usc/xml/                 # USC XML files (usc01.xml ... usc54.xml)
-│   └── ecfr/xml/                # eCFR XML files (ECFR-title1.xml ... ECFR-title50.xml)
+│   ├── ecfr/xml/                # eCFR XML files (ECFR-title1.xml ... ECFR-title50.xml)
+│   └── fr/                      # FR XML + JSON files (YYYY/MM/doc-number.xml/.json)
 ├── scripts/                     # Deployment and operations scripts
 ├── .changeset/                  # Changeset configuration and pending changesets
 ├── .github/                     # GitHub Actions CI/CD workflows

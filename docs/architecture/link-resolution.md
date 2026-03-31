@@ -1,8 +1,8 @@
 # Link Resolution
 
-LexBuild resolves cross-references embedded in legislative XML into Markdown links. The system handles both USC (`/us/usc/`) and CFR (`/us/cfr/`) identifier schemes with a priority chain that falls back to external URLs when a target has not been converted locally.
+LexBuild resolves cross-references embedded in legislative XML into Markdown links. The system handles USC (`/us/usc/`), CFR (`/us/cfr/`), and FR (`/us/fr/`) identifier schemes with a priority chain that falls back to external URLs when a target has not been converted locally.
 
-The implementation lives in `packages/core/src/markdown/links.ts` and is used by both the USC and eCFR converters during the write phase of the [conversion pipeline](./conversion-pipeline.md).
+The implementation lives in `packages/core/src/markdown/links.ts` and is used by the USC, eCFR, and FR converters during the write phase of the [conversion pipeline](./conversion-pipeline.md).
 
 ## Identifier Formats
 

@@ -41,8 +41,8 @@ LexBuild transforms this XML into per-section Markdown files with YAML frontmatt
 |--------|---------|------------|--------|--------|
 | U.S. Code | [`@lexbuild/usc`](packages/usc/) | USLM 1.0 | 54 | Stable |
 | eCFR (Code of Federal Regulations) | [`@lexbuild/ecfr`](packages/ecfr/) | GPO/SGML | 50 | Stable |
+| Federal Register | [`@lexbuild/fr`](packages/fr/) | GPO/SGML | ~30k docs/yr | Stable |
 | Annual CFR (official edition) | `@lexbuild/cfr` | GPO/SGML | 50 | Planned |
-| Federal Register | `@lexbuild/fr` | GPO/SGML variant | — | Planned |
 | State statutes | `@lexbuild/state-*` | Varies | — | Exploratory |
 
 ### Data Sources
@@ -52,6 +52,7 @@ LexBuild transforms this XML into per-section Markdown files with YAML frontmatt
 | **U.S. Code** | [uscode.house.gov](https://uscode.house.gov/download/download.shtml) (OLRC) | Multiple times/month | Release point auto-detected from OLRC download page |
 | **eCFR** (default) | [ecfr.gov API](https://www.ecfr.gov/api/versioner/v1/titles) | Daily | Point-in-time support via `--date` flag |
 | **eCFR** (fallback) | [govinfo.gov](https://www.govinfo.gov/bulkdata/ECFR) | Irregular | Bulk XML, updates per-title as regulations change |
+| **Federal Register** | [federalregister.gov API](https://www.federalregister.gov/developers/documentation/api/v1) | Daily | Per-document XML + JSON metadata, no auth required |
 
 ---
 
@@ -110,6 +111,23 @@ lexbuild download-ecfr --titles 17 && lexbuild convert-ecfr --titles 17
 
 # Point-in-time download (CFR as of a specific date)
 lexbuild download-ecfr --all --date 2025-01-01
+```
+
+### Federal Register
+
+```bash
+# Download and convert recent documents
+lexbuild download-fr --recent 30 && lexbuild convert-fr --all
+
+# Download a specific date range
+lexbuild download-fr --from 2026-01-01 --to 2026-03-31
+lexbuild convert-fr --all
+
+# Download only rules
+lexbuild download-fr --from 2026-01-01 --types rule
+
+# Download a single document
+lexbuild download-fr --document 2026-06029
 ```
 
 ---
@@ -222,6 +240,50 @@ lexbuild convert-ecfr ./downloads/ecfr/xml/ECFR-title17.xml  # Direct file path
 | `--dry-run` | — | Parse and report without writing |
 | `-v, --verbose` | — | Verbose output |
 
+### `download-fr`
+
+Fetch Federal Register XML and metadata from the FederalRegister.gov API.
+
+```bash
+lexbuild download-fr --recent 30                                    # Last 30 days
+lexbuild download-fr --from 2026-01-01 --to 2026-03-31              # Date range
+lexbuild download-fr --from 2026-01-01 --types rule                 # Only rules
+lexbuild download-fr --document 2026-06029                          # Single document
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--from <YYYY-MM-DD>` | — | Start date (inclusive) |
+| `--to <YYYY-MM-DD>` | today | End date (inclusive) |
+| `--recent <days>` | — | Download last N days |
+| `--document <number>` | — | Single document by number |
+| `-o, --output <dir>` | `./downloads/fr` | Output directory |
+| `--types` | all | `rule`, `proposed_rule`, `notice`, `presidential_document` |
+| `--limit <n>` | — | Max documents (for testing) |
+
+### `convert-fr`
+
+Convert downloaded FR XML to Markdown.
+
+```bash
+lexbuild convert-fr --all                                           # All downloaded documents
+lexbuild convert-fr --from 2026-01-01 --to 2026-03-31               # Filter by date range
+lexbuild convert-fr --all --types rule                               # Only rules
+lexbuild convert-fr ./downloads/fr/2026/03/2026-06029.xml           # Single file
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--all` | — | Convert all documents in input directory |
+| `--from <YYYY-MM-DD>` | — | Filter start date |
+| `--to <YYYY-MM-DD>` | — | Filter end date |
+| `-i, --input-dir <dir>` | `./downloads/fr` | Input directory |
+| `-o, --output <dir>` | `./output` | Output directory |
+| `--types` | all | Filter by document type |
+| `--link-style` | `plaintext` | `plaintext`, `canonical`, or `relative` |
+| `--dry-run` | — | Parse and report without writing |
+| `-v, --verbose` | — | Verbose output |
+
 ---
 
 ## Output
@@ -252,12 +314,22 @@ output/ecfr/
         section-240.10b-5.md
 ```
 
+**Federal Register**:
+```
+output/fr/
+  2026/
+    03/
+      2026-06029.md
+      _meta.json
+```
+
 All granularity levels:
 
 | Source | section | chapter/part | title |
 |--------|---------|-------------|-------|
 | USC | `title-01/chapter-01/section-1.md` | `title-01/chapter-01/chapter-01.md` | `title-01.md` |
 | eCFR | `title-17/chapter-IV/part-240/section-240.10b-5.md` | `title-17/chapter-IV/part-240.md` | `title-17.md` |
+| FR | `2026/03/2026-06029.md` | — | — |
 
 ### Frontmatter
 
@@ -300,7 +372,24 @@ cfr_part: "240"
 ---
 ```
 
-The `source` field discriminates content origin. The `legal_status` field indicates provenance: `"official_legal_evidence"` (positive law USC titles), `"official_prima_facie"` (non-positive law USC titles), or `"authoritative_unofficial"` (eCFR).
+**Federal Register:**
+```yaml
+---
+identifier: "/us/fr/2026-06029"
+source: "fr"
+legal_status: "authoritative_unofficial"
+title: "Meeting of the Advisory Board on Radiation and Worker Health"
+document_number: "2026-06029"
+document_type: "notice"
+fr_citation: "91 FR 15619"
+publication_date: "2026-03-30"
+agencies:
+  - "Health and Human Services Department"
+  - "Centers for Disease Control and Prevention"
+---
+```
+
+The `source` field discriminates content origin. The `legal_status` field indicates provenance: `"official_legal_evidence"` (positive law USC titles), `"official_prima_facie"` (non-positive law USC titles), or `"authoritative_unofficial"` (eCFR, FR).
 
 ### Metadata Indexes
 
@@ -361,6 +450,7 @@ lexbuild/
 │   ├── core/           # @lexbuild/core — XML parsing, AST, Markdown rendering
 │   ├── usc/            # @lexbuild/usc — U.S. Code converter and downloader
 │   ├── ecfr/           # @lexbuild/ecfr — eCFR converter and downloader
+│   ├── fr/             # @lexbuild/fr — Federal Register converter and downloader
 │   └── cli/            # @lexbuild/cli — CLI binary
 ├── apps/
 │   └── astro/          # LexBuild web app (lexbuild.dev)
@@ -378,12 +468,14 @@ lexbuild/
   │     └── @lexbuild/core
   ├── @lexbuild/ecfr
   │     └── @lexbuild/core
+  ├── @lexbuild/fr
+  │     └── @lexbuild/core
   └── @lexbuild/core
 
 apps/astro (no code deps — consumes output only)
 ```
 
-Source packages are independent — `@lexbuild/usc` and `@lexbuild/ecfr` never import from each other. Future source packages follow the same pattern.
+Source packages are independent — `@lexbuild/usc`, `@lexbuild/ecfr`, and `@lexbuild/fr` never import from each other. Future source packages follow the same pattern.
 
 All internal dependencies use pnpm's `workspace:*` protocol. [Changesets](https://github.com/changesets/changesets) manages lockstep versioning across all published packages.
 
@@ -397,6 +489,7 @@ All internal dependencies use pnpm's `workspace:*` protocol. [Changesets](https:
 | [`@lexbuild/core`](packages/core/) | [![npm](https://img.shields.io/npm/v/%40lexbuild%2Fcore)](https://www.npmjs.com/package/@lexbuild/core) | Shared XML parsing, AST, Markdown rendering |
 | [`@lexbuild/usc`](packages/usc/) | [![npm](https://img.shields.io/npm/v/%40lexbuild%2Fusc)](https://www.npmjs.com/package/@lexbuild/usc) | U.S. Code (USLM XML) converter and downloader |
 | [`@lexbuild/ecfr`](packages/ecfr/) | [![npm](https://img.shields.io/npm/v/%40lexbuild%2Fecfr)](https://www.npmjs.com/package/@lexbuild/ecfr) | eCFR converter and downloader (ecfr.gov API + govinfo) |
+| [`@lexbuild/fr`](packages/fr/) | [![npm](https://img.shields.io/npm/v/%40lexbuild%2Ffr)](https://www.npmjs.com/package/@lexbuild/fr) | Federal Register converter and downloader (federalregister.gov API) |
 
 Each package has its own README with full API documentation.
 
@@ -459,6 +552,8 @@ node packages/cli/dist/index.js download-usc --titles 1
 node packages/cli/dist/index.js convert-usc --titles 1
 node packages/cli/dist/index.js download-ecfr --titles 17
 node packages/cli/dist/index.js convert-ecfr --titles 17
+node packages/cli/dist/index.js download-fr --recent 7
+node packages/cli/dist/index.js convert-fr --all
 ```
 
 ### Web App Development

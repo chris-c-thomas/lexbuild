@@ -115,6 +115,26 @@ output/ecfr/
 └── ...
 ```
 
+### FR Output
+
+Federal Register documents produce one file per document, organized by publication date:
+
+```
+output/fr/
+├── 2026/
+│   ├── 01/
+│   │   ├── 2026-00123.md
+│   │   └── _meta.json
+│   ├── 03/
+│   │   ├── 2026-06029.md
+│   │   ├── 2026-06048.md
+│   │   └── _meta.json
+│   └── _meta.json
+└── _meta.json
+```
+
+No granularity options -- FR documents are already atomic. The `_meta.json` at each level lists documents with counts and token estimates.
+
 ### Naming Conventions
 
 | Component | Pattern | Examples | Notes |
@@ -128,6 +148,9 @@ output/ecfr/
 | Section file (USC) | `section-{ID}.md` | `section-1.md`, `section-7801.md`, `section-202a.md` | Not zero-padded; may be alphanumeric |
 | Section file (eCFR) | `section-{N.N}.md` | `section-1.1.md`, `section-240.10b-5.md` | Part-prefixed section number |
 | Duplicate sections | `section-{ID}-2.md` | `section-3598-2.md` | USC only; `-2`, `-3` suffix for subsequent occurrences |
+| Year dir (FR) | `{YYYY}` | `2026` | 4-digit year |
+| Month dir (FR) | `{MM}` | `01`, `03` | 2-digit zero-padded month |
+| Document file (FR) | `{doc_number}.md` | `2026-06029.md` | FR document number |
 
 ## Frontmatter Schema
 

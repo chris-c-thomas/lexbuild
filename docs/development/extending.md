@@ -1,6 +1,6 @@
 # Extending LexBuild
 
-LexBuild is designed as a platform for converting multiple legal source types into structured Markdown. It currently supports the U.S. Code (`@lexbuild/usc`) and the eCFR (`@lexbuild/ecfr`). The monorepo structure and shared `@lexbuild/core` package provide the foundation for adding new sources. The eCFR package validates this extensibility model as it was built from scratch with a completely different XML schema while reusing the core's entire rendering pipeline.
+LexBuild is designed as a platform for converting multiple legal source types into structured Markdown. It currently supports the U.S. Code (`@lexbuild/usc`), the eCFR (`@lexbuild/ecfr`), and the Federal Register (`@lexbuild/fr`). The monorepo structure and shared `@lexbuild/core` package provide the foundation for adding new sources. The eCFR and FR packages validate this extensibility model -- both were built from scratch with completely different XML schemas (hierarchical DIV-based eCFR vs flat document-centric FR) while reusing the core's entire rendering pipeline.
 
 ## Adding a New Source Package
 

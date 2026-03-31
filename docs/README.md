@@ -1,8 +1,8 @@
 # LexBuild Documentation
 
-LexBuild is an open-source platform that converts U.S. legal XML into structured Markdown optimized for AI ingestion, RAG pipelines, and semantic search. It currently processes two major federal legal corpora — the U.S. Code (54 titles, ~60,000 sections) and the electronic Code of Federal Regulations (49 titles, ~227,000 sections) — producing ~287,000 Markdown files with YAML frontmatter and JSON sidecar indexes in under two minutes. Implementing additional sources is planned.
+LexBuild is an open-source platform that converts U.S. legal XML into structured Markdown optimized for AI ingestion, RAG pipelines, and semantic search. It currently processes three major federal legal corpora — the U.S. Code (54 titles, ~60,000 sections), the electronic Code of Federal Regulations (49 titles, ~227,000 sections), and the Federal Register (~30,000 documents/year) — producing structured Markdown files with YAML frontmatter and JSON sidecar indexes. Additional sources are planned.
 
-The project is organized as a TypeScript monorepo with four published npm packages and a server-rendered web application.
+The project is organized as a TypeScript monorepo with five published npm packages and a server-rendered web application.
 
 ## Architecture
 
@@ -20,6 +20,7 @@ The project is organized as a TypeScript monorepo with four published npm packag
 - [@lexbuild/cli](packages/cli.md)
 - [@lexbuild/usc](packages/usc.md)
 - [@lexbuild/ecfr](packages/ecfr.md)
+- [@lexbuild/fr](packages/fr.md)
 
 ## Apps
 
@@ -41,4 +42,5 @@ The project is organized as a TypeScript monorepo with four published npm packag
 - [Output Format Specification](reference/output-format.md)
 - [USLM Element Reference](reference/uslm-element-reference.md)
 - [eCFR Element Reference](reference/ecfr-element-reference.md)
+- [FR Element Reference](reference/fr-element-reference.md)
 - [Glossary](reference/glossary.md)
