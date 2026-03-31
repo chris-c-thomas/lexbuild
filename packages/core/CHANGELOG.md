@@ -1,5 +1,11 @@
 # @lexbuild/core
 
+## 1.13.3
+
+### Patch Changes
+
+- a8b9cc1: Fix dependabot security vulnerabilities
+
 ## 1.13.2
 
 ### Patch Changes
