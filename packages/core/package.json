@@ -1,6 +1,6 @@
 {
   "name": "@lexbuild/core",
-  "version": "1.13.3",
+  "version": "1.14.0",
   "description": "Core AST definitions, parsing infrastructure, and format-agnostic renderers for the LexBuild ecosystem.",
   "author": "Chris Thomas",
   "license": "MIT",
