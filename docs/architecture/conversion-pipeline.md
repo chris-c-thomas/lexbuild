@@ -76,7 +76,17 @@ Source-specific builders consume parser events and produce the shared [AST node 
 
 **Emphasis mapping.** The `<E>` element uses a `T` attribute code to indicate formatting: `"01"` and `"03"` map to bold, `"02"` and `"04"` map to italic, `"51"`/`"52"` map to subscript.
 
-Both builders produce the same AST types (`LevelNode`, `ContentNode`, `InlineNode`, `NoteNode`, `TableNode`, etc.), so the rendering pipeline in Stage 3 works identically for both sources. See [AST Model](./ast-model.md) for the full node type reference.
+### FR Builder
+
+`FrASTBuilder` in `@lexbuild/fr` handles Federal Register GPO/SGML XML. It follows the same stack-based pattern as the eCFR builder but adapted for FR's flat, document-centric structure.
+
+**Document-level emission.** Each FR document element (`RULE`, `NOTICE`, `PRORULE`, `PRESDOCU`) is emitted as a single section-level `LevelNode`. There is no hierarchy within documents -- no granularity options are needed.
+
+**Preamble metadata extraction.** Metadata elements (`AGENCY`, `SUBAGY`, `CFR`, `SUBJECT`, `RIN`) are captured into `FrDocumentXmlMeta` during parsing and used to build frontmatter when no JSON sidecar is available.
+
+**Dual ingestion.** The converter enriches frontmatter with structured JSON metadata (40+ fields from the FederalRegister.gov API) when a `.json` sidecar file exists alongside the `.xml`.
+
+All three builders produce the same AST types (`LevelNode`, `ContentNode`, `InlineNode`, `NoteNode`, `TableNode`, etc.), so the rendering pipeline in Stage 3 works identically for all sources. See [AST Model](./ast-model.md) for the full node type reference.
 
 ## Stage 3: Markdown Rendering
 
@@ -97,18 +107,18 @@ The renderer (`@lexbuild/core`) is stateless and pure -- no side effects, no fil
 - `resolveLink` -- function injected by the converter to resolve identifiers to relative file paths
 - `notesFilter` -- selectively include/exclude editorial, statutory, and amendment notes
 
-**Cross-reference resolution.** The `LinkResolver` interface (in `@lexbuild/core`) provides a register/resolve/fallback pattern. During the first pass of section-granularity conversion, all section identifiers are registered with their output file paths. During the second pass (rendering), `resolveLink` queries the registry and computes relative paths. Unresolvable USC identifiers fall back to `uscode.house.gov` URLs; unresolvable CFR identifiers fall back to `ecfr.gov` URLs. Non-USC/CFR references (Statutes at Large, Public Laws) render as plain text. See [Link Resolution](./link-resolution.md) for details.
+**Cross-reference resolution.** The `LinkResolver` interface (in `@lexbuild/core`) provides a register/resolve/fallback pattern. During the first pass of section-granularity conversion, all section identifiers are registered with their output file paths. During the second pass (rendering), `resolveLink` queries the registry and computes relative paths. Unresolvable USC identifiers fall back to `uscode.house.gov` URLs; unresolvable CFR identifiers fall back to `ecfr.gov` URLs; unresolvable FR identifiers fall back to `federalregister.gov` URLs. Non-USC/CFR/FR references (Statutes at Large, Public Laws) render as plain text. See [Link Resolution](./link-resolution.md) for details.
 
-**Frontmatter generation.** `generateFrontmatter()` produces ordered YAML with `---` delimiters. Every file includes a `source` discriminator (`"usc"` or `"ecfr"`) and `legal_status` field. Source-specific optional fields (e.g., `authority`, `cfr_part` for eCFR) are included when defined.
+**Frontmatter generation.** `generateFrontmatter()` produces ordered YAML with `---` delimiters. Every file includes a `source` discriminator (`"usc"`, `"ecfr"`, or `"fr"`) and `legal_status` field. Source-specific optional fields (e.g., `authority`, `cfr_part` for eCFR; `document_number`, `agencies` for FR) are included when defined.
 
 ## Stage 4: File Writing
 
-Source packages (`@lexbuild/usc`, `@lexbuild/ecfr`) handle file writing. Both use the collect-then-write pattern described below. After Markdown files are written, sidecar metadata (`_meta.json` per directory, `README.md` per title) is generated for section-level granularity.
+Source packages (`@lexbuild/usc`, `@lexbuild/ecfr`, `@lexbuild/fr`) handle file writing. All use the collect-then-write pattern described below. After Markdown files are written, sidecar metadata (`_meta.json` per directory, `README.md` per title) is generated for section-level granularity (USC and eCFR only; FR does not generate `_meta.json`).
 
 **Resilient file I/O.** `@lexbuild/core` exports `writeFile` and `mkdir` wrappers that retry on `ENFILE`/`EMFILE` errors with exponential backoff (initial delay 50ms, max 5s, up to 10 retries). When the pipeline writes 60,000+ files in rapid succession, external processes (Spotlight, editor file watchers, cloud sync) can temporarily exhaust the system's file descriptor table. The retry wrappers handle this transparently.
 
 ```typescript
-// Drop-in replacement for fs/promises — used by both USC and eCFR converters
+// Drop-in replacement for fs/promises — used by all source converters
 import { writeFile, mkdir } from "@lexbuild/core";
 
 await mkdir(dirname(outputPath), { recursive: true });

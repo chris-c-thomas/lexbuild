@@ -273,4 +273,4 @@ Drop-in replacements for `node:fs/promises` `writeFile` and `mkdir` that retry o
 | Max delay | 5,000ms |
 | Backoff | Exponential (doubles each retry) |
 
-These wrappers prevent file descriptor exhaustion when writing 60,000+ files while external processes (Spotlight indexing, editor file watchers, cloud sync) react to newly created files. Both `@lexbuild/usc` and `@lexbuild/ecfr` use these wrappers instead of `node:fs/promises` directly.
+These wrappers prevent file descriptor exhaustion when writing 60,000+ files while external processes (Spotlight indexing, editor file watchers, cloud sync) react to newly created files. All source packages (`@lexbuild/usc`, `@lexbuild/ecfr`, `@lexbuild/fr`) use these wrappers instead of `node:fs/promises` directly.

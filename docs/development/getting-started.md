@@ -16,7 +16,7 @@ pnpm install
 pnpm turbo build
 ```
 
-Turborepo builds packages in dependency order: `core` first, then `usc` and `ecfr` in parallel, then `cli` last.
+Turborepo builds packages in dependency order: `core` first, then `usc`, `ecfr`, and `fr` in parallel, then `cli` last.
 
 ## Verify Your Setup
 

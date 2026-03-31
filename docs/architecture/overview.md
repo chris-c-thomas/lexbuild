@@ -2,7 +2,7 @@
 
 LexBuild is a platform for converting legislative XML into structured Markdown optimized for AI ingestion. It supports three source formats -- U.S. Code (USLM 1.0 schema), eCFR (GPO/SGML-derived XML), and Federal Register (GPO/SGML via FederalRegister.gov API) -- with an architecture designed for additional sources.
 
-The system is organized as a TypeScript monorepo with four packages and one application, arranged in three dependency layers. Each layer depends only on the layer below it, enforcing a clean separation between shared infrastructure, source-specific logic, and user-facing interfaces.
+The system is organized as a TypeScript monorepo with five packages and one application, arranged in three dependency layers. Each layer depends only on the layer below it, enforcing a clean separation between shared infrastructure, source-specific logic, and user-facing interfaces.
 
 ## Three-Layer Architecture
 

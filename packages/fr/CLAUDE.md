@@ -9,12 +9,15 @@
 ```
 src/
 ├── index.ts                 # Barrel exports
-├── fr-elements.ts           # FR XML element classification (~92 elements)
+├── fr-elements.ts           # FR XML element classification (~92 elements) + FrDocumentType
 ├── fr-builder.ts            # SAX → AST state machine for FR XML
 ├── fr-builder.test.ts       # 16 unit tests
 ├── fr-frontmatter.ts        # Build FrontmatterData from FR context + API JSON
+├── fr-frontmatter.test.ts   # 27 unit tests
 ├── fr-path.ts               # Output path builder (date-based)
+├── fr-path.test.ts          # 8 unit tests
 ├── converter.ts             # Conversion orchestrator
+├── converter.test.ts        # 6 integration tests
 └── downloader.ts            # FederalRegister.gov API client
 ```
 

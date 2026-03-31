@@ -1,6 +1,6 @@
 # @lexbuild/cli
 
-Published npm package providing the `lexbuild` binary. The CLI is a thin orchestration layer -- all conversion and download logic lives in source packages (`@lexbuild/usc`, `@lexbuild/ecfr`), and all parsing and rendering lives in `@lexbuild/core`. The CLI handles command-line parsing, terminal UI, input validation, multi-title orchestration, and error reporting.
+Published npm package providing the `lexbuild` binary. The CLI is a thin orchestration layer -- all conversion and download logic lives in source packages (`@lexbuild/usc`, `@lexbuild/ecfr`, `@lexbuild/fr`), and all parsing and rendering lives in `@lexbuild/core`. The CLI handles command-line parsing, terminal UI, input validation, multi-title orchestration, and error reporting.
 
 ## Module Map
 

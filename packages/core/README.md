@@ -5,7 +5,7 @@
 
 Shared infrastructure for the [LexBuild](https://github.com/chris-c-thomas/LexBuild) legal-XML-to-Markdown pipeline. Provides streaming XML parsing, AST definitions, Markdown rendering, YAML frontmatter generation, and cross-reference link resolution used by all source packages.
 
-> **Note:** This is a foundational library. Most users should install [`@lexbuild/cli`](https://www.npmjs.com/package/@lexbuild/cli) for the command-line tool, or a source package ([`@lexbuild/usc`](https://www.npmjs.com/package/@lexbuild/usc), [`@lexbuild/ecfr`](https://www.npmjs.com/package/@lexbuild/ecfr)) for programmatic access.
+> **Note:** This is a foundational library. Most users should install [`@lexbuild/cli`](https://www.npmjs.com/package/@lexbuild/cli) for the command-line tool, or a source package ([`@lexbuild/usc`](https://www.npmjs.com/package/@lexbuild/usc), [`@lexbuild/ecfr`](https://www.npmjs.com/package/@lexbuild/ecfr), [`@lexbuild/fr`](https://www.npmjs.com/package/@lexbuild/fr)) for programmatic access.
 
 ## Install
 

@@ -25,7 +25,7 @@ LexBuild uses GitHub Actions for continuous integration and automated npm publis
 2. **Install pnpm** -- `pnpm/action-setup@v4` (reads version from `package.json` `packageManager`)
 3. **Setup Node.js** -- `actions/setup-node@v4` with pnpm cache enabled
 4. **Install dependencies** -- `pnpm install --frozen-lockfile` (fails if lockfile is out of date)
-5. **Build** -- `pnpm turbo build` (all four published packages, in dependency order)
+5. **Build** -- `pnpm turbo build` (all five published packages, in dependency order)
 6. **Lint** -- `pnpm turbo lint`
 7. **Typecheck** -- `pnpm turbo typecheck`
 8. **Test** -- `pnpm turbo test`

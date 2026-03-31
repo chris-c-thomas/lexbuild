@@ -10,11 +10,14 @@ The package depends on `@lexbuild/core` for the XML parser, AST types, Markdown 
 packages/fr/src/
   index.ts                 # Barrel exports
   converter.ts             # Conversion orchestrator
+  converter.test.ts        # 6 integration tests
   fr-builder.ts            # FR SAX --> AST state machine
   fr-builder.test.ts       # 16 unit tests
-  fr-elements.ts           # FR XML element classification (~92 elements)
+  fr-elements.ts           # FR XML element classification (~92 elements) + FrDocumentType
   fr-frontmatter.ts        # Build FrontmatterData from FR context + API JSON
+  fr-frontmatter.test.ts   # 27 unit tests
   fr-path.ts               # Date-based output path builder
+  fr-path.test.ts          # 8 unit tests
   downloader.ts            # FederalRegister.gov API client
 ```
 

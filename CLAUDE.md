@@ -199,6 +199,7 @@ Key points:
 ### Error Handling
 
 - Use custom error classes extending `Error` with `cause` chaining
+- **`preserve-caught-error` lint rule** (from `tseslint.configs.strict`): When re-throwing errors in catch blocks, always attach `{ cause: err }` to the new Error. E.g., `throw new Error("context message", { cause: err })`.
 - XML parsing errors: warn and continue (log malformed elements, don't crash on anomalous structures)
 - File I/O errors: throw with context (file path, operation attempted)
 - Never swallow errors silently — at minimum, log at `warn` level
@@ -532,6 +533,8 @@ Complete daily issue XML (~2.4 MB average). Updated by 6 AM on publishing days. 
 
 ## Common Pitfalls
 
+- **`??` does not catch empty strings**: `"" ?? "fallback"` returns `""`, not `"fallback"`. Use `||` when empty strings should be treated as falsy (e.g., date components defaulting to `"0000"`).
+- **`const` temporal dead zone in closures**: A closure that captures a `const` variable defined later in the same scope will throw `ReferenceError` when invoked — even though the closure itself is defined without error. Watch for this with `resolveLink` callbacks that reference `outputPath`.
 - **XHTML namespace tables**: `<table>` elements in USC XML are in the XHTML namespace, not the USLM namespace. The SAX parser must handle namespace-aware element names.
 - **Anomalous structures**: Some sections have non-standard nesting (e.g., `<paragraph>` directly under `<section>` without a `<subsection>`). Handlers must not assume strict hierarchy.
 - **Empty/repealed sections**: Some sections contain only a `<note>` with status information (e.g., "Repealed" or "Transferred"). These should still produce an output file with appropriate frontmatter.

@@ -47,24 +47,25 @@ This creates a clean separation between publishable packages and private applica
 
 ### Packages (`packages/`)
 
-Published to npm under the `@lexbuild` scope. All four packages share the same version number, maintained in lockstep by [Changesets](https://github.com/changesets/changesets).
+Published to npm under the `@lexbuild` scope. All five packages share the same version number, maintained in lockstep by [Changesets](https://github.com/changesets/changesets).
 
 | Package | npm Name | Role |
 |---------|----------|------|
 | `core/` | `@lexbuild/core` | Format-agnostic foundation: XML parsing, AST types, Markdown rendering, frontmatter, link resolution, resilient file I/O |
 | `usc/` | `@lexbuild/usc` | U.S. Code source package: OLRC downloader, conversion pipeline using core's `ASTBuilder` |
 | `ecfr/` | `@lexbuild/ecfr` | eCFR source package: dual-source downloader (ecfr.gov API, govinfo bulk), own `EcfrASTBuilder`, conversion pipeline |
+| `fr/` | `@lexbuild/fr` | Federal Register source package: FederalRegister.gov API downloader, own `FrASTBuilder`, dual JSON+XML ingestion |
 | `cli/` | `@lexbuild/cli` | CLI binary (`lexbuild`): command parsing, progress UI, delegates to source packages |
 
 Lockstep versioning is configured in `.changeset/config.json`:
 
 ```json
 {
-  "fixed": [["@lexbuild/core", "@lexbuild/usc", "@lexbuild/ecfr", "@lexbuild/cli"]]
+  "fixed": [["@lexbuild/core", "@lexbuild/usc", "@lexbuild/ecfr", "@lexbuild/fr", "@lexbuild/cli"]]
 }
 ```
 
-When any package changes, all four receive the same version bump. This eliminates version drift between packages that are designed to work together.
+When any package changes, all five receive the same version bump. This eliminates version drift between packages that are designed to work together.
 
 ### Apps (`apps/`)
 
@@ -138,10 +139,11 @@ The `downloads/` directory stores XML source files fetched by the CLI's download
 ```
 downloads/
 ├── usc/xml/          # USC XML: usc01.xml through usc54.xml (~2.5 GB total)
-└── ecfr/xml/         # eCFR XML: ECFR-title1.xml through ECFR-title50.xml (~1.5 GB total)
+├── ecfr/xml/         # eCFR XML: ECFR-title1.xml through ECFR-title50.xml (~1.5 GB total)
+└── fr/               # FR XML + JSON: YYYY/MM/doc-number.xml/.json (~600 MB/year)
 ```
 
-Users populate this directory on-demand by running `lexbuild download-usc` or `lexbuild download-ecfr`.
+Users populate this directory on-demand by running `lexbuild download-usc`, `lexbuild download-ecfr`, or `lexbuild download-fr`.
 
 ## The Workspace Protocol
 
@@ -155,21 +157,22 @@ All internal dependencies use pnpm's `workspace:*` protocol. For example, `@lexb
 }
 ```
 
-The CLI package depends on all three other packages:
+The CLI package depends on all other packages:
 
 ```json
 {
   "dependencies": {
     "@lexbuild/core": "workspace:*",
+    "@lexbuild/usc": "workspace:*",
     "@lexbuild/ecfr": "workspace:*",
-    "@lexbuild/usc": "workspace:*"
+    "@lexbuild/fr": "workspace:*"
   }
 }
 ```
 
 During development, `workspace:*` resolves to the local copy of the package -- changes to `@lexbuild/core` are immediately visible to packages that depend on it (after a rebuild). On publish, pnpm replaces `workspace:*` with the concrete version number in the published `package.json`.
 
-The `*` specifier (rather than `^`) is deliberate. Since all packages use lockstep versioning, there is no version drift to protect against. Every release publishes all four packages at the same version.
+The `*` specifier (rather than `^`) is deliberate. Since all packages use lockstep versioning, there is no version drift to protect against. Every release publishes all five packages at the same version.
 
 ## Dependency Graph
 
@@ -181,6 +184,8 @@ The dependency relationships form a strict tree with no cycles:
   │     └── @lexbuild/core
   ├── @lexbuild/ecfr
   │     └── @lexbuild/core
+  ├── @lexbuild/fr
+  │     └── @lexbuild/core
   └── @lexbuild/core
 
 apps/astro
@@ -190,11 +195,11 @@ apps/astro
 Key constraints:
 
 - **Core depends on nothing** internal. Its only dependencies are third-party libraries (`saxes`, `yaml`, `zod`).
-- **Source packages depend only on core.** `@lexbuild/usc` and `@lexbuild/ecfr` never import from each other.
+- **Source packages depend only on core.** `@lexbuild/usc`, `@lexbuild/ecfr`, and `@lexbuild/fr` never import from each other.
 - **CLI depends on all packages.** It orchestrates source packages and uses core for shared types.
 - **The Astro app is fully decoupled.** It has no `@lexbuild/*` dependency at all -- it reads filesystem output.
 
-Turborepo uses this graph to determine build order: core builds first, then `usc` and `ecfr` in parallel, then `cli`.
+Turborepo uses this graph to determine build order: core builds first, then `usc`, `ecfr`, and `fr` in parallel, then `cli`.
 
 ## Astro App Isolation
 
@@ -207,7 +212,7 @@ The Astro app has several properties that differentiate it from the published pa
 
 ## How New Source Packages Fit In
 
-The monorepo is designed to grow horizontally. Adding support for a new legal source (such as annual CFR, Federal Register, or state statutes) follows a consistent pattern:
+The monorepo is designed to grow horizontally. Adding support for a new legal source (such as annual CFR or state statutes) follows a consistent pattern:
 
 1. Create a new package at `packages/{source}/` with `@lexbuild/core` as a `workspace:*` dependency.
 2. Implement a source-specific AST builder if the XML format differs from USLM.

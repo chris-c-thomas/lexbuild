@@ -182,5 +182,6 @@ Loosely follows the [Conventional Commits](https://www.conventionalcommits.org/)
 | `core` | `@lexbuild/core` |
 | `usc` | `@lexbuild/usc` |
 | `ecfr` | `@lexbuild/ecfr` |
+| `fr` | `@lexbuild/fr` |
 | `cli` | `@lexbuild/cli` |
 | `astro` | `@lexbuild/astro` |

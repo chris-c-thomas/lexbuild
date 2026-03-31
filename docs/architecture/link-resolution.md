@@ -50,6 +50,21 @@ Examples:
 
 Identifiers use `/us/cfr/` (content type), not `/us/ecfr/` (data source). Both eCFR and future annual CFR share the same identifier space since they represent the same regulatory content.
 
+### FR Identifiers (from FederalRegister.gov API)
+
+FR identifiers use document numbers (unique, stable, API primary key):
+
+```
+/us/fr/{document_number}
+```
+
+Examples:
+
+- `/us/fr/2026-06029` -- FR document 2026-06029
+- `/us/fr/2026-06086` -- FR document 2026-06086
+
+FR identifiers use document numbers rather than FR citations (`91 FR 14523`) because citations are human-readable but not reliably unique.
+
 ### Non-Resolvable References
 
 Some identifier schemes cannot be resolved to files or URLs. These are always rendered as plain text:
@@ -80,6 +95,7 @@ When a USC cross-reference cannot be resolved within the converted corpus, the r
 |-------------------|---------------------|
 | `/us/usc/t{N}/s{N}` | `https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title{N}-section{N}` |
 | `/us/usc/t{N}` | `https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title{N}` |
+| `/us/fr/{doc_number}` | `https://www.federalregister.gov/d/{doc_number}` |
 
 Unresolved CFR references (`/us/cfr/`) are currently rendered as plain text — no automatic ecfr.gov fallback URLs are generated. Statutes at Large (`/us/stat/`) and Public Law (`/us/pl/`) references are always rendered as plain text.
 

@@ -101,6 +101,6 @@ Definitions for legal, technical, and LexBuild-specific terms used throughout th
 
 **Section-emit pattern** -- The default operating mode where the AST builder emits one completed section at a time. Each section's subtree is released from memory after emission, keeping peak memory proportional to the largest single section rather than the full title.
 
-**Source package** -- A package that handles conversion for a specific legal XML format. Source packages depend on `@lexbuild/core` for shared infrastructure but are independent of each other. Current source packages: `@lexbuild/usc` (U.S. Code) and `@lexbuild/ecfr` (eCFR).
+**Source package** -- A package that handles conversion for a specific legal XML format. Source packages depend on `@lexbuild/core` for shared infrastructure but are independent of each other. Current source packages: `@lexbuild/usc` (U.S. Code), `@lexbuild/ecfr` (eCFR), and `@lexbuild/fr` (Federal Register).
 
-**Source type** -- The `source` discriminator field in frontmatter, indicating which source package produced the output. Current values: `"usc"` and `"ecfr"`. Consumers can use this field to determine which source-specific frontmatter fields to expect.
+**Source type** -- The `source` discriminator field in frontmatter, indicating which source package produced the output. Current values: `"usc"`, `"ecfr"`, and `"fr"`. Consumers can use this field to determine which source-specific frontmatter fields to expect.

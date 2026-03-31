@@ -2,7 +2,7 @@
 
 ## Package Overview
 
-`@lexbuild/core` is the foundational package of the LexBuild monorepo. It provides XML parsing, AST types/builder, Markdown rendering, frontmatter generation, and cross-reference link resolution. All source-specific packages (`@lexbuild/usc`, `@lexbuild/ecfr`) depend on core.
+`@lexbuild/core` is the foundational package of the LexBuild monorepo. It provides XML parsing, AST types/builder, Markdown rendering, frontmatter generation, and cross-reference link resolution. All source-specific packages (`@lexbuild/usc`, `@lexbuild/ecfr`, `@lexbuild/fr`) depend on core.
 
 ## Module Structure
 
