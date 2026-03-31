@@ -165,6 +165,7 @@ Key points:
 
 - pnpm workspaces with `workspace:*` protocol for internal deps
 - **Transitive dependency vulnerabilities**: Dependabot cannot update transitive deps in pnpm monorepos. Use `pnpm.overrides` in root `package.json` (e.g., `"flatted": "^3.4.2"`). Use `^` ranges (not `>=`) for determinism.
+- **`pnpm.overrides` version-range selectors**: Use `"picomatch@^2": "^2.3.2"` to target a specific major version range when a transitive dep exists at multiple majors (e.g., picomatch v2 from changesets and picomatch v4 from astro). Without the `@^2` selector, the override applies to all versions and can break packages expecting a different major.
 - ESM only (`"type": "module"` in all package.json files)
 - Strict mode: `strict: true`, `noUncheckedIndexedAccess: true`, `exactOptionalPropertyTypes: true`
 - Use `import type` for type-only imports
