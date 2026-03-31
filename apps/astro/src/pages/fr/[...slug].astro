@@ -235,19 +235,21 @@ if (monthDocs.length > 0) {
 
         {docsByDate.map((group) => (
           <div>
-            <h2 class="text-slate-blue-700 dark:text-slate-blue-400 mb-2 text-sm font-semibold uppercase tracking-wider">
-              {group.date.length === 10
-                ? new Date(group.date + "T12:00:00").toLocaleDateString("en-US", {
-                    weekday: "long",
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })
-                : group.date}
-              <span class="text-muted-foreground ml-2 font-normal normal-case tracking-normal">
-                ({group.docs.length} document{group.docs.length !== 1 ? "s" : ""})
-              </span>
-            </h2>
+            {docsByDate.length > 1 || group.date.length === 10 ? (
+              <h2 class="text-slate-blue-700 dark:text-slate-blue-400 mb-2 text-sm font-semibold uppercase tracking-wider">
+                {group.date.length === 10
+                  ? new Date(group.date + "T12:00:00").toLocaleDateString("en-US", {
+                      weekday: "long",
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : group.date}
+                <span class="text-muted-foreground ml-2 font-normal normal-case tracking-normal">
+                  ({group.docs.length} document{group.docs.length !== 1 ? "s" : ""})
+                </span>
+              </h2>
+            ) : null}
             <div class="flex flex-col gap-1">
               {group.docs.map((doc) => (
                 <a
