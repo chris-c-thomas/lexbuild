@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/chris-c-thomas/LexBuild.git",
+    "url": "git+https://github.com/chris-c-thomas/LexBuild.git",
     "directory": "packages/fr"
   },
   "homepage": "https://github.com/chris-c-thomas/LexBuild/tree/main/packages/fr",
