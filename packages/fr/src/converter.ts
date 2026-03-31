@@ -30,6 +30,18 @@ import type { FrDocumentType } from "./fr-elements.js";
 
 // ── Public types ──
 
+/** Progress info for conversion callback */
+export interface FrConvertProgress {
+  /** Documents converted so far */
+  documentsConverted: number;
+  /** XML files processed so far */
+  filesProcessed: number;
+  /** Total XML files to process */
+  totalFiles: number;
+  /** Current XML file being processed */
+  currentFile: string;
+}
+
 /** Options for converting FR documents */
 export interface FrConvertOptions {
   /** Path to input file or directory containing .xml/.json files */
@@ -46,6 +58,8 @@ export interface FrConvertOptions {
   to?: string | undefined;
   /** Filter: document types */
   types?: FrDocumentType[] | undefined;
+  /** Progress callback */
+  onProgress?: ((progress: FrConvertProgress) => void) | undefined;
 }
 
 /** Result of a conversion operation */
@@ -96,6 +110,7 @@ export async function convertFrDocuments(options: FrConvertOptions): Promise<FrC
   // FR documents rarely cross-reference each other, so we skip the two-pass
   // link registration that USC/eCFR use. This keeps memory bounded for
   // bulk XML processing (750k+ documents across 9,500+ files).
+  let filesProcessed = 0;
   for (const xmlPath of xmlFiles) {
     let collected: CollectedDoc[];
     try {
@@ -155,6 +170,14 @@ export async function convertFrDocuments(options: FrConvertOptions): Promise<FrC
 
     // Release collected docs after processing each file
     collected = undefined as never;
+    filesProcessed++;
+
+    options.onProgress?.({
+      documentsConverted,
+      filesProcessed,
+      totalFiles: xmlFiles.length,
+      currentFile: xmlPath,
+    });
   }
 
   return {

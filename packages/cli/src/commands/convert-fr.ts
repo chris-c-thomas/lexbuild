@@ -113,6 +113,7 @@ Examples:
         ? "Analyzing Federal Register documents (dry run)"
         : "Converting Federal Register documents",
     );
+    spinner.start();
 
     try {
       const result = await convertFrDocuments({
@@ -123,6 +124,12 @@ Examples:
         from: options.from,
         to: options.to,
         types,
+        onProgress: (progress) => {
+          const pct = progress.totalFiles > 0
+            ? Math.round((progress.filesProcessed / progress.totalFiles) * 100)
+            : 0;
+          spinner.text = `Converting FR documents (${formatNumber(progress.documentsConverted)} docs, ${formatNumber(progress.filesProcessed)}/${formatNumber(progress.totalFiles)} files) ${pct}%`;
+        },
       });
 
       const elapsed = performance.now() - startTime;
@@ -159,15 +166,7 @@ Examples:
 
       console.log(summaryBlock({ title: "Conversion Complete", rows, footer }));
 
-      if (options.verbose && !options.dryRun) {
-        console.log();
-        for (const file of result.files.slice(0, 20)) {
-          console.log(`  ${relative(process.cwd(), file)}`);
-        }
-        if (result.files.length > 20) {
-          console.log(`  ... and ${result.files.length - 20} more`);
-        }
-      }
+      // Verbose file listing not available for streaming conversion (files not tracked in memory)
     } catch (err) {
       spinner.fail("Conversion failed");
       console.error(error(err instanceof Error ? err.message : String(err)));

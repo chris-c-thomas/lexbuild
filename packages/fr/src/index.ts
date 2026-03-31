@@ -51,7 +51,7 @@ export {
 
 // Converter
 export { convertFrDocuments } from "./converter.js";
-export type { FrConvertOptions, FrConvertResult } from "./converter.js";
+export type { FrConvertOptions, FrConvertResult, FrConvertProgress } from "./converter.js";
 
 // Downloader (FederalRegister.gov API)
 export { downloadFrDocuments, downloadSingleFrDocument, buildFrApiListUrl } from "./downloader.js";
