@@ -86,74 +86,41 @@ const FR_DOC_TYPE_SET = new Set<string>(FR_DOCUMENT_TYPE_KEYS);
 export async function convertFrDocuments(options: FrConvertOptions): Promise<FrConvertResult> {
   const xmlFiles = await discoverXmlFiles(options.input, options.from, options.to);
 
-  const files: string[] = [];
+  let documentsConverted = 0;
   let totalTokenEstimate = 0;
   let peakMemoryBytes = 0;
 
   const linkResolver = createLinkResolver();
 
-  // Parse all files once and cache results
-  const parsedFiles = new Map<string, CollectedDoc[]>();
+  // Stream: parse each file, render, and write immediately.
+  // FR documents rarely cross-reference each other, so we skip the two-pass
+  // link registration that USC/eCFR use. This keeps memory bounded for
+  // bulk XML processing (750k+ documents across 9,500+ files).
   for (const xmlPath of xmlFiles) {
+    let collected: CollectedDoc[];
     try {
-      const collected = await parseXmlFile(xmlPath);
-      parsedFiles.set(xmlPath, collected);
+      collected = await parseXmlFile(xmlPath);
     } catch (err) {
       console.warn(
         `Warning: Failed to parse ${xmlPath}: ${err instanceof Error ? err.message : String(err)}. Skipping.`,
       );
+      continue;
     }
-  }
 
-  // Register identifiers for link resolution using cached results
-  for (const [, collected] of parsedFiles) {
-    for (const doc of collected) {
-      if (options.types && options.types.length > 0) {
-        if (!FR_DOC_TYPE_SET.has(doc.xmlMeta.documentType) || !options.types.includes(doc.xmlMeta.documentType as FrDocumentType)) {
-          continue;
-        }
-      }
-
-      if (doc.node.identifier) {
-        const outputPath = buildFrOutputPath(
-          doc.documentNumber,
-          doc.publicationDate,
-          options.output,
-        );
-        linkResolver.register(doc.node.identifier, outputPath);
-      }
-    }
-  }
-
-  if (options.dryRun) {
-    let count = 0;
-    for (const [, collected] of parsedFiles) {
-      for (const doc of collected) {
-        if (options.types && options.types.length > 0) {
-          if (!FR_DOC_TYPE_SET.has(doc.xmlMeta.documentType) || !options.types.includes(doc.xmlMeta.documentType as FrDocumentType)) {
-            continue;
-          }
-        }
-        count++;
-      }
-    }
-    return {
-      documentsConverted: count,
-      files: [],
-      totalTokenEstimate: 0,
-      peakMemoryBytes: 0,
-      dryRun: true,
-    };
-  }
-
-  // Render and write using cached results
-  for (const [, collected] of parsedFiles) {
     for (const doc of collected) {
       // Apply type filter
       if (options.types && options.types.length > 0) {
-        if (!FR_DOC_TYPE_SET.has(doc.xmlMeta.documentType) || !options.types.includes(doc.xmlMeta.documentType as FrDocumentType)) {
+        if (
+          !FR_DOC_TYPE_SET.has(doc.xmlMeta.documentType) ||
+          !options.types.includes(doc.xmlMeta.documentType as FrDocumentType)
+        ) {
           continue;
         }
+      }
+
+      if (options.dryRun) {
+        documentsConverted++;
+        continue;
       }
 
       const outputPath = buildFrOutputPath(
@@ -167,19 +134,17 @@ export async function convertFrDocuments(options: FrConvertOptions): Promise<FrC
       const markdown = renderDocument(doc.node, frontmatter, {
         headingOffset: 0,
         linkStyle: options.linkStyle,
-        resolveLink: options.linkStyle === "relative"
-          ? (id) => linkResolver.resolve(id, outputPath)
-          : undefined,
+        resolveLink:
+          options.linkStyle === "relative"
+            ? (id) => linkResolver.resolve(id, outputPath)
+            : undefined,
       });
 
       await mkdir(dirname(outputPath), { recursive: true });
       await writeFile(outputPath, markdown, "utf-8");
 
-      files.push(outputPath);
-
-      // Estimate tokens (character/4 heuristic)
-      const tokenEstimate = Math.round(markdown.length / 4);
-      totalTokenEstimate += tokenEstimate;
+      documentsConverted++;
+      totalTokenEstimate += Math.round(markdown.length / 4);
 
       // Track memory
       const mem = process.memoryUsage().rss;
@@ -187,14 +152,17 @@ export async function convertFrDocuments(options: FrConvertOptions): Promise<FrC
         peakMemoryBytes = mem;
       }
     }
+
+    // Release collected docs after processing each file
+    collected = undefined as never;
   }
 
   return {
-    documentsConverted: files.length,
-    files,
+    documentsConverted,
+    files: [], // Don't accumulate 750k+ file paths in memory
     totalTokenEstimate,
     peakMemoryBytes,
-    dryRun: false,
+    dryRun: options.dryRun,
   };
 }
 
