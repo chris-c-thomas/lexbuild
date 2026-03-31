@@ -1044,9 +1044,11 @@ export class FrASTBuilder {
     if (!frame || frame.kind !== "frdoc") return;
 
     const text = frame.textBuffer.trim();
-    // Extract document number from "[FR Doc. 2026-06029 Filed 3-27-26; 8:45 am]"
-    // or "[FR Doc. 2026-06029]"
-    const match = /FR\s+Doc\.\s+([\d-]+)/i.exec(text);
+    // Extract document number from FRDOC text. Formats vary by era:
+    //   Modern: "[FR Doc. 2026-06029 Filed 3-27-26; 8:45 am]"
+    //   Pre-2009: "[FR Doc. E8-17594 Filed 7-31-08; 8:45 am]"
+    //   Very old: "[FR Doc. 00-123 Filed 1-2-00; 8:45 am]"
+    const match = /FR\s+Doc\.\s+([\w-]+)/i.exec(text);
     if (match) {
       this.currentDocMeta.documentNumber = match[1];
     }

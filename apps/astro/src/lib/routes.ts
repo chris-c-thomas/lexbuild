@@ -71,7 +71,7 @@ function isValidSegment(segment: string, sourceId: SourceId, index: number): boo
   if (sourceId === "fr") {
     if (index === 0) return /^\d{4}$/.test(segment);
     if (index === 1) return /^\d{2}$/.test(segment);
-    if (index === 2) return /^\d{4}-\d{4,6}$/.test(segment);
+    if (index === 2) return /^[\w][\w-]+$/.test(segment);
     return false;
   }
 
