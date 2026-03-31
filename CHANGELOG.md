@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.14.0]
+
+### Added
+
+- **`@lexbuild/fr` — Federal Register source package**: Full XML-to-Markdown conversion pipeline for Federal Register documents from the FederalRegister.gov API
+- `FrASTBuilder` — SAX-to-AST builder for FR GPO/SGML XML (document-centric, flat structure)
+- `download-fr` CLI command — downloads FR documents (XML + JSON metadata) by date range, single document, or recent days
+- `convert-fr` CLI command — converts downloaded FR XML to Markdown with enriched frontmatter from JSON sidecars
+- Dual JSON+XML ingestion: structured API metadata (agencies, CFR references, docket IDs, RINs, effective dates) enriches frontmatter beyond what XML alone provides
+- FR link resolution with `federalregister.gov` fallback URLs for `/us/fr/` identifiers
+- 57 tests across 4 test files (builder, converter, frontmatter, path)
+- FR-specific frontmatter fields: `document_number`, `document_type`, `fr_citation`, `fr_volume`, `publication_date`, `agencies`, `cfr_references`, `docket_ids`, `rin`, `effective_date`, `comments_close_date`, `fr_action`
+- `FrDocumentType` derived from `FR_DOCUMENT_TYPE_KEYS` const tuple in `fr-elements.ts`
+
+### Changed
+
+- `SourceType` extended: `"usc" | "ecfr" | "fr"`
+- `FrontmatterData` extended with 12 FR-specific optional fields
+- `parseIdentifier` and `createLinkResolver` in core now handle `/us/fr/` identifiers
+- `generateFrontmatter` in core now serializes FR-specific fields
+- ESLint `no-restricted-imports` rules updated for FR package boundary enforcement
+- Comprehensive documentation updates across all `docs/` files and READMEs to reflect FR as a third source
+
+### Fixed
+
+- Converter parses each XML file once (cached in Map) instead of 2-3 times
+- JSON sidecar parse failures now warn instead of being silently swallowed
+- `popFrame` in builder warns and returns undefined instead of silently popping wrong frame
+- `fetchWithRetry` retries network-level errors (DNS, TLS, connection reset) with exponential backoff
+- `Retry-After` header NaN guard prevents zero-delay retry loops
+- Per-file error handling: malformed XML files warn and skip instead of crashing the batch
+- `--limit` CLI flag validated for NaN/negative values
+- Stream pipeline errors include document number and URL context
+- API response validation for critical fields (`count`, `document_number`, `publication_date`)
+- `parseDateComponents` uses `||` instead of `??` so empty strings properly fall back to `"0000"`/`"00"`
+- Dry-run count now applies type filter consistently with actual conversion
+
 ## [1.13.3]
 
 ### Added
