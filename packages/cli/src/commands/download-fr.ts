@@ -32,6 +32,7 @@ interface DownloadFrOptions {
   recent?: string | undefined;
   document?: string | undefined;
   limit?: string | undefined;
+  concurrency?: string | undefined;
 }
 
 export const downloadFrCommand = new Command("download-fr")
@@ -43,6 +44,7 @@ export const downloadFrCommand = new Command("download-fr")
   .option("--recent <days>", "Download last N days")
   .option("--document <number>", "Download a single document by number")
   .option("--limit <n>", "Maximum number of documents (for testing)")
+  .option("--concurrency <n>", "Concurrent XML downloads (default: 10)")
   .addHelpText(
     "after",
     `
@@ -155,6 +157,15 @@ Document types:
       }
     }
 
+    let concurrency: number | undefined;
+    if (options.concurrency) {
+      concurrency = parseInt(options.concurrency, 10);
+      if (isNaN(concurrency) || concurrency <= 0) {
+        console.error(error("--concurrency must be a positive integer"));
+        process.exit(1);
+      }
+    }
+
     const spinner = createSpinner(`Downloading Federal Register documents from ${from} to ${to}`);
     spinner.start();
 
@@ -165,6 +176,7 @@ Document types:
         to,
         types,
         limit,
+        concurrency,
         onProgress: (progress) => {
           const pct = progress.totalDocuments > 0
             ? Math.round((progress.documentsDownloaded / progress.totalDocuments) * 100)
