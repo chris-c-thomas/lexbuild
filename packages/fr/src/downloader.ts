@@ -24,8 +24,8 @@ const FR_API_BASE = "https://www.federalregister.gov/api/v1";
 /** Maximum results per page (API max) */
 const PER_PAGE = 200;
 
-/** Default delay between individual document XML fetches (ms) */
-const DEFAULT_FETCH_DELAY_MS = 25;
+/** Default number of concurrent XML downloads */
+const DEFAULT_CONCURRENCY = 10;
 
 /** Maximum retry attempts for transient errors */
 const MAX_RETRIES = 2;
@@ -70,8 +70,8 @@ export interface FrDownloadOptions {
   types?: FrDocumentType[] | undefined;
   /** Maximum number of documents to download (for testing) */
   limit?: number | undefined;
-  /** Delay between XML fetches in milliseconds */
-  fetchDelayMs?: number | undefined;
+  /** Number of concurrent XML downloads (default 10) */
+  concurrency?: number | undefined;
   /** Progress callback */
   onProgress?: ((progress: FrDownloadProgress) => void) | undefined;
 }
@@ -170,11 +170,12 @@ export function buildFrApiListUrl(
  * Download FR documents for a date range.
  *
  * Automatically chunks large date ranges into month-sized windows to stay
- * under the API's 10,000 result cap per query.
+ * under the API's 10,000 result cap per query. Within each chunk, document
+ * XML files are downloaded concurrently (default 10 at a time).
  */
 export async function downloadFrDocuments(options: FrDownloadOptions): Promise<FrDownloadResult> {
   const to = options.to ?? new Date().toISOString().slice(0, 10);
-  const fetchDelay = options.fetchDelayMs ?? DEFAULT_FETCH_DELAY_MS;
+  const concurrency = options.concurrency ?? DEFAULT_CONCURRENCY;
 
   const files: FrDownloadedFile[] = [];
   const failed: FrDownloadFailure[] = [];
@@ -186,10 +187,10 @@ export async function downloadFrDocuments(options: FrDownloadOptions): Promise<F
   const chunks = buildMonthChunks(options.from, to);
 
   for (const chunk of chunks) {
-    // Check limit
     if (options.limit !== undefined && files.length >= options.limit) break;
 
-    // Paginate through this chunk
+    // Phase 1: Collect all document metadata for this chunk (pagination is fast, JSON only)
+    const chunkDocs: FrDocumentJsonMeta[] = [];
     let page = 1;
     let hasMore = true;
 
@@ -213,42 +214,37 @@ export async function downloadFrDocuments(options: FrDownloadOptions): Promise<F
       const results = data.results ?? [];
 
       for (const doc of results) {
-        // Check limit
-        if (options.limit !== undefined && files.length >= options.limit) {
-          hasMore = false;
-          break;
-        }
-
-        // Report progress
-        options.onProgress?.({
-          documentsDownloaded: files.length,
-          totalDocuments: totalDocumentsFound,
-          currentDocument: doc.document_number,
-          currentChunk: `${chunk.from.slice(0, 7)}`,
-        });
-
-        // Skip documents without XML (pre-2000)
         if (!doc.full_text_xml_url) {
           skipped++;
           continue;
         }
-
-        try {
-          const result = await downloadSingleDocument(doc, options.output, fetchDelay);
-          files.push(result);
-          totalBytes += result.size;
-        } catch (err) {
-          failed.push({
-            documentNumber: doc.document_number,
-            error: err instanceof Error ? err.message : String(err),
-          });
-        }
+        chunkDocs.push(doc);
       }
 
-      // Check for more pages
-      hasMore = hasMore && page < (data.total_pages ?? 0);
+      hasMore = page < (data.total_pages ?? 0);
       page++;
     }
+
+    // Apply limit to this chunk
+    const remaining = options.limit !== undefined ? options.limit - files.length : chunkDocs.length;
+    const docsToDownload = chunkDocs.slice(0, remaining);
+    const chunkLabel = chunk.from.slice(0, 7);
+
+    // Phase 2: Download XML files concurrently
+    await downloadPool(docsToDownload, concurrency, options.output, (doc, result, error) => {
+      if (result) {
+        files.push(result);
+        totalBytes += result.size;
+      } else if (error) {
+        failed.push({ documentNumber: doc.document_number, error });
+      }
+      options.onProgress?.({
+        documentsDownloaded: files.length,
+        totalDocuments: totalDocumentsFound,
+        currentDocument: doc.document_number,
+        currentChunk: chunkLabel,
+      });
+    });
   }
 
   return {
@@ -281,15 +277,44 @@ export async function downloadSingleFrDocument(
     );
   }
 
-  return downloadSingleDocument(doc, output, 0);
+  return downloadSingleDocument(doc, output);
 }
 
 // ── Private helpers ──
 
+/**
+ * Download multiple documents concurrently using a worker pool.
+ * Workers pull from a shared index, so concurrency is bounded without batching.
+ */
+async function downloadPool(
+  docs: FrDocumentJsonMeta[],
+  concurrency: number,
+  outputDir: string,
+  onComplete: (doc: FrDocumentJsonMeta, result: FrDownloadedFile | null, error: string | null) => void,
+): Promise<void> {
+  let nextIndex = 0;
+
+  async function worker(): Promise<void> {
+    while (nextIndex < docs.length) {
+      const i = nextIndex++;
+      const doc = docs[i];
+      if (!doc) break;
+      try {
+        const result = await downloadSingleDocument(doc, outputDir);
+        onComplete(doc, result, null);
+      } catch (err) {
+        onComplete(doc, null, err instanceof Error ? err.message : String(err));
+      }
+    }
+  }
+
+  const workerCount = Math.min(concurrency, docs.length);
+  await Promise.all(Array.from({ length: workerCount }, () => worker()));
+}
+
 async function downloadSingleDocument(
   doc: FrDocumentJsonMeta,
   outputDir: string,
-  fetchDelay: number,
 ): Promise<FrDownloadedFile> {
   if (!doc.document_number || !doc.publication_date) {
     throw new Error(
@@ -313,10 +338,6 @@ async function downloadSingleDocument(
   await fsWriteFile(jsonPath, jsonContent, "utf-8");
 
   // Fetch and write XML
-  if (fetchDelay > 0) {
-    await sleep(fetchDelay);
-  }
-
   const xmlResponse = await fetchWithRetry(doc.full_text_xml_url);
   if (!xmlResponse.body) {
     throw new Error(`No response body for ${doc.document_number} XML`);
