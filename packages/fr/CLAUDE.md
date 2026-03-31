@@ -150,6 +150,10 @@ FR documents include all standard fields plus:
 - **Concurrent downloads use a worker pool**: `downloadPool()` in `downloader.ts` uses a shared `nextIndex` counter with `N` async workers. `nextIndex++` is safe across `await` boundaries because JS is single-threaded. The `concurrency` option (default 10) replaces the old `fetchDelayMs` sequential delay.
 - **FederalRegister.gov API is slow per-request**: Individual XML fetches average ~10s regardless of file size (~26 KB average). The API's server-side latency is the bottleneck, not bandwidth. Increasing concurrency beyond 10-20 may not help if the API throttles connections.
 - **No `_meta.json` files**: Unlike USC/eCFR, the FR converter does not generate sidecar metadata files. The Astro nav generator (`generate-nav.ts`) scans the filesystem and reads frontmatter directly from each `.md` file.
+- **FR `E T="03"` maps to italic, not bold**: Unlike eCFR which uses T="03" for general emphasis (bold), FR uses it for legal citations, case names, and publication titles which are conventionally italicized. The `FR_EMPHASIS_MAP` intentionally diverges from `ECFR_EMPHASIS_MAP` on this code.
+- **`SU` inside `FTNT` is a footnote marker**: The builder checks `findFrame("note")` to determine context. Inside a footnote → `footnoteRef` type. In body text → `sup` type (unless followed by `FTREF`).
+- **`FTREF` converts preceding `sup` to `footnoteRef`**: `FTREF` is an empty signal element in body text. On open, the builder walks backward through the parent content node's children to find the last `sup` inline and converts it to `footnoteRef`.
+- **Whitespace normalization in `onText`**: FR XML from the API has generous indentation inside `<P>` elements. The builder normalizes whitespace (`text.replace(/\s+/g, " ")`) for content and inline frames to prevent XML formatting from appearing in output.
 
 ## Dependency on @lexbuild/core
 

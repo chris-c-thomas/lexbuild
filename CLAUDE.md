@@ -568,6 +568,7 @@ Complete daily issue XML (~2.4 MB average). Updated by 6 AM on publishing days. 
 - **FR downloader uses concurrent worker pool**: `concurrency` option (default 10) replaced sequential `fetchDelayMs`. CLI exposes `--concurrency` flag. API latency (~10s/request) is the bottleneck, not bandwidth.
 - **Astro template expressions are plain JS, not TypeScript**: `new Map<string, T>()` and other generics in template `{}` expressions cause esbuild errors ("Unexpected const"). Move complex typed logic to the `---` frontmatter section.
 - **FR download directory structure matches output**: Both use `{YYYY}/{MM}/{document_number}.*` — downloads have `.xml`/`.json`, output has `.md`. The converter infers publication date from the path when no JSON sidecar is available.
+- **Meilisearch version upgrades require database deletion**: Meilisearch does not support in-place migration between data versions (e.g., 1.39→1.41). Delete `~/.meilisearch/data.ms` (local) or `/var/lib/meilisearch/data` (VPS) and reindex. The search index is derived from `.md` files, so no data is lost.
 
 ## When Adding New Source Types
 
