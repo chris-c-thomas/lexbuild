@@ -310,6 +310,157 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
     </div>
   </section>
 
+  <section id="pipeline" class="border-border-base border-b py-14">
+    <div class="mx-auto max-w-4xl px-6">
+      <div class="mb-8">
+        <h2
+          class="font-display text-slate-blue-900 dark:text-slate-blue-200 mb-1 text-xl font-semibold tracking-tight"
+        >
+          How It Works
+        </h2>
+        <p class="text-ink-muted text-[15px]">
+          Source-specific parsers feed a shared core engine. Every source follows the same pipeline.
+        </p>
+      </div>
+
+      <!-- CLI wrapper — the outermost container reflecting the dependency graph -->
+      <div class="pipeline-cli">
+        <div class="pipeline-cli-header">
+          <div class="pipeline-cli-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+          </div>
+          <div>
+            <div class="pipeline-cli-name">@lexbuild/cli</div>
+            <div class="pipeline-cli-role">Orchestrates the full pipeline</div>
+          </div>
+          <div class="pipeline-cli-steps">
+            <span class="pipeline-cli-step">Download</span>
+            <span class="pipeline-cli-step-arrow">→</span>
+            <span class="pipeline-cli-step">Parse</span>
+            <span class="pipeline-cli-step-arrow">→</span>
+            <span class="pipeline-cli-step">Convert</span>
+            <span class="pipeline-cli-step-arrow">→</span>
+            <span class="pipeline-cli-step">Write</span>
+          </div>
+        </div>
+
+        <div class="pipeline-cli-body">
+          <!-- CLI depends on core -->
+          <div class="pipeline-depends pipeline-depends-cli" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pipeline-depends-arrow"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></svg>
+            <span class="pipeline-depends-label">depends on</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pipeline-depends-arrow"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></svg>
+          </div>
+          <div class="pipeline-flow">
+            <!-- Source XML column -->
+            <div class="pipeline-stage">
+              <div class="pipeline-stage-label">Source XML</div>
+              <div class="pipeline-source-stack">
+                <div class="pipeline-source pipeline-source-usc">
+                  <div class="pipeline-source-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="m16 16 2 2 4-4"></path><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"></path><path d="m7.5 4.27 9 5.15"></path><polyline points="3.29 7 12 12 20.71 7"></polyline><line x1="12" y1="22" x2="12" y2="12"></line></svg>
+                  </div>
+                  <div>
+                    <div class="pipeline-source-title">USLM 1.0 XML</div>
+                    <div class="pipeline-source-sub font-bold">OLRC <br/><a class="font-normal hover:underline" href="https://uscode.house.gov">uscode.house.gov</a></div>
+                  </div>
+                </div>
+                <div class="pipeline-source pipeline-source-ecfr">
+                  <div class="pipeline-source-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="m16 16 2 2 4-4"></path><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"></path><path d="m7.5 4.27 9 5.15"></path><polyline points="3.29 7 12 12 20.71 7"></polyline><line x1="12" y1="22" x2="12" y2="12"></line></svg>
+                  </div>
+                  <div>
+                    <div class="pipeline-source-title">GPO/SGML XML</div>
+                    <div class="pipeline-source-sub font-bold">eCFR<br/><a class="font-normal hover:underline" href="https://www.ecfr.gov">ecfr.gov</a></div>
+                  </div>
+                </div>
+                <div class="pipeline-source pipeline-source-future">
+                  <div class="pipeline-source-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>
+                  </div>
+                  <div>
+                    <div class="pipeline-source-title">Any Legal XML</div>
+                    <div class="pipeline-source-sub">Federal Register, state statutes, ...</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Arrow -->
+            <div class="pipeline-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pipeline-arrow-icon"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pipeline-arrow-icon-down"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></svg>
+            </div>
+
+            <!-- Core engine + source parsers stacked -->
+            <div class="pipeline-stage pipeline-stage-inner">
+              <div class="pipeline-stage-label">Core Engine</div>
+              <div class="pipeline-core">
+                <div class="pipeline-core-name">@lexbuild/core</div>
+                <div class="pipeline-core-steps">
+                  <span class="pipeline-core-step">SAX Parse</span>
+                  <span class="pipeline-core-step-sep">→</span>
+                  <span class="pipeline-core-step">Typed AST</span>
+                  <span class="pipeline-core-step-sep">→</span>
+                  <span class="pipeline-core-step">Render</span>
+                </div>
+                <div class="pipeline-core-features">
+                  <span>Frontmatter</span>
+                  <span class="pipeline-core-dot"></span>
+                  <span>Link Resolution</span>
+                  <span class="pipeline-core-dot"></span>
+                  <span>Metadata</span>
+                </div>
+              </div>
+              <!-- Dependency connector -->
+              <div class="pipeline-depends" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pipeline-depends-arrow"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></svg>
+                <span class="pipeline-depends-label">used by</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pipeline-depends-arrow"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></svg>
+              </div>
+              <div class="pipeline-stage-label">Source Parsers</div>
+              <div class="pipeline-source-stack">
+                <div class="pipeline-parser pipeline-parser-usc">
+                  <div class="pipeline-parser-name">@lexbuild/usc</div>
+                  <div class="pipeline-parser-desc">USLM schema → AST builder</div>
+                </div>
+                <div class="pipeline-parser pipeline-parser-ecfr">
+                  <div class="pipeline-parser-name">@lexbuild/ecfr</div>
+                  <div class="pipeline-parser-desc">GPO/SGML → AST builder</div>
+                </div>
+                <div class="pipeline-parser pipeline-parser-future">
+                  <div class="pipeline-parser-name">@lexbuild/&lt;source&gt;</div>
+                  <div class="pipeline-parser-desc">New schema → AST builder</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Arrow -->
+            <div class="pipeline-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pipeline-arrow-icon"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pipeline-arrow-icon-down"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></svg>
+            </div>
+
+            <!-- Output -->
+            <div class="pipeline-stage">
+              <div class="pipeline-stage-label">Output</div>
+              <div class="pipeline-output">
+                <div class="pipeline-output-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
+                </div>
+                <div>
+                  <div class="pipeline-output-title">Structured Markdown</div>
+                  <div class="pipeline-output-sub">YAML frontmatter + per-section .md files</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
   <section
     id="sample-output"
     class="dark:bg-background border-border-base border-b bg-[#FAFAFA] py-14"
@@ -480,123 +631,6 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="pipeline" class="border-border-base border-b py-14">
-    <div class="mx-auto max-w-4xl px-6">
-      <div class="mb-8">
-        <h2
-          class="font-display text-slate-blue-900 dark:text-slate-blue-200 mb-1 text-xl font-semibold tracking-tight"
-        >
-          How It Works
-        </h2>
-        <p class="text-ink-muted text-[15px]">
-          Source-specific parsers feed a shared core engine. Every source follows the same pipeline.
-        </p>
-      </div>
-
-      <div class="pipeline-flow">
-        <!-- Source XML column -->
-        <div class="pipeline-stage">
-          <div class="pipeline-stage-label">Source XML</div>
-          <div class="pipeline-source-stack">
-            <div class="pipeline-source pipeline-source-usc">
-              <div class="pipeline-source-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="m16 16 2 2 4-4"></path><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"></path><path d="m7.5 4.27 9 5.15"></path><polyline points="3.29 7 12 12 20.71 7"></polyline><line x1="12" y1="22" x2="12" y2="12"></line></svg>
-              </div>
-              <div>
-                <div class="pipeline-source-title">USLM 1.0 XML</div>
-                <div class="pipeline-source-sub font-bold">OLRC <br/><a class="font-normal hover:underline" href="https://uscode.house.gov">uscode.house.gov</a></div>
-              </div>
-            </div>
-            <div class="pipeline-source pipeline-source-ecfr">
-              <div class="pipeline-source-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="m16 16 2 2 4-4"></path><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"></path><path d="m7.5 4.27 9 5.15"></path><polyline points="3.29 7 12 12 20.71 7"></polyline><line x1="12" y1="22" x2="12" y2="12"></line></svg>
-              </div>
-              <div>
-                <div class="pipeline-source-title">GPO/SGML XML</div>
-                <div class="pipeline-source-sub font-bold">eCFR<br/><a class="font-normal hover:underline" href="https://www.ecfr.gov">ecfr.gov</a></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Arrow -->
-        <div class="pipeline-arrow" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pipeline-arrow-icon"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pipeline-arrow-icon-down"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></svg>
-        </div>
-
-        <!-- Source parsers column -->
-        <div class="pipeline-stage">
-          <div class="pipeline-stage-label">Source Parsers</div>
-          <div class="pipeline-source-stack">
-            <div class="pipeline-parser pipeline-parser-usc">
-              <div class="pipeline-parser-name">@lexbuild/usc</div>
-              <div class="pipeline-parser-desc">USLM schema → AST builder</div>
-            </div>
-            <div class="pipeline-parser pipeline-parser-ecfr">
-              <div class="pipeline-parser-name">@lexbuild/ecfr</div>
-              <div class="pipeline-parser-desc">GPO/SGML → AST builder</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Arrow -->
-        <div class="pipeline-arrow" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pipeline-arrow-icon"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pipeline-arrow-icon-down"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></svg>
-        </div>
-
-        <!-- Core engine -->
-        <div class="pipeline-stage">
-          <div class="pipeline-stage-label">Core Engine</div>
-          <div class="pipeline-core">
-            <div class="pipeline-core-name">@lexbuild/core</div>
-            <div class="pipeline-core-steps">
-              <span class="pipeline-core-step">SAX Parse</span>
-              <span class="pipeline-core-step-sep">→</span>
-              <span class="pipeline-core-step">Typed AST</span>
-              <span class="pipeline-core-step-sep">→</span>
-              <span class="pipeline-core-step">Render</span>
-            </div>
-            <div class="pipeline-core-features">
-              <span>Frontmatter</span>
-              <span class="pipeline-core-dot"></span>
-              <span>Link Resolution</span>
-              <span class="pipeline-core-dot"></span>
-              <span>Metadata</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Arrow -->
-        <div class="pipeline-arrow" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pipeline-arrow-icon"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pipeline-arrow-icon-down"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></svg>
-        </div>
-
-        <!-- Output -->
-        <div class="pipeline-stage">
-          <div class="pipeline-stage-label">Output</div>
-          <div class="pipeline-output">
-            <div class="pipeline-output-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
-            </div>
-            <div>
-              <div class="pipeline-output-title">Structured Markdown</div>
-              <div class="pipeline-output-sub">YAML frontmatter + per-section .md files</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- CLI orchestration bar -->
-      <div class="pipeline-cli-bar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5 shrink-0"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
-        <span><strong>@lexbuild/cli</strong> orchestrates the full pipeline — download, parse, convert, write</span>
       </div>
     </div>
   </section>
@@ -1255,27 +1289,195 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
     color: var(--color-summer-green-400, #98b8ab);
   }
 
-  .pipeline-cli-bar {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: 0.75rem;
-    padding: 0.5rem 0.75rem;
-    border-radius: calc(var(--radius) - 2px);
-    background: var(--color-slate-blue-950, #1f2c38);
-    color: var(--color-slate-blue-300, #b4cfda);
-    font-size: 0.75rem;
-    font-family: var(--font-mono);
+  .pipeline-source-future {
+    border-style: dashed;
+    border-color: var(--color-putty-300, #e7c788);
+    background: var(--color-putty-50, #fcf8ee);
+    opacity: 0.85;
   }
 
-  .pipeline-cli-bar strong {
+  :global(.dark) .pipeline-source-future {
+    background: color-mix(in oklch, var(--color-putty-950, #2a1d0a) 50%, var(--card));
+    border-color: var(--color-putty-700, #8c5e1e);
+  }
+
+  .pipeline-source-future .pipeline-source-icon {
+    background: var(--color-putty-100, #f7edd5);
+    color: var(--color-putty-600, #b66f2b);
+  }
+
+  :global(.dark) .pipeline-source-future .pipeline-source-icon {
+    background: var(--color-putty-900, #3d2c12);
+    color: var(--color-putty-400, #dca756);
+  }
+
+  .pipeline-parser-future {
+    border-style: dashed;
+    border-left: 2px dashed var(--color-putty-400, #dca756);
+    border-color: var(--color-putty-300, #e7c788);
+    background: var(--color-putty-50, #fcf8ee);
+    opacity: 0.85;
+  }
+
+  :global(.dark) .pipeline-parser-future {
+    background: color-mix(in oklch, var(--color-putty-950, #2a1d0a) 50%, var(--card));
+    border-color: var(--color-putty-700, #8c5e1e);
+    border-left-color: var(--color-putty-600, #b66f2b);
+  }
+
+  .pipeline-stage-inner {
+    flex: 1.5;
+  }
+
+  .pipeline-stage-inner .pipeline-source-stack {
+    margin-bottom: 0;
+  }
+
+
+  .pipeline-depends {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0;
+  }
+
+  .pipeline-depends-arrow {
+    width: 0.875rem;
+    height: 0.875rem;
+    color: var(--color-slate-blue-300, #b4cfda);
+  }
+
+  :global(.dark) .pipeline-depends-arrow {
+    color: var(--color-slate-blue-600, #5285a3);
+  }
+
+  .pipeline-depends-cli {
+    padding-top: 0;
+    padding-bottom: 0.125rem;
+  }
+
+  .pipeline-depends-label {
+    font-size: 0.5625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-slate-blue-400, #94b7c7);
+  }
+
+  :global(.dark) .pipeline-depends-label {
+    color: var(--color-slate-blue-500, #6c9fb7);
+  }
+
+  .pipeline-cli {
+    border-radius: calc(var(--radius) - 2px);
+    border: 1.5px solid var(--color-slate-blue-300, #b4cfda);
+    background: white;
+    overflow: hidden;
+  }
+
+  :global(.dark) .pipeline-cli {
+    border-color: var(--color-slate-blue-700, #476c85);
+    background: var(--color-slate-blue-950, #1f2c38);
+  }
+
+  .pipeline-cli-header {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    background: var(--color-slate-blue-50, #f5f9fa);
+    border-bottom: 1px solid var(--color-slate-blue-200, #d3e3e9);
+  }
+
+  :global(.dark) .pipeline-cli-header {
+    background: var(--color-slate-blue-900, #354754);
+    border-bottom-color: var(--color-slate-blue-700, #476c85);
+  }
+
+  .pipeline-cli-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.375rem;
+    background: var(--color-slate-blue-200, #d3e3e9);
+    color: var(--color-slate-blue-700, #476c85);
+    flex-shrink: 0;
+  }
+
+  :global(.dark) .pipeline-cli-icon {
+    background: var(--color-slate-blue-800, #3f5869);
+    color: var(--color-summer-green-400, #98b8ab);
+  }
+
+  .pipeline-cli-name {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--color-slate-blue-900, #354754);
+    line-height: 1.2;
+  }
+
+  :global(.dark) .pipeline-cli-name {
     color: white;
   }
 
-  :global(.dark) .pipeline-cli-bar {
-    background: var(--color-slate-blue-900, #354754);
-    border: 1px solid var(--color-slate-blue-700, #476c85);
+  .pipeline-cli-role {
+    font-size: 0.75rem;
+    color: var(--color-slate-blue-600, #5285a3);
+    margin-top: 0.0625rem;
   }
+
+  :global(.dark) .pipeline-cli-role {
+    color: var(--color-slate-blue-400, #94b7c7);
+  }
+
+  .pipeline-cli-body {
+    padding: 0.75rem;
+    background: white;
+  }
+
+  :global(.dark) .pipeline-cli-body {
+    background: var(--color-slate-blue-950, #1f2c38);
+  }
+
+  .pipeline-cli-body .pipeline-flow {
+    gap: 0;
+  }
+
+  .pipeline-cli-steps {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+    flex-wrap: wrap;
+  }
+
+  .pipeline-cli-step {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 0.1875rem 0.5rem;
+    border-radius: 0.25rem;
+    background: white;
+    border: 1px solid var(--color-slate-blue-200, #d3e3e9);
+    color: var(--color-slate-blue-700, #476c85);
+    white-space: nowrap;
+  }
+
+  :global(.dark) .pipeline-cli-step {
+    background: var(--color-slate-blue-800, #3f5869);
+    border-color: var(--color-slate-blue-700, #476c85);
+    color: var(--color-slate-blue-200, #d3e3e9);
+  }
+
+  .pipeline-cli-step-arrow {
+    font-size: 0.625rem;
+    color: var(--color-slate-blue-400, #94b7c7);
+  }
+
 
   /* ── Pipeline responsive: stack vertically on small screens ── */
 
