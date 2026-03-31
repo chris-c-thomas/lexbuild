@@ -3,6 +3,9 @@
   "version": "1.13.3",
   "type": "module",
   "private": true,
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "astro dev",
     "dev:astro": "astro dev",

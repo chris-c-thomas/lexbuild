@@ -3,6 +3,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "tsconfig.json", "tsup.config.ts"],
       "outputs": ["dist/**"]
     },
     "typecheck": {
@@ -19,9 +20,6 @@
     },
     "lint:fix": {
       "dependsOn": ["transit"]
-    },
-    "lint:knip": {
-      "cache": false
     },
     "dev": {
       "cache": false,
