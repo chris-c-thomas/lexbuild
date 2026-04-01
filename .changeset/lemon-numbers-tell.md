@@ -1,9 +1,0 @@
----
-"@lexbuild/core": minor
-"@lexbuild/ecfr": minor
-"@lexbuild/cli": minor
-"@lexbuild/usc": minor
-"@lexbuild/fr": minor
----
-
-Implement Federal Register

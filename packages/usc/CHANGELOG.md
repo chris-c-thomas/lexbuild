@@ -1,5 +1,30 @@
 # @lexbuild/usc
 
+## 1.15.0
+
+### Minor Changes
+
+- 0d01106: Implement Federal Register
+- 974392c: Implement bulk xml downloader for federal register
+
+### Patch Changes
+
+- c873f5c: Update packages CLAUDE.md files
+- 889a9c1: Fix parser error
+- 89a630b: Fix FR conversion
+- c3bec41: Implement concurrent downloads for FR
+- c612cb6: Fix formatting issues with FR raw and rendered text
+- 424d10c: Fix Federal Register downloader progress status; change 100ms request delay to 25ms for 4x faster throughput
+- Updated dependencies [c873f5c]
+- Updated dependencies [0d01106]
+- Updated dependencies [889a9c1]
+- Updated dependencies [89a630b]
+- Updated dependencies [c3bec41]
+- Updated dependencies [c612cb6]
+- Updated dependencies [974392c]
+- Updated dependencies [424d10c]
+  - @lexbuild/core@1.15.0
+
 ## 1.14.1
 
 ### Patch Changes
