@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/sidebar/Sidebar";
 import { MobileNav } from "@/components/sidebar/MobileNav";
 import { SearchDialog } from "@/components/search/SearchDialog";
 import type { SourceId, PageSEO } from "@/lib/types";
+import { SOURCES } from "@/lib/sources";
 
 interface Props {
   seo: PageSEO;
@@ -14,6 +15,7 @@ interface Props {
 
 const { seo, source } = Astro.props;
 const currentPath = Astro.url.pathname;
+const showSidebar = source ? (SOURCES[source]?.hasSidebar !== false) : false;
 const enableSearch = (import.meta.env.ENABLE_SEARCH ?? "false") === "true";
 const meiliUrl = import.meta.env.MEILI_URL ?? "http://127.0.0.1:7700";
 const isProxyMode = meiliUrl.startsWith("/");
@@ -71,7 +73,7 @@ const meiliSearchKey = isProxyMode ? undefined : (import.meta.env.MEILI_SEARCH_K
   <body class="bg-background text-foreground min-h-screen antialiased">
     <a
       href="#main-content"
-      class="bg-background text-foreground ring-ring fixed top-2 left-2 z-[100] rounded-md px-4 py-2 text-sm font-medium opacity-0 ring-2 transition-opacity focus:opacity-100"
+      class="bg-background text-foreground ring-ring pointer-events-none fixed top-2 left-2 z-[100] rounded-md px-4 py-2 text-sm font-medium opacity-0 ring-2 transition-opacity focus:pointer-events-auto focus:opacity-100"
     >
       Skip to content
     </a>
@@ -120,6 +122,15 @@ const meiliSearchKey = isProxyMode ? undefined : (import.meta.env.MEILI_SEARCH_K
               eCFR
             </a>
             <a
+              href="/fr"
+              class:list={[
+                "nav-link hover:text-slate-blue-700 dark:hover:text-slate-blue-300 inline-flex items-center gap-1.5 transition-colors",
+                source === "fr" ? "text-foreground" : "text-muted-foreground",
+              ]}
+            >
+              Federal Register
+            </a>
+            <a
               href="https://www.npmjs.com/package/@lexbuild/cli"
               target="_blank"
               rel="noopener noreferrer"
@@ -161,13 +172,17 @@ const meiliSearchKey = isProxyMode ? undefined : (import.meta.env.MEILI_SEARCH_K
       </div>
     </header>
     {
-      source ? (
+      showSidebar ? (
         <div class="flex">
-          <Sidebar client:load sourceId={source} currentPath={currentPath} />
+          <Sidebar client:load sourceId={source!} currentPath={currentPath} />
           <main id="main-content" class="bg-background dark:bg-background min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
             <slot />
           </main>
         </div>
+      ) : source ? (
+        <main id="main-content" class="bg-background dark:bg-background mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+          <slot />
+        </main>
       ) : (
         <main id="main-content">
           <slot />

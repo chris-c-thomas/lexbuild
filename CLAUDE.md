@@ -131,10 +131,13 @@ pnpm turbo build:astro --filter=@lexbuild/astro # Production build
 cd apps/astro
 bash scripts/link-content.sh                      # Symlink CLI output into content/
 npx tsx scripts/generate-nav.ts                    # Build sidebar JSON from _meta.json
-npx tsx scripts/generate-highlights.ts             # Pre-render Shiki HTML for all .md files
-npx tsx scripts/generate-highlights.ts --limit 50  # Test on subset
+npx tsx scripts/generate-highlights.ts                    # Pre-render Shiki HTML for all .md files
+npx tsx scripts/generate-highlights.ts --limit 50         # Test on subset
+npx tsx scripts/generate-highlights.ts --chunk-size 1000  # Smaller chunks for memory-constrained runs
 npx tsx scripts/generate-sitemap.ts                # Build sitemap index + chunked sitemaps
-npx tsx scripts/index-search.ts                    # Index into Meilisearch (~281k docs, ~26 min)
+npx tsx scripts/index-search.ts                    # Full reindex into Meilisearch (~1M docs)
+npx tsx scripts/index-search-incremental.ts --source fr  # Index a single source
+npx tsx scripts/index-search-incremental.ts --set-checkpoint  # Mark checkpoint without indexing
 
 # Meilisearch local setup (macOS)
 brew install meilisearch                           # Install via Homebrew
@@ -558,13 +561,18 @@ Complete daily issue XML (~2.4 MB average). Updated by 6 AM on publishing days. 
 - **Meilisearch `--import-dump` doesn't exit**: It imports then keeps running as a foreground server. The deploy script backgrounds it, polls health, then kills it before restarting via PM2.
 - **Local Meilisearch dumps**: Use `--dump-dir ~/.meilisearch/dumps` to consolidate dumps alongside data. Without it, dumps default to `dumps/` relative to CWD. The deploy script searches multiple candidate locations as a fallback.
 - **Duplicate chapter directories in USC `_meta.json`**: Many USC titles have subchapters that share the same `chapter-NN/` directory (e.g., Title 5 Chapter 89 has three subchapters). The nav generator (`generate-nav.ts`) merges these by directory to avoid duplicate React keys in the sidebar.
+- **gray-matter `{ cache: false }` in batch scripts**: gray-matter caches every parsed file by input string, causing unbounded memory growth. Always pass `{ cache: false }` when calling `matter()` in loops or batch processing scripts.
 - **Ora spinner text should NOT end with `...`**: The trailing dots conflict with ora's own dots animation, causing visual artifacts (periods appearing around numbers). The spinner animation itself provides the "in progress" cue — end text with the last meaningful word, not ellipsis.
 - **Indexed array iteration with strict TypeScript**: `noUncheckedIndexedAccess` makes `arr[i]` return `T | undefined`, and `no-non-null-assertion` forbids `arr[i]!`. Use `for (const [i, item] of arr.entries())` instead of `for (let i = 0; ...)` to get typed values without assertions.
 - **FR documents use `title_number: 0`**: FR documents don't belong to a USC/CFR title. Convention: `title_number: 0`, `title_name: "Federal Register"`, `section_number` = document number string.
 - **FR API `results` can be absent**: When the API returns 0 results (weekends/holidays), `data.results` may be `undefined`. Always default to `data.results ?? []`.
 - **FR API 10,000 result cap**: The FederalRegister.gov API caps query results at 10,000. The downloader auto-chunks by month to stay under this limit.
 - **FR emphasis map duplicated from eCFR**: Package boundary rules prevent `@lexbuild/fr` from importing `ECFR_EMPHASIS_MAP`. `FR_EMPHASIS_MAP` in `fr-elements.ts` is an independent copy. Keep both in sync when adding new emphasis codes.
+- **FR document number prefix ≠ publication year**: `2025-24130` may have `publication_date: "2026-01-02"`. Download paths use `publication_date`, not the document number prefix.
+- **FR downloader uses concurrent worker pool**: `concurrency` option (default 10) replaced sequential `fetchDelayMs`. CLI exposes `--concurrency` flag. API latency (~10s/request) is the bottleneck, not bandwidth.
+- **Astro template expressions are plain JS, not TypeScript**: `new Map<string, T>()` and other generics in template `{}` expressions cause esbuild errors ("Unexpected const"). Move complex typed logic to the `---` frontmatter section.
 - **FR download directory structure matches output**: Both use `{YYYY}/{MM}/{document_number}.*` — downloads have `.xml`/`.json`, output has `.md`. The converter infers publication date from the path when no JSON sidecar is available.
+- **Meilisearch version upgrades require database deletion**: Meilisearch does not support in-place migration between data versions (e.g., 1.39→1.41). Delete `~/.meilisearch/data.ms` (local) or `/var/lib/meilisearch/data` (VPS) and reindex. The search index is derived from `.md` files, so no data is lost.
 
 ## When Adding New Source Types
 

@@ -16,7 +16,8 @@ src/
 ├── ecfr-path.ts             # Output path builder
 ├── converter.ts             # Conversion orchestrator (collect-then-write)
 ├── downloader.ts            # Download eCFR XML from govinfo bulk data
-└── ecfr-api-downloader.ts   # Download eCFR XML from ecfr.gov API (daily-updated)
+├── ecfr-api-downloader.ts   # Download eCFR XML from ecfr.gov API (daily-updated)
+└── ecfr-api-downloader.test.ts  # 5 unit tests
 ```
 
 ## Public API

@@ -85,7 +85,7 @@ scripts/
 ├── generate-nav.ts                 # _meta.json → public/nav/ JSON
 ├── generate-highlights.ts          # Batch Shiki pre-rendering
 ├── generate-sitemap.ts             # Sitemap index + chunks
-├── index-search.ts                 # Full Meilisearch index (281k docs)
+├── index-search.ts                 # Full Meilisearch reindex (~1M docs)
 └── index-search-incremental.ts     # Incremental upsert
 ```
 
@@ -123,14 +123,17 @@ Run from `apps/astro/` after CLI conversion:
 ```bash
 bash scripts/link-content.sh                       # Symlink output → content/
 npx tsx scripts/generate-nav.ts                     # Build sidebar JSON (<2s)
-npx tsx scripts/generate-highlights.ts              # Shiki pre-render (~287k files, ~6 min)
+npx tsx scripts/generate-highlights.ts              # Shiki pre-render (~1M files w/ FR)
+npx tsx scripts/generate-highlights.ts --chunk-size 1000  # Smaller chunks if memory-tight
 npx tsx scripts/generate-sitemap.ts                 # Sitemap (~292k URLs, <5s)
-npx tsx scripts/index-search.ts                     # Meilisearch index (~281k docs)
+npx tsx scripts/index-search.ts                     # Meilisearch full reindex (~1M docs)
+npx tsx scripts/index-search-incremental.ts --source fr  # Index only one source
+npx tsx scripts/index-search-incremental.ts --set-checkpoint  # Set checkpoint without indexing
 ```
 
 Script notes:
-- **generate-highlights.ts**: Forks child processes in 10k-file chunks to avoid Shiki OOM (grammar cache leaks ~4GB over 260k+ files). Changing themes requires updating both this script and `src/lib/shiki.ts`, then deleting existing `.highlighted.html` files.
-- **index-search.ts**: 500 docs/batch, 300s waitForTask timeout. Requires `MEILI_URL` and optionally `MEILI_MASTER_KEY` env vars. Document IDs sanitized (dots/colons → underscores).
+- **generate-highlights.ts**: Forks child processes in 2k-file chunks (default, tunable via `--chunk-size N`) to avoid Shiki OOM. Each child is heap-capped at 2GB (`--max-old-space-size`). Uses `matter(raw, { cache: false })` to prevent gray-matter from caching every file in memory. Supports `--limit N` for testing. Changing themes requires updating both this script and `src/lib/shiki.ts`, then deleting existing `.highlighted.html` files.
+- **index-search.ts** and **index-search-incremental.ts**: Must be kept in sync — sources indexed, `SearchDocument` shape, and `configureIndex` settings must match. Both index USC, eCFR, and FR. Full reindex deletes and rebuilds; incremental upserts only changed files (mtime-based checkpoint). 500 docs/batch, 300s waitForTask timeout. Document IDs sanitized (dots/colons → underscores).
 - **generate-nav.ts**: Includes reserved title placeholders (USC 53, eCFR 35). Chapter grouping for eCFR derived from filesystem directories, not `_meta.json`.
 
 ## Meilisearch Search
@@ -216,6 +219,7 @@ Initialized with radix-nova preset, zinc theme. Components in `src/components/ui
 - **Homepage sections with hardcoded light backgrounds** (e.g., `bg-[#FAFAFA]`, `bg-summer-green-50/75`) must include `dark:` overrides. Use `dark:bg-background` or `dark:bg-slate-blue-950/50` for subtle dark tinting.
 - **Homepage section order**: Hero → CLI Quick Start → Browse Sources → How It Works (pipeline diagram) → Sample Output → Packages. Background alternation: surface/grid → transparent → slate-blue-50 → transparent → #FAFAFA → summer-green-50. The pipeline diagram is a complex scoped-CSS component with CLI as outer wrapper, core engine above parsers, and dependency connectors between layers.
 - **gray-matter cache corrupts `.matter`**: `gray-matter` caches results by input string. The `.matter` property is a lazy getter consumed by `.data` access. On the second SSR request with the same file, the cached object returns `undefined` for `.matter`. Always use `matter(raw, { cache: false })` when reading `.matter`.
+- **gray-matter `{ cache: false }` in batch scripts**: gray-matter caches parsed results by input string. In batch processing (highlights, search indexing), this causes unbounded RSS growth (~30MB per 1,000 files). Always pass `{ cache: false }` when calling `matter()` in loops. Affects `generate-highlights.ts`, `index-search.ts`, and `index-search-incremental.ts`.
 - **React hydration with localStorage**: Don't read localStorage in `useState()` initializer — SSR renders the default, client reads stored value, causing hydration mismatch. Use `useLayoutEffect` to apply stored value after hydration but before paint.
 - **`--content` deploy doesn't regenerate anything**: It only rsyncs existing local files. To update nav/sitemap after code changes, either regenerate locally then `--content`, or SSH into VPS and regenerate there. `--remote` runs the full pipeline.
 - **Error pages must be at `src/pages/` root** — Astro's 404/500 auto-routing only works for `src/pages/404.astro` and `src/pages/500.astro`. Subdirectories (e.g., `src/pages/errors/`) would change the URL path and break auto-routing.
@@ -241,6 +245,20 @@ All SEO is driven by `lib/seo.ts` (pure functions, no Astro imports) and `compon
 - **Vitest** configured at `vitest.config.ts` with `@` path alias
 - Tests in `src/lib/__tests__/`. Run with `pnpm test` or `npx vitest run`
 - SEO builder functions are pure — tested without Astro runtime
+
+## Federal Register Integration
+
+FR is the third source (`source: "fr"`) with a fundamentally different structure from USC/eCFR:
+- **Date-based, not hierarchical**: URLs follow `/fr/{YYYY}/{MM}/{document_number}` (3 segments)
+- **FR sidebar**: `SourceConfig.hasSidebar` is `true` for FR. `FrSidebarContent` in `SidebarContent.tsx` renders a year/month tree (loaded from `years.json`). Months are leaf links to listing pages, not expandable. Years show total doc counts, months show per-month counts.
+- **New granularity values**: `"document"` (content leaf), `"month"` (index), `"year"` (index) added to `Granularity` type. These only flow through FR code paths.
+- **Route validation is source-aware**: `isValidSegment()` in `routes.ts` accepts `sourceId` and `index` params. FR segments are `^\d{4}$` (year), `^\d{2}$` (month), `^\d{4}-\d{4,6}$` (doc number) — not the `^(title|chapter|part|section)-` prefix pattern used by USC/eCFR.
+- **Content path**: `fr/documents/{YYYY}/{MM}/{doc}.md` — symlinked from `output/fr/` via `link-content.sh`
+- **Nav data**: `public/nav/fr/years.json` (year summaries) + `public/nav/fr/{YYYY}-{MM}.json` (per-month document listings). Generated by `generateFrNav()` in `generate-nav.ts`.
+- **Month index pages group by publication date** with document type badges (rule/notice/proposed rule/presidential). Logic for grouping must be in the Astro frontmatter section, not in template expressions (Astro templates don't support TypeScript generics like `new Map<string, T>()`).
+- **FrontmatterPanel** shows FR-specific fields: Document Type, FR Citation, Publication Date, Agencies, Effective Date, Comments Close Date, Docket IDs, RIN.
+- **`hasSidebar` on SourceConfig controls layout**: When `false`, BaseLayout renders a centered max-width `<main>` without sidebar or mobile nav tree. All three sources (USC, eCFR, FR) currently have `hasSidebar: true`. Check `SOURCES[source]?.hasSidebar !== false` in BaseLayout.
+- **Don't pipe long-running scripts through `head`**: `npx tsx scripts/index-search.ts 2>&1 | head -25` kills the process via SIGPIPE when the pipe closes. Run indexer scripts directly or use `run_in_background`.
 
 ## `astro.config.ts`
 

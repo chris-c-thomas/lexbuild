@@ -9,6 +9,7 @@ CONTENT_DIR="./content"
 # Create content directory structure (source-first, then granularity)
 mkdir -p "$CONTENT_DIR"/usc/{sections,chapters,titles}
 mkdir -p "$CONTENT_DIR"/ecfr/{sections,chapters,parts,titles}
+mkdir -p "$CONTENT_DIR"/fr/documents
 
 # Section-level output (default granularity, -o ./output)
 if [ -d "$REPO_ROOT/output/usc" ]; then
@@ -51,6 +52,13 @@ if [ -d "$REPO_ROOT/output-title/ecfr" ]; then
   rm -rf "$CONTENT_DIR/ecfr/titles"
   ln -s "$REPO_ROOT/output-title/ecfr" "$CONTENT_DIR/ecfr/titles"
   echo "Linked eCFR titles"
+fi
+
+# FR documents (flat output, no granularity variants)
+if [ -d "$REPO_ROOT/output/fr" ]; then
+  rm -rf "$CONTENT_DIR/fr/documents"
+  ln -s "$REPO_ROOT/output/fr" "$CONTENT_DIR/fr/documents"
+  echo "Linked FR documents"
 fi
 
 echo "All content linked."

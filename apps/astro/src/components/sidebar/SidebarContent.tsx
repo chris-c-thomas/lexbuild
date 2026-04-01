@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { ChevronRight } from "lucide-react";
 import { SectionList } from "./SectionList";
 import { toTitleCase } from "@/lib/utils";
-import type { SourceId, TitleSummary, ChapterNav, PartNav } from "@/lib/types";
+import type { SourceId, TitleSummary, ChapterNav, PartNav, FrYearSummary } from "@/lib/types";
 
 interface SidebarContentProps {
   sourceId: SourceId;
@@ -35,6 +35,156 @@ function parseActivePath(sourceId: SourceId, path: string) {
 // ---------------------------------------------------------------------------
 
 export function SidebarContent({ sourceId, currentPath }: SidebarContentProps) {
+  if (sourceId === "fr") {
+    return <FrSidebarContent currentPath={currentPath} />;
+  }
+  return <TitleSidebarContent sourceId={sourceId} currentPath={currentPath} />;
+}
+
+// ---------------------------------------------------------------------------
+// FR sidebar — year/month tree
+// ---------------------------------------------------------------------------
+
+const MONTH_NAMES = [
+  "", "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+function parseFrActivePath(path: string) {
+  const prefix = "/fr/";
+  if (!path.startsWith(prefix)) return { year: null, month: null };
+  const segments = path.slice(prefix.length).split("/");
+  return {
+    year: segments[0] ?? null,
+    month: segments[1] ?? null,
+  };
+}
+
+function FrSidebarContent({ currentPath }: { currentPath: string }) {
+  const [years, setYears] = useState<FrYearSummary[] | null>(null);
+  const [expandedYear, setExpandedYear] = useState<string | null>(null);
+  const [userToggled, setUserToggled] = useState(false);
+  const active = parseFrActivePath(currentPath);
+
+  useEffect(() => {
+    fetch("/nav/fr/years.json")
+      .then((r) => r.json())
+      .then((data: FrYearSummary[]) => setYears(data))
+      .catch(() => setYears([]));
+  }, []);
+
+  // Auto-expand to active year on initial load (only before user interacts)
+  useEffect(() => {
+    if (!active.year || userToggled) return;
+    setExpandedYear(active.year);
+  }, [active.year, userToggled]);
+
+  const toggleYear = (year: string) => {
+    setUserToggled(true);
+    setExpandedYear(expandedYear === year ? null : year);
+  };
+
+  return (
+    <div className="p-3">
+      {!years ? (
+        <div className="space-y-2 p-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="bg-sidebar-accent/50 h-6 animate-pulse rounded"
+              style={{ width: `${[60, 75, 55, 70, 65, 80][i]}%` }}
+            />
+          ))}
+        </div>
+      ) : years.length === 0 ? (
+        <p className="text-muted-foreground p-2 text-sm">No years found.</p>
+      ) : (
+        <nav aria-label="Federal Register navigation">
+          <ul className="space-y-0.5">
+            {years
+              .slice()
+              .sort((a, b) => b.year - a.year)
+              .map((yr) => {
+                const yearStr = String(yr.year);
+                const isExpanded = expandedYear === yearStr;
+                const isActiveYear = active.year === yearStr;
+
+                return (
+                  <li key={yr.year}>
+                    <button
+                      onClick={() => toggleYear(yearStr)}
+                      className={`flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
+                        isExpanded
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                          : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+                      }`}
+                      aria-expanded={isExpanded}
+                    >
+                      <ChevronRight
+                        className={`text-sidebar-foreground/40 size-3.5 shrink-0 transition-transform ${
+                          isExpanded ? "rotate-90" : ""
+                        }`}
+                      />
+                      <span className="text-slate-blue-700 dark:text-slate-blue-400 shrink-0 font-mono text-xs font-semibold">
+                        {yr.year}
+                      </span>
+                      <span className="min-w-0 truncate font-medium">
+                        {yr.documentCount.toLocaleString()} docs
+                      </span>
+                    </button>
+
+                    {isExpanded && (
+                      <div className="border-sidebar-border mt-0.5 ml-3 border-l pl-2">
+                        <ul className="space-y-0.5">
+                          {yr.months
+                            .slice()
+                            .sort((a, b) => b.month - a.month)
+                            .map((m) => {
+                              const monthStr = String(m.month).padStart(2, "0");
+                              const isActiveMonth =
+                                isActiveYear && active.month === monthStr;
+
+                              return (
+                                <li key={m.month}>
+                                  <a
+                                    href={`/fr/${yearStr}/${monthStr}`}
+                                    className={`flex w-full items-center gap-1.5 rounded-md px-2 py-1 text-left text-[0.8rem] transition-colors ${
+                                      isActiveMonth
+                                        ? "bg-sidebar-accent/70 text-sidebar-accent-foreground font-medium"
+                                        : "text-sidebar-foreground/80 hover:bg-sidebar-accent/40"
+                                    }`}
+                                  >
+                                    <span className="text-slate-blue-700 dark:text-slate-blue-400 shrink-0 font-mono text-[0.65rem] font-semibold">
+                                      {monthStr}
+                                    </span>
+                                    <span className="min-w-0 truncate">
+                                      {MONTH_NAMES[m.month]}
+                                    </span>
+                                    <span className="text-muted-foreground ml-auto shrink-0 text-[0.6rem]">
+                                      {m.documentCount.toLocaleString()}
+                                    </span>
+                                  </a>
+                                </li>
+                              );
+                            })}
+                        </ul>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+          </ul>
+        </nav>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Title-based sidebar — USC/eCFR
+// ---------------------------------------------------------------------------
+
+function TitleSidebarContent({ sourceId, currentPath }: SidebarContentProps) {
   const [titles, setTitles] = useState<TitleSummary[] | null>(null);
   const [expandedTitle, setExpandedTitle] = useState<string | null>(null);
   const [expandedChapter, setExpandedChapter] = useState<string | null>(null);

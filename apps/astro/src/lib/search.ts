@@ -37,7 +37,7 @@ export function initSearch(config: { host: string; apiKey: string }): void {
 /** Search document shape returned by Meilisearch. */
 export interface SearchDocument {
   id: string;
-  source: "usc" | "ecfr";
+  source: "usc" | "ecfr" | "fr";
   title_number: number;
   title_name: string;
   identifier: string;
@@ -45,6 +45,7 @@ export interface SearchDocument {
   status: string;
   hierarchy: string[];
   url: string;
+  document_type?: string;
 }
 
 /** Search result from Meilisearch. */
@@ -60,7 +61,7 @@ export interface SearchResult {
 export async function search(
   query: string,
   options?: {
-    source?: "usc" | "ecfr";
+    source?: "usc" | "ecfr" | "fr";
     titleNumber?: number;
     status?: string;
     limit?: number;

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createReadStream } from "node:fs";
+import { Readable } from "node:stream";
 import { resolve } from "node:path";
 import { XMLParser } from "@lexbuild/core";
 import type { LevelNode, ContentNode, InlineNode, NoteNode, EmitContext } from "@lexbuild/core";
@@ -120,28 +121,28 @@ describe("FrASTBuilder", () => {
       expect(textContent).toBeDefined();
     });
 
-    it("handles E emphasis codes (bold)", async () => {
+    it("handles E emphasis codes (T=03 as italic for citations)", async () => {
       const { collected } = await parseFixture("simple-rule.xml");
       const { node } = collected[0]!;
 
       // The DATES section has <E T="03">Effective date:</E>
-      // T="03" maps to bold
+      // T="03" maps to italic in FR (used for case names, citations, publication titles)
       const contentNodes = node.children.filter((c) => c.type === "content") as ContentNode[];
-      let foundBoldEmphasis = false;
+      let foundItalicEmphasis = false;
       for (const content of contentNodes) {
         for (const inline of content.children) {
-          if (inline.type === "inline" && (inline as InlineNode).inlineType === "bold") {
-            const boldNode = inline as InlineNode;
-            const text = boldNode.text ?? "";
+          if (inline.type === "inline" && (inline as InlineNode).inlineType === "italic") {
+            const italicNode = inline as InlineNode;
+            const text = italicNode.text ?? "";
             const childText =
-              boldNode.children?.map((c) => (c as InlineNode).text ?? "").join("") ?? "";
+              italicNode.children?.map((c) => (c as InlineNode).text ?? "").join("") ?? "";
             if (text.includes("Effective date") || childText.includes("Effective date")) {
-              foundBoldEmphasis = true;
+              foundItalicEmphasis = true;
             }
           }
         }
       }
-      expect(foundBoldEmphasis).toBe(true);
+      expect(foundItalicEmphasis).toBe(true);
     });
 
     it("handles italic inline elements", async () => {
@@ -180,6 +181,54 @@ describe("FrASTBuilder", () => {
 
       expect(context.documentMeta.dcTitle).toBe("Amendments to Exchange Act Rule 10b-5");
       expect(context.documentMeta.dcType).toBe("rule");
+    });
+
+    it("infers publication date from FRDOC filing date", async () => {
+      // Fixture has: Filed 3-27-26 → publication date = 2026-03-28
+      const { builder } = await parseFixture("simple-rule.xml");
+      const metas = builder.getDocumentMetas();
+      expect(metas[0]!.publicationDate).toBe("2026-03-28");
+    });
+  });
+
+  describe("publication date edge cases", () => {
+    // Helper to build minimal XML with a specific FRDOC line
+    function buildFrdocXml(frdocText: string): string {
+      return `<RULE><PREAMB><AGENCY TYPE="F">TEST</AGENCY><SUBJECT>Test</SUBJECT></PREAMB><FRDOC>${frdocText}</FRDOC></RULE>`;
+    }
+
+    async function parseFrdocDate(frdocText: string): Promise<string | undefined> {
+      const builder = new FrASTBuilder({ onEmit: () => {} });
+      const parser = new XMLParser({ defaultNamespace: "" });
+      parser.on("openElement", (name, attrs) => builder.onOpenElement(name, attrs));
+      parser.on("closeElement", (name) => builder.onCloseElement(name));
+      parser.on("text", (text) => builder.onText(text));
+
+      const stream = Readable.from(buildFrdocXml(frdocText));
+      await parser.parseStream(stream);
+
+      const metas = builder.getDocumentMetas();
+      return metas[0]?.publicationDate;
+    }
+
+    it("handles month-end rollover (Jan 31 → Feb 1)", async () => {
+      const date = await parseFrdocDate("[FR Doc. 2026-00001 Filed 1-31-26; 8:45 am]");
+      expect(date).toBe("2026-02-01");
+    });
+
+    it("handles year-end rollover (Dec 31 → Jan 1 next year)", async () => {
+      const date = await parseFrdocDate("[FR Doc. 2025-99999 Filed 12-31-25; 8:45 am]");
+      expect(date).toBe("2026-01-01");
+    });
+
+    it("maps 2-digit year 99 to 1999", async () => {
+      const date = await parseFrdocDate("[FR Doc. 99-12345 Filed 6-15-99; 8:45 am]");
+      expect(date).toBe("1999-06-16");
+    });
+
+    it("returns undefined when FRDOC has no Filed clause", async () => {
+      const date = await parseFrdocDate("[FR Doc. 2026-00001]");
+      expect(date).toBeUndefined();
     });
   });
 
@@ -240,5 +289,6 @@ describe("FrASTBuilder", () => {
       const metas = builder.getDocumentMetas();
       expect(metas[0]!.documentNumber).toBe("2026-06086");
     });
+
   });
 });

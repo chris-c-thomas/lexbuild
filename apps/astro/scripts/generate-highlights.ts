@@ -6,11 +6,12 @@
  * keeping the production runtime lightweight.
  *
  * Usage:
- *   npx tsx scripts/generate-highlights.ts [content-dir] [--limit N]
+ *   npx tsx scripts/generate-highlights.ts [content-dir] [--limit N] [--chunk-size N]
  *
  * Options:
- *   content-dir   Path to content directory (default: ./content)
- *   --limit N     Process only the first N files (for testing)
+ *   content-dir    Path to content directory (default: ./content)
+ *   --limit N      Process only the first N files (for testing)
+ *   --chunk-size N Files per child process (default: 2000)
  *
  * Memory management:
  *   Processes 300k+ files by forking child processes in batches. Each child
@@ -34,8 +35,13 @@ const THEME_NAMES = {
 };
 
 /** Files per child process. Each child gets its own Shiki instance and exits
- *  when done, fully releasing memory. 10k keeps each child under ~2GB. */
-const CHUNK_SIZE = 10_000;
+ *  when done, fully releasing memory. 2k balances throughput vs memory —
+ *  FR documents are ~10x larger than USC/eCFR sections. */
+const DEFAULT_CHUNK_SIZE = 2_000;
+
+/** Max V8 heap per child (MB). Prevents runaway growth from Shiki/gray-matter
+ *  caches. If a child hits this limit it crashes and the parent reports it. */
+const CHILD_MAX_OLD_SPACE_MB = 2048;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -107,7 +113,7 @@ async function runWorker(): Promise<void> {
   for (const mdPath of files) {
     try {
       const raw = await readFile(mdPath, "utf-8");
-      const { content: body } = matter(raw);
+      const { content: body } = matter(raw, { cache: false });
 
       const html = highlighter.codeToHtml(body, {
         lang: "markdown",
@@ -138,10 +144,14 @@ async function main(): Promise<void> {
   const args = process.argv.slice(2);
   let contentDir = "./content";
   let limit = 0;
+  let chunkSize = DEFAULT_CHUNK_SIZE;
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--limit" && args[i + 1]) {
       limit = parseInt(args[i + 1]!, 10);
+      i++;
+    } else if (args[i] === "--chunk-size" && args[i + 1]) {
+      chunkSize = parseInt(args[i + 1]!, 10);
       i++;
     } else if (!args[i]!.startsWith("--")) {
       contentDir = args[i]!;
@@ -181,9 +191,9 @@ async function main(): Promise<void> {
   }
 
   // Split into chunks and process each in a child process
-  const totalChunks = Math.ceil(toProcess.length / CHUNK_SIZE);
+  const totalChunks = Math.ceil(toProcess.length / chunkSize);
   console.log(
-    `\nProcessing ${toProcess.length} files in ${totalChunks} chunks of ${CHUNK_SIZE}...`,
+    `\nProcessing ${toProcess.length} files in ${totalChunks} chunks of ${chunkSize} (heap limit: ${CHILD_MAX_OLD_SPACE_MB}MB)...`,
   );
 
   const startTime = performance.now();
@@ -192,14 +202,15 @@ async function main(): Promise<void> {
   const scriptPath = fileURLToPath(import.meta.url);
 
   for (let c = 0; c < totalChunks; c++) {
-    const chunkStart = c * CHUNK_SIZE;
-    const chunkFiles = toProcess.slice(chunkStart, chunkStart + CHUNK_SIZE);
+    const chunkStart = c * chunkSize;
+    const chunkFiles = toProcess.slice(chunkStart, chunkStart + chunkSize);
     const chunkLabel = `Chunk ${c + 1}/${totalChunks} (${chunkFiles.length} files)`;
     console.log(`  ${chunkLabel}...`);
 
     const result = await new Promise<{ processed: number; errors: number }>((res, rej) => {
       const child = fork(scriptPath, ["--worker"], {
         stdio: ["pipe", "inherit", "inherit", "ipc"],
+        execArgv: [...process.execArgv, `--max-old-space-size=${CHILD_MAX_OLD_SPACE_MB}`],
       });
 
       // Send file list via IPC (avoids OS env/arg size limits for large chunks)

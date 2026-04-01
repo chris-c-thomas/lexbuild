@@ -1,0 +1,81 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import BreadcrumbNav from "@/components/content/BreadcrumbNav.astro";
+import { getFrYears } from "@/lib/nav";
+import { getMonthName } from "@/lib/routes";
+import type { SourceId, PageSEO } from "@/lib/types";
+
+const SOURCE_ID: SourceId = "fr";
+
+const years = await getFrYears();
+const totalDocs = years.reduce((sum, y) => sum + y.documentCount, 0);
+
+Astro.response.headers.set(
+  "Cache-Control",
+  "public, s-maxage=3600, stale-while-revalidate=86400",
+);
+
+const siteUrl = import.meta.env.SITE_URL ?? "https://lexbuild.dev";
+const seo: PageSEO = {
+  title: "Federal Register",
+  description: `Browse ${totalDocs.toLocaleString()} Federal Register documents as structured Markdown. Rules, proposed rules, notices, and presidential documents.`,
+  canonicalUrl: new URL("/fr", siteUrl).href,
+  ogType: "website",
+  ogImage: `${siteUrl}/og-image.png`,
+  jsonLd: {
+    "@type": "CollectionPage",
+    name: "Federal Register",
+    url: new URL("/fr", siteUrl).href,
+    description: "Federal Register documents as structured Markdown.",
+  },
+};
+---
+
+<BaseLayout seo={seo} source={SOURCE_ID}>
+  <BreadcrumbNav breadcrumbs={[{ label: "FR", href: "/fr" }]} />
+
+  <div class="flex flex-col gap-6">
+    <div>
+      <h1
+        class="font-display text-slate-blue-800 dark:text-slate-blue-200 text-2xl font-semibold tracking-tight"
+      >
+        Federal Register
+      </h1>
+      <p class="text-ink-muted mt-1 text-[15px]">
+        {totalDocs.toLocaleString()} documents across {years.length} year{years.length !== 1 ? "s" : ""}
+      </p>
+    </div>
+
+    {
+      years.length > 0 ? (
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {years
+            .sort((a, b) => b.year - a.year)
+            .map((year) => (
+              <a
+                href={`/fr/${year.year}`}
+                class="border-slate-blue-200 hover:border-slate-blue-400 dark:bg-card dark:border-border dark:hover:border-slate-blue-600 flex flex-col rounded-sm border bg-white p-5 transition-colors"
+              >
+                <div class="font-display text-slate-blue-700 dark:text-slate-blue-300 mb-1 text-base font-semibold">
+                  {year.year}
+                </div>
+                <div class="text-foreground text-sm">
+                  {year.months.length} month{year.months.length !== 1 ? "s" : ""}
+                </div>
+                <div class="text-slate-blue-700 dark:text-slate-blue-400 mt-auto flex flex-wrap items-center gap-2 pt-2 text-xs font-medium">
+                  <span>{year.documentCount.toLocaleString()} documents</span>
+                </div>
+              </a>
+            ))}
+        </div>
+      ) : (
+        <div class="border-slate-blue-200 dark:bg-card dark:border-border rounded-sm border bg-white p-12 text-center">
+          <p class="text-muted-foreground font-medium">
+            No Federal Register content available. Run <code>lexbuild download-fr</code> and{" "}
+            <code>lexbuild convert-fr</code> to generate content.
+          </p>
+        </div>
+      )
+    }
+  </div>
+</BaseLayout>

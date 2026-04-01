@@ -1,9 +1,11 @@
 /**
  * Index content into Meilisearch for full-text search.
  *
- * Reads _meta.json sidecar files and truncated Markdown body from both
- * USC and eCFR section-level output, then upserts documents into a
- * Meilisearch index in streaming batches to avoid memory exhaustion.
+ * Full clean reindex: deletes the existing index and rebuilds from scratch.
+ * Indexes all three sources: USC, eCFR, and FR.
+ *
+ * IMPORTANT: Keep sources, SearchDocument shape, and index configuration in
+ * sync with `index-search-incremental.ts` (the incremental upsert script).
  *
  * Usage: npx tsx scripts/index-search.ts [content-dir]
  *
@@ -34,7 +36,7 @@ const GC_INTERVAL = 50_000; // Force GC every N files to prevent heap exhaustion
 
 interface SearchDocument {
   id: string;
-  source: "usc" | "ecfr";
+  source: "usc" | "ecfr" | "fr";
   title_number: number;
   title_name: string;
   granularity: string;
@@ -44,6 +46,8 @@ interface SearchDocument {
   status: string;
   hierarchy: string[];
   url: string;
+  document_type?: string;
+  publication_date?: string;
 }
 
 interface UscTitleMeta {
@@ -118,7 +122,7 @@ function sanitizeId(raw: string): string {
 async function readTruncatedBody(mdPath: string): Promise<string> {
   try {
     const raw = await readFile(mdPath, "utf-8");
-    const { content } = matter(raw);
+    const { content } = matter(raw, { cache: false });
     const cleaned = content
       .replace(/^#{1,6}\s+.*$/gm, "")
       .replace(/\n{3,}/g, "\n\n")
@@ -299,6 +303,92 @@ async function indexEcfrDocuments(contentDir: string, indexer: BatchIndexer): Pr
 }
 
 // ---------------------------------------------------------------------------
+// FR indexing (streaming — no _meta.json, reads frontmatter directly)
+// ---------------------------------------------------------------------------
+
+async function indexFrDocuments(contentDir: string, indexer: BatchIndexer): Promise<number> {
+  const frDir = join(contentDir, "fr", "documents");
+  let yearDirs: string[];
+  try {
+    yearDirs = (await readdir(frDir)).filter((d) => /^\d{4}$/.test(d)).sort();
+  } catch {
+    return 0;
+  }
+
+  let count = 0;
+
+  for (const yearDir of yearDirs) {
+    const yearPath = join(frDir, yearDir);
+    let monthDirs: string[];
+    try {
+      monthDirs = (await readdir(yearPath)).filter((d) => /^\d{2}$/.test(d)).sort();
+    } catch {
+      continue;
+    }
+
+    for (const monthDir of monthDirs) {
+      const monthPath = join(yearPath, monthDir);
+      let files: string[];
+      try {
+        files = (await readdir(monthPath)).filter((f) => f.endsWith(".md") && f !== ".md");
+      } catch {
+        continue;
+      }
+
+      for (const file of files) {
+        const mdPath = join(monthPath, file);
+        try {
+          const raw = await readFile(mdPath, "utf-8");
+          const { data, content } = matter(raw, { cache: false });
+
+          const docNumber = (data.document_number as string) || file.replace(/\.md$/, "");
+          const heading = (data.section_name as string) || (data.title as string) || docNumber;
+          const docType = (data.document_type as string) || "";
+          const pubDate = (data.publication_date as string) || "";
+          const agencies = Array.isArray(data.agencies)
+            ? (data.agencies as string[])
+            : data.agency
+              ? [data.agency as string]
+              : [];
+
+          const body = content
+            .replace(/^#{1,6}\s+.*$/gm, "")
+            .replace(/\n{3,}/g, "\n\n")
+            .trim()
+            .slice(0, BODY_TRUNCATE_CHARS);
+
+          await indexer.add({
+            id: sanitizeId(`fr-${yearDir}-${monthDir}-${file.replace(/\.md$/, "")}`),
+            source: "fr",
+            title_number: 0,
+            title_name: "Federal Register",
+            granularity: "document",
+            identifier: (data.fr_citation as string) || `FR Doc. ${docNumber}`,
+            heading,
+            body,
+            status: docType,
+            document_type: docType,
+            publication_date: pubDate || undefined,
+            hierarchy: [
+              yearDir,
+              pubDate || `${yearDir}-${monthDir}`,
+              ...(agencies.length > 0 ? [agencies[0] as string] : []),
+            ],
+            url: `/fr/${yearDir}/${monthDir}/${file.replace(/\.md$/, "")}`,
+          });
+          count++;
+          trackFileAndGC();
+        } catch (err) {
+          console.warn(`  Warning: skipping ${file}: ${err instanceof Error ? err.message : String(err)}`);
+        }
+      }
+    }
+  }
+
+  return count;
+}
+
+// ---------------------------------------------------------------------------
 // Meilisearch index configuration
 // ---------------------------------------------------------------------------
 
@@ -310,9 +400,16 @@ async function configureIndex(client: Meilisearch): Promise<void> {
 
   await wait(await index.updateSearchableAttributes(["identifier", "heading", "body"]));
   await wait(
-    await index.updateFilterableAttributes(["source", "title_number", "granularity", "status"]),
+    await index.updateFilterableAttributes([
+      "source",
+      "title_number",
+      "granularity",
+      "status",
+      "document_type",
+      "publication_date",
+    ]),
   );
-  await wait(await index.updateSortableAttributes(["title_number", "identifier"]));
+  await wait(await index.updateSortableAttributes(["title_number", "identifier", "publication_date"]));
   await wait(
     await index.updateDisplayedAttributes([
       "id",
@@ -324,6 +421,8 @@ async function configureIndex(client: Meilisearch): Promise<void> {
       "status",
       "hierarchy",
       "url",
+      "document_type",
+      "publication_date",
     ]),
   );
   await wait(
@@ -391,6 +490,12 @@ async function main(): Promise<void> {
   const ecfrCount = await indexEcfrDocuments(contentDir, indexer);
   await indexer.flush();
   console.log(`  ${ecfrCount} eCFR documents indexed`);
+
+  console.log("\nIndexing FR documents...");
+  console.log("  Reading .md files, extracting frontmatter, sending to Meilisearch in batches...");
+  const frCount = await indexFrDocuments(contentDir, indexer);
+  await indexer.flush();
+  console.log(`  ${frCount} FR documents indexed`);
 
   // Verify
   const index = client.index(INDEX_NAME);

@@ -14,7 +14,7 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
   const [results, setResults] = useState<SearchResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sourceFilter, setSourceFilter] = useState<"usc" | "ecfr" | null>(null);
+  const [sourceFilter, setSourceFilter] = useState<"usc" | "ecfr" | "fr" | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -51,7 +51,7 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
   }, [open]);
 
   // Debounced search
-  const doSearch = useCallback(async (q: string, source: "usc" | "ecfr" | null) => {
+  const doSearch = useCallback(async (q: string, source: "usc" | "ecfr" | "fr" | null) => {
     if (!q.trim()) {
       setResults(null);
       return;
@@ -173,6 +173,12 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
               onClick={() => setSourceFilter("ecfr")}
               count={results?.facetDistribution?.source?.ecfr}
             />
+            <FilterTab
+              label="Fed. Register"
+              active={sourceFilter === "fr"}
+              onClick={() => setSourceFilter("fr")}
+              count={results?.facetDistribution?.source?.fr}
+            />
           </div>
 
           {/* Results */}
@@ -238,8 +244,8 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
 
             {!loading && !query && (
               <div className="text-muted-foreground px-4 py-8 text-center text-sm">
-                Search across <span className="text-foreground font-medium">287,000+</span> sections
-                of the U.S. law and regulations
+                Search across <span className="text-foreground font-medium">290,000+</span> sections
+                and documents of U.S. law and regulations
               </div>
             )}
           </div>

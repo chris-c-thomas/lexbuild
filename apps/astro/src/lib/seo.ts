@@ -24,6 +24,11 @@ interface NavContext {
   chapterCount?: number;
   partCount?: number;
   tokenEstimate?: number;
+  // FR-specific
+  year?: number;
+  month?: number;
+  monthName?: string;
+  documentCount?: number;
 }
 
 interface BuildPageSEOParams {
@@ -62,7 +67,7 @@ export function buildPageSEO(params: BuildPageSEOParams): PageSEO {
     title: buildTitle(source, granularity, frontmatter, nav),
     description: buildDescription(source, granularity, frontmatter, nav),
     canonicalUrl: fullCanonicalUrl,
-    ogType: granularity === "section" ? "article" : "website",
+    ogType: granularity === "section" || granularity === "document" ? "article" : "website",
     ogImage: `${siteUrl}/og-image.png`,
     jsonLd: buildJsonLd({
       source,
@@ -91,6 +96,20 @@ export function buildTitle(
   fm: ContentFrontmatter | null,
   nav?: NavContext,
 ): string {
+  // FR pages
+  if (source === "fr") {
+    if (granularity === "document" && fm) {
+      return fm.title ? toTitleCase(fm.title) : `FR Document ${fm.document_number ?? ""}`;
+    }
+    if (granularity === "month" && nav) {
+      return `Federal Register — ${nav.monthName ?? ""} ${nav.year ?? ""}`;
+    }
+    if (granularity === "year" && nav) {
+      return `Federal Register — ${nav.year ?? ""}`;
+    }
+    return "Federal Register";
+  }
+
   // Section pages: use frontmatter title
   if (granularity === "section" && fm) {
     return fm.title ? toTitleCase(fm.title) : `${source.toUpperCase()} Section`;
@@ -136,6 +155,22 @@ export function buildDescription(
   fm: ContentFrontmatter | null,
   nav?: NavContext,
 ): string {
+  // FR descriptions
+  if (source === "fr") {
+    if (granularity === "document" && fm) {
+      const typeLabel = fm.document_type?.replace(/_/g, " ") ?? "document";
+      const agencies = fm.agencies?.join(", ") ?? "";
+      return `${fm.fr_citation ?? fm.document_number ?? ""} — ${typeLabel}. ${agencies ? `${agencies}. ` : ""}Federal Register.`;
+    }
+    if (granularity === "month" && nav) {
+      return `${nav.documentCount?.toLocaleString() ?? 0} Federal Register documents from ${nav.monthName ?? ""} ${nav.year ?? ""}.`;
+    }
+    if (granularity === "year" && nav) {
+      return `${nav.documentCount?.toLocaleString() ?? 0} Federal Register documents from ${nav.year ?? ""}.`;
+    }
+    return "Federal Register documents as structured Markdown.";
+  }
+
   const titleNum = nav?.titleNumber ?? fm?.title_number;
   const titleName = nav?.titleName
     ? toTitleCase(nav.titleName)
@@ -204,6 +239,27 @@ export function buildJsonLd(params: JsonLdParams): Record<string, unknown>[] {
 
   const breadcrumbLd = buildBreadcrumbJsonLd(breadcrumbs, siteUrl);
   const isPartOf = { "@type": "WebSite", name: "LexBuild", url: siteUrl };
+
+  // FR document pages → Article type
+  if (granularity === "document" && frontmatter) {
+    const article: Record<string, unknown> = {
+      "@type": "Article",
+      name: frontmatter.title ? toTitleCase(frontmatter.title) : undefined,
+      url: canonicalUrl,
+      identifier: frontmatter.document_number,
+      isPartOf,
+    };
+    if (frontmatter.publication_date) {
+      article.datePublished = frontmatter.publication_date;
+    }
+    if (frontmatter.agencies && frontmatter.agencies.length > 0) {
+      article.author = frontmatter.agencies.map((a) => ({
+        "@type": "GovernmentOrganization",
+        name: a,
+      }));
+    }
+    return [article, breadcrumbLd];
+  }
 
   // Section pages → Legislation type
   if (granularity === "section" && frontmatter) {

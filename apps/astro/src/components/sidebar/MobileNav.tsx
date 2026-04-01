@@ -74,6 +74,18 @@ export function MobileNav({ source, currentPath }: MobileNavProps) {
           >
             eCFR
           </button>
+          <button
+            type="button"
+            onClick={() => setPreviewSource("fr")}
+            className={cn(
+              "flex-1 rounded-md px-3 py-2 text-center text-sm font-medium transition-colors",
+              activeSource === "fr"
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
+            )}
+          >
+            FR
+          </button>
         </nav>
 
         {/* Sidebar tree */}

@@ -51,9 +51,9 @@ export {
 
 // Converter
 export { convertFrDocuments } from "./converter.js";
-export type { FrConvertOptions, FrConvertResult } from "./converter.js";
+export type { FrConvertOptions, FrConvertResult, FrConvertProgress } from "./converter.js";
 
-// Downloader
+// Downloader (FederalRegister.gov API)
 export { downloadFrDocuments, downloadSingleFrDocument, buildFrApiListUrl } from "./downloader.js";
 export type {
   FrDownloadOptions,
@@ -62,3 +62,12 @@ export type {
   FrDownloadFailure,
   FrDownloadProgress,
 } from "./downloader.js";
+
+// Govinfo bulk downloader
+export { downloadFrBulk, buildGovinfoFrUrl, buildGovinfoBulkPath } from "./govinfo-downloader.js";
+export type {
+  FrGovinfoBulkOptions,
+  FrGovinfoResult,
+  FrGovinfoDownloadedFile,
+  FrGovinfoProgress,
+} from "./govinfo-downloader.js";

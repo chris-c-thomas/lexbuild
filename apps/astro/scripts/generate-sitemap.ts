@@ -143,6 +143,50 @@ async function collectEcfrUrls(contentDir: string): Promise<string[]> {
   return urls;
 }
 
+async function collectFrUrls(contentDir: string): Promise<string[]> {
+  const urls: string[] = [];
+  const frDir = join(contentDir, "fr", "documents");
+
+  let yearDirs: string[];
+  try {
+    yearDirs = (await listDirs(frDir)).filter((d) => /^\d{4}$/.test(d)).sort();
+  } catch {
+    return urls;
+  }
+
+  // Index page
+  urls.push("/fr");
+
+  for (const yearDir of yearDirs) {
+    // Year page
+    urls.push(`/fr/${yearDir}`);
+
+    const yearPath = join(frDir, yearDir);
+    const monthDirs = (await listDirs(yearPath)).filter((d) => /^\d{2}$/.test(d));
+
+    for (const monthDir of monthDirs) {
+      // Month page
+      urls.push(`/fr/${yearDir}/${monthDir}`);
+
+      // Document pages
+      const monthPath = join(yearPath, monthDir);
+      let files: string[];
+      try {
+        files = await readdir(monthPath);
+      } catch {
+        continue;
+      }
+      for (const file of files) {
+        if (file.endsWith(".md") && file !== ".md") {
+          urls.push(`/fr/${yearDir}/${monthDir}/${file.replace(/\.md$/, "")}`);
+        }
+      }
+    }
+  }
+
+  return urls;
+}
+
 // ---------------------------------------------------------------------------
 // Sitemap XML generation
 // ---------------------------------------------------------------------------
@@ -209,14 +253,18 @@ async function main(): Promise<void> {
   console.log(`Content directory: ${contentDir}`);
   console.log(`Output directory: ${outputDir}\n`);
 
-  const [uscUrls, ecfrUrls] = await Promise.all([
+  const [uscUrls, ecfrUrls, frUrls] = await Promise.all([
     collectUscUrls(contentDir),
     collectEcfrUrls(contentDir),
+    collectFrUrls(contentDir),
   ]);
 
   console.log(`USC: ${uscUrls.length.toLocaleString()} URLs`);
   console.log(`eCFR: ${ecfrUrls.length.toLocaleString()} URLs`);
-  console.log(`Total: ${(uscUrls.length + ecfrUrls.length + 1).toLocaleString()} URLs\n`);
+  console.log(`FR: ${frUrls.length.toLocaleString()} URLs`);
+  console.log(
+    `Total: ${(uscUrls.length + ecfrUrls.length + frUrls.length + 1).toLocaleString()} URLs\n`,
+  );
 
   // Write homepage as a misc sitemap
   const miscUrls = ["/"];
@@ -225,6 +273,7 @@ async function main(): Promise<void> {
   allFilenames.push(...(await writeChunkedSitemaps(miscUrls, "misc", outputDir, today, "weekly")));
   allFilenames.push(...(await writeChunkedSitemaps(uscUrls, "usc", outputDir, today, "monthly")));
   allFilenames.push(...(await writeChunkedSitemaps(ecfrUrls, "ecfr", outputDir, today, "weekly")));
+  allFilenames.push(...(await writeChunkedSitemaps(frUrls, "fr", outputDir, today, "daily")));
 
   // Write sitemap index
   const indexXml = buildSitemapIndex(allFilenames, today);

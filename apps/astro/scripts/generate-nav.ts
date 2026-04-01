@@ -415,6 +415,145 @@ function romanToInt(roman: string): number {
 }
 
 // ---------------------------------------------------------------------------
+// FR navigation
+// ---------------------------------------------------------------------------
+
+interface FrYearSummary {
+  year: number;
+  months: FrMonthSummary[];
+  documentCount: number;
+}
+
+interface FrMonthSummary {
+  month: number;
+  documentCount: number;
+  typeCounts: Record<string, number>;
+}
+
+interface FrDocumentNav {
+  document_number: string;
+  title: string;
+  document_type: string;
+  publication_date: string;
+  agencies: string[];
+  file: string;
+}
+
+/**
+ * Generate FR navigation by scanning the documents directory.
+ * Produces years.json (year/month summaries) and per-month document listing files.
+ */
+async function generateFrNav(contentDir: string, outDir: string): Promise<void> {
+  const frDocsDir = join(contentDir, "fr", "documents");
+
+  let yearDirs: string[];
+  try {
+    yearDirs = (await readdir(frDocsDir)).filter((d) => /^\d{4}$/.test(d)).sort();
+  } catch {
+    console.log("  No FR documents directory found, skipping.");
+    return;
+  }
+
+  if (yearDirs.length === 0) {
+    console.log("  No FR year directories found, skipping.");
+    return;
+  }
+
+  const years: FrYearSummary[] = [];
+
+  for (const yearDir of yearDirs) {
+    const yearNum = parseInt(yearDir, 10);
+    const yearPath = join(frDocsDir, yearDir);
+    let monthDirs: string[];
+    try {
+      monthDirs = (await readdir(yearPath)).filter((d) => /^\d{2}$/.test(d)).sort();
+    } catch {
+      continue;
+    }
+
+    const months: FrMonthSummary[] = [];
+    let yearDocCount = 0;
+
+    for (const monthDir of monthDirs) {
+      const monthNum = parseInt(monthDir, 10);
+      const monthPath = join(yearPath, monthDir);
+      let files: string[];
+      try {
+        files = (await readdir(monthPath)).filter((f) => f.endsWith(".md") && f !== ".md");
+      } catch {
+        continue;
+      }
+
+      const typeCounts: Record<string, number> = {};
+      const docs: FrDocumentNav[] = [];
+
+      for (const file of files) {
+        const filePath = join(monthPath, file);
+        try {
+          // Read only the frontmatter (first ~2KB is enough)
+          const raw = await readFile(filePath, "utf-8");
+          const endIdx = raw.indexOf("\n---", 4);
+          if (endIdx === -1) continue;
+          const fm = raw.slice(4, endIdx);
+
+          const docNum = extractYamlField(fm, "document_number") || file.replace(/\.md$/, "");
+          const title = extractYamlField(fm, "section_name") || extractYamlField(fm, "title") || docNum;
+          const docType = extractYamlField(fm, "document_type") || "unknown";
+          const pubDate = extractYamlField(fm, "publication_date") || `${yearDir}-${monthDir}`;
+          const agencyRaw = extractYamlField(fm, "agency") || "";
+
+          const agencies: string[] = [];
+          if (agencyRaw) agencies.push(agencyRaw);
+
+          typeCounts[docType] = (typeCounts[docType] || 0) + 1;
+
+          docs.push({
+            document_number: docNum,
+            title: title.length > 120 ? title.slice(0, 117) + "..." : title,
+            document_type: docType,
+            publication_date: pubDate,
+            agencies,
+            file: file.replace(/\.md$/, ""),
+          });
+        } catch {
+          // Skip unparseable files
+        }
+      }
+
+      // Sort by publication date, then document number
+      docs.sort(
+        (a, b) =>
+          a.publication_date.localeCompare(b.publication_date) ||
+          a.document_number.localeCompare(b.document_number),
+      );
+
+      months.push({ month: monthNum, documentCount: docs.length, typeCounts });
+      yearDocCount += docs.length;
+
+      // Write per-month document listing
+      const monthKey = `${yearDir}-${monthDir}`;
+      await writeFile(join(outDir, `${monthKey}.json`), JSON.stringify(docs, null, 2), "utf-8");
+      console.log(`  ${monthKey}: ${docs.length} documents`);
+    }
+
+    years.push({ year: yearNum, months, documentCount: yearDocCount });
+  }
+
+  // Write years summary
+  await writeFile(join(outDir, "years.json"), JSON.stringify(years, null, 2), "utf-8");
+  console.log(
+    `  Total: ${years.reduce((sum, y) => sum + y.documentCount, 0)} documents across ${years.length} year(s)`,
+  );
+}
+
+/** Extract a simple scalar YAML field value (string or number). */
+function extractYamlField(yaml: string, field: string): string | undefined {
+  const re = new RegExp(`^${field}:\\s*"?([^"\\n]*)"?\\s*$`, "m");
+  const match = re.exec(yaml);
+  return match?.[1]?.trim() || undefined;
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -428,14 +567,19 @@ async function main(): Promise<void> {
   // Create output directories
   const uscOutDir = join(publicNavDir, "usc");
   const ecfrOutDir = join(publicNavDir, "ecfr");
+  const frOutDir = join(publicNavDir, "fr");
   await mkdir(uscOutDir, { recursive: true });
   await mkdir(ecfrOutDir, { recursive: true });
+  await mkdir(frOutDir, { recursive: true });
 
   console.log("\nGenerating USC navigation...");
   await generateUscNav(contentDir, uscOutDir);
 
   console.log("\nGenerating eCFR navigation...");
   await generateEcfrNav(contentDir, ecfrOutDir);
+
+  console.log("\nGenerating FR navigation...");
+  await generateFrNav(contentDir, frOutDir);
 
   console.log("\nDone.");
 }

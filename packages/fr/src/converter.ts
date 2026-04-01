@@ -5,8 +5,9 @@
  * enriches frontmatter with JSON sidecar metadata, renders via core's
  * renderDocument, and writes structured Markdown output.
  *
- * Processes FR documents in two passes: (1) parse all files and register
- * identifiers for link resolution, (2) render and write output files.
+ * Processes FR documents in a single streaming pass: parse each XML file,
+ * render Markdown, and write output immediately. No link pre-registration
+ * since FR documents rarely cross-reference each other.
  */
 
 import { createReadStream, existsSync } from "node:fs";
@@ -30,6 +31,18 @@ import type { FrDocumentType } from "./fr-elements.js";
 
 // ── Public types ──
 
+/** Progress info for conversion callback */
+export interface FrConvertProgress {
+  /** Documents converted so far */
+  documentsConverted: number;
+  /** XML files processed so far */
+  filesProcessed: number;
+  /** Total XML files to process */
+  totalFiles: number;
+  /** Current XML file being processed */
+  currentFile: string;
+}
+
 /** Options for converting FR documents */
 export interface FrConvertOptions {
   /** Path to input file or directory containing .xml/.json files */
@@ -46,6 +59,8 @@ export interface FrConvertOptions {
   to?: string | undefined;
   /** Filter: document types */
   types?: FrDocumentType[] | undefined;
+  /** Progress callback */
+  onProgress?: ((progress: FrConvertProgress) => void) | undefined;
 }
 
 /** Result of a conversion operation */
@@ -86,74 +101,42 @@ const FR_DOC_TYPE_SET = new Set<string>(FR_DOCUMENT_TYPE_KEYS);
 export async function convertFrDocuments(options: FrConvertOptions): Promise<FrConvertResult> {
   const xmlFiles = await discoverXmlFiles(options.input, options.from, options.to);
 
-  const files: string[] = [];
+  let documentsConverted = 0;
   let totalTokenEstimate = 0;
   let peakMemoryBytes = 0;
 
   const linkResolver = createLinkResolver();
 
-  // Parse all files once and cache results
-  const parsedFiles = new Map<string, CollectedDoc[]>();
+  // Stream: parse each file, render, and write immediately.
+  // FR documents rarely cross-reference each other, so we skip the two-pass
+  // link registration that USC/eCFR use. This keeps memory bounded for
+  // bulk XML processing (750k+ documents across 9,500+ files).
+  let filesProcessed = 0;
   for (const xmlPath of xmlFiles) {
+    let collected: CollectedDoc[];
     try {
-      const collected = await parseXmlFile(xmlPath);
-      parsedFiles.set(xmlPath, collected);
+      collected = await parseXmlFile(xmlPath);
     } catch (err) {
       console.warn(
         `Warning: Failed to parse ${xmlPath}: ${err instanceof Error ? err.message : String(err)}. Skipping.`,
       );
+      continue;
     }
-  }
 
-  // Register identifiers for link resolution using cached results
-  for (const [, collected] of parsedFiles) {
-    for (const doc of collected) {
-      if (options.types && options.types.length > 0) {
-        if (!FR_DOC_TYPE_SET.has(doc.xmlMeta.documentType) || !options.types.includes(doc.xmlMeta.documentType as FrDocumentType)) {
-          continue;
-        }
-      }
-
-      if (doc.node.identifier) {
-        const outputPath = buildFrOutputPath(
-          doc.documentNumber,
-          doc.publicationDate,
-          options.output,
-        );
-        linkResolver.register(doc.node.identifier, outputPath);
-      }
-    }
-  }
-
-  if (options.dryRun) {
-    let count = 0;
-    for (const [, collected] of parsedFiles) {
-      for (const doc of collected) {
-        if (options.types && options.types.length > 0) {
-          if (!FR_DOC_TYPE_SET.has(doc.xmlMeta.documentType) || !options.types.includes(doc.xmlMeta.documentType as FrDocumentType)) {
-            continue;
-          }
-        }
-        count++;
-      }
-    }
-    return {
-      documentsConverted: count,
-      files: [],
-      totalTokenEstimate: 0,
-      peakMemoryBytes: 0,
-      dryRun: true,
-    };
-  }
-
-  // Render and write using cached results
-  for (const [, collected] of parsedFiles) {
     for (const doc of collected) {
       // Apply type filter
       if (options.types && options.types.length > 0) {
-        if (!FR_DOC_TYPE_SET.has(doc.xmlMeta.documentType) || !options.types.includes(doc.xmlMeta.documentType as FrDocumentType)) {
+        if (
+          !FR_DOC_TYPE_SET.has(doc.xmlMeta.documentType) ||
+          !options.types.includes(doc.xmlMeta.documentType as FrDocumentType)
+        ) {
           continue;
         }
+      }
+
+      if (options.dryRun) {
+        documentsConverted++;
+        continue;
       }
 
       const outputPath = buildFrOutputPath(
@@ -167,19 +150,17 @@ export async function convertFrDocuments(options: FrConvertOptions): Promise<FrC
       const markdown = renderDocument(doc.node, frontmatter, {
         headingOffset: 0,
         linkStyle: options.linkStyle,
-        resolveLink: options.linkStyle === "relative"
-          ? (id) => linkResolver.resolve(id, outputPath)
-          : undefined,
+        resolveLink:
+          options.linkStyle === "relative"
+            ? (id) => linkResolver.resolve(id, outputPath)
+            : undefined,
       });
 
       await mkdir(dirname(outputPath), { recursive: true });
       await writeFile(outputPath, markdown, "utf-8");
 
-      files.push(outputPath);
-
-      // Estimate tokens (character/4 heuristic)
-      const tokenEstimate = Math.round(markdown.length / 4);
-      totalTokenEstimate += tokenEstimate;
+      documentsConverted++;
+      totalTokenEstimate += Math.round(markdown.length / 4);
 
       // Track memory
       const mem = process.memoryUsage().rss;
@@ -187,14 +168,23 @@ export async function convertFrDocuments(options: FrConvertOptions): Promise<FrC
         peakMemoryBytes = mem;
       }
     }
+
+    filesProcessed++;
+
+    options.onProgress?.({
+      documentsConverted,
+      filesProcessed,
+      totalFiles: xmlFiles.length,
+      currentFile: xmlPath,
+    });
   }
 
   return {
-    documentsConverted: files.length,
-    files,
+    documentsConverted,
+    files: [], // Don't accumulate 750k+ file paths in memory
     totalTokenEstimate,
     peakMemoryBytes,
-    dryRun: false,
+    dryRun: options.dryRun,
   };
 }
 
@@ -329,13 +319,25 @@ async function walkDir(dir: string, results: string[]): Promise<void> {
 }
 
 /**
- * Infer a date string from the file path (e.g., "downloads/fr/2026/03/doc.xml" → "2026-03-01").
- * Used when no JSON sidecar is available.
+ * Infer a date string from the file path. Used when no JSON sidecar is available.
+ *
+ * Supports two patterns:
+ *   - Per-document: "downloads/fr/2026/03/doc.xml" → "2026-03-01"
+ *   - Govinfo bulk: "downloads/fr/bulk/2026/FR-2026-03-02.xml" → "2026-03-02"
  */
-function inferDateFromPath(filePath: string): string {
-  const match = /(\d{4})\/(\d{2})\/[^/]+\.xml$/.exec(filePath);
-  if (match) {
-    return `${match[1]}-${match[2]}-01`;
+/** @internal Exported for testing. */
+export function inferDateFromPath(filePath: string): string {
+  // Govinfo bulk: FR-YYYY-MM-DD.xml
+  const bulkMatch = /FR-(\d{4})-(\d{2})-(\d{2})\.xml$/.exec(filePath);
+  if (bulkMatch) {
+    return `${bulkMatch[1]}-${bulkMatch[2]}-${bulkMatch[3]}`;
   }
+
+  // Per-document: YYYY/MM/doc.xml
+  const perDocMatch = /(\d{4})\/(\d{2})\/[^/]+\.xml$/.exec(filePath);
+  if (perDocMatch) {
+    return `${perDocMatch[1]}-${perDocMatch[2]}-01`;
+  }
+
   return "";
 }

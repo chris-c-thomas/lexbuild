@@ -40,19 +40,19 @@ LexBuild transforms this XML into per-section Markdown files with YAML frontmatt
 | Source | Package | XML Format | Titles | Status |
 |--------|---------|------------|--------|--------|
 | U.S. Code | [`@lexbuild/usc`](packages/usc/) | USLM 1.0 | 54 | Stable |
-| eCFR (Code of Federal Regulations) | [`@lexbuild/ecfr`](packages/ecfr/) | GPO/SGML | 50 | Stable |
+| eCFR | [`@lexbuild/ecfr`](packages/ecfr/) | GPO/SGML | 50 | Stable |
+| Annual CFR | `@lexbuild/cfr` | GPO/SGML | 50 | Planned |
 | Federal Register | [`@lexbuild/fr`](packages/fr/) | GPO/SGML | ~30k docs/yr | Stable |
-| Annual CFR (official edition) | `@lexbuild/cfr` | GPO/SGML | 50 | Planned |
 | State statutes | `@lexbuild/state-*` | Varies | — | Exploratory |
 
 ### Data Sources
 
 | Source | Download From | Update Frequency | Notes |
 |--------|--------------|-----------------|-------|
-| **U.S. Code** | [uscode.house.gov](https://uscode.house.gov/download/download.shtml) (OLRC) | Multiple times/month | Release point auto-detected from OLRC download page |
-| **eCFR** (default) | [ecfr.gov API](https://www.ecfr.gov/api/versioner/v1/titles) | Daily | Point-in-time support via `--date` flag |
-| **eCFR** (fallback) | [govinfo.gov](https://www.govinfo.gov/bulkdata/ECFR) | Irregular | Bulk XML, updates per-title as regulations change |
-| **Federal Register** | [federalregister.gov API](https://www.federalregister.gov/developers/documentation/api/v1) | Daily | Per-document XML + JSON metadata, no auth required |
+| **U.S. Code** | [uscode.house.gov](https://uscode.house.gov/download/download.shtml) | Irregular | Release point auto-detected from OLRC download page |
+| **eCFR** (default) | [ecfr.gov](https://www.ecfr.gov/api/versioner/v1/titles) | Daily | Point-in-time support via `--date` flag |
+| **eCFR** (fallback) | [govinfo.gov](https://www.govinfo.gov/bulkdata/ECFR) | Irregular | Bulk XML. Updates per-title as regulations change |
+| **Federal Register** | [federalregister.gov](https://www.federalregister.gov/developers/documentation/api/v1) | Daily | Per-document XML + JSON metadata. |
 
 ---
 
@@ -100,7 +100,7 @@ lexbuild download-usc --titles 1 && lexbuild convert-usc --titles 1
 lexbuild download-usc --titles 1-5 && lexbuild convert-usc --titles 1-5
 ```
 
-### eCFR (Code of Federal Regulations)
+### eCFR
 
 ```bash
 # Download and convert all 50 titles
@@ -430,13 +430,15 @@ Each directory includes a `_meta.json` sidecar file for programmatic access with
 
 ### Performance
 
-| Corpus | Titles | Sections | Est. Tokens | Conversion Time |
-|--------|--------|----------|-------------|-----------------|
-| U.S. Code | 54 | ~60,000 | ~85M | ~20–30s |
-| eCFR | 49 (excl. reserved) | ~227,000 | ~350M | ~60–90s |
-| **Combined** | **103** | **~287,000** | **~435M** | **~2 min** |
+| Corpus | Titles / Volume | Sections / Documents | Est. Tokens | Conversion Time |
+|--------|-----------------|----------------------|-------------|-----------------|
+| U.S. Code | 54 titles | ~60,000 sections | ~85M | ~20–30s |
+| eCFR | 50 titles | ~227,000 sections | ~350M | ~60–90s |
+| Federal Register | ~28–31k docs/year | ~750k+ docs (2000–present) | varies | ~1–2s per 1k docs |
 
-SAX streaming keeps memory bounded for even the largest titles (100MB+ XML). Conversion is CPU-bound — no network I/O during the convert step.
+SAX streaming keeps memory usage low, even when processing very large titles—some over 100MB of XML. The conversion step itself doesn’t involve any network I/O, so it’s entirely CPU-bound.
+
+Federal Register documents are self-contained and handled one file at a time, and in practice, fetching them from the API usually takes longer than converting them
 
 ---
 
@@ -446,18 +448,31 @@ LexBuild is a monorepo managed with [pnpm](https://pnpm.io/) workspaces and [Tur
 
 ```
 lexbuild/
+├── README.md          
+├── CLAUDE.md          
+├── package.json       
+├── pnpm-workspace.yaml
+├── pnpm-lock.yaml
+├── turbo.json         
+├── tsconfig.base.json 
+├── eslint.config.js   
+├── knip.jsonc         
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+├── ARCHITECTURE.md
 ├── packages/
-│   ├── core/           # @lexbuild/core — XML parsing, AST, Markdown rendering
-│   ├── usc/            # @lexbuild/usc — U.S. Code converter and downloader
-│   ├── ecfr/           # @lexbuild/ecfr — eCFR converter and downloader
-│   ├── fr/             # @lexbuild/fr — Federal Register converter and downloader
-│   └── cli/            # @lexbuild/cli — CLI binary
+│   ├── core/          # @lexbuild/core — XML parsing, AST, Markdown rendering
+│   ├── usc/           # @lexbuild/usc  — U.S. Code converter and downloader
+│   ├── ecfr/          # @lexbuild/ecfr — eCFR converter and downloader
+│   ├── fr/            # @lexbuild/fr   — Federal Register converter and downloader
+│   └── cli/           # @lexbuild/cli  — CLI binary
 ├── apps/
-│   └── astro/          # LexBuild web app (lexbuild.dev)
-├── fixtures/           # Test fixtures (synthetic XML + expected output snapshots)
-├── reference/          # GPO/OLRC XML schema reference guides
-├── turbo.json
-└── pnpm-workspace.yaml
+│   └── astro/         # LexBuild web app (https://lexbuild.dev)
+├── docs/              
+├── fixtures/          
+├── downloads/         # Downloaded source data (gitignored)
+├── output/            # Generated Markdown output (gitignored)
+└── scripts/           
 ```
 
 ### Dependency Graph
@@ -472,7 +487,7 @@ lexbuild/
   │     └── @lexbuild/core
   └── @lexbuild/core
 
-apps/astro (no code deps — consumes output only)
+@lexbuild/astro (No direct dependency on packages. Consumes converted output only.)
 ```
 
 Source packages are independent — `@lexbuild/usc`, `@lexbuild/ecfr`, and `@lexbuild/fr` never import from each other. Future source packages follow the same pattern.
@@ -485,24 +500,24 @@ All internal dependencies use pnpm's `workspace:*` protocol. [Changesets](https:
 
 | Package | npm | Description |
 |---------|-----|-------------|
-| [`@lexbuild/cli`](packages/cli/) | [![npm](https://img.shields.io/npm/v/%40lexbuild%2Fcli)](https://www.npmjs.com/package/@lexbuild/cli) | CLI binary — download and convert legal XML |
+| [`@lexbuild/cli`](packages/cli/) | [![npm](https://img.shields.io/npm/v/%40lexbuild%2Fcli)](https://www.npmjs.com/package/@lexbuild/cli) | CLI binary |
 | [`@lexbuild/core`](packages/core/) | [![npm](https://img.shields.io/npm/v/%40lexbuild%2Fcore)](https://www.npmjs.com/package/@lexbuild/core) | Shared XML parsing, AST, Markdown rendering |
-| [`@lexbuild/usc`](packages/usc/) | [![npm](https://img.shields.io/npm/v/%40lexbuild%2Fusc)](https://www.npmjs.com/package/@lexbuild/usc) | U.S. Code (USLM XML) converter and downloader |
-| [`@lexbuild/ecfr`](packages/ecfr/) | [![npm](https://img.shields.io/npm/v/%40lexbuild%2Fecfr)](https://www.npmjs.com/package/@lexbuild/ecfr) | eCFR converter and downloader (ecfr.gov API + govinfo) |
-| [`@lexbuild/fr`](packages/fr/) | [![npm](https://img.shields.io/npm/v/%40lexbuild%2Ffr)](https://www.npmjs.com/package/@lexbuild/fr) | Federal Register converter and downloader (federalregister.gov API) |
+| [`@lexbuild/usc`](packages/usc/) | [![npm](https://img.shields.io/npm/v/%40lexbuild%2Fusc)](https://www.npmjs.com/package/@lexbuild/usc) | United States Code |
+| [`@lexbuild/ecfr`](packages/ecfr/) | [![npm](https://img.shields.io/npm/v/%40lexbuild%2Fecfr)](https://www.npmjs.com/package/@lexbuild/ecfr) | Code of Federal Regulations |
+| [`@lexbuild/fr`](packages/fr/) | [![npm](https://img.shields.io/npm/v/%40lexbuild%2Ffr)](https://www.npmjs.com/package/@lexbuild/fr) | Federal Register |
 
 Each package has its own README with full API documentation.
 
-### Apps
+## Apps
 
-#### LexBuild 
+| Package | Description |
+|---------|-------------|
+| [`@lexbuild/astro`](apps/astro/) | LexBuild web application |
 
-([LexBuild.dev](https://lexbuild.dev))
+[LexBuild](https://lexbuild.dev) is a server-rendered legal web resource and content browser built with Astro 6, React 19, Tailwind CSS 4, and shadcn/ui.
 
-A server-rendered legal content browser built with Astro 6, React 19, Tailwind CSS 4, and shadcn/ui.
-
-- **260,000+ section pages** across U.S. Code and eCFR
-- **Four granularity levels** — title, chapter, part (eCFR), section
+- **260,000+ section pages** across the U.S. Code and eCFR
+- **Four granularity levels** — titles, chapters, parts (eCFR only), sections
 - **Syntax-highlighted source** and rendered HTML preview
 - **Sidebar navigation** with virtualized section lists
 - **Full-text search** via Meilisearch

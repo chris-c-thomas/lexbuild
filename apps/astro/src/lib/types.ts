@@ -3,10 +3,10 @@
 // ---------------------------------------------------------------------------
 
 /** Supported content sources */
-export type SourceId = "usc" | "ecfr";
+export type SourceId = "usc" | "ecfr" | "fr";
 
 /** Granularity levels (superset across all sources) */
-export type Granularity = "section" | "chapter" | "part" | "title";
+export type Granularity = "section" | "chapter" | "part" | "title" | "document" | "month" | "year";
 
 /** Source metadata for registry/routing */
 export interface SourceConfig {
@@ -21,6 +21,9 @@ export interface SourceConfig {
   chapterCount: number;
   sectionCount: number;
   partCount?: number;
+  documentCount?: number;
+  /** Whether this source has a sidebar navigation tree */
+  hasSidebar?: boolean;
   /** Slug segment count → granularity mapping */
   slugGranularity: Record<number, Granularity>;
 }
@@ -81,6 +84,19 @@ export interface ContentFrontmatter {
   cfr_part?: string;
   cfr_subpart?: string;
 
+  // FR-specific
+  document_number?: string;
+  document_type?: string;
+  fr_citation?: string;
+  fr_volume?: number;
+  publication_date?: string;
+  agencies?: string[];
+  docket_ids?: string[];
+  rin?: string;
+  effective_date?: string;
+  comments_close_date?: string;
+  fr_action?: string;
+
   // Title-level enriched
   chapter_count?: number;
   section_count?: number;
@@ -128,6 +144,30 @@ export interface SectionNavEntry {
   file: string;
   status: string;
   hasNotes: boolean;
+}
+
+/** FR year summary for archive index */
+export interface FrYearSummary {
+  year: number;
+  months: FrMonthSummary[];
+  documentCount: number;
+}
+
+/** FR month summary for year index */
+export interface FrMonthSummary {
+  month: number;
+  documentCount: number;
+  typeCounts: Record<string, number>;
+}
+
+/** FR document entry for month listing */
+export interface FrDocumentNav {
+  document_number: string;
+  title: string;
+  document_type: string;
+  publication_date: string;
+  agencies: string[];
+  file: string;
 }
 
 // ---------------------------------------------------------------------------

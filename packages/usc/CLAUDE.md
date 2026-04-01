@@ -9,12 +9,13 @@
 ```
 src/
 ├── index.ts              # Barrel exports
-├── converter.ts          # Main conversion orchestrator (1,232 lines)
-├── converter.test.ts     # 15+ test cases
+├── converter.ts          # Main conversion orchestrator
+├── converter.test.ts     # 20 test cases
 ├── snapshot.test.ts      # Output stability snapshots
 ├── downloader.ts         # OLRC XML download + bulk zip handling + auto-detection
-├── downloader.test.ts    # 15+ test cases
-└── release-points.ts     # OLRC release point auto-detection and history (scrapes OLRC pages)
+├── downloader.test.ts    # 17 test cases
+├── release-points.ts     # OLRC release point auto-detection and history (scrapes OLRC pages)
+└── release-points.test.ts # 16 test cases
 ```
 
 ## Public API

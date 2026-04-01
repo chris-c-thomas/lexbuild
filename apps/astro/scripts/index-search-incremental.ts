@@ -6,15 +6,21 @@
  * `<content-dir>/.search-indexed-at`. On first run (no checkpoint), indexes
  * everything without deleting the existing index.
  *
+ * Indexes all three sources: USC, eCFR, and FR.
+ * IMPORTANT: Keep sources, SearchDocument shape, and index configuration in
+ * sync with `index-search.ts` (the full reindex script).
+ *
  * Use `index-search.ts` for a full clean reindex (delete + rebuild).
  *
  * Usage:
- *   npx tsx scripts/index-search-incremental.ts [content-dir] [--prune]
+ *   npx tsx scripts/index-search-incremental.ts [content-dir] [--prune] [--source <name>]
  *
  * Options:
- *   content-dir   Path to content directory (default: ./content)
- *   --prune       Remove documents from the index for sections that no longer
- *                 exist on disk (compares Meilisearch IDs against filesystem)
+ *   content-dir      Path to content directory (default: ./content)
+ *   --prune          Remove documents from the index for sections that no longer
+ *                    exist on disk (compares Meilisearch IDs against filesystem)
+ *   --source <name>  Only index a specific source: usc, ecfr, or fr
+ *   --set-checkpoint Write the checkpoint timestamp and exit (no indexing)
  *
  * Environment:
  *   MEILI_URL          Meilisearch endpoint (default: http://127.0.0.1:7700)
@@ -43,7 +49,7 @@ const CHECKPOINT_FILE = ".search-indexed-at";
 
 interface SearchDocument {
   id: string;
-  source: "usc" | "ecfr";
+  source: "usc" | "ecfr" | "fr";
   title_number: number;
   title_name: string;
   granularity: string;
@@ -53,6 +59,8 @@ interface SearchDocument {
   status: string;
   hierarchy: string[];
   url: string;
+  document_type?: string;
+  publication_date?: string;
 }
 
 interface UscTitleMeta {
@@ -122,7 +130,7 @@ function sanitizeId(raw: string): string {
 async function readTruncatedBody(mdPath: string): Promise<string> {
   try {
     const raw = await readFile(mdPath, "utf-8");
-    const { content } = matter(raw);
+    const { content } = matter(raw, { cache: false });
     const cleaned = content
       .replace(/^#{1,6}\s+.*$/gm, "")
       .replace(/\n{3,}/g, "\n\n")
@@ -338,6 +346,106 @@ async function indexEcfrIncremental(
 }
 
 // ---------------------------------------------------------------------------
+// FR — walk, diff, and upsert (no _meta.json, reads frontmatter directly)
+// ---------------------------------------------------------------------------
+
+async function indexFrIncremental(
+  contentDir: string,
+  indexer: BatchIndexer,
+  checkpoint: number,
+  expectedIds: Set<string>,
+): Promise<{ indexed: number; skipped: number }> {
+  const frDir = join(contentDir, "fr", "documents");
+  let yearDirs: string[];
+  try {
+    yearDirs = (await readdir(frDir)).filter((d) => /^\d{4}$/.test(d)).sort();
+  } catch {
+    return { indexed: 0, skipped: 0 };
+  }
+
+  let indexed = 0;
+  let skipped = 0;
+
+  for (const yearDir of yearDirs) {
+    const yearPath = join(frDir, yearDir);
+    let monthDirs: string[];
+    try {
+      monthDirs = (await readdir(yearPath)).filter((d) => /^\d{2}$/.test(d)).sort();
+    } catch {
+      continue;
+    }
+
+    for (const monthDir of monthDirs) {
+      const monthPath = join(yearPath, monthDir);
+      let files: string[];
+      try {
+        files = (await readdir(monthPath)).filter((f) => f.endsWith(".md") && f !== ".md");
+      } catch {
+        continue;
+      }
+
+      for (const file of files) {
+        const mdPath = join(monthPath, file);
+        const docId = sanitizeId(`fr-${yearDir}-${monthDir}-${file.replace(/\.md$/, "")}`);
+        expectedIds.add(docId);
+
+        const mtime = await getFileMtimeMs(mdPath);
+        if (mtime <= checkpoint) {
+          skipped++;
+          continue;
+        }
+
+        try {
+          const raw = await readFile(mdPath, "utf-8");
+          const { data, content } = matter(raw, { cache: false });
+
+          const docNumber = (data.document_number as string) || file.replace(/\.md$/, "");
+          const heading = (data.section_name as string) || (data.title as string) || docNumber;
+          const docType = (data.document_type as string) || "";
+          const pubDate = (data.publication_date as string) || "";
+          const agencies = Array.isArray(data.agencies)
+            ? (data.agencies as string[])
+            : data.agency
+              ? [data.agency as string]
+              : [];
+
+          const body = content
+            .replace(/^#{1,6}\s+.*$/gm, "")
+            .replace(/\n{3,}/g, "\n\n")
+            .trim()
+            .slice(0, BODY_TRUNCATE_CHARS);
+
+          await indexer.add({
+            id: docId,
+            source: "fr",
+            title_number: 0,
+            title_name: "Federal Register",
+            granularity: "document",
+            identifier: (data.fr_citation as string) || `FR Doc. ${docNumber}`,
+            heading,
+            body,
+            status: docType,
+            document_type: docType,
+            publication_date: pubDate || undefined,
+            hierarchy: [
+              yearDir,
+              pubDate || `${yearDir}-${monthDir}`,
+              ...(agencies.length > 0 ? [agencies[0] as string] : []),
+            ],
+            url: `/fr/${yearDir}/${monthDir}/${file.replace(/\.md$/, "")}`,
+          });
+          indexed++;
+        } catch (err) {
+          console.warn(`  Warning: skipping ${file}: ${err instanceof Error ? err.message : String(err)}`);
+        }
+      }
+    }
+  }
+
+  return { indexed, skipped };
+}
+
+// ---------------------------------------------------------------------------
 // Prune — remove orphaned documents from the index
 // ---------------------------------------------------------------------------
 
@@ -395,9 +503,16 @@ async function configureIndex(client: Meilisearch): Promise<void> {
 
   await wait(await index.updateSearchableAttributes(["identifier", "heading", "body"]));
   await wait(
-    await index.updateFilterableAttributes(["source", "title_number", "granularity", "status"]),
+    await index.updateFilterableAttributes([
+      "source",
+      "title_number",
+      "granularity",
+      "status",
+      "document_type",
+      "publication_date",
+    ]),
   );
-  await wait(await index.updateSortableAttributes(["title_number", "identifier"]));
+  await wait(await index.updateSortableAttributes(["title_number", "identifier", "publication_date"]));
   await wait(
     await index.updateDisplayedAttributes([
       "id",
@@ -409,6 +524,8 @@ async function configureIndex(client: Meilisearch): Promise<void> {
       "status",
       "hierarchy",
       "url",
+      "document_type",
+      "publication_date",
     ]),
   );
   await wait(
@@ -433,10 +550,23 @@ async function main(): Promise<void> {
   const args = process.argv.slice(2);
   let contentDir = "./content";
   let prune = false;
+  let sourceFilter: "usc" | "ecfr" | "fr" | null = null;
+  let setCheckpoint = false;
 
-  for (const arg of args) {
-    if (arg === "--prune") {
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i]!;
+    if (arg === "--set-checkpoint") {
+      setCheckpoint = true;
+    } else if (arg === "--prune") {
       prune = true;
+    } else if (arg === "--source" && args[i + 1]) {
+      const val = args[i + 1]!;
+      if (val !== "usc" && val !== "ecfr" && val !== "fr") {
+        console.error(`Invalid source: ${val}. Must be usc, ecfr, or fr.`);
+        process.exit(1);
+      }
+      sourceFilter = val;
+      i++;
     } else if (!arg.startsWith("--")) {
       contentDir = arg;
     }
@@ -445,10 +575,18 @@ async function main(): Promise<void> {
   const resolvedDir = resolve(contentDir);
   const runStartTime = Date.now();
 
+  if (setCheckpoint) {
+    await writeCheckpoint(resolvedDir, Date.now());
+    console.log(`Checkpoint set to ${new Date().toISOString()} in ${resolvedDir}`);
+    return;
+  }
+
   console.log(`Content directory: ${resolvedDir}`);
   console.log(`Meilisearch URL: ${MEILI_URL}`);
   console.log(`Index name: ${INDEX_NAME}`);
-  console.log(`Mode: incremental upsert${prune ? " + prune" : ""}`);
+  console.log(
+    `Mode: incremental upsert${prune ? " + prune" : ""}${sourceFilter ? ` (${sourceFilter} only)` : ""}`,
+  );
   console.log(`  Preserves the existing index. Adds new documents and updates existing ones.`);
 
   const client = new Meilisearch({
@@ -500,33 +638,59 @@ async function main(): Promise<void> {
   // Track all expected IDs for pruning
   const expectedIds = new Set<string>();
 
+  let totalIndexed = 0;
+  let totalSkipped = 0;
+
   // Index USC
-  console.log("\nScanning USC documents...");
-  const usc = await indexUscIncremental(resolvedDir, indexer, checkpoint, expectedIds);
-  await indexer.flush();
-  console.log(
-    `  USC: ${usc.indexed} upserted, ${usc.skipped} skipped (unchanged since checkpoint)`,
-  );
+  if (!sourceFilter || sourceFilter === "usc") {
+    console.log("\nScanning USC documents...");
+    const usc = await indexUscIncremental(resolvedDir, indexer, checkpoint, expectedIds);
+    await indexer.flush();
+    console.log(
+      `  USC: ${usc.indexed} upserted, ${usc.skipped} skipped (unchanged since checkpoint)`,
+    );
+    totalIndexed += usc.indexed;
+    totalSkipped += usc.skipped;
+  }
 
   // Index eCFR
-  console.log("\nScanning eCFR documents...");
-  const ecfr = await indexEcfrIncremental(resolvedDir, indexer, checkpoint, expectedIds);
-  await indexer.flush();
-  console.log(
-    `  eCFR: ${ecfr.indexed} upserted, ${ecfr.skipped} skipped (unchanged since checkpoint)`,
-  );
+  if (!sourceFilter || sourceFilter === "ecfr") {
+    console.log("\nScanning eCFR documents...");
+    const ecfr = await indexEcfrIncremental(resolvedDir, indexer, checkpoint, expectedIds);
+    await indexer.flush();
+    console.log(
+      `  eCFR: ${ecfr.indexed} upserted, ${ecfr.skipped} skipped (unchanged since checkpoint)`,
+    );
+    totalIndexed += ecfr.indexed;
+    totalSkipped += ecfr.skipped;
+  }
 
-  const totalIndexed = usc.indexed + ecfr.indexed;
-  const totalSkipped = usc.skipped + ecfr.skipped;
+  // Index FR
+  if (!sourceFilter || sourceFilter === "fr") {
+    console.log("\nScanning FR documents...");
+    const fr = await indexFrIncremental(resolvedDir, indexer, checkpoint, expectedIds);
+    await indexer.flush();
+    console.log(
+      `  FR: ${fr.indexed} upserted, ${fr.skipped} skipped (unchanged since checkpoint)`,
+    );
+    totalIndexed += fr.indexed;
+    totalSkipped += fr.skipped;
+  }
 
-  // Prune orphaned documents
+  // Prune orphaned documents (only safe when all sources are scanned)
   let pruned = 0;
-  if (prune) {
+  if (prune && sourceFilter) {
+    console.log("\n  --prune ignored: cannot prune when --source is set (would delete other sources)");
+  } else if (prune) {
     pruned = await pruneOrphans(client, expectedIds);
   }
 
-  // Update checkpoint to the start of this run
-  await writeCheckpoint(resolvedDir, runStartTime);
+  // Update checkpoint to the start of this run (skip for partial --source runs)
+  if (!sourceFilter) {
+    await writeCheckpoint(resolvedDir, runStartTime);
+  } else {
+    console.log("\n  Checkpoint not updated (--source partial run).");
+  }
 
   // Summary
   const index = client.index(INDEX_NAME);

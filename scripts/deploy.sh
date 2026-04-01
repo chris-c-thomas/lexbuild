@@ -167,6 +167,13 @@ deploy_content_rsync() {
     rsync "${RSYNC_OPTS[@]}" output-part/ecfr/ "${VPS_HOST}:${CONTENT_DEST}/ecfr/parts/"
   fi
 
+  # FR documents
+  if [ -d "output/fr" ]; then
+    echo "--- Syncing FR documents"
+    ssh "$VPS_HOST" "mkdir -p ${CONTENT_DEST}/fr/documents"
+    rsync "${RSYNC_OPTS[@]}" output/fr/ "${VPS_HOST}:${CONTENT_DEST}/fr/documents/"
+  fi
+
   # Nav JSON
   if [ -d "apps/astro/public/nav" ]; then
     echo "--- Syncing nav JSON"

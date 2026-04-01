@@ -73,6 +73,8 @@ export interface FrDocumentXmlMeta {
   rin?: string | undefined;
   /** FR document number extracted from FRDOC text */
   documentNumber?: string | undefined;
+  /** Publication date inferred from FRDOC filing date (YYYY-MM-DD) */
+  publicationDate?: string | undefined;
 }
 
 /** Frame kinds for the stack */
@@ -220,14 +222,23 @@ export class FrASTBuilder {
       return;
     }
 
-    // Footnote reference
+    // Footnote reference marker — FTREF is empty and follows <SU>N</SU>.
+    // Convert the preceding SU (rendered as sup) to a footnoteRef.
     if (name === FR_FTREF_ELEMENT) {
-      const node: InlineNode = {
-        type: "inline",
-        inlineType: "footnoteRef",
-        idref: attrs["ID"],
-      };
-      this.stack.push({ kind: "inline", elementName: name, node, textBuffer: "" });
+      const parentFrame = this.stack[this.stack.length - 1];
+      if (parentFrame?.kind === "content" && parentFrame.node?.type === "content") {
+        const contentNode = parentFrame.node as ContentNode;
+        // Find the last sup child and convert it to footnoteRef
+        for (let i = contentNode.children.length - 1; i >= 0; i--) {
+          const child = contentNode.children[i];
+          if (child?.type === "inline" && (child as InlineNode).inlineType === "sup") {
+            (child as InlineNode).inlineType = "footnoteRef";
+            break;
+          }
+        }
+      }
+      // FTREF is self-closing, push+pop to maintain balance
+      this.ignoredContainerDepth = 1;
       return;
     }
 
@@ -414,11 +425,13 @@ export class FrASTBuilder {
     // Content frames → create inline text node
     if (frame.kind === "content" && frame.node?.type === "content") {
       const contentNode = frame.node as ContentNode;
-      if (text) {
+      // Normalize XML indentation whitespace: collapse runs of whitespace to single spaces
+      const normalized = text.replace(/\s+/g, " ");
+      if (normalized && normalized !== " ") {
         contentNode.children.push({
           type: "inline",
           inlineType: "text",
-          text,
+          text: normalized,
         });
       }
       return;
@@ -427,14 +440,17 @@ export class FrASTBuilder {
     // Inline frames → set text or add child
     if (frame.kind === "inline" && frame.node?.type === "inline") {
       const inlineNode = frame.node as InlineNode;
+      const normalized = text.replace(/\s+/g, " ");
       if (inlineNode.children) {
-        inlineNode.children.push({
-          type: "inline",
-          inlineType: "text",
-          text,
-        });
+        if (normalized && normalized !== " ") {
+          inlineNode.children.push({
+            type: "inline",
+            inlineType: "text",
+            text: normalized,
+          });
+        }
       } else {
-        inlineNode.text = (inlineNode.text ?? "") + text;
+        inlineNode.text = (inlineNode.text ?? "") + normalized;
       }
       return;
     }
@@ -641,7 +657,10 @@ export class FrASTBuilder {
     } else if (elementName === "B") {
       inlineType = "bold";
     } else if (elementName === "SU") {
-      inlineType = "sup";
+      // SU inside a footnote (FTNT) is the footnote marker, not a generic superscript.
+      // Check if we're inside a note frame to determine the correct type.
+      const insideFootnote = this.findFrame("note") !== undefined;
+      inlineType = insideFootnote ? "footnoteRef" : "sup";
     } else if (elementName === "FR") {
       inlineType = "text"; // Fractions render as text
     } else if (elementName === "E") {
@@ -1027,11 +1046,36 @@ export class FrASTBuilder {
     if (!frame || frame.kind !== "frdoc") return;
 
     const text = frame.textBuffer.trim();
-    // Extract document number from "[FR Doc. 2026-06029 Filed 3-27-26; 8:45 am]"
-    // or "[FR Doc. 2026-06029]"
-    const match = /FR\s+Doc\.\s+([\d-]+)/i.exec(text);
-    if (match) {
-      this.currentDocMeta.documentNumber = match[1];
+    // Extract document number from FRDOC text. Formats vary by era:
+    //   Modern: "[FR Doc. 2026-06029 Filed 3-27-26; 8:45 am]"
+    //   Pre-2009: "[FR Doc. E8-17594 Filed 7-31-08; 8:45 am]"
+    //   Very old: "[FR Doc. 00-123 Filed 1-2-00; 8:45 am]"
+    const docMatch = /FR\s+Doc\.\s+([\w-]+)/i.exec(text);
+    if (docMatch) {
+      this.currentDocMeta.documentNumber = docMatch[1];
+    }
+
+    // Extract publication date from filing date (Filed M-D-YY).
+    // Publication = filing date + 1 calendar day (FR publishes the morning after).
+    const dateMatch = /Filed\s+(\d{1,2})-(\d{1,2})-(\d{2})\b/.exec(text);
+    if (dateMatch) {
+      const [, mmStr, ddStr, yyStr] = dateMatch;
+      const mm = parseInt(mmStr ?? "0", 10);
+      const dd = parseInt(ddStr ?? "0", 10);
+      const yy = parseInt(yyStr ?? "0", 10);
+      // 2-digit year: 00-49 → 2000s, 50-99 → 1900s
+      const fullYear = yy < 50 ? 2000 + yy : 1900 + yy;
+      const filed = new Date(fullYear, mm - 1, dd);
+      // Validate — Date constructor silently wraps invalid values (month 13 → next year)
+      if (filed.getMonth() !== mm - 1 || filed.getDate() !== dd) {
+        return; // Invalid filing date — skip rather than produce wrong date
+      }
+      // Publication date = next calendar day
+      filed.setDate(filed.getDate() + 1);
+      const pubYear = filed.getFullYear();
+      const pubMonth = String(filed.getMonth() + 1).padStart(2, "0");
+      const pubDay = String(filed.getDate()).padStart(2, "0");
+      this.currentDocMeta.publicationDate = `${pubYear}-${pubMonth}-${pubDay}`;
     }
   }
 
