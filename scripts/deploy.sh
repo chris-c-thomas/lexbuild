@@ -170,6 +170,7 @@ deploy_content_rsync() {
   # FR documents
   if [ -d "output/fr" ]; then
     echo "--- Syncing FR documents"
+    ssh "$VPS_HOST" "mkdir -p ${CONTENT_DEST}/fr/documents"
     rsync "${RSYNC_OPTS[@]}" output/fr/ "${VPS_HOST}:${CONTENT_DEST}/fr/documents/"
   fi
 
