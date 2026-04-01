@@ -58,7 +58,7 @@ NAV_DEST="${NAV_DEST:-/srv/lexbuild/nav}"
 
 # --- Parse arguments ---
 
-MODE="code" # code | content | content-only | remote | search-dump | search-push
+MODE="code" # code | content | content-only | nav-only | sitemaps-only | remote | search-dump | search-push
 
 case "${1:-}" in
   --content)
@@ -66,6 +66,12 @@ case "${1:-}" in
     ;;
   --content-only)
     MODE="content-only"
+    ;;
+  --nav-only)
+    MODE="nav-only"
+    ;;
+  --sitemaps-only)
+    MODE="sitemaps-only"
     ;;
   --remote)
     MODE="remote"
@@ -84,7 +90,7 @@ case "${1:-}" in
     ;; # default: code only
   *)
     echo "Unknown option: $1"
-    echo "Usage: ./scripts/deploy.sh [--content | --content-only | --remote | --search-dump | --search-push | --help]"
+    echo "Usage: ./scripts/deploy.sh [--content | --content-only | --nav-only | --sitemaps-only | --remote | --search-dump | --search-push | --help]"
     exit 1
     ;;
 esac
@@ -174,10 +180,12 @@ deploy_content_rsync() {
     rsync "${RSYNC_OPTS[@]}" output/fr/ "${VPS_HOST}:${CONTENT_DEST}/fr/documents/"
   fi
 
-  # Nav JSON
+  # Nav JSON — sync to both /srv/lexbuild/nav/ (server-side reads) and
+  # dist/client/nav/ (client-side sidebar fetches /nav/*.json as static assets)
   if [ -d "apps/astro/public/nav" ]; then
     echo "--- Syncing nav JSON"
     rsync "${RSYNC_OPTS[@]}" apps/astro/public/nav/ "${VPS_HOST}:${NAV_DEST}/"
+    rsync "${RSYNC_OPTS[@]}" apps/astro/public/nav/ "${VPS_HOST}:~/lexbuild/apps/astro/dist/client/nav/"
   fi
 
   # Sitemaps and robots.txt → both public/ (for future builds) and dist/client/ (live serving)
@@ -193,6 +201,42 @@ deploy_content_rsync() {
   fi
 
   echo "==> Content rsync complete (no PM2 restart needed)"
+}
+
+# --- Nav-only rsync (used by: nav-only) ---
+
+deploy_nav_rsync() {
+  echo "==> Deploying nav JSON to VPS..."
+  RSYNC_OPTS=(-avz --delete --checksum)
+  if [ -d "apps/astro/public/nav" ]; then
+    rsync "${RSYNC_OPTS[@]}" apps/astro/public/nav/ "${VPS_HOST}:${NAV_DEST}/"
+    # Also sync to dist/client/nav/ so Astro serves them as static assets
+    # (client-side sidebar fetches /nav/*.json directly)
+    rsync "${RSYNC_OPTS[@]}" apps/astro/public/nav/ "${VPS_HOST}:~/lexbuild/apps/astro/dist/client/nav/"
+    echo "==> Nav rsync complete"
+  else
+    echo "ERROR: apps/astro/public/nav/ not found"
+    exit 1
+  fi
+}
+
+# --- Sitemaps-only rsync (used by: sitemaps-only) ---
+
+deploy_sitemaps_rsync() {
+  echo "==> Deploying sitemaps to VPS..."
+  SITEMAP_FILES=(apps/astro/public/sitemap*.xml apps/astro/public/robots.txt)
+  HAVE_SITEMAPS=false
+  for f in "${SITEMAP_FILES[@]}"; do
+    [ -e "$f" ] && HAVE_SITEMAPS=true && break
+  done
+  if [ "$HAVE_SITEMAPS" = true ]; then
+    rsync -avz apps/astro/public/sitemap*.xml apps/astro/public/robots.txt "${VPS_HOST}:~/lexbuild/apps/astro/public/" 2>/dev/null
+    rsync -avz apps/astro/public/sitemap*.xml apps/astro/public/robots.txt "${VPS_HOST}:~/lexbuild/apps/astro/dist/client/" 2>/dev/null
+    echo "==> Sitemaps rsync complete"
+  else
+    echo "ERROR: No sitemap files found in apps/astro/public/"
+    exit 1
+  fi
 }
 
 # --- Remote pipeline (used by: remote) ---
@@ -388,17 +432,44 @@ dump_and_push() {
     set -euo pipefail
     source ~/.lexbuild-secrets
 
-    echo "--- Stopping Meilisearch"
+    echo "--- Stopping Meilisearch (PM2)"
     pm2 stop meilisearch
+
+    # Kill any rogue Meilisearch processes not managed by PM2 (e.g., stale
+    # --import-dump processes from prior failed imports). These can silently
+    # hold port 7700, causing new imports to fail to bind and health checks
+    # to hit the old instance.
+    echo "--- Checking for rogue Meilisearch processes..."
+    ROGUE_PIDS=$(pgrep -f '/usr/local/bin/meilisearch' || true)
+    if [ -n "$ROGUE_PIDS" ]; then
+      echo "--- Killing rogue Meilisearch processes: $ROGUE_PIDS"
+      echo "$ROGUE_PIDS" | xargs kill 2>/dev/null || true
+      sleep 2
+      # Force-kill any survivors
+      REMAINING=$(pgrep -f '/usr/local/bin/meilisearch' || true)
+      if [ -n "$REMAINING" ]; then
+        echo "--- Force-killing stubborn processes: $REMAINING"
+        echo "$REMAINING" | xargs kill -9 2>/dev/null || true
+        sleep 1
+      fi
+    fi
+
+    # Verify port 7700 is free
+    if ss -tlnp | grep -q ':7700 '; then
+      echo "ERROR: Port 7700 is still in use after killing all Meilisearch processes."
+      ss -tlnp | grep ':7700 '
+      exit 1
+    fi
+    echo "--- Port 7700 is free"
 
     echo "--- Clearing existing database for dump import..."
     rm -rf /var/lib/meilisearch/data
     mkdir -p /var/lib/meilisearch/data
 
-    echo "--- Importing dump (this may take a few minutes)..."
+    echo "--- Importing dump (this may take several minutes for large indexes)..."
     # --import-dump imports then keeps running as a server.
-    # Run in background, wait for the "All documents successfully imported" log,
-    # then kill it so PM2 can manage the process.
+    # Run in background, poll until port 7700 is listening (not just health,
+    # which can respond before import completes on older versions).
     /usr/local/bin/meilisearch \
       --import-dump /tmp/lexbuild-search.dump \
       --db-path /var/lib/meilisearch/data \
@@ -407,15 +478,23 @@ dump_and_push() {
       --master-key "$MEILI_MASTER_KEY" &
     MEILI_PID=$!
 
-    # Wait for import to complete (poll health endpoint)
-    echo "--- Waiting for import to complete and server to be ready..."
-    for i in $(seq 1 120); do
-      if curl -sf http://127.0.0.1:7700/health > /dev/null 2>&1; then
-        echo "--- Import complete, Meilisearch is responding."
+    # Wait for import to complete — poll for port binding, then verify doc count
+    echo "--- Waiting for import to complete and server to bind port 7700..."
+    IMPORT_TIMEOUT=600  # 10 minutes max for large indexes (1M+ docs)
+    for i in $(seq 1 $IMPORT_TIMEOUT); do
+      if ss -tlnp | grep -q ':7700 '; then
+        echo "--- Meilisearch is listening on port 7700 after ~${i}s"
         break
       fi
-      sleep 5
+      if ! kill -0 "$MEILI_PID" 2>/dev/null; then
+        echo "ERROR: Meilisearch import process died unexpectedly."
+        exit 1
+      fi
+      sleep 1
     done
+
+    # Give it a moment to finish any post-bind indexing
+    sleep 3
 
     # Kill the foreground Meilisearch process so PM2 can manage it
     kill "$MEILI_PID" 2>/dev/null || true
@@ -504,6 +583,12 @@ case "$MODE" in
     ;;
   content-only)
     deploy_content_rsync
+    ;;
+  nav-only)
+    deploy_nav_rsync
+    ;;
+  sitemaps-only)
+    deploy_sitemaps_rsync
     ;;
   remote)
     deploy_remote
