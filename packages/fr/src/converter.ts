@@ -5,8 +5,9 @@
  * enriches frontmatter with JSON sidecar metadata, renders via core's
  * renderDocument, and writes structured Markdown output.
  *
- * Processes FR documents in two passes: (1) parse all files and register
- * identifiers for link resolution, (2) render and write output files.
+ * Processes FR documents in a single streaming pass: parse each XML file,
+ * render Markdown, and write output immediately. No link pre-registration
+ * since FR documents rarely cross-reference each other.
  */
 
 import { createReadStream, existsSync } from "node:fs";
@@ -324,7 +325,8 @@ async function walkDir(dir: string, results: string[]): Promise<void> {
  *   - Per-document: "downloads/fr/2026/03/doc.xml" → "2026-03-01"
  *   - Govinfo bulk: "downloads/fr/bulk/2026/FR-2026-03-02.xml" → "2026-03-02"
  */
-function inferDateFromPath(filePath: string): string {
+/** @internal Exported for testing. */
+export function inferDateFromPath(filePath: string): string {
   // Govinfo bulk: FR-YYYY-MM-DD.xml
   const bulkMatch = /FR-(\d{4})-(\d{2})-(\d{2})\.xml$/.exec(filePath);
   if (bulkMatch) {

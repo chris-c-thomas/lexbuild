@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { existsSync } from "node:fs";
 import { readdir, readFile, rm, mkdir } from "node:fs/promises";
 import { resolve, join } from "node:path";
-import { convertFrDocuments } from "./converter.js";
+import { convertFrDocuments, inferDateFromPath } from "./converter.js";
 
 const FIXTURES_DIR = resolve(import.meta.dirname, "../../../fixtures/fragments/fr");
 const TEST_OUTPUT = resolve(import.meta.dirname, "../../../.test-output-fr");
@@ -131,6 +131,20 @@ describe("convertFrDocuments", () => {
 
       // Only notice.xml should be converted
       expect(result.documentsConverted).toBe(1);
+    });
+  });
+
+  describe("inferDateFromPath", () => {
+    it("extracts date from govinfo bulk path", () => {
+      expect(inferDateFromPath("downloads/fr/bulk/2026/FR-2026-03-02.xml")).toBe("2026-03-02");
+    });
+
+    it("extracts year-month from per-document path", () => {
+      expect(inferDateFromPath("downloads/fr/2026/03/2026-06029.xml")).toBe("2026-03-01");
+    });
+
+    it("returns empty string for non-matching path", () => {
+      expect(inferDateFromPath("/tmp/random-file.xml")).toBe("");
     });
   });
 

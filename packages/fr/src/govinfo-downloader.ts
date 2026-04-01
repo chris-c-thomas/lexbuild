@@ -149,7 +149,8 @@ export async function downloadFrBulk(options: FrGovinfoBulkOptions): Promise<FrG
           // null means 404 — no issue published on this date
           skipped++;
         }
-      } catch {
+      } catch (err) {
+        console.warn(`Warning: Failed to download ${date}: ${err instanceof Error ? err.message : String(err)}`);
         failed++;
       }
     }

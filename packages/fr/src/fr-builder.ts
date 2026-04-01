@@ -1066,6 +1066,10 @@ export class FrASTBuilder {
       // 2-digit year: 00-49 → 2000s, 50-99 → 1900s
       const fullYear = yy < 50 ? 2000 + yy : 1900 + yy;
       const filed = new Date(fullYear, mm - 1, dd);
+      // Validate — Date constructor silently wraps invalid values (month 13 → next year)
+      if (filed.getMonth() !== mm - 1 || filed.getDate() !== dd) {
+        return; // Invalid filing date — skip rather than produce wrong date
+      }
       // Publication date = next calendar day
       filed.setDate(filed.getDate() + 1);
       const pubYear = filed.getFullYear();
