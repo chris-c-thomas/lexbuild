@@ -1059,9 +1059,10 @@ export class FrASTBuilder {
     // Publication = filing date + 1 calendar day (FR publishes the morning after).
     const dateMatch = /Filed\s+(\d{1,2})-(\d{1,2})-(\d{2})\b/.exec(text);
     if (dateMatch) {
-      const mm = parseInt(dateMatch[1]!, 10);
-      const dd = parseInt(dateMatch[2]!, 10);
-      const yy = parseInt(dateMatch[3]!, 10);
+      const [, mmStr, ddStr, yyStr] = dateMatch;
+      const mm = parseInt(mmStr ?? "0", 10);
+      const dd = parseInt(ddStr ?? "0", 10);
+      const yy = parseInt(yyStr ?? "0", 10);
       // 2-digit year: 00-49 → 2000s, 50-99 → 1900s
       const fullYear = yy < 50 ? 2000 + yy : 1900 + yy;
       const filed = new Date(fullYear, mm - 1, dd);

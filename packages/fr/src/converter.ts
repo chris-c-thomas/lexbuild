@@ -168,8 +168,6 @@ export async function convertFrDocuments(options: FrConvertOptions): Promise<FrC
       }
     }
 
-    // Release collected docs after processing each file
-    collected = undefined as never;
     filesProcessed++;
 
     options.onProgress?.({
