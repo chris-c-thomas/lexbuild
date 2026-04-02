@@ -37,22 +37,12 @@ LexBuild transforms this XML into per-section Markdown files with YAML frontmatt
 
 ## Sources
 
-| Source | Package | XML Format | Titles | Status |
-|--------|---------|------------|--------|--------|
-| U.S. Code | [`@lexbuild/usc`](packages/usc/) | USLM 1.0 | 54 | Stable |
-| eCFR | [`@lexbuild/ecfr`](packages/ecfr/) | GPO/SGML | 50 | Stable |
-| Annual CFR | `@lexbuild/cfr` | GPO/SGML | 50 | Planned |
-| Federal Register | [`@lexbuild/fr`](packages/fr/) | GPO/SGML | ~30k docs/yr | Stable |
-| State statutes | `@lexbuild/state-*` | Varies | — | Exploratory |
-
-### Data Sources
-
-| Source | Download From | Update Frequency | Notes |
-|--------|--------------|-----------------|-------|
-| **U.S. Code** | [uscode.house.gov](https://uscode.house.gov/download/download.shtml) | Irregular | Release point auto-detected from OLRC download page |
-| **eCFR** (default) | [ecfr.gov](https://www.ecfr.gov/api/versioner/v1/titles) | Daily | Point-in-time support via `--date` flag |
-| **eCFR** (fallback) | [govinfo.gov](https://www.govinfo.gov/bulkdata/ECFR) | Irregular | Bulk XML. Updates per-title as regulations change |
-| **Federal Register** | [federalregister.gov](https://www.federalregister.gov/developers/documentation/api/v1) | Daily | Per-document XML + JSON metadata. |
+| Source | Package | Download From | Format | Update Frequency | Notes |
+|--------|---------|---------------|------------|------------------|-------|
+| U.S. Code | [`@lexbuild/usc`](packages/usc/) | [uscode.house.gov](https://uscode.house.gov/download/download.shtml) | USLM 1.0 XML | Irregular | 54 titles. Release point auto-detected from OLRC |
+| eCFR (default) | [`@lexbuild/ecfr`](packages/ecfr/) | [ecfr.gov](https://www.ecfr.gov/api/versioner/v1/titles) | GPO/SGML XML | Daily | 50 titles. Point-in-time support via `--date` flag |
+| eCFR (fallback) | [`@lexbuild/ecfr`](packages/ecfr/) | [govinfo.gov](https://www.govinfo.gov/bulkdata/ECFR) | GPO/SGML XML | Irregular | Bulk XML. Updates per-title as regulations change |
+| Federal Register | [`@lexbuild/fr`](packages/fr/) | [federalregister.gov](https://www.federalregister.gov/developers/documentation/api/v1) | GPO/SGML XML | Daily | ~30k docs/yr. Per-document XML + JSON metadata |
 
 ---
 
