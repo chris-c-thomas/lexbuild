@@ -24,16 +24,14 @@ src/
 
 ## Public API
 
-| Export | Type | Purpose |
-|--------|------|---------|
-| `convertFrDocuments()` | Function | Convert FR XML files to Markdown |
-| `downloadFrDocuments()` | Function | Download FR documents by date range |
-| `downloadSingleFrDocument()` | Function | Download a single document by number |
-| `buildFrApiListUrl()` | Function | Build API listing URL |
-| `buildFrFrontmatter()` | Function | Build FrontmatterData from node + JSON |
-| `buildFrOutputPath()` | Function | Build output file path |
-| `FrASTBuilder` | Class | SAX→AST builder for FR XML |
-| Element classification sets | Constants | `FR_DOCUMENT_ELEMENTS`, etc. |
+Key exports (see `index.ts` for full list):
+
+| Export | Purpose |
+|--------|---------|
+| `convertFrDocuments()` | Convert FR XML files to Markdown |
+| `downloadFrDocuments()` | Download FR documents by date range |
+| `downloadSingleFrDocument()` | Download a single document by number |
+| `FrASTBuilder` | SAX→AST builder for FR XML |
 
 ## FR XML Schema
 
@@ -156,8 +154,3 @@ FR documents include all standard fields plus:
 - **`FTREF` converts preceding `sup` to `footnoteRef`**: `FTREF` is an empty signal element in body text. On open, the builder walks backward through the parent content node's children to find the last `sup` inline and converts it to `footnoteRef`.
 - **Whitespace normalization in `onText`**: FR XML from the API has generous indentation inside `<P>` elements. The builder normalizes whitespace (`text.replace(/\s+/g, " ")`) for content and inline frames to prevent XML formatting from appearing in output.
 
-## Dependency on @lexbuild/core
-
-Imports: `XMLParser`, `LevelNode`, `EmitContext`, `renderDocument`, `createLinkResolver`, `writeFile`, `mkdir`, `FORMAT_VERSION`, `GENERATOR`.
-
-Does NOT import from `@lexbuild/usc` or `@lexbuild/ecfr`. Source packages are independent. Element classification (emphasis maps, etc.) is duplicated per package boundary rules.

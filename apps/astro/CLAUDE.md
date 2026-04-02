@@ -158,12 +158,7 @@ Gated behind `ENABLE_SEARCH`. When `false`, SearchDialog is not rendered.
 
 ## Error Pages
 
-11 error pages using a shared `ErrorPage.astro` component: 400, 403, 404, 405, 410, 429, 451, 500, 502, 503, 504.
-
-- **`404.astro` and `500.astro` must stay at `src/pages/` root** — Astro auto-routes only these two (404 for unmatched routes, 500 as SSR error boundary). Other error pages are regular pages at their numeric URL paths.
-- **`ErrorPage.astro`** component: `status` (decorative large number, `aria-hidden`), `title` (`<h1>`), `description`, optional `showHomeLink`. Status number uses opacity variants (`text-slate-blue-200/60 dark:text-slate-blue-300/40`) — do NOT use the shade-swap pattern (`text-X-300 dark:text-X-700`) which inverts contrast on dark backgrounds.
-- **BaseLayout `title` includes status code** for browser tab clarity: e.g., `title="404 Not Found"` → `<title>404 Not Found | LexBuild</title>`.
-- **Cloudflare 5xx codes (520–526) are NOT Astro pages** — Cloudflare intercepts these before reaching the origin. See `.claude/todo/http-error-pages.md` for reference.
+11 error pages using a shared `ErrorPage.astro` component: 400, 403, 404, 405, 410, 429, 451, 500, 502, 503, 504. `404.astro` and `500.astro` must stay at `src/pages/` root (Astro auto-routes only these two). Cloudflare 5xx codes (520–526) are NOT Astro pages.
 
 ## Design Conventions
 
@@ -203,30 +198,20 @@ Initialized with radix-nova preset, zinc theme. Components in `src/components/ui
 - **`rehype-sanitize` is critical.** Defense-in-depth against injection in Markdown content.
 - **PM2 reload not restart.** Use `pm2 reload lexbuild-astro --update-env` for zero-downtime.
 - **`ecosystem.config.cjs` manages 3 services**: `lexbuild-astro` (port 4321), `meilisearch` (port 7700), `uptime-kuma` (port 3001). Uptime Kuma is installed at `/srv/uptime-kuma`, not in the monorepo.
-- **Shiki uses LexBuild brand themes** (`lexbuild-light`/`lexbuild-dark`) defined in `src/lib/shiki-themes.ts` — the single source of truth imported by both `src/lib/shiki.ts` (runtime) and `scripts/generate-highlights.ts` (pre-render). Uses 3 palettes: putty for headings, slate-blue for body/punctuation, summer-green for bold/code. Light theme punctuation/link colors use `#476c85` (slate-blue-700), not `#5285a3` (slate-blue-600) — the 600 shade fails WCAG AA (4.0:1 on white).
-- **Changing Shiki themes**: Edit `src/lib/shiki-themes.ts`. Delete existing `.highlighted.html` files and re-run `generate-highlights.ts` after changes.
-- **Delete `.highlighted.html` from `output/` dirs, not `content/`**: The `content/` directory is symlinked. `find content/ -delete` silently fails on symlink targets. Always delete from `output/`, `output-chapter/`, `output-title/` directly: `find /path/to/output -name "*.highlighted.html" -type f -delete`.
+- **Shiki uses LexBuild brand themes** (`lexbuild-light`/`lexbuild-dark`) defined in `src/lib/shiki-themes.ts` — the single source of truth imported by both `src/lib/shiki.ts` (runtime) and `scripts/generate-highlights.ts` (pre-render). After editing themes, delete existing `.highlighted.html` files from `output/` dirs (not `content/` — it's symlinked) and re-run `generate-highlights.ts`.
 - **Shiki word wrapping**: `.shiki-wrap` in `global.css` forces `pre-wrap` on Shiki output with `!important`.
 - **`<pre>` whitespace in Astro templates**: Template indentation inside `<pre>`/`<code>` tags renders as literal whitespace. Always collapse `<pre><code>{content}</code></pre>` onto one line with no surrounding whitespace.
 - **Third-party scripts (analytics, tracking) must use `is:inline`**: Without it, Astro processes them as ES modules — `arguments` is invalid in strict mode, and globals like `window.dataLayer` won't attach. Applies to gtag, Clarity, and any script that relies on classic browser globals.
 - **External links**: Always use `rel="noopener noreferrer"` on `target="_blank"`.
-- **Search in production uses Caddy proxy, not direct Meilisearch access.** `MEILI_URL=/search` in `.env.production` — the browser's `127.0.0.1:7700` is the user's machine, not the VPS.
-- **`MEILI_SEARCH_KEY` is not passed to the browser in proxy mode.** `BaseLayout.astro` detects proxy mode (`meiliUrl.startsWith("/")`) and passes `undefined` for the key prop. Only Caddy has the key. In direct mode (local dev), the key is passed to the Meilisearch client.
-- **After dump import, API keys change.** Update `~/.lexbuild-secrets`, `.env.production` (via deploy.sh), AND `/etc/caddy/environment`.
+- **Search in production uses Caddy proxy, not direct Meilisearch access.** `MEILI_URL=/search` in `.env.production`. `BaseLayout.astro` detects proxy mode (`meiliUrl.startsWith("/")`) and passes `undefined` for the key prop — only Caddy has the key.
 - **Astro conditionals with strings**: `{str && <jsx>}` can silently fail in `.astro` templates. Use `{str ? <jsx> : null}` with explicit `: null` for ternary conditionals.
 - **gray-matter `matter` field starts with `\n`**: When displaying raw YAML from `result.matter`, use `.trim()` to avoid a blank line between `---` and the first field.
-- **Theme toggle is 2-way (light/dark)**, default is light. No system preference detection. Legacy `"system"` values in localStorage are migrated to `"light"` on read. The inline `<head>` script only applies dark if `localStorage.theme === "dark"`.
+- **Theme toggle is 2-way (light/dark)**, default is light. No system preference detection. The inline `<head>` script only applies dark if `localStorage.theme === "dark"`.
 - **Astro `<script>` blocks are plain JS, not TypeScript.** Don't use generics like `querySelectorAll<HTMLElement>()`. Only `<script lang="ts">` or bundled component scripts support TypeScript syntax.
 - **Homepage sections with hardcoded light backgrounds** (e.g., `bg-[#FAFAFA]`, `bg-summer-green-50/75`) must include `dark:` overrides. Use `dark:bg-background` or `dark:bg-slate-blue-950/50` for subtle dark tinting.
-- **Homepage section order**: Hero → CLI Quick Start → Browse Sources → How It Works (pipeline diagram) → Sample Output → Packages. Background alternation: surface/grid → transparent → slate-blue-50 → transparent → #FAFAFA → summer-green-50. The pipeline diagram is a complex scoped-CSS component with CLI as outer wrapper, core engine above parsers, and dependency connectors between layers.
-- **gray-matter cache corrupts `.matter`**: `gray-matter` caches results by input string. The `.matter` property is a lazy getter consumed by `.data` access. On the second SSR request with the same file, the cached object returns `undefined` for `.matter`. Always use `matter(raw, { cache: false })` when reading `.matter`.
-- **gray-matter `{ cache: false }` in batch scripts**: gray-matter caches parsed results by input string. In batch processing (highlights, search indexing), this causes unbounded RSS growth (~30MB per 1,000 files). Always pass `{ cache: false }` when calling `matter()` in loops. Affects `generate-highlights.ts`, `index-search.ts`, and `index-search-incremental.ts`.
+- **gray-matter caching bugs**: (1) In SSR, the `.matter` property is a lazy getter consumed by `.data` access — on repeat requests the cached object returns `undefined` for `.matter`. (2) In batch scripts, caching causes unbounded RSS growth. Always use `matter(raw, { cache: false })` everywhere.
 - **React hydration with localStorage**: Don't read localStorage in `useState()` initializer — SSR renders the default, client reads stored value, causing hydration mismatch. Use `useLayoutEffect` to apply stored value after hydration but before paint.
-- **`--content` deploy doesn't regenerate anything**: It only rsyncs existing local files. To update nav/sitemap after code changes, either regenerate locally then `--content`, or SSH into VPS and regenerate there. `--remote` runs the full pipeline.
-- **Error pages must be at `src/pages/` root** — Astro's 404/500 auto-routing only works for `src/pages/404.astro` and `src/pages/500.astro`. Subdirectories (e.g., `src/pages/errors/`) would change the URL path and break auto-routing.
-- **Sitemap chunk size is 25,000 URLs** (not 50k). 50k produced ~10MB XML files that Googlebot intermittently failed to fetch. `MAX_URLS_PER_FILE` in `scripts/generate-sitemap.ts`.
-- **Sitemap `changefreq` is per-source**: eCFR=`weekly` (updated daily), USC=`monthly` (release points every few weeks), misc=`weekly`. Passed as parameter to `writeChunkedSitemaps()`.
-- **Locally generated sitemaps need `--content` deploy**: `./scripts/deploy.sh --content` rsyncs `public/sitemap*.xml` to the VPS. Plain `deploy.sh` only does git pull + build and won't pick up gitignored sitemap files.
+- **Error pages must be at `src/pages/` root** — Astro's 404/500 auto-routing only works for `src/pages/404.astro` and `src/pages/500.astro`. Subdirectories would break auto-routing.
 
 ## SEO
 
@@ -237,9 +222,7 @@ All SEO is driven by `lib/seo.ts` (pure functions, no Astro imports) and `compon
 - **`siteUrl`** is always resolved from `import.meta.env.SITE_URL` at the call site, passed as a parameter to pure functions.
 - **`rawTitle?: true`** suppresses the ` | LexBuild` suffix (used only on the landing page).
 - **Error pages** set `robots: "noindex"`.
-- **JSON-LD** uses `@graph` approach via `JsonLd.astro`. Builder functions return objects without `@context`. HTML-safe serialization escapes `<`, `>`, `&` in `<script>` output.
-- **`og:type`**: `"article"` for sections, `"website"` for everything else.
-- Sitemap: ~292k URLs in ≤50k chunks with depth-based priority
+- **JSON-LD** uses `@graph` approach via `JsonLd.astro`. Builder functions return objects without `@context`.
 
 ## Testing
 
@@ -262,22 +245,3 @@ FR is the third source (`source: "fr"`) with a fundamentally different structure
 - **Nav JSON must exist in two VPS locations**: `/srv/lexbuild/nav/` (server-side `readFile`) AND `~/lexbuild/apps/astro/dist/client/nav/` (client-side `fetch("/nav/...")`). The deploy script syncs to both. If sidebar shows "No years found" but the main content loads, the `dist/client/nav/` copy is missing.
 - **Don't pipe long-running scripts through `head`**: `npx tsx scripts/index-search.ts 2>&1 | head -25` kills the process via SIGPIPE when the pipe closes. Run indexer scripts directly or use `run_in_background`.
 
-## `astro.config.ts`
-
-```typescript
-import { defineConfig } from "astro/config";
-import node from "@astrojs/node";
-import react from "@astrojs/react";
-import tailwindcss from "@tailwindcss/vite";
-
-export default defineConfig({
-  output: "server",
-  adapter: node({ mode: "standalone" }),
-  integrations: [react()],
-  server: { host: "127.0.0.1", port: 4321 },
-  vite: {
-    plugins: [tailwindcss()],
-    ssr: { external: ["shiki"] },
-  },
-});
-```

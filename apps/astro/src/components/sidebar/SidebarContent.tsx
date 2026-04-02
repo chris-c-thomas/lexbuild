@@ -62,15 +62,20 @@ function parseFrActivePath(path: string) {
 
 function FrSidebarContent({ currentPath }: { currentPath: string }) {
   const [years, setYears] = useState<FrYearSummary[] | null>(null);
+  const [yearsError, setYearsError] = useState(false);
   const [expandedYear, setExpandedYear] = useState<string | null>(null);
   const [userToggled, setUserToggled] = useState(false);
   const active = parseFrActivePath(currentPath);
 
   useEffect(() => {
+    setYearsError(false);
     fetch("/nav/fr/years.json")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
       .then((data: FrYearSummary[]) => setYears(data))
-      .catch(() => setYears([]));
+      .catch(() => setYearsError(true));
   }, []);
 
   // Auto-expand to active year on initial load (only before user interacts)
@@ -86,7 +91,9 @@ function FrSidebarContent({ currentPath }: { currentPath: string }) {
 
   return (
     <div className="p-3">
-      {!years ? (
+      {yearsError ? (
+        <p className="text-muted-foreground p-2 text-sm">Failed to load navigation.</p>
+      ) : !years ? (
         <div className="space-y-2 p-2">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
@@ -186,29 +193,37 @@ function FrSidebarContent({ currentPath }: { currentPath: string }) {
 
 function TitleSidebarContent({ sourceId, currentPath }: SidebarContentProps) {
   const [titles, setTitles] = useState<TitleSummary[] | null>(null);
+  const [titlesError, setTitlesError] = useState(false);
   const [expandedTitle, setExpandedTitle] = useState<string | null>(null);
   const [expandedChapter, setExpandedChapter] = useState<string | null>(null);
   const [expandedPart, setExpandedPart] = useState<string | null>(null);
+  const [userToggled, setUserToggled] = useState(false);
   const [titleNavCache, setTitleNavCache] = useState<Record<string, TitleNavData>>({});
+  const [failedTitles, setFailedTitles] = useState<Set<string>>(new Set());
   const [loadingTitle, setLoadingTitle] = useState<string | null>(null);
 
   const active = parseActivePath(sourceId, currentPath);
 
-  // Fetch titles.json on mount
+  // Fetch titles.json on mount (and when source changes)
   useEffect(() => {
+    setTitlesError(false);
+    setTitles(null);
     fetch(`/nav/${sourceId}/titles.json`)
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
       .then((data: TitleSummary[]) => setTitles(data))
-      .catch(() => setTitles([]));
+      .catch(() => setTitlesError(true));
   }, [sourceId]);
 
-  // Auto-expand to the active item on initial load
+  // Auto-expand to the active item on initial load (only before user interacts)
   useEffect(() => {
-    if (!active.title || expandedTitle) return;
+    if (!active.title || userToggled) return;
     setExpandedTitle(active.title);
     if (active.chapter) setExpandedChapter(active.chapter);
     if (active.part) setExpandedPart(active.part);
-  }, [active.title, active.chapter, active.part, expandedTitle]);
+  }, [active.title, active.chapter, active.part, userToggled]);
 
   // Lazy-load per-title nav JSON
   const loadTitleNav = useCallback(
@@ -217,10 +232,11 @@ function TitleSidebarContent({ sourceId, currentPath }: SidebarContentProps) {
       setLoadingTitle(titleDir);
       try {
         const res = await fetch(`/nav/${sourceId}/${titleDir}.json`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = (await res.json()) as TitleNavData;
         setTitleNavCache((prev) => ({ ...prev, [titleDir]: data }));
       } catch {
-        // Silently fail — sidebar shows empty
+        setFailedTitles((prev) => new Set(prev).add(titleDir));
       } finally {
         setLoadingTitle(null);
       }
@@ -228,14 +244,15 @@ function TitleSidebarContent({ sourceId, currentPath }: SidebarContentProps) {
     [sourceId, titleNavCache],
   );
 
-  // Load nav data when a title is expanded
+  // Load nav data when a title is expanded (skip if already failed — retry is manual)
   useEffect(() => {
-    if (expandedTitle) {
+    if (expandedTitle && !failedTitles.has(expandedTitle)) {
       void loadTitleNav(expandedTitle);
     }
-  }, [expandedTitle, loadTitleNav]);
+  }, [expandedTitle, loadTitleNav, failedTitles]);
 
   const toggleTitle = (dir: string) => {
+    setUserToggled(true);
     if (expandedTitle === dir) {
       setExpandedTitle(null);
       setExpandedChapter(null);
@@ -263,7 +280,9 @@ function TitleSidebarContent({ sourceId, currentPath }: SidebarContentProps) {
 
   return (
     <div className="p-3">
-      {!titles ? (
+      {titlesError ? (
+        <p className="text-muted-foreground p-2 text-sm">Failed to load navigation.</p>
+      ) : !titles ? (
         <div className="space-y-2 p-2">
           {Array.from({ length: 8 }).map((_, i) => (
             <div
@@ -317,6 +336,23 @@ function TitleSidebarContent({ sourceId, currentPath }: SidebarContentProps) {
                               style={{ width: `${[68, 82, 55][i]}%` }}
                             />
                           ))}
+                        </div>
+                      ) : failedTitles.has(title.directory) ? (
+                        <div className="py-1.5 px-1">
+                          <p className="text-muted-foreground text-xs">Failed to load.</p>
+                          <button
+                            onClick={() => {
+                              setFailedTitles((prev) => {
+                                const next = new Set(prev);
+                                next.delete(title.directory);
+                                return next;
+                              });
+                              void loadTitleNav(title.directory);
+                            }}
+                            className="text-slate-blue-700 dark:text-slate-blue-400 hover:text-slate-blue-900 dark:hover:text-slate-blue-200 mt-1 text-xs font-medium"
+                          >
+                            Retry
+                          </button>
                         </div>
                       ) : titleNav ? (
                         <ChapterList

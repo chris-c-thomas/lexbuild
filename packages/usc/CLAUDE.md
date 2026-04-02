@@ -20,28 +20,16 @@ src/
 
 ## Public API
 
-| Export | Type | Purpose |
-|--------|------|---------|
-| `convertTitle()` | Function | Convert a USC XML file to Markdown at any granularity |
-| `downloadTitles()` | Function | Download USC XML from OLRC (auto-detects latest release point) |
-| `detectLatestReleasePoint()` | Function | Scrape OLRC download page for current release point |
-| `fetchReleasePointHistory()` | Function | Scrape OLRC prior releases page for full release history |
-| `parseReleasePointFromHtml()` | Function | Parse release point from HTML (exported for testing) |
-| `parseReleasePointHistoryFromHtml()` | Function | Parse release point history from HTML (exported for testing) |
-| `buildDownloadUrl()` | Function | Build download URL for a single title |
-| `buildAllTitlesUrl()` | Function | Build download URL for all titles as one zip |
-| `releasePointToPath()` | Function | Convert `"119-73not60"` → `"119/73not60"` |
-| `isAllTitles()` | Function | Check if title list covers all 54 USC titles |
-| `FALLBACK_RELEASE_POINT` | Constant | Fallback release point when auto-detection fails |
-| `USC_TITLE_NUMBERS` | Constant | Array `[1, 2, ..., 54]` |
-| `ConvertOptions` | Type | Input options for `convertTitle()` |
-| `ConvertResult` | Type | Conversion result (sections written, files, tokens, memory) |
-| `DownloadOptions` | Type | Input options for `downloadTitles()` |
-| `DownloadResult` | Type | Download result (titles downloaded, files, bytes, stats) |
-| `DownloadedFile` | Type | Metadata for a single downloaded file (path, title, size, release point) |
-| `DownloadError` | Type | Error type for download failures (wraps underlying I/O/network errors) |
-| `ReleasePointInfo` | Type | Detected release point with description |
-| `HistoricalReleasePointInfo` | Type | Historical release point with date and affected titles |
+Key exports (see `index.ts` for full list):
+
+| Export | Purpose |
+|--------|---------|
+| `convertTitle()` | Convert a USC XML file to Markdown at any granularity |
+| `downloadTitles()` | Download USC XML from OLRC (auto-detects latest release point) |
+| `detectLatestReleasePoint()` | Scrape OLRC download page for current release point |
+| `fetchReleasePointHistory()` | Scrape OLRC prior releases page for full release history |
+| `FALLBACK_RELEASE_POINT` | Fallback release point when auto-detection fails |
+| `USC_TITLE_NUMBERS` | Array `[1, 2, ..., 54]` |
 
 ## Conversion Pipeline
 
@@ -126,36 +114,3 @@ Two download modes:
 
 Uses `yauzl` for streaming zip extraction. Regex `/^(?:.*\/)?usc(\d{2})\.xml$/` matches XML files at any zip depth.
 
-## ConvertOptions
-
-```typescript
-{
-  input: string;                    // XML file path
-  output: string;                   // Output root directory
-  granularity: "section" | "chapter" | "title";
-  linkStyle: "relative" | "canonical" | "plaintext";
-  includeSourceCredits: boolean;
-  includeNotes: boolean;            // All notes
-  includeEditorialNotes: boolean;   // Selective
-  includeStatutoryNotes: boolean;   // Selective
-  includeAmendments: boolean;       // Selective
-  dryRun: boolean;                  // Parse only, no writes
-}
-```
-
-## Internal Helpers
-
-| Function | Purpose |
-|---|---|
-| `padTwo(n)` | Zero-pad single digits (`1` → `"01"`), pass through multi-digit/alphanumeric |
-| `parseIntSafe(s)` | Parse int, return 0 if NaN |
-| `findAncestor(ancestors, levelType)` | Walk ancestors backward to find first match |
-| `stripSourceCredits(node)` | Shallow-copy node with sourceCredit children filtered out |
-| `buildChapterDir(context)` | Determine chapter directory name from context (chapter, compiledAct, reorgPlan) |
-| `buildSectionMetaDryRun(node)` | Estimate content length by walking AST (no rendering) |
-
-## Dependency on @lexbuild/core
-
-This package imports and uses: `XMLParser`, `ASTBuilder`, `LevelNode`, `EmitContext`, `DocumentMeta`, `renderDocument`, `renderSection`, `renderNode`, `generateFrontmatter`, `createLinkResolver`, `BIG_LEVELS`, `FORMAT_VERSION`, `GENERATOR`.
-
-No custom element handlers are implemented — all USLM element handling lives in core's `ASTBuilder`.

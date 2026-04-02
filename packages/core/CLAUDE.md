@@ -57,31 +57,13 @@ Text inside nested inline elements (e.g., `<heading><b>Editorial Notes</b></head
 
 ## AST Node Types
 
-| Type | Purpose |
-|------|---------|
-| `LevelNode` | Hierarchical level (title, chapter, section, subsection, ..., subsubitem) |
-| `ContentNode` | Text block — variant: `content`, `chapeau`, `continuation`, `proviso` |
-| `InlineNode` | Inline text/formatting — type: `text`, `bold`, `italic`, `ref`, `footnoteRef`, `date`, `term`, `sup`, `sub`, `quoted` |
-| `NoteNode` | Editorial/statutory note with topic and role |
-| `SourceCreditNode` | Enactment source citation |
-| `TableNode` | XHTML or USLM layout table (variant flag distinguishes) |
-| `TOCNode` | Table of contents (skipped in Markdown output) |
-| `NotesContainerNode` | Wraps `<notes type="uscNote">` |
-| `QuotedContentNode` | Quoted legal text (rendered as blockquote) |
+Defined in `ast/types.ts`: `LevelNode` (hierarchical levels), `ContentNode` (text blocks: content/chapeau/continuation/proviso), `InlineNode` (formatting: text/bold/italic/ref/footnoteRef/date/term/sup/sub/quoted), `NoteNode`, `SourceCreditNode`, `TableNode`, `TOCNode`, `NotesContainerNode`, `QuotedContentNode`.
 
 Level hierarchy: `BIG_LEVELS` (17 types above section) and `SMALL_LEVELS` (8 types below section) are exported as Sets.
 
 ## USLM Element Classification
 
-Defined in `xml/uslm-elements.ts` (USLM-specific; eCFR element classification lives in `@lexbuild/ecfr`):
-
-- `LEVEL_ELEMENTS` — 20 hierarchical element types
-- `CONTENT_ELEMENTS` — content, chapeau, continuation, proviso
-- `INLINE_ELEMENTS` — b, i, ref, date, term, sup, sub, del, ins, shortTitle
-- `NOTE_ELEMENTS` — note, notes, sourceCredit, statutoryNote, editorialNote, changeNote
-- `APPENDIX_LEVEL_ELEMENTS` — compiledAct, courtRules, reorganizationPlan
-- `META_ELEMENTS` — meta, docNumber, docReleasePoint, property
-- `CONTAINER_ELEMENTS` — uscDoc, main, toc, layout, row, column (structural only)
+Defined in `xml/uslm-elements.ts` (USLM-specific; eCFR classification lives in `@lexbuild/ecfr`). Seven category Sets: `LEVEL_ELEMENTS`, `CONTENT_ELEMENTS`, `INLINE_ELEMENTS`, `NOTE_ELEMENTS`, `APPENDIX_LEVEL_ELEMENTS`, `META_ELEMENTS`, `CONTAINER_ELEMENTS`.
 
 ## Rendering
 

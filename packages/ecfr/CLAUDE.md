@@ -22,18 +22,15 @@ src/
 
 ## Public API
 
-| Export | Type | Purpose |
-|--------|------|---------|
-| `convertEcfrTitle()` | Function | Convert an eCFR XML file to Markdown |
-| `downloadEcfrTitles()` | Function | Download eCFR XML from govinfo bulk data |
-| `downloadEcfrTitlesFromApi()` | Function | Download eCFR XML from ecfr.gov API (default) |
-| `fetchEcfrTitlesMeta()` | Function | Fetch title metadata and currency dates from API |
-| `buildEcfrDownloadUrl()` | Function | Build govinfo download URL for a single title |
-| `buildEcfrApiDownloadUrl()` | Function | Build ecfr.gov API download URL for a single title |
-| `EcfrASTBuilder` | Class | SAX→AST builder for GPO/SGML XML |
-| `ECFR_TITLE_COUNT` | Constant | `50` |
-| `ECFR_TITLE_NUMBERS` | Constant | Array `[1, 2, ..., 50]` |
-| Element classification sets | Constants | `ECFR_TYPE_TO_LEVEL`, `ECFR_DIV_ELEMENTS`, etc. |
+Key exports (see `index.ts` for full list):
+
+| Export | Purpose |
+|--------|---------|
+| `convertEcfrTitle()` | Convert an eCFR XML file to Markdown |
+| `downloadEcfrTitles()` | Download eCFR XML from govinfo bulk data |
+| `downloadEcfrTitlesFromApi()` | Download eCFR XML from ecfr.gov API (default) |
+| `fetchEcfrTitlesMeta()` | Fetch title metadata and currency dates from API |
+| `EcfrASTBuilder` | SAX→AST builder for GPO/SGML XML |
 
 ## eCFR XML Schema
 
@@ -172,23 +169,6 @@ eCFR XML → [XMLParser(defaultNamespace: "")] → SAX events
 
 For chapter granularity, sections are emitted individually then grouped by chapter ancestor into composite files. For part/title granularity, nodes are filtered to the target level.
 
-## ConvertOptions
-
-```typescript
-{
-  input: string;
-  output: string;
-  granularity: "section" | "part" | "chapter" | "title";
-  linkStyle: "relative" | "canonical" | "plaintext";
-  includeSourceCredits: boolean;
-  includeNotes: boolean;
-  includeEditorialNotes: boolean;
-  includeStatutoryNotes: boolean;
-  includeAmendments: boolean;
-  dryRun: boolean;
-}
-```
-
 ## Output Structure
 
 ```
@@ -249,8 +229,3 @@ eCFR sections include all standard fields plus:
 - **eCFR API vs govinfo XML** — both use the same element vocabulary but differ in wrappers. The builder handles both transparently: `ECFR` root (API) is passthrough, `VOLUME` element (API) is skipped, `§` prefix stripping handles both `"§ 1.1"` (govinfo) and `"1.1"` (API), NODE absence is handled gracefully.
 - **eCFR API import-in-progress** — The `/titles` endpoint's `meta.import_in_progress` flag means the global `meta.date` may return 404. The downloader falls back to the previous day. Individual titles can also have `processing_in_progress: true`, returning 503 for ANY date until processing completes. The downloader uses per-title `up_to_date_as_of` dates and retries transient errors (503/504) with exponential backoff.
 
-## Dependency on @lexbuild/core
-
-Imports: `XMLParser`, `LevelNode`, `EmitContext`, `AncestorInfo`, `renderDocument`, `createLinkResolver`, `FORMAT_VERSION`, `GENERATOR`.
-
-Does NOT import from `@lexbuild/usc`. Source packages are independent.

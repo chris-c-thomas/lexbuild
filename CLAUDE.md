@@ -68,116 +68,50 @@ Each package and app has its own `CLAUDE.md` with architecture details, module s
 ## Build & Dev Commands
 
 ```bash
-# Install dependencies (from repo root)
+# Core monorepo commands (from repo root)
 pnpm install
-
-# Build all packages
-pnpm turbo build
-
-# Build a specific package
-pnpm turbo build --filter=@lexbuild/core
-
-# Run all tests
-pnpm turbo test
-
-# Run tests for a specific package
-pnpm turbo test --filter=@lexbuild/usc
-
-# Type check
+pnpm turbo build                                  # Build all packages
+pnpm turbo build --filter=@lexbuild/core           # Build specific package
+pnpm turbo test                                    # Run all tests
+pnpm turbo test --filter=@lexbuild/usc             # Test specific package
 pnpm turbo typecheck
-
-# Lint
 pnpm turbo lint
+pnpm turbo dev                                     # Watch + rebuild
 
-# Dev mode (watch + rebuild)
-pnpm turbo dev
-
-# Run the CLI locally during development
+# Run the CLI locally (build first)
 node packages/cli/dist/index.js download-usc --all
-node packages/cli/dist/index.js download-usc --titles 1
 node packages/cli/dist/index.js convert-usc --all
-node packages/cli/dist/index.js convert-usc --titles 1-5 -o ./test-output
-node packages/cli/dist/index.js convert-usc ./downloads/usc/xml/usc01.xml -o ./test-output
-node packages/cli/dist/index.js convert-usc --titles 1 -g title -o ./test-output
-
-# eCFR commands (default source: ecfr-api — daily-updated)
 node packages/cli/dist/index.js download-ecfr --all
-node packages/cli/dist/index.js download-ecfr --titles 1,17
-node packages/cli/dist/index.js download-ecfr --all --source govinfo          # Fallback to govinfo bulk
-node packages/cli/dist/index.js download-ecfr --all --date 2026-01-01         # Point-in-time download
 node packages/cli/dist/index.js convert-ecfr --all
-node packages/cli/dist/index.js convert-ecfr --titles 1 -o ./test-output
-node packages/cli/dist/index.js convert-ecfr ./downloads/ecfr/xml/ECFR-title1.xml -o ./test-output
-node packages/cli/dist/index.js convert-ecfr --titles 17 -g part -o ./test-output
-
-# Federal Register commands (source: federalregister.gov API)
 node packages/cli/dist/index.js download-fr --recent 30
-node packages/cli/dist/index.js download-fr --from 2026-01-01 --to 2026-03-31
-node packages/cli/dist/index.js download-fr --document 2026-06029
-node packages/cli/dist/index.js download-fr --from 2026-01-01 --types rule,proposed_rule
 node packages/cli/dist/index.js convert-fr --all
-node packages/cli/dist/index.js convert-fr --from 2026-01-01 --to 2026-03-31 -o ./test-output
-node packages/cli/dist/index.js convert-fr ./downloads/fr/2026/03/2026-06029.xml -o ./test-output
-
-# List available OLRC release points
 node packages/cli/dist/index.js list-release-points
-node packages/cli/dist/index.js list-release-points -n 5
 
-# Astro app (apps/astro/) — NOT included in default `pnpm turbo build`
-pnpm turbo dev:astro --filter=@lexbuild/astro   # Dev server (http://localhost:4321)
-pnpm turbo build:astro --filter=@lexbuild/astro # Production build
+# Astro app — NOT included in default `pnpm turbo build`
+pnpm turbo dev:astro --filter=@lexbuild/astro      # Dev server (http://localhost:4321)
+pnpm turbo build:astro --filter=@lexbuild/astro    # Production build
 
-# Astro content pipeline scripts (run from apps/astro/)
-cd apps/astro
-bash scripts/link-content.sh                      # Symlink CLI output into content/
-npx tsx scripts/generate-nav.ts                    # Build sidebar JSON from _meta.json
-npx tsx scripts/generate-highlights.ts                    # Pre-render Shiki HTML for all .md files
-npx tsx scripts/generate-highlights.ts --limit 50         # Test on subset
-npx tsx scripts/generate-highlights.ts --chunk-size 1000  # Smaller chunks for memory-constrained runs
-npx tsx scripts/generate-sitemap.ts                # Build sitemap index + chunked sitemaps
-npx tsx scripts/index-search.ts                    # Full reindex into Meilisearch (~1M docs)
-npx tsx scripts/index-search-incremental.ts --source fr  # Index a single source
-npx tsx scripts/index-search-incremental.ts --set-checkpoint  # Mark checkpoint without indexing
-npx tsx scripts/generate-nav.ts --source fr          # Generate nav for one source only
-npx tsx scripts/generate-sitemap.ts --source fr       # Generate sitemaps for one source (index not rewritten)
-npx tsx scripts/generate-highlights.ts --source fr    # Generate highlights for one source only
-
-# Meilisearch local setup (macOS)
-brew install meilisearch                           # Install via Homebrew
-meilisearch --db-path ~/.meilisearch/data.ms --dump-dir ~/.meilisearch/dumps --env development
-curl -s http://127.0.0.1:7700/health               # Verify running
-
-# Deploy to production VPS (from monorepo root, runs via SSH)
+# Deploy to production VPS (from monorepo root)
 ./scripts/deploy.sh                # Code only (git pull, build, pm2 reload)
 ./scripts/deploy.sh --content      # Code + rsync local output/ to VPS
 ./scripts/deploy.sh --content-only # Rsync only, no code deploy
-./scripts/deploy.sh --nav-only     # Rsync nav JSON only (sidebar data)
-./scripts/deploy.sh --sitemaps-only # Rsync sitemaps + robots.txt only
-./scripts/deploy.sh --remote       # Full pipeline on VPS (download + convert + highlights + build)
+./scripts/deploy.sh --remote       # Full pipeline on VPS (download + convert + build)
 ./scripts/deploy.sh --search-dump  # Index locally, dump, upload + import on VPS
-./scripts/deploy.sh --search-push  # Dump existing local index, upload + import (no reindex)
 ```
 
-See `.claude/guides/lexbuild-ops.md` for the full operations guide.
+See `packages/cli/CLAUDE.md` for full command options. See `apps/astro/CLAUDE.md` for content pipeline scripts. See `.claude/guides/lexbuild-ops.md` for the full operations guide.
 
 ### CI / Release
 
 - **Publish workflow** (`.github/workflows/publish.yml`): Uses `changesets/action` with `commitMode: github-api` and a GitHub App token (`lexbuild-release-bot`) for verified commits that satisfy branch protection. Secrets: `RELEASE_BOT_APP_ID`, `RELEASE_BOT_PRIVATE_KEY` (repo secrets).
 
-### Astro App Notes
+### Astro App
 
-The Astro app (`apps/astro/`) is deployed to a self-managed VPS (AWS Lightsail) behind Cloudflare's edge cache. It has **no code dependency** on `@lexbuild/core`, `@lexbuild/usc`, or `@lexbuild/cli`. Deploy via `./scripts/deploy.sh` from the monorepo root.
+The Astro app (`apps/astro/`) is deployed to a self-managed VPS (AWS Lightsail) behind Cloudflare's edge cache. It has **no code dependency** on `@lexbuild/core`, `@lexbuild/usc`, or `@lexbuild/cli`. See `apps/astro/CLAUDE.md` for the full architecture spec.
 
-Key points:
-- **Excluded from `pnpm turbo build`** — no `build` script in its `package.json` (only `build:astro`). This prevents CI failures since the app requires content files that aren't in git.
+- **Excluded from `pnpm turbo build`** — no `build` script in its `package.json` (only `build:astro`). Prevents CI failures since the app requires content files that aren't in git.
 - **Excluded from changesets** — `"private": true` and listed in `.changeset/config.json` `ignore`.
 - **Content is gitignored** — `apps/astro/content/`, `public/nav/`, `public/sitemap.xml`, `*.highlighted.html` are all generated artifacts.
-- **Content served from local filesystem** in production (`fs.readFile` from `/srv/lexbuild/content/`).
-- **UI**: shadcn/ui (radix-nova preset, zinc theme) + Tailwind CSS 4 + IBM Plex Serif / IBM Plex Sans / IBM Plex Mono fonts. Slate-blue accent palette for headings and labels. Mobile navigation uses a shadcn Sheet (Radix Dialog drawer) with source dropdown; desktop uses a sticky sidebar. Both share `SidebarContent.tsx` for the tree. Breakpoint: `lg` (1024px).
-- **Tailwind CSS v4 caveat**: `@theme inline` variables are build-time only — they do NOT exist as runtime CSS custom properties. However, `var()` references to `:root`/`.dark` runtime vars inside `@theme inline` ARE preserved and resolve at runtime — this is how semantic tokens (`bg-surface`, `text-ink-muted`) respond to dark mode. Scoped `<style>` in `.astro` components must use `:root`/`.dark` runtime vars or hex values directly (not `@theme inline` vars). Some Tailwind utilities (e.g., `grid-cols-*`) may silently fail to generate in `.astro` files — use scoped `<style>` with plain CSS as a fallback for layout-critical properties.
-- **Production URL**: `https://lexbuild.dev` — served via Cloudflare (orange-cloud proxy) → Caddy → Astro Node server.
-- **Status/Monitoring URL**: `https://status.lexbuild.dev` — Uptime Kuma (installed at `/srv/uptime-kuma`, managed by PM2). Public status page at `/status/default`, authenticated dashboard at `/dashboard`.
-- See `apps/astro/CLAUDE.md` for the full architecture spec.
 
 ## Code Conventions
 
@@ -221,50 +155,12 @@ Key points:
 
 ## Reference Materials
 
-Official USLM reference documents from OLRC (not committed — download locally if needed):
-
 - [USLM User Guide (PDF)](https://uscode.house.gov/download/resources/USLM-User-Guide.pdf) — v0.1.4, Oct 2013. Covers abstract/concrete model, identification, referencing, metadata, versioning, and presentation models.
 - [USLM Schema & CSS](https://uscode.house.gov/download/resources/schemaandcss.zip) — USLM-1.0.xsd, USLM-1.0.15.xsd, usctitle.css, Dublin Core schemas, XHTML schema
 
-GPO XML reference guides (previously in `reference/usgpo-xml-reference-files/` — removed, to be refined and re-added):
-
-- **eCFR XML User Guide** — eCFR bulk XML structure (DIV hierarchy, element catalog, SGML-to-XML conversion details). Confirms `NODE` attribute is "for internal use and may be changed at any time."
-- **CFR XML User Guide** — **Annual CFR** XML format. Uses a different schema from eCFR: `CFRDOC` root, `TITLE > CHAPTER > PART > SECTION` elements (not DIV-based), `GPOTABLE` for tables (not HTML tables), `SECTNO`/`SUBJECT` for section numbers/headings. A future `@lexbuild/cfr` package would need its own builder for this format.
-- **FR XML User Guide** — Federal Register XML structure. Available at `https://github.com/usgpo/bulk-data/blob/main/FR-XML_User-Guide.md` and as PDF at `https://www.govinfo.gov/bulkdata/FR/resources/FDsys_OFR-XML_User-Guide-v1.pdf`. Schema: `FRMergedXML.xsd` (referenced in XML header). See also `.claude/guides/lexbuild-additional-sources.md` for full implementation research.
-
 ## USLM XML Schema — Key Facts
 
-The XML files use the USLM 1.0 schema (patch level 1.0.15). Namespace: `http://xml.house.gov/schemas/uslm/1.0`
-
-### Document Structure
-
-```xml
-<uscDoc identifier="/us/usc/t1">
-  <meta>
-    <dc:title>Title 1</dc:title>
-    <dc:type>USCTitle</dc:type>
-    <docNumber>1</docNumber>
-    <property role="is-positive-law">yes</property>
-  </meta>
-  <main>
-    <title identifier="/us/usc/t1">
-      <num value="1">Title 1—</num>
-      <heading>GENERAL PROVISIONS</heading>
-      <chapter identifier="/us/usc/t1/ch1">
-        <num value="1">CHAPTER 1—</num>
-        <heading>RULES OF CONSTRUCTION</heading>
-        <section identifier="/us/usc/t1/s1">
-          <num value="1">§ 1.</num>
-          <heading>Words denoting number, gender, and so forth</heading>
-          <content>...</content>
-          <sourceCredit>(...)</sourceCredit>
-          <notes type="uscNote">...</notes>
-        </section>
-      </chapter>
-    </title>
-  </main>
-</uscDoc>
-```
+The XML files use the USLM 1.0 schema (patch level 1.0.15). Namespace: `http://xml.house.gov/schemas/uslm/1.0`. See `packages/core/CLAUDE.md` for element classification details.
 
 ### Element Hierarchy (Big → Small)
 
@@ -278,236 +174,28 @@ Additional level elements: `<preliminary>` (outside main hierarchy), `<compiledA
 
 **Important**: The schema intentionally does NOT enforce strict hierarchy — any `<level>` can nest inside any `<level>`. This is a deliberate design choice, not a bug.
 
-### Critical Elements
-
-| Element | Purpose | Key Attributes |
-|---------|---------|----------------|
-| `<uscDoc>` | Document root | `identifier` |
-| `<title>` | USC title | `identifier` |
-| `<chapter>` | Chapter container | `identifier` |
-| `<section>` | Primary legal unit | `identifier` |
-| `<num>` | Number designation | `value` (normalized) |
-| `<heading>` | Element name/title | — |
-| `<content>` | Text content block | — |
-| `<chapeau>` | Text before sub-levels | — |
-| `<continuation>` | Text after or between sub-levels | — |
-| `<proviso>` | "Provided that..." text | — |
-| `<ref>` | Cross-reference | `href` (canonical URI) |
-| `<date>` | Date | `date` (ISO format) |
-| `<sourceCredit>` | Enactment source | — |
-| `<note>` | Note (various types) | `topic`, `role` |
-| `<notes>` | Note container | `type` (e.g., "uscNote") |
-| `<quotedContent>` | Quoted legal text | `origin` |
-| `<def>` / `<term>` | Definition / defined term | — |
-| `<toc>` / `<tocItem>` | Table of contents | — |
-| `<layout>` / `<column>` | Column-oriented display | `leaders`, `colspan` |
-| `<table>` (XHTML ns) | HTML table | Standard HTML attrs |
-
 ### Identifier / Reference Format
 
 LexBuild uses canonical URI paths as identifiers for all sources:
 
 **USC identifiers** (from USLM `identifier` attributes):
-
 ```
-/us/usc/t{title}/s{section}/{subsection}/{paragraph}
-
-Examples:
-/us/usc/t1          — Title 1
-/us/usc/t1/ch1      — Chapter 1 of Title 1
-/us/usc/t1/s1       — Section 1 of Title 1
-/us/usc/t1/s1/a     — Subsection (a) of Section 1
+/us/usc/t{title}/s{section}    — e.g., /us/usc/t1/s1
 ```
-
 Reference prefixes (big levels): `t` = title, `st` = subtitle, `ch` = chapter, `sch` = subchapter, `art` = article, `p` = part, `sp` = subpart, `d` = division, `sd` = subdivision, `s` = section. Small levels (subsection and below) use their number directly without a prefix.
 
 **CFR identifiers** (constructed by the eCFR builder from `NODE` and `N` attributes):
-
 ```
-/us/cfr/t{title}/s{section}
-
-Examples:
-/us/cfr/t17             — CFR Title 17
-/us/cfr/t17/ch1         — Chapter I of Title 17
-/us/cfr/t17/pt240       — Part 240 of Title 17
-/us/cfr/t17/s240.10b-5  — Section 240.10b-5
+/us/cfr/t{title}/s{section}    — e.g., /us/cfr/t17/s240.10b-5
 ```
-
 Note: identifiers use `/us/cfr/` (content type) not `/us/ecfr/` (data source). Both eCFR and future annual CFR use the same identifier space.
 
 **FR identifiers** (from FederalRegister.gov document numbers):
-
 ```
-/us/fr/{document_number}
-
-Examples:
-/us/fr/2026-06029       — FR document 2026-06029
-/us/fr/2026-06086       — FR document 2026-06086
+/us/fr/{document_number}       — e.g., /us/fr/2026-06029
 ```
 
-Note: FR identifiers use document numbers (unique, stable, API primary key), not citations (`91 FR 14523`) which are human-readable but not reliably unique.
-
-**Link resolution**:
-- `/us/usc/...` references → relative Markdown links within corpus, or OLRC fallback URLs
-- `/us/cfr/...` references → relative Markdown links within corpus, or ecfr.gov fallback URLs
-- `/us/fr/...` references → relative Markdown links within corpus, or federalregister.gov fallback URLs
-- `/us/stat/...` (Statutes at Large), `/us/pl/...` (Public Law) → plain text citations
-
-### Namespaces in Use
-
-```
-Default (USLM):  http://xml.house.gov/schemas/uslm/1.0
-Dublin Core:      http://purl.org/dc/elements/1.1/
-DC Terms:         http://purl.org/dc/terms/
-XHTML:            http://www.w3.org/1999/xhtml
-XSI:              http://www.w3.org/2001/XMLSchema-instance
-```
-
-Tables use the XHTML namespace. Always check namespace when handling `<table>` elements — USLM `<layout>` uses the default namespace, XHTML `<table>` uses `http://www.w3.org/1999/xhtml`.
-
-### Notes Taxonomy
-
-Notes have two independent classification axes:
-
-- `@type`: placement — `"inline"`, `"footnote"`, `"endnote"`, `"uscNote"` (after sourceCredit)
-- `@topic`: semantic category — `"amendments"`, `"codification"`, `"changeOfName"`, `"crossReferences"`, `"effectiveDateOfAmendment"`, `"miscellaneous"`, `"repeals"`, `"regulations"`, `"dispositionOfSections"`, `"enacting"`
-
-The schema also defines concrete note subtypes: `<sourceCredit>`, `<statutoryNote>`, `<editorialNote>`, `<changeNote>` (records non-substantive changes, usually in square brackets).
-
-Within `<notes type="uscNote">` containers, `<note role="crossHeading">` elements with `<heading>` containing "Editorial Notes" or "Statutory Notes" act as section dividers. Notes following a cross-heading belong to that category until the next cross-heading.
-
-### Status Values
-
-Elements can carry `@status` indicating their legal state. The schema defines 18 values: `proposed`, `withdrawn`, `cancelled`, `pending`, `operational`, `suspended`, `renumbered`, `repealed`, `expired`, `terminated`, `hadItsEffect`, `omitted`, `notAdopted`, `transferred`, `redesignated`, `reserved`, `vacant`, `crossReference`, `unknown`.
-
-## OLRC Download URLs
-
-Current release point page: `https://uscode.house.gov/download/download.shtml`
-
-Individual title XML zip:
-```
-https://uscode.house.gov/download/releasepoints/us/pl/{congress}/{law}/xml_usc{NN}@{congress}-{law}.zip
-```
-
-All titles XML zip:
-```
-https://uscode.house.gov/download/releasepoints/us/pl/{congress}/{law}/xml_uscAll@{congress}-{law}.zip
-```
-
-Where `{NN}` is zero-padded title number (01-54), `{congress}` is Congress number, `{law}` is public law number.
-
-Example: `xml_usc01@119-73not60.zip`
-
-Note: Release points can include exclusion suffixes (e.g., `119-73not60` means "through PL 119-73, excluding PL 119-60"). The downloader auto-detects the latest release point by scraping the OLRC download page. A hardcoded `FALLBACK_RELEASE_POINT` in `packages/usc/src/downloader.ts` is used only if auto-detection fails. The `--release-point` CLI flag allows pinning a specific release point.
-
-The zip contains a single XML file named like `usc01.xml`.
-
-## eCFR Download URLs
-
-**eCFR API (default source)**: `https://www.ecfr.gov/api/versioner/v1/`
-
-Daily-updated, point-in-time XML via the ecfr.gov versioner API:
-```
-https://www.ecfr.gov/api/versioner/v1/full/{YYYY-MM-DD}/title-{N}.xml
-```
-
-Title metadata and currency dates:
-```
-https://www.ecfr.gov/api/versioner/v1/titles
-```
-
-No API key required. No documented rate limits. Supports `?part=N` and `?section=N.N` query filters for granular fetching.
-
-**govinfo bulk data (fallback)**: `https://www.govinfo.gov/bulkdata/ECFR`
-
-Individual title XML (no zip — plain XML):
-```
-https://www.govinfo.gov/bulkdata/ECFR/title-{N}/ECFR-title{N}.xml
-```
-
-Where `{N}` is the title number (1-50, not zero-padded). Example: `ECFR-title17.xml`. Updates irregularly — can lag months behind ecfr.gov for stable titles.
-
-**Reserved titles**: Title 35 (Panama Canal) is reserved — both sources return 404. The downloaders silently skip reserved titles during `--all` downloads. The `RESERVED_TITLES` set tracks which titles to skip.
-
-50 titles total, 49 with content.
-
-## Federal Register URLs (`@lexbuild/fr`)
-
-The **federalregister.gov API is the primary source** — per-document XML (no container parsing), rich JSON metadata, and pre-publication access. Govinfo bulk daily-issue XML is deferred for future historical backfill support.
-
-**FederalRegister.gov API (recommended primary source)**: `https://www.federalregister.gov/api/v1/`
-
-No API key required. No documented rate limits. Updated daily on publication day.
-
-Key endpoints:
-```
-GET /documents.json                              # Search/list with filtering, pagination (max 200/page)
-GET /documents/{document_number}.json            # Single document metadata (JSON)
-GET /documents/{document_number}/full_text/xml   # Individual document XML
-GET /issues/{date}.json                          # Daily issue table of contents
-GET /public-inspection-documents/current.json    # Pre-publication documents (1-2 days early)
-GET /documents/facets/{facet}                    # Aggregated counts (type, daily, yearly, agency)
-GET /agencies.json                               # All ~470 agencies
-```
-
-Coverage: JSON metadata from 1994, XML full text from January 2000. ~28,000–31,000 documents/year across 4 types: Notices (~80%), Rules (~10%), Proposed Rules (~7%), Presidential Documents (~1%).
-
-**govinfo bulk XML (fallback, better for historical backfill)**:
-```
-https://www.govinfo.gov/content/pkg/FR-{YYYY-MM-DD}/xml/FR-{YYYY-MM-DD}.xml
-```
-
-Complete daily issue XML (~2.4 MB average). Updated by 6 AM on publishing days. No API key required.
-
-**Corpus size comparison**:
-
-| Corpus | Total XML Size |
-|--------|---------------|
-| U.S. Code (54 titles) | ~2–3 GB |
-| eCFR (50 titles) | ~1–2 GB |
-| Federal Register (1 year) | ~600 MB |
-| Federal Register (2000–2025) | ~15 GB |
-
-**FR XML format**: GPO/SGML-derived, no namespace. Root `<FEDREG>`. Shares `<E T="nn">` emphasis, `<GPOTABLE>` tables, `<SU>`/`<FTNT>` footnotes with eCFR. ~92 unique elements vs eCFR's ~25, but many are simple preamble sections. Document-centric (flat) rather than hierarchical. The XML is NOT the official format — only PDF and text carry legal standing.
-
-## Output File Naming
-
-### USC Output
-
-**Section granularity** (default): `output/usc/title-{NN}/chapter-{NN}/section-{N}.md`
-**Chapter granularity**: `output/usc/title-{NN}/chapter-{NN}/chapter-{NN}.md`
-**Title granularity**: `output/usc/title-{NN}.md`
-
-- Title dirs: `title-01` through `title-54` (zero-padded to 2 digits)
-- Chapter dirs: `chapter-01`, `chapter-02`, etc. (zero-padded to 2 digits)
-- Section files: `section-{N}.md` where N is the section number (NOT zero-padded, since section numbers can be alphanumeric like `section-7801`)
-- Subchapter dirs nest inside chapter dirs when present
-- Appendix titles: separate directories (e.g., `title-05-appendix/`) for titles 5, 11, 18, 28
-- Duplicate sections: disambiguated with `-2`, `-3` suffix (e.g., `section-3598.md`, `section-3598-2.md`)
-- Title granularity: flat files with no subdirectories, no `_meta.json` or `README.md` — enriched frontmatter only
-
-### eCFR Output
-
-**Section granularity** (default): `output/ecfr/title-{NN}/chapter-{X}/part-{N}/section-{N.N}.md`
-**Part granularity**: `output/ecfr/title-{NN}/chapter-{X}/part-{N}.md`
-**Chapter granularity**: `output/ecfr/title-{NN}/chapter-{X}/chapter-{X}.md`
-**Title granularity**: `output/ecfr/title-{NN}.md`
-
-- Title dirs: `title-01` through `title-50` (zero-padded to 2 digits)
-- Chapter dirs: `chapter-{X}` where X is a Roman numeral (e.g., `chapter-I`, `chapter-IV`)
-- Part dirs: `part-{N}` where N is the part number (e.g., `part-240`)
-- Section files: `section-{N.N}.md` where N.N is the part-prefixed section number (e.g., `section-240.10b-5.md`)
-- Section granularity generates `_meta.json` per part and title, plus `README.md` per title
-
-### FR Output
-
-`output/fr/{YYYY}/{MM}/{document_number}.md`
-
-- Year dirs: `2000` through present
-- Month dirs: `01` through `12`
-- Document files: `{document_number}.md` (e.g., `2026-06029.md`)
-- `_meta.json` per month directory (document count, list with token estimates)
-- No granularity options — FR documents are already atomic (one file per document)
+**Link resolution**: `/us/usc/` → relative links or OLRC fallback URLs. `/us/cfr/` → relative links or ecfr.gov fallback URLs. `/us/fr/` → relative links or federalregister.gov fallback URLs. `/us/stat/`, `/us/pl/` → plain text citations.
 
 ## Key Design Decisions
 
@@ -517,27 +205,17 @@ Complete daily issue XML (~2.4 MB average). Updated by 6 AM on publishing days. 
 
 3. **Frontmatter + sidecar index**: Both YAML frontmatter on every .md file AND `_meta.json` per directory. Frontmatter enables file-level RAG ingestion. Sidecar enables index-based retrieval without parsing every file.
 
-4. **Multi-source frontmatter**: Every file includes `source` (`"usc"` or `"ecfr"`) and `legal_status` (`"official_legal_evidence"`, `"official_prima_facie"`, or `"authoritative_unofficial"`) fields. Source-specific optional fields (e.g., `authority`, `cfr_part`) are included when relevant. The `source` discriminator lets consumers know which fields to expect.
+4. **Multi-source frontmatter**: Every file includes `source` (`"usc"`, `"ecfr"`, or `"fr"`) and `legal_status` fields. Source-specific optional fields (e.g., `authority`, `cfr_part`) are included when relevant. The `source` discriminator lets consumers know which fields to expect.
 
 5. **Relative cross-reference links**: Cross-refs within the converted corpus use relative Markdown links. USC refs fall back to OLRC website URLs; CFR refs fall back to ecfr.gov URLs.
 
-6. **Notes included by default**: By default, all notes (editorial, statutory, amendments) are included alongside the core text and source credits. Notes can be disabled with `--no-include-notes` or selectively filtered with `--include-editorial-notes`, `--include-statutory-notes`, `--include-amendments`.
+6. **Notes included by default**: All notes (editorial, statutory, amendments) are included by default. Notes can be disabled with `--no-include-notes` or selectively filtered with `--include-editorial-notes`, `--include-statutory-notes`, `--include-amendments`.
 
-7. **Streaming output**: For section and chapter/part granularity, the converter writes output as sections are collected, avoiding holding the full title AST in memory. **Title granularity is the exception** — it holds the entire title AST and rendered Markdown in memory.
+7. **Identifier scheme**: USC uses `/us/usc/` identifiers from USLM `identifier` attributes. CFR uses `/us/cfr/` identifiers constructed from the eCFR `NODE` and `N` attributes. Both eCFR and future annual CFR share the `/us/cfr/` space since they represent the same content.
 
-8. **Collect-then-write pattern**: Sections are collected during SAX streaming and written after the stream completes, avoiding async issues during SAX event processing.
+8. **Resilient file I/O**: `@lexbuild/core` exports `writeFile` and `mkdir` wrappers (`packages/core/src/fs.ts`) that retry on `ENFILE`/`EMFILE` errors with exponential backoff, preventing file descriptor exhaustion when writing ~60k+ files.
 
-9. **Source-specific AST builders**: Each XML format gets its own builder (`ASTBuilder` for USLM, `EcfrASTBuilder` for GPO/SGML). Builders are source-specific but produce the same AST node types, so the rendering pipeline is shared. Builders live in their source package, not in core.
-
-10. **Token estimation**: Uses character/4 heuristic for token counts in `_meta.json` and frontmatter.
-
-11. **Footnotes**: Rendered as Markdown footnotes (`[^N]` at reference site, `[^N]: text` at bottom of section file).
-
-12. **Identifier scheme**: USC uses `/us/usc/` identifiers from USLM `identifier` attributes. CFR uses `/us/cfr/` identifiers constructed from the eCFR `NODE` and `N` attributes. Both eCFR and future annual CFR share the `/us/cfr/` space since they represent the same content.
-
-13. **Resilient file I/O**: `@lexbuild/core` exports `writeFile` and `mkdir` wrappers (`packages/core/src/fs.ts`) that retry on `ENFILE`/`EMFILE` errors with exponential backoff. Both USC and eCFR converters use these instead of `node:fs/promises` directly, preventing file descriptor exhaustion when writing ~60k+ files while external processes (Spotlight, editor file watchers) react to the new files.
-
-14. **Secrets management**: `~/.lexbuild-secrets` on the VPS is the single source of truth. `ecosystem.config.cjs` reads secrets from `process.env` (populated via `~/.zshenv` → `~/.lexbuild-secrets`). `.env.production` is **generated** by `scripts/deploy.sh` on every deploy — never manually maintained. See `.claude/guides/lexbuild-ops.md` for details.
+9. **Secrets management**: `~/.lexbuild-secrets` on the VPS is the single source of truth. `ecosystem.config.cjs` reads secrets from `process.env` (populated via `~/.zshenv` → `~/.lexbuild-secrets`). `.env.production` is **generated** by `scripts/deploy.sh` on every deploy — never manually maintained. See `.claude/guides/lexbuild-ops.md` for details.
 
 ## Common Pitfalls
 
@@ -546,42 +224,16 @@ Complete daily issue XML (~2.4 MB average). Updated by 6 AM on publishing days. 
 - **XHTML namespace tables**: `<table>` elements in USC XML are in the XHTML namespace, not the USLM namespace. The SAX parser must handle namespace-aware element names.
 - **Anomalous structures**: Some sections have non-standard nesting (e.g., `<paragraph>` directly under `<section>` without a `<subsection>`). Handlers must not assume strict hierarchy.
 - **Empty/repealed sections**: Some sections contain only a `<note>` with status information (e.g., "Repealed" or "Transferred"). These should still produce an output file with appropriate frontmatter.
-- **Roman numeral numbering**: Clauses use lowercase Roman numerals (i, ii, iii), subclauses use uppercase (I, II, III). The `<num>` element's `@value` attribute contains the normalized form.
-- **Inline XHTML in content**: `<b>`, `<i>`, `<sub>`, `<sup>` elements appear inline within text content. They are in the USLM namespace, not XHTML.
 - **Multiple `<p>` elements in content**: A single `<content>` or `<note>` may contain multiple `<p>` elements. Each should be a separate paragraph in Markdown output.
-- **Permissive content model**: `<content>` uses `processContents="lax"` with `namespace="##any"` — it can contain elements from any namespace, including embedded XHTML. The SAX parser must handle unexpected elements gracefully.
+- **Permissive content model**: `<content>` uses `processContents="lax"` with `namespace="##any"` — it can contain elements from any namespace. The SAX parser must handle unexpected elements gracefully.
 - **`<continuation>` is interstitial**: Not just "after sub-levels" but also between elements of the same level. Handle as a text block in whatever position it appears.
-- **Element versioning**: Elements can have `@startPeriod`/`@endPeriod`/`@status` for point-in-time variants. Multiple versions of the same element may coexist in the document.
 - **Quoted content sections**: `<section>` elements inside `<quotedContent>` (quoted bills in statutory notes) must not be emitted as standalone files. Track `quotedContentDepth` to suppress emission.
 - **Duplicate section numbers**: Some titles have multiple sections with the same number within a chapter (e.g., Title 5). Output files are disambiguated with `-2` suffixes.
-- **CLI `-o` flag appends source subdirectories**: `convert-usc -o /some/path` writes to `/some/path/usc/...`, not `/some/path/...` directly. Same for eCFR. The deploy script handles this by converting to monorepo output dirs then copying to the final content structure.
-- **Volta PATH must be in `.zshenv`, not `.zshrc`**: SSH heredoc commands (`ssh host << 'EOF'`) run non-interactive shells that don't source `.zshrc`. Volta's PATH (`$VOLTA_HOME/bin`) must be in `~/.zshenv` on the VPS for deploy scripts to find `pnpm`/`node`/`pm2`.
-- **PM2 reload requires `--update-env`**: Without it, `pm2 reload` keeps cached env vars from the original `pm2 start`. Always use `pm2 reload lexbuild-astro --update-env` to pick up changes from `ecosystem.config.cjs` or shell environment.
-- **Meilisearch `max_memory_restart` in `ecosystem.config.cjs`**: Must be sized to the VPS RAM. Set to `"4G"` for the current 8 GB Lightsail. If PM2 kills Meilisearch during indexing (`↺` restart counter increments, `ECONNREFUSED` errors), this limit is too low.
-- **Search proxy required in production**: `MEILI_URL=/search` in `.env.production` — the browser cannot reach `127.0.0.1:7700` (that's the user's localhost). Caddy proxies `/search` to Meilisearch and injects the auth header.
-- **Meilisearch dump import regenerates API keys**: Importing a dump created with a different master key regenerates all keys. After `--search-dump` or `--search-push`, retrieve the new key (`setup-secrets.sh --search`) and update `~/.lexbuild-secrets`, `.env.production`, AND `/etc/caddy/environment`.
-- **Turbo `--filter` uses `package.json` `name`**: The Astro app is `@lexbuild/astro` (NOT `@lexbuild/web` — that was the old Next.js app, removed 2026-03-15). Always verify with `grep '"name"' apps/astro/package.json`.
-- **Caddyfile formatting**: Inconsistent whitespace (spaces vs tabs) can cause `handle_path` to silently fail. Always run `sudo caddy fmt --overwrite /etc/caddy/Caddyfile` after manual edits, then `sudo systemctl reload caddy`.
-- **Caddy `EnvironmentFile` override required for search**: `{$MEILI_SEARCH_KEY}` in the Caddyfile requires `EnvironmentFile=/etc/caddy/environment` in a systemd override (`sudo systemctl edit caddy`). Without it, Caddy passes an empty auth header.
-- **Meilisearch `--import-dump` doesn't exit**: It imports then keeps running as a foreground server. The deploy script backgrounds it, polls for port 7700 binding, then kills it before restarting via PM2.
-- **Stale Meilisearch processes block dump import**: A rogue `--import-dump` process from a prior failed deploy can hold port 7700 indefinitely. The new import can't bind the port, so health checks hit the OLD process with stale data. The deploy script now kills all rogue Meilisearch processes before importing. If debugging manually, always run `ps aux | grep meilisearch` and `ss -tlnp | grep 7700` first.
-- **Meilisearch version mismatch breaks dump import**: Dumps from a newer version (e.g., 1.41) silently fail to fully import on an older version (e.g., 1.39). Always keep local and VPS Meilisearch versions in sync. Upgrade VPS: `curl -L https://install.meilisearch.com | sh && sudo mv ./meilisearch /usr/local/bin/meilisearch`.
-- **Large index imports take 5-15 minutes on VPS**: Importing 1M+ docs on the 8GB Lightsail is CPU-bound. The deploy script polls for up to 10 minutes. Don't kill the process early — check `ps aux` for CPU usage to confirm it's still working.
-- **Nav JSON dual-location sync on VPS**: Client-side sidebar fetches `/nav/*.json` as static assets from `dist/client/nav/`, while server-side `getFrYears()`/`getTitles()` reads from `NAV_DIR` (`/srv/lexbuild/nav/`). The deploy script rsyncs to both. A code deploy (`git pull` + `astro build`) copies `public/nav/` into `dist/client/nav/` at build time, but `--nav-only` and `--content-only` must also sync to `dist/client/nav/` since no build occurs.
-- **Local Meilisearch dumps**: Use `--dump-dir ~/.meilisearch/dumps` to consolidate dumps alongside data. Without it, dumps default to `dumps/` relative to CWD. The deploy script searches multiple candidate locations as a fallback.
-- **Duplicate chapter directories in USC `_meta.json`**: Many USC titles have subchapters that share the same `chapter-NN/` directory (e.g., Title 5 Chapter 89 has three subchapters). The nav generator (`generate-nav.ts`) merges these by directory to avoid duplicate React keys in the sidebar.
+- **CLI `-o` flag appends source subdirectories**: `convert-usc -o /some/path` writes to `/some/path/usc/...`, not `/some/path/...` directly. Same for eCFR.
 - **gray-matter `{ cache: false }` in batch scripts**: gray-matter caches every parsed file by input string, causing unbounded memory growth. Always pass `{ cache: false }` when calling `matter()` in loops or batch processing scripts.
-- **Ora spinner text should NOT end with `...`**: The trailing dots conflict with ora's own dots animation, causing visual artifacts (periods appearing around numbers). The spinner animation itself provides the "in progress" cue — end text with the last meaningful word, not ellipsis.
-- **Indexed array iteration with strict TypeScript**: `noUncheckedIndexedAccess` makes `arr[i]` return `T | undefined`, and `no-non-null-assertion` forbids `arr[i]!`. Use `for (const [i, item] of arr.entries())` instead of `for (let i = 0; ...)` to get typed values without assertions.
-- **FR documents use `title_number: 0`**: FR documents don't belong to a USC/CFR title. Convention: `title_number: 0`, `title_name: "Federal Register"`, `section_number` = document number string.
-- **FR API `results` can be absent**: When the API returns 0 results (weekends/holidays), `data.results` may be `undefined`. Always default to `data.results ?? []`.
-- **FR API 10,000 result cap**: The FederalRegister.gov API caps query results at 10,000. The downloader auto-chunks by month to stay under this limit.
-- **FR emphasis map duplicated from eCFR**: Package boundary rules prevent `@lexbuild/fr` from importing `ECFR_EMPHASIS_MAP`. `FR_EMPHASIS_MAP` in `fr-elements.ts` is an independent copy. Keep both in sync when adding new emphasis codes.
-- **FR document number prefix ≠ publication year**: `2025-24130` may have `publication_date: "2026-01-02"`. Download paths use `publication_date`, not the document number prefix.
-- **FR downloader uses concurrent worker pool**: `concurrency` option (default 10) replaced sequential `fetchDelayMs`. CLI exposes `--concurrency` flag. API latency (~10s/request) is the bottleneck, not bandwidth.
-- **Astro template expressions are plain JS, not TypeScript**: `new Map<string, T>()` and other generics in template `{}` expressions cause esbuild errors ("Unexpected const"). Move complex typed logic to the `---` frontmatter section.
-- **FR download directory structure matches output**: Both use `{YYYY}/{MM}/{document_number}.*` — downloads have `.xml`/`.json`, output has `.md`. The converter infers publication date from the path when no JSON sidecar is available.
-- **Meilisearch version upgrades require database deletion**: Meilisearch does not support in-place migration between data versions (e.g., 1.39→1.41). Delete `~/.meilisearch/data.ms` (local) or `/var/lib/meilisearch/data` (VPS) and reindex. The search index is derived from `.md` files, so no data is lost.
+- **Ora spinner text should NOT end with `...`**: The trailing dots conflict with ora's own dots animation. The spinner animation itself provides the "in progress" cue.
+- **Indexed array iteration with strict TypeScript**: `noUncheckedIndexedAccess` makes `arr[i]` return `T | undefined`, and `no-non-null-assertion` forbids `arr[i]!`. Use `for (const [i, item] of arr.entries())` to get typed values without assertions.
+- **Astro template expressions are plain JS, not TypeScript**: `new Map<string, T>()` and other generics in template `{}` expressions cause esbuild errors. Move complex typed logic to the `---` frontmatter section.
 
 ## When Adding New Source Types
 
