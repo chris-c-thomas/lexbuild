@@ -954,10 +954,8 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
   .sample-tab.active {
     background: var(--background);
     color: var(--color-slate-blue-700, #476c85);
-    border-color: var(--border);
-    box-shadow:
-      0 1px 3px 0 rgb(0 0 0 / 0.06),
-      0 1px 2px -1px rgb(0 0 0 / 0.06);
+    border-color: transparent;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   }
 
   :global(.dark) .sample-tab {
@@ -972,7 +970,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
     background: color-mix(in oklch, var(--input) 30%, transparent);
     color: var(--color-slate-blue-300, #b4cfda);
     border-color: var(--input);
-    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.15);
+    box-shadow: none;
   }
 
   .sample-tab svg {
