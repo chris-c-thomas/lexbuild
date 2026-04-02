@@ -1,6 +1,6 @@
 {
   "name": "@lexbuild/usc",
-  "version": "1.15.2",
+  "version": "1.15.3",
   "description": "Federal U.S. Code specific element handlers and downloader for LexBuild",
   "author": "Chris Thomas",
   "license": "MIT",

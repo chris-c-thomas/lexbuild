@@ -1,5 +1,17 @@
 # @lexbuild/cli
 
+## 1.15.3
+
+### Patch Changes
+
+- 62f5fd3: Prettier Formatting
+- 4599ccb: Cleanup and enhance comments throughout monorepo for better consistency
+- Updated dependencies [62f5fd3]
+- Updated dependencies [4599ccb]
+  - @lexbuild/ecfr@1.15.3
+  - @lexbuild/usc@1.15.3
+  - @lexbuild/fr@1.15.3
+
 ## 1.15.2
 
 ### Patch Changes
