@@ -2,9 +2,10 @@
  * Incremental search index update for Meilisearch.
  *
  * Only indexes documents whose .md files have been modified since the last
- * successful run (mtime-based). Stores a checkpoint timestamp in
- * `<content-dir>/.search-indexed-at`. On first run (no checkpoint), indexes
- * everything without deleting the existing index.
+ * successful run (mtime-based). Stores per-source checkpoint timestamps in
+ * `<content-dir>/.search-indexed-at-{usc,ecfr,fr}`. On first run (no
+ * checkpoint), indexes everything without deleting the existing index.
+ * Falls back to a legacy `.search-indexed-at` global checkpoint if present.
  *
  * Indexes all three sources: USC, eCFR, and FR.
  * IMPORTANT: Keep sources, SearchDocument shape, and index configuration in
@@ -39,7 +40,8 @@ const MEILI_MASTER_KEY = process.env.MEILI_MASTER_KEY ?? "";
 const INDEX_NAME = "lexbuild";
 const BATCH_SIZE = 500;
 const BODY_TRUNCATE_CHARS = 5000;
-const CHECKPOINT_FILE = ".search-indexed-at";
+const CHECKPOINT_PREFIX = ".search-indexed-at";
+const SOURCES = ["usc", "ecfr", "fr"] as const;
 
 // --- Types ---
 
@@ -145,19 +147,33 @@ async function getFileMtimeMs(path: string): Promise<number> {
   }
 }
 
-// --- Checkpoint ---
+// --- Per-source checkpoints ---
 
-async function readCheckpoint(contentDir: string): Promise<number> {
+function checkpointPath(contentDir: string, source: string): string {
+  return join(contentDir, `${CHECKPOINT_PREFIX}-${source}`);
+}
+
+async function readSourceCheckpoint(contentDir: string, source: string): Promise<number> {
   try {
-    const raw = await readFile(join(contentDir, CHECKPOINT_FILE), "utf-8");
+    const raw = await readFile(checkpointPath(contentDir, source), "utf-8");
     return parseInt(raw.trim(), 10);
   } catch {
-    return 0;
+    // Fall back to legacy global checkpoint for migration
+    try {
+      const raw = await readFile(join(contentDir, CHECKPOINT_PREFIX), "utf-8");
+      return parseInt(raw.trim(), 10);
+    } catch {
+      return 0;
+    }
   }
 }
 
-async function writeCheckpoint(contentDir: string, timestamp: number): Promise<void> {
-  await writeFile(join(contentDir, CHECKPOINT_FILE), String(timestamp), "utf-8");
+async function writeSourceCheckpoint(
+  contentDir: string,
+  source: string,
+  timestamp: number,
+): Promise<void> {
+  await writeFile(checkpointPath(contentDir, source), String(timestamp), "utf-8");
 }
 
 // --- Batch sender ---
@@ -560,8 +576,14 @@ async function main(): Promise<void> {
   const runStartTime = Date.now();
 
   if (setCheckpoint) {
-    await writeCheckpoint(resolvedDir, Date.now());
-    console.log(`Checkpoint set to ${new Date().toISOString()} in ${resolvedDir}`);
+    const now = Date.now();
+    const targets = sourceFilter ? [sourceFilter] : [...SOURCES];
+    for (const src of targets) {
+      await writeSourceCheckpoint(resolvedDir, src, now);
+    }
+    console.log(
+      `Checkpoint set to ${new Date().toISOString()} for ${targets.join(", ")} in ${resolvedDir}`,
+    );
     return;
   }
 
@@ -602,19 +624,20 @@ async function main(): Promise<void> {
     await configureIndex(client);
   }
 
-  // Read checkpoint
-  const checkpoint = await readCheckpoint(resolvedDir);
-  if (checkpoint > 0) {
-    const checkpointDate = new Date(checkpoint).toISOString();
-    console.log(`\nCheckpoint: ${checkpointDate}`);
-    console.log("  Only files modified after this timestamp will be sent to Meilisearch.");
-    console.log("  Unchanged files will be skipped (not re-sent).");
-  } else {
-    console.log("\nNo checkpoint found — scanning all files.");
-    console.log("  Every .md file will be sent to Meilisearch as an upsert (add or update).");
-    console.log(
-      "  Documents already in the index with the same ID will be updated, not duplicated.",
-    );
+  // Read per-source checkpoints
+  const checkpoints: Record<string, number> = {};
+  const activeSources = sourceFilter ? [sourceFilter] : [...SOURCES];
+  for (const src of activeSources) {
+    checkpoints[src] = await readSourceCheckpoint(resolvedDir, src);
+  }
+
+  for (const src of activeSources) {
+    const cp = checkpoints[src]!;
+    if (cp > 0) {
+      console.log(`\n${src} checkpoint: ${new Date(cp).toISOString()}`);
+    } else {
+      console.log(`\n${src}: no checkpoint — will scan all files`);
+    }
   }
 
   const indexer = new BatchIndexer(client, INDEX_NAME, BATCH_SIZE);
@@ -628,7 +651,7 @@ async function main(): Promise<void> {
   // Index USC
   if (!sourceFilter || sourceFilter === "usc") {
     console.log("\nScanning USC documents...");
-    const usc = await indexUscIncremental(resolvedDir, indexer, checkpoint, expectedIds);
+    const usc = await indexUscIncremental(resolvedDir, indexer, checkpoints["usc"]!, expectedIds);
     await indexer.flush();
     console.log(
       `  USC: ${usc.indexed} upserted, ${usc.skipped} skipped (unchanged since checkpoint)`,
@@ -640,7 +663,12 @@ async function main(): Promise<void> {
   // Index eCFR
   if (!sourceFilter || sourceFilter === "ecfr") {
     console.log("\nScanning eCFR documents...");
-    const ecfr = await indexEcfrIncremental(resolvedDir, indexer, checkpoint, expectedIds);
+    const ecfr = await indexEcfrIncremental(
+      resolvedDir,
+      indexer,
+      checkpoints["ecfr"]!,
+      expectedIds,
+    );
     await indexer.flush();
     console.log(
       `  eCFR: ${ecfr.indexed} upserted, ${ecfr.skipped} skipped (unchanged since checkpoint)`,
@@ -652,7 +680,7 @@ async function main(): Promise<void> {
   // Index FR
   if (!sourceFilter || sourceFilter === "fr") {
     console.log("\nScanning FR documents...");
-    const fr = await indexFrIncremental(resolvedDir, indexer, checkpoint, expectedIds);
+    const fr = await indexFrIncremental(resolvedDir, indexer, checkpoints["fr"]!, expectedIds);
     await indexer.flush();
     console.log(`  FR: ${fr.indexed} upserted, ${fr.skipped} skipped (unchanged since checkpoint)`);
     totalIndexed += fr.indexed;
@@ -669,12 +697,11 @@ async function main(): Promise<void> {
     pruned = await pruneOrphans(client, expectedIds);
   }
 
-  // Update checkpoint to the start of this run (skip for partial --source runs)
-  if (!sourceFilter) {
-    await writeCheckpoint(resolvedDir, runStartTime);
-  } else {
-    console.log("\n  Checkpoint not updated (--source partial run).");
+  // Update per-source checkpoints for every source that was indexed
+  for (const src of activeSources) {
+    await writeSourceCheckpoint(resolvedDir, src, runStartTime);
   }
+  console.log(`\n  Checkpoint updated for ${activeSources.join(", ")}.`);
 
   // Summary
   const index = client.index(INDEX_NAME);
