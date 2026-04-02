@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.16.0]
+
+### Added
+
+- `enrich-fr` CLI command — fetches rich metadata from the FederalRegister.gov API listing endpoint and patches YAML frontmatter in existing Markdown files converted from govinfo bulk XML
+- New `enrichFrDocuments()` function in `@lexbuild/fr` for programmatic frontmatter enrichment
+- Exported `buildMonthChunks` and `fetchWithRetry` utilities from `@lexbuild/fr` for reuse
+- FR FrontmatterPanel now displays `fr_action` (Action) and `cfr_references` (CFR References) fields
+- Per-source search index checkpoints (`.search-indexed-at-{usc,ecfr,fr}`) replacing single global checkpoint — enables `--source fr` incremental runs without full rescans
+- `cfr_references` field added to `ContentFrontmatter` type in Astro app
+
+### Changed
+
+- FR content rsync uses mtime-based comparison instead of `--checksum` — avoids hashing 770k+ files on every sync
+- `update-fr.sh` updated with per-source checkpoint support and mtime-based rsync
+
 ## [1.15.3]
 
 ### Added
