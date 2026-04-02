@@ -1,5 +1,16 @@
 # @lexbuild/ecfr
 
+## 1.16.0
+
+### Minor Changes
+
+- deb4785: Enrich FR with API JSON metadata
+
+### Patch Changes
+
+- Updated dependencies [deb4785]
+  - @lexbuild/core@1.16.0
+
 ## 1.15.3
 
 ### Patch Changes
