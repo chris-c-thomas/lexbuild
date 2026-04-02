@@ -189,6 +189,7 @@ function TitleSidebarContent({ sourceId, currentPath }: SidebarContentProps) {
   const [expandedTitle, setExpandedTitle] = useState<string | null>(null);
   const [expandedChapter, setExpandedChapter] = useState<string | null>(null);
   const [expandedPart, setExpandedPart] = useState<string | null>(null);
+  const [userToggled, setUserToggled] = useState(false);
   const [titleNavCache, setTitleNavCache] = useState<Record<string, TitleNavData>>({});
   const [loadingTitle, setLoadingTitle] = useState<string | null>(null);
 
@@ -202,13 +203,13 @@ function TitleSidebarContent({ sourceId, currentPath }: SidebarContentProps) {
       .catch(() => setTitles([]));
   }, [sourceId]);
 
-  // Auto-expand to the active item on initial load
+  // Auto-expand to the active item on initial load (only before user interacts)
   useEffect(() => {
-    if (!active.title || expandedTitle) return;
+    if (!active.title || userToggled) return;
     setExpandedTitle(active.title);
     if (active.chapter) setExpandedChapter(active.chapter);
     if (active.part) setExpandedPart(active.part);
-  }, [active.title, active.chapter, active.part, expandedTitle]);
+  }, [active.title, active.chapter, active.part, userToggled]);
 
   // Lazy-load per-title nav JSON
   const loadTitleNav = useCallback(
@@ -236,6 +237,7 @@ function TitleSidebarContent({ sourceId, currentPath }: SidebarContentProps) {
   }, [expandedTitle, loadTitleNav]);
 
   const toggleTitle = (dir: string) => {
+    setUserToggled(true);
     if (expandedTitle === dir) {
       setExpandedTitle(null);
       setExpandedChapter(null);
