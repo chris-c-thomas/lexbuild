@@ -1,5 +1,15 @@
 # @lexbuild/cli
 
+## 1.15.2
+
+### Patch Changes
+
+- c59e3a7: Patch Bump
+- Updated dependencies [c59e3a7]
+  - @lexbuild/ecfr@1.15.2
+  - @lexbuild/usc@1.15.2
+  - @lexbuild/fr@1.15.2
+
 ## 1.15.1
 
 ### Patch Changes

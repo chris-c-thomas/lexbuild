@@ -1,5 +1,11 @@
 # @lexbuild/core
 
+## 1.15.2
+
+### Patch Changes
+
+- c59e3a7: Patch Bump
+
 ## 1.15.1
 
 ### Patch Changes

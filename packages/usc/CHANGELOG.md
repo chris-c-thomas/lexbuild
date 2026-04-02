@@ -1,5 +1,13 @@
 # @lexbuild/usc
 
+## 1.15.2
+
+### Patch Changes
+
+- c59e3a7: Patch Bump
+- Updated dependencies [c59e3a7]
+  - @lexbuild/core@1.15.2
+
 ## 1.15.1
 
 ### Patch Changes
