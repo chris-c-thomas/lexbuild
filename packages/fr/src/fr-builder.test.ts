@@ -114,10 +114,7 @@ describe("FrASTBuilder", () => {
       const { node } = collected[0]!;
 
       // Should have content from SUPLINF paragraphs
-      const textContent = findContentWithText(
-        node,
-        /Securities Exchange Act of 1934 governs/,
-      );
+      const textContent = findContentWithText(node, /Securities Exchange Act of 1934 governs/);
       expect(textContent).toBeDefined();
     });
 
@@ -239,9 +236,7 @@ describe("FrASTBuilder", () => {
 
       const { node } = collected[0]!;
       expect(node.sourceElement).toBe("NOTICE");
-      expect(node.heading).toBe(
-        "Meeting of the Advisory Board on Radiation and Worker Health",
-      );
+      expect(node.heading).toBe("Meeting of the Advisory Board on Radiation and Worker Health");
 
       const metas = builder.getDocumentMetas();
       expect(metas[0]!.documentTypeNormalized).toBe("notice");
@@ -289,6 +284,5 @@ describe("FrASTBuilder", () => {
       const metas = builder.getDocumentMetas();
       expect(metas[0]!.documentNumber).toBe("2026-06086");
     });
-
   });
 });

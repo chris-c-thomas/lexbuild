@@ -12,7 +12,12 @@ export function DownloadButton({ content, filename }: DownloadButtonProps) {
   const [downloaded, setDownloaded] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(null);
 
-  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
+  useEffect(
+    () => () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    },
+    [],
+  );
 
   function handleDownload() {
     const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });

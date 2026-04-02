@@ -13,9 +13,7 @@
 import { readdir, readFile, mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
-// ---------------------------------------------------------------------------
-// Types (matches src/lib/types.ts nav interfaces)
-// ---------------------------------------------------------------------------
+// --- Types (matches src/lib/types.ts nav interfaces) ---
 
 interface TitleSummary {
   number: number;
@@ -55,9 +53,7 @@ interface TitleNav {
   chapters: ChapterNav[];
 }
 
-// ---------------------------------------------------------------------------
-// _meta.json shapes (from CLI output)
-// ---------------------------------------------------------------------------
+// --- _meta.json shapes (from CLI output) ---
 
 interface UscTitleMeta {
   title_number: number;
@@ -124,9 +120,7 @@ interface EcfrPartMeta {
   }>;
 }
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+// --- Helpers ---
 
 async function readJson<T>(path: string): Promise<T | null> {
   try {
@@ -178,9 +172,7 @@ const ECFR_RESERVED_TITLES: TitleSummary[] = [
   },
 ];
 
-// ---------------------------------------------------------------------------
-// USC navigation generation
-// ---------------------------------------------------------------------------
+// --- USC navigation generation ---
 
 async function generateUscNav(contentDir: string, outDir: string): Promise<void> {
   const uscDir = join(contentDir, "usc", "sections");
@@ -267,9 +259,7 @@ async function generateUscNav(contentDir: string, outDir: string): Promise<void>
   );
 }
 
-// ---------------------------------------------------------------------------
-// eCFR navigation generation
-// ---------------------------------------------------------------------------
+// --- eCFR navigation generation ---
 
 async function generateEcfrNav(contentDir: string, outDir: string): Promise<void> {
   const ecfrDir = join(contentDir, "ecfr", "sections");
@@ -414,9 +404,7 @@ function romanToInt(roman: string): number {
   return result;
 }
 
-// ---------------------------------------------------------------------------
-// FR navigation
-// ---------------------------------------------------------------------------
+// --- FR navigation ---
 
 interface FrYearSummary {
   year: number;
@@ -497,7 +485,8 @@ async function generateFrNav(contentDir: string, outDir: string): Promise<void> 
           const fm = raw.slice(4, endIdx);
 
           const docNum = extractYamlField(fm, "document_number") || file.replace(/\.md$/, "");
-          const title = extractYamlField(fm, "section_name") || extractYamlField(fm, "title") || docNum;
+          const title =
+            extractYamlField(fm, "section_name") || extractYamlField(fm, "title") || docNum;
           const docType = extractYamlField(fm, "document_type") || "unknown";
           const pubDate = extractYamlField(fm, "publication_date") || `${yearDir}-${monthDir}`;
           const agencyRaw = extractYamlField(fm, "agency") || "";
@@ -553,9 +542,7 @@ function extractYamlField(yaml: string, field: string): string | undefined {
   return match?.[1]?.trim() || undefined;
 }
 
-// ---------------------------------------------------------------------------
-// Main
-// ---------------------------------------------------------------------------
+// --- Main ---
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);

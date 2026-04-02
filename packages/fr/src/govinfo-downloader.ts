@@ -150,7 +150,9 @@ export async function downloadFrBulk(options: FrGovinfoBulkOptions): Promise<FrG
           skipped++;
         }
       } catch (err) {
-        console.warn(`Warning: Failed to download ${date}: ${err instanceof Error ? err.message : String(err)}`);
+        console.warn(
+          `Warning: Failed to download ${date}: ${err instanceof Error ? err.message : String(err)}`,
+        );
         failed++;
       }
     }

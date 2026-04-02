@@ -114,9 +114,7 @@ describe("parseReleasePointFromHtml", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// parseReleasePointHistoryFromHtml
-// ---------------------------------------------------------------------------
+// --- parseReleasePointHistoryFromHtml ---
 
 /** Representative HTML fixture based on the OLRC prior release points page */
 const PRIOR_RELEASES_FIXTURE = `

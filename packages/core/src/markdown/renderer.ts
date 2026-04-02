@@ -116,9 +116,7 @@ export function renderNode(node: ASTNode, options: RenderOptions = DEFAULT_RENDE
   }
 }
 
-// ---------------------------------------------------------------------------
-// Level rendering (subsection, paragraph, etc.)
-// ---------------------------------------------------------------------------
+// --- Level rendering (subsection, paragraph, etc.) ---
 
 /**
  * Render a sub-section level (subsection, paragraph, clause, etc.)
@@ -205,9 +203,7 @@ function renderSmallLevel(node: LevelNode, options: RenderOptions): string {
   return parts.join("\n\n");
 }
 
-// ---------------------------------------------------------------------------
-// Content rendering
-// ---------------------------------------------------------------------------
+// --- Content rendering ---
 
 /**
  * Render a content block (content, chapeau, continuation, proviso).
@@ -235,9 +231,7 @@ function normalizeWhitespace(text: string): string {
   return text.trim().replace(/\n\s*\n/g, "\n\n");
 }
 
-// ---------------------------------------------------------------------------
-// Inline rendering
-// ---------------------------------------------------------------------------
+// --- Inline rendering ---
 
 /**
  * Render an inline node to a Markdown string.
@@ -339,9 +333,7 @@ function buildOlrcUrl(identifier: string): string {
   return `https://uscode.house.gov/view.xhtml?req=${encodeURIComponent(identifier)}`;
 }
 
-// ---------------------------------------------------------------------------
-// Table rendering
-// ---------------------------------------------------------------------------
+// --- Table rendering ---
 
 /**
  * Render a table node to Markdown.
@@ -401,9 +393,7 @@ function renderTable(node: TableNode): string {
   return lines.join("\n");
 }
 
-// ---------------------------------------------------------------------------
-// Source credit rendering
-// ---------------------------------------------------------------------------
+// --- Source credit rendering ---
 
 /**
  * Render a source credit node.
@@ -414,9 +404,7 @@ function renderSourceCredit(node: SourceCreditNode, options: RenderOptions): str
   return `---\n\n**Source Credit**: ${text}`;
 }
 
-// ---------------------------------------------------------------------------
-// Notes rendering
-// ---------------------------------------------------------------------------
+// --- Notes rendering ---
 
 /**
  * Render a notes container (<notes type="uscNote">).
@@ -558,9 +546,7 @@ function renderNote(node: NoteNode, options: RenderOptions): string {
   return parts.join("\n\n");
 }
 
-// ---------------------------------------------------------------------------
-// Quoted content rendering
-// ---------------------------------------------------------------------------
+// --- Quoted content rendering ---
 
 /**
  * Render quoted content as a Markdown blockquote.

@@ -99,9 +99,7 @@ function parseDescription(html: string): string {
   return html.slice(contentStart, endIdx).trim();
 }
 
-// ---------------------------------------------------------------------------
-// Release point history
-// ---------------------------------------------------------------------------
+// --- Release point history ---
 
 /**
  * Fetch the full history of prior release points from OLRC.

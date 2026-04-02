@@ -31,9 +31,7 @@ const MAX_RETRIES = 2;
 /** Base delay between retries in milliseconds */
 const RETRY_BASE_DELAY_MS = 3000;
 
-// ---------------------------------------------------------------------------
-// Title metadata
-// ---------------------------------------------------------------------------
+// --- Title metadata ---
 
 /** Metadata for a single CFR title from the eCFR API */
 export interface EcfrTitleMeta {
@@ -96,9 +94,7 @@ export async function fetchEcfrTitlesMeta(): Promise<EcfrTitlesResponse> {
   };
 }
 
-// ---------------------------------------------------------------------------
-// Download options and result types
-// ---------------------------------------------------------------------------
+// --- Download options and result types ---
 
 /** Options for downloading eCFR titles from the API */
 export interface EcfrApiDownloadOptions {
@@ -150,9 +146,7 @@ interface EcfrDownloadFailure {
   dateAttempted: string;
 }
 
-// ---------------------------------------------------------------------------
-// URL construction
-// ---------------------------------------------------------------------------
+// --- URL construction ---
 
 /**
  * Build the download URL for a full title XML from the eCFR API.
@@ -164,9 +158,7 @@ export function buildEcfrApiDownloadUrl(titleNumber: number, date: string): stri
   return `${ECFR_API_BASE}/full/${date}/title-${titleNumber}.xml`;
 }
 
-// ---------------------------------------------------------------------------
-// Download
-// ---------------------------------------------------------------------------
+// --- Download ---
 
 /**
  * Download eCFR XML files from the ecfr.gov versioner API.

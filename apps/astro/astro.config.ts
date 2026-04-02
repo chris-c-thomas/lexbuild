@@ -14,6 +14,7 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     ssr: {
+      // Avoid bundling Shiki's ~5MB WASM grammar files into the SSR bundle
       external: ["shiki"],
     },
   },

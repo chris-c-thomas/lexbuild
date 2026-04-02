@@ -32,9 +32,7 @@ import { join, resolve } from "node:path";
 import { Meilisearch } from "meilisearch";
 import matter from "gray-matter";
 
-// ---------------------------------------------------------------------------
-// Config
-// ---------------------------------------------------------------------------
+// --- Config ---
 
 const MEILI_URL = process.env.MEILI_URL ?? "http://127.0.0.1:7700";
 const MEILI_MASTER_KEY = process.env.MEILI_MASTER_KEY ?? "";
@@ -43,9 +41,7 @@ const BATCH_SIZE = 500;
 const BODY_TRUNCATE_CHARS = 5000;
 const CHECKPOINT_FILE = ".search-indexed-at";
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
+// --- Types ---
 
 interface SearchDocument {
   id: string;
@@ -98,9 +94,7 @@ interface EcfrPartMeta {
   }>;
 }
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+// --- Helpers ---
 
 async function readJson<T>(path: string): Promise<T | null> {
   try {
@@ -130,6 +124,7 @@ function sanitizeId(raw: string): string {
 async function readTruncatedBody(mdPath: string): Promise<string> {
   try {
     const raw = await readFile(mdPath, "utf-8");
+    // cache: false prevents unbounded memory growth in batch processing
     const { content } = matter(raw, { cache: false });
     const cleaned = content
       .replace(/^#{1,6}\s+.*$/gm, "")
@@ -150,9 +145,7 @@ async function getFileMtimeMs(path: string): Promise<number> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Checkpoint
-// ---------------------------------------------------------------------------
+// --- Checkpoint ---
 
 async function readCheckpoint(contentDir: string): Promise<number> {
   try {
@@ -167,9 +160,7 @@ async function writeCheckpoint(contentDir: string, timestamp: number): Promise<v
   await writeFile(join(contentDir, CHECKPOINT_FILE), String(timestamp), "utf-8");
 }
 
-// ---------------------------------------------------------------------------
-// Batch sender
-// ---------------------------------------------------------------------------
+// --- Batch sender ---
 
 class BatchIndexer {
   private batch: SearchDocument[] = [];
@@ -217,9 +208,7 @@ class BatchIndexer {
   }
 }
 
-// ---------------------------------------------------------------------------
-// USC — walk, diff, and upsert
-// ---------------------------------------------------------------------------
+// --- USC — walk, diff, and upsert ---
 
 async function indexUscIncremental(
   contentDir: string,
@@ -274,9 +263,7 @@ async function indexUscIncremental(
   return { indexed, skipped };
 }
 
-// ---------------------------------------------------------------------------
-// eCFR — walk, diff, and upsert
-// ---------------------------------------------------------------------------
+// --- eCFR — walk, diff, and upsert ---
 
 async function indexEcfrIncremental(
   contentDir: string,
@@ -345,9 +332,7 @@ async function indexEcfrIncremental(
   return { indexed, skipped };
 }
 
-// ---------------------------------------------------------------------------
-// FR — walk, diff, and upsert (no _meta.json, reads frontmatter directly)
-// ---------------------------------------------------------------------------
+// --- FR — walk, diff, and upsert (no _meta.json, reads frontmatter directly) ---
 
 async function indexFrIncremental(
   contentDir: string,
@@ -397,6 +382,7 @@ async function indexFrIncremental(
 
         try {
           const raw = await readFile(mdPath, "utf-8");
+          // cache: false prevents unbounded memory growth in batch processing
           const { data, content } = matter(raw, { cache: false });
 
           const docNumber = (data.document_number as string) || file.replace(/\.md$/, "");
@@ -436,7 +422,9 @@ async function indexFrIncremental(
           });
           indexed++;
         } catch (err) {
-          console.warn(`  Warning: skipping ${file}: ${err instanceof Error ? err.message : String(err)}`);
+          console.warn(
+            `  Warning: skipping ${file}: ${err instanceof Error ? err.message : String(err)}`,
+          );
         }
       }
     }
@@ -445,9 +433,7 @@ async function indexFrIncremental(
   return { indexed, skipped };
 }
 
-// ---------------------------------------------------------------------------
-// Prune — remove orphaned documents from the index
-// ---------------------------------------------------------------------------
+// --- Prune — remove orphaned documents from the index ---
 
 async function pruneOrphans(client: Meilisearch, expectedIds: Set<string>): Promise<number> {
   console.log("\nPruning orphaned documents...");
@@ -491,9 +477,7 @@ async function pruneOrphans(client: Meilisearch, expectedIds: Set<string>): Prom
   return orphanIds.length;
 }
 
-// ---------------------------------------------------------------------------
-// Index configuration (only for new indexes)
-// ---------------------------------------------------------------------------
+// --- Index configuration (only for new indexes) ---
 
 async function configureIndex(client: Meilisearch): Promise<void> {
   const index = client.index(INDEX_NAME);
@@ -512,7 +496,9 @@ async function configureIndex(client: Meilisearch): Promise<void> {
       "publication_date",
     ]),
   );
-  await wait(await index.updateSortableAttributes(["title_number", "identifier", "publication_date"]));
+  await wait(
+    await index.updateSortableAttributes(["title_number", "identifier", "publication_date"]),
+  );
   await wait(
     await index.updateDisplayedAttributes([
       "id",
@@ -542,9 +528,7 @@ async function configureIndex(client: Meilisearch): Promise<void> {
   console.log("  Index settings configured.");
 }
 
-// ---------------------------------------------------------------------------
-// Main
-// ---------------------------------------------------------------------------
+// --- Main ---
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
@@ -670,9 +654,7 @@ async function main(): Promise<void> {
     console.log("\nScanning FR documents...");
     const fr = await indexFrIncremental(resolvedDir, indexer, checkpoint, expectedIds);
     await indexer.flush();
-    console.log(
-      `  FR: ${fr.indexed} upserted, ${fr.skipped} skipped (unchanged since checkpoint)`,
-    );
+    console.log(`  FR: ${fr.indexed} upserted, ${fr.skipped} skipped (unchanged since checkpoint)`);
     totalIndexed += fr.indexed;
     totalSkipped += fr.skipped;
   }
@@ -680,7 +662,9 @@ async function main(): Promise<void> {
   // Prune orphaned documents (only safe when all sources are scanned)
   let pruned = 0;
   if (prune && sourceFilter) {
-    console.log("\n  --prune ignored: cannot prune when --source is set (would delete other sources)");
+    console.log(
+      "\n  --prune ignored: cannot prune when --source is set (would delete other sources)",
+    );
   } else if (prune) {
     pruned = await pruneOrphans(client, expectedIds);
   }

@@ -1067,9 +1067,7 @@ function buildFrontmatter(node: LevelNode, context: EmitContext): FrontmatterDat
   return fm;
 }
 
-// ---------------------------------------------------------------------------
-// Utility functions
-// ---------------------------------------------------------------------------
+// --- Utility functions ---
 
 /**
  * Build SectionMeta from AST node without rendering (for dry-run mode).

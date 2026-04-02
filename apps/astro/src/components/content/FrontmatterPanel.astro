@@ -14,7 +14,6 @@ const { frontmatter, source, rawYaml } = Astro.props;
 const isTitle = frontmatter.chapter_count !== undefined;
 const isSection = frontmatter.section_number !== undefined;
 
-// Build compact key-value pairs for the grid
 const fields: Array<{ label: string; value: string }> = [
   { label: "Identifier", value: frontmatter.identifier },
   { label: "Currency", value: frontmatter.currency },
@@ -69,7 +68,6 @@ if (isTitle) {
     fields.push({ label: "Est. Tokens", value: frontmatter.total_token_estimate.toLocaleString() });
 }
 
-// Full-width fields shown below the grid
 const fullWidthFields: Array<{ label: string; value: string }> = [];
 if (isSection && frontmatter.source_credit) {
   fullWidthFields.push({ label: "Source", value: frontmatter.source_credit });

@@ -22,9 +22,7 @@ import { join, resolve } from "node:path";
 const SITE_URL = process.env.SITE_URL ?? "https://lexbuild.dev";
 const MAX_URLS_PER_FILE = 25_000;
 
-// ---------------------------------------------------------------------------
-// _meta.json shapes (subset of fields we need)
-// ---------------------------------------------------------------------------
+// --- _meta.json shapes (subset of fields we need) ---
 
 interface UscTitleMeta {
   title_number: number;
@@ -38,9 +36,7 @@ interface EcfrPartMeta {
   sections: Array<{ file: string }>;
 }
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+// --- Helpers ---
 
 async function readJson<T>(path: string): Promise<T | null> {
   try {
@@ -67,9 +63,7 @@ function xmlEscape(str: string): string {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-// ---------------------------------------------------------------------------
-// URL collection
-// ---------------------------------------------------------------------------
+// --- URL collection ---
 
 async function collectUscUrls(contentDir: string): Promise<string[]> {
   const urls: string[] = [];
@@ -187,9 +181,7 @@ async function collectFrUrls(contentDir: string): Promise<string[]> {
   return urls;
 }
 
-// ---------------------------------------------------------------------------
-// Sitemap XML generation
-// ---------------------------------------------------------------------------
+// --- Sitemap XML generation ---
 
 function buildUrlset(urls: string[], today: string, sourceChangefreq: string): string {
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
@@ -241,9 +233,7 @@ async function writeChunkedSitemaps(
   return filenames;
 }
 
-// ---------------------------------------------------------------------------
-// Main
-// ---------------------------------------------------------------------------
+// --- Main ---
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
@@ -274,13 +264,19 @@ async function main(): Promise<void> {
   if (sourceFilter) console.log(`Source filter: ${sourceFilter}`);
   console.log();
 
-  const uscUrls = !sourceFilter || sourceFilter === "usc" ? await collectUscUrls(resolvedContentDir) : [];
-  const ecfrUrls = !sourceFilter || sourceFilter === "ecfr" ? await collectEcfrUrls(resolvedContentDir) : [];
-  const frUrls = !sourceFilter || sourceFilter === "fr" ? await collectFrUrls(resolvedContentDir) : [];
+  const uscUrls =
+    !sourceFilter || sourceFilter === "usc" ? await collectUscUrls(resolvedContentDir) : [];
+  const ecfrUrls =
+    !sourceFilter || sourceFilter === "ecfr" ? await collectEcfrUrls(resolvedContentDir) : [];
+  const frUrls =
+    !sourceFilter || sourceFilter === "fr" ? await collectFrUrls(resolvedContentDir) : [];
 
-  if (!sourceFilter || sourceFilter === "usc") console.log(`USC: ${uscUrls.length.toLocaleString()} URLs`);
-  if (!sourceFilter || sourceFilter === "ecfr") console.log(`eCFR: ${ecfrUrls.length.toLocaleString()} URLs`);
-  if (!sourceFilter || sourceFilter === "fr") console.log(`FR: ${frUrls.length.toLocaleString()} URLs`);
+  if (!sourceFilter || sourceFilter === "usc")
+    console.log(`USC: ${uscUrls.length.toLocaleString()} URLs`);
+  if (!sourceFilter || sourceFilter === "ecfr")
+    console.log(`eCFR: ${ecfrUrls.length.toLocaleString()} URLs`);
+  if (!sourceFilter || sourceFilter === "fr")
+    console.log(`FR: ${frUrls.length.toLocaleString()} URLs`);
   console.log(
     `Total: ${(uscUrls.length + ecfrUrls.length + frUrls.length + 1).toLocaleString()} URLs\n`,
   );
@@ -289,10 +285,18 @@ async function main(): Promise<void> {
   const miscUrls = ["/"];
   const allFilenames: string[] = [];
 
-  if (!sourceFilter) allFilenames.push(...(await writeChunkedSitemaps(miscUrls, "misc", outputDir, today, "weekly")));
-  if (!sourceFilter || sourceFilter === "usc") allFilenames.push(...(await writeChunkedSitemaps(uscUrls, "usc", outputDir, today, "monthly")));
-  if (!sourceFilter || sourceFilter === "ecfr") allFilenames.push(...(await writeChunkedSitemaps(ecfrUrls, "ecfr", outputDir, today, "weekly")));
-  if (!sourceFilter || sourceFilter === "fr") allFilenames.push(...(await writeChunkedSitemaps(frUrls, "fr", outputDir, today, "daily")));
+  if (!sourceFilter)
+    allFilenames.push(
+      ...(await writeChunkedSitemaps(miscUrls, "misc", outputDir, today, "weekly")),
+    );
+  if (!sourceFilter || sourceFilter === "usc")
+    allFilenames.push(...(await writeChunkedSitemaps(uscUrls, "usc", outputDir, today, "monthly")));
+  if (!sourceFilter || sourceFilter === "ecfr")
+    allFilenames.push(
+      ...(await writeChunkedSitemaps(ecfrUrls, "ecfr", outputDir, today, "weekly")),
+    );
+  if (!sourceFilter || sourceFilter === "fr")
+    allFilenames.push(...(await writeChunkedSitemaps(frUrls, "fr", outputDir, today, "daily")));
 
   // Write sitemap index (only when generating all sources — partial index would break it)
   if (!sourceFilter) {
@@ -301,7 +305,9 @@ async function main(): Promise<void> {
     await writeFile(indexPath, indexXml, "utf-8");
     console.log(`\nWrote sitemap index: ${indexPath} (${allFilenames.length} sitemaps)`);
   } else {
-    console.log(`\n  Sitemap index not updated (--source partial run). Run without --source to rebuild the full index.`);
+    console.log(
+      `\n  Sitemap index not updated (--source partial run). Run without --source to rebuild the full index.`,
+    );
   }
 
   // If dist/client/ exists (post-build), copy sitemaps there so the running

@@ -26,9 +26,7 @@ import { readdir } from "node:fs/promises";
 import { fork } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import matter from "gray-matter";
-// ---------------------------------------------------------------------------
-// Config
-// ---------------------------------------------------------------------------
+// --- Config ---
 
 const THEME_NAMES = {
   light: "lexbuild-light" as const,
@@ -44,9 +42,7 @@ const DEFAULT_CHUNK_SIZE = 2_000;
  *  caches. If a child hits this limit it crashes and the parent reports it. */
 const CHILD_MAX_OLD_SPACE_MB = 2048;
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+// --- Helpers ---
 
 /** Recursively find all .md files under a directory. */
 async function findMdFiles(dir: string): Promise<string[]> {
@@ -89,9 +85,7 @@ async function isUpToDate(mdPath: string, htmlPath: string): Promise<boolean> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Child process worker — highlight a chunk of files
-// ---------------------------------------------------------------------------
+// --- Child process worker — highlight a chunk of files ---
 
 async function runWorker(): Promise<void> {
   // Receive file list via IPC from parent (avoids OS env size limits)
@@ -114,6 +108,7 @@ async function runWorker(): Promise<void> {
   for (const mdPath of files) {
     try {
       const raw = await readFile(mdPath, "utf-8");
+      // cache: false prevents unbounded memory growth in batch processing
       const { content: body } = matter(raw, { cache: false });
 
       const html = highlighter.codeToHtml(body, {
@@ -137,9 +132,7 @@ async function runWorker(): Promise<void> {
   process.send!({ processed, errors });
 }
 
-// ---------------------------------------------------------------------------
-// Main — orchestrate child processes
-// ---------------------------------------------------------------------------
+// --- Main — orchestrate child processes ---
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
@@ -262,9 +255,7 @@ async function main(): Promise<void> {
   console.log(`\nDone: ${totalProcessed} files highlighted, ${totalErrors} errors, ${totalTime}s`);
 }
 
-// ---------------------------------------------------------------------------
-// Entry point — detect worker vs orchestrator mode
-// ---------------------------------------------------------------------------
+// --- Entry point — detect worker vs orchestrator mode ---
 
 if (process.argv.includes("--worker")) {
   runWorker()

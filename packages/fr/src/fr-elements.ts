@@ -24,12 +24,7 @@ export type FrDocumentType = (typeof FR_DOCUMENT_TYPE_KEYS)[number];
 export const FR_DOCUMENT_ELEMENTS = new Set<string>(FR_DOCUMENT_TYPE_KEYS);
 
 /** Container elements that group documents within daily issues */
-export const FR_SECTION_CONTAINERS = new Set([
-  "RULES",
-  "PRORULES",
-  "NOTICES",
-  "PRESDOCS",
-]);
+export const FR_SECTION_CONTAINERS = new Set(["RULES", "PRORULES", "NOTICES", "PRESDOCS"]);
 
 /** Map from document element name to normalized document type string */
 export const FR_DOCUMENT_TYPE_MAP: Readonly<Record<string, string>> = {

@@ -440,9 +440,7 @@ function buildNotesFilter(options: EcfrConvertOptions): NotesFilter | undefined 
   };
 }
 
-// ---------------------------------------------------------------------------
-// Metadata file generation (_meta.json + README.md)
-// ---------------------------------------------------------------------------
+// --- Metadata file generation (_meta.json + README.md) ---
 
 interface PartMeta {
   identifier: string;

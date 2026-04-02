@@ -8,9 +8,7 @@
 import type { SourceId, Granularity, ContentFrontmatter, Breadcrumb, PageSEO } from "./types.js";
 import { toTitleCase } from "./utils.js";
 
-// ---------------------------------------------------------------------------
-// Internal parameter types
-// ---------------------------------------------------------------------------
+// --- Internal parameter types ---
 
 /** Navigation context for index pages that don't have ContentFrontmatter. */
 interface NavContext {
@@ -54,9 +52,7 @@ interface JsonLdParams {
   nav?: NavContext;
 }
 
-// ---------------------------------------------------------------------------
-// buildPageSEO
-// ---------------------------------------------------------------------------
+// --- buildPageSEO ---
 
 /** Build the complete PageSEO object for a content page. */
 export function buildPageSEO(params: BuildPageSEOParams): PageSEO {
@@ -81,9 +77,7 @@ export function buildPageSEO(params: BuildPageSEOParams): PageSEO {
   };
 }
 
-// ---------------------------------------------------------------------------
-// buildTitle
-// ---------------------------------------------------------------------------
+// --- buildTitle ---
 
 /**
  * Build the page title for SEO. Does NOT include the " | LexBuild" suffix.
@@ -142,9 +136,7 @@ export function buildTitle(
   return `Title ${titleNum}`;
 }
 
-// ---------------------------------------------------------------------------
-// buildDescription
-// ---------------------------------------------------------------------------
+// --- buildDescription ---
 
 /**
  * Build meta description. Target 120-155 chars. No programmatic truncation.
@@ -226,9 +218,7 @@ export function buildDescription(
   return `${sourceName} as structured Markdown for LLMs, RAG, and semantic search.`;
 }
 
-// ---------------------------------------------------------------------------
-// buildJsonLd
-// ---------------------------------------------------------------------------
+// --- buildJsonLd ---
 
 /**
  * Build JSON-LD structured data. Returns an array of objects (without @context).

@@ -71,6 +71,7 @@ function isValidSegment(segment: string, sourceId: SourceId, index: number): boo
   if (sourceId === "fr") {
     if (index === 0) return /^\d{4}$/.test(segment);
     if (index === 1) return /^\d{2}$/.test(segment);
+    // FR doc numbers: alphanumeric start, hyphens allowed (e.g., "2026-06029")
     if (index === 2) return /^[\w][\w-]+$/.test(segment);
     return false;
   }
@@ -130,7 +131,8 @@ function buildBreadcrumbs(sourceId: SourceId, slug: string[]): Breadcrumb[] {
   let path = source.basePath;
   for (const [i, segment] of slug.entries()) {
     path = `${path}/${segment}`;
-    const label = sourceId === "fr" ? formatFrSegmentLabel(segment, i) : formatSegmentLabel(segment);
+    const label =
+      sourceId === "fr" ? formatFrSegmentLabel(segment, i) : formatSegmentLabel(segment);
     crumbs.push({ label, href: path });
   }
 

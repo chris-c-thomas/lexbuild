@@ -13,13 +13,7 @@
 import { createReadStream, existsSync } from "node:fs";
 import { readFile, readdir, stat } from "node:fs/promises";
 import { join, dirname } from "node:path";
-import {
-  XMLParser,
-  renderDocument,
-  createLinkResolver,
-  writeFile,
-  mkdir,
-} from "@lexbuild/core";
+import { XMLParser, renderDocument, createLinkResolver, writeFile, mkdir } from "@lexbuild/core";
 import type { LevelNode, EmitContext } from "@lexbuild/core";
 import { FrASTBuilder } from "./fr-builder.js";
 import type { FrDocumentXmlMeta } from "./fr-builder.js";
@@ -139,11 +133,7 @@ export async function convertFrDocuments(options: FrConvertOptions): Promise<FrC
         continue;
       }
 
-      const outputPath = buildFrOutputPath(
-        doc.documentNumber,
-        doc.publicationDate,
-        options.output,
-      );
+      const outputPath = buildFrOutputPath(doc.documentNumber, doc.publicationDate, options.output);
 
       const frontmatter = buildFrFrontmatter(doc.node, doc.context, doc.xmlMeta, doc.jsonMeta);
 
@@ -263,11 +253,7 @@ async function parseXmlFile(xmlPath: string): Promise<CollectedDoc[]> {
 /**
  * Discover XML files in a directory or return the single file path.
  */
-async function discoverXmlFiles(
-  input: string,
-  from?: string,
-  to?: string,
-): Promise<string[]> {
+async function discoverXmlFiles(input: string, from?: string, to?: string): Promise<string[]> {
   let inputStat;
   try {
     inputStat = await stat(input);

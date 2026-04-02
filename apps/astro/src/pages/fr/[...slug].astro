@@ -233,7 +233,7 @@ if (monthDocs.length > 0) {
         {docsByDate.map((group) => (
           <div>
             {docsByDate.length > 1 || group.date.length === 10 ? (
-              <h2 class="text-slate-blue-700 dark:text-slate-blue-400 mb-2 text-sm font-semibold uppercase tracking-wider">
+              <h2 class="text-slate-blue-700 dark:text-slate-blue-400 mb-2 text-sm font-semibold tracking-wider uppercase">
                 {group.date.length === 10
                   ? new Date(group.date + "T12:00:00").toLocaleDateString("en-US", {
                       weekday: "long",
@@ -242,7 +242,7 @@ if (monthDocs.length > 0) {
                       year: "numeric",
                     })
                   : group.date}
-                <span class="text-muted-foreground ml-2 font-normal normal-case tracking-normal">
+                <span class="text-muted-foreground ml-2 font-normal tracking-normal normal-case">
                   ({group.docs.length} document{group.docs.length !== 1 ? "s" : ""})
                 </span>
               </h2>
@@ -276,7 +276,11 @@ if (monthDocs.length > 0) {
           </h1>
           <div class="flex shrink-0 gap-2">
             <CopyButton client:load text={fullFileContent} />
-            <DownloadButton client:load content={fullFileContent} filename={documentDownloadFilename} />
+            <DownloadButton
+              client:load
+              content={fullFileContent}
+              filename={documentDownloadFilename}
+            />
           </div>
         </div>
         <FrontmatterPanel frontmatter={frontmatter} source={SOURCE_ID} rawYaml={rawYaml} />

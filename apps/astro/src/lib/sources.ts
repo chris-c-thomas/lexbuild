@@ -5,7 +5,8 @@ export const SOURCES: Record<SourceId, SourceConfig> = {
     id: "usc",
     name: "United States Code",
     shortName: "USC",
-    description: "General and permanent federal statutes, codified by subject matter into 54 titles.",
+    description:
+      "General and permanent federal statutes, codified by subject matter into 54 titles.",
     basePath: "/usc",
     granularities: ["section", "chapter", "title"],
     hierarchy: ["title", "chapter", "section"],
@@ -34,8 +35,7 @@ export const SOURCES: Record<SourceId, SourceConfig> = {
     id: "fr",
     name: "Federal Register",
     shortName: "FR",
-    description:
-      "Daily federal rules, proposed rules, notices, and presidential documents.",
+    description: "Daily federal rules, proposed rules, notices, and presidential documents.",
     basePath: "/fr",
     granularities: ["document"],
     hierarchy: ["year", "month", "document"],

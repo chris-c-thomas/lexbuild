@@ -19,9 +19,7 @@ import { join, resolve } from "node:path";
 import { Meilisearch } from "meilisearch";
 import matter from "gray-matter";
 
-// ---------------------------------------------------------------------------
-// Config
-// ---------------------------------------------------------------------------
+// --- Config ---
 
 const MEILI_URL = process.env.MEILI_URL ?? "http://127.0.0.1:7700";
 const MEILI_MASTER_KEY = process.env.MEILI_MASTER_KEY ?? "";
@@ -30,9 +28,7 @@ const BATCH_SIZE = 500;
 const BODY_TRUNCATE_CHARS = 5000;
 const GC_INTERVAL = 50_000; // Force GC every N files to prevent heap exhaustion
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
+// --- Types ---
 
 interface SearchDocument {
   id: string;
@@ -85,9 +81,7 @@ interface EcfrPartMeta {
   }>;
 }
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+// --- Helpers ---
 
 async function readJson<T>(path: string): Promise<T | null> {
   try {
@@ -122,6 +116,7 @@ function sanitizeId(raw: string): string {
 async function readTruncatedBody(mdPath: string): Promise<string> {
   try {
     const raw = await readFile(mdPath, "utf-8");
+    // cache: false prevents unbounded memory growth in batch processing
     const { content } = matter(raw, { cache: false });
     const cleaned = content
       .replace(/^#{1,6}\s+.*$/gm, "")
@@ -150,9 +145,7 @@ function trackFileAndGC(): void {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Batch sender — flushes when batch is full
-// ---------------------------------------------------------------------------
+// --- Batch sender — flushes when batch is full ---
 
 class BatchIndexer {
   private batch: SearchDocument[] = [];
@@ -200,9 +193,7 @@ class BatchIndexer {
   }
 }
 
-// ---------------------------------------------------------------------------
-// USC indexing (streaming)
-// ---------------------------------------------------------------------------
+// --- USC indexing (streaming) ---
 
 async function indexUscDocuments(contentDir: string, indexer: BatchIndexer): Promise<number> {
   const uscDir = join(contentDir, "usc", "sections");
@@ -244,9 +235,7 @@ async function indexUscDocuments(contentDir: string, indexer: BatchIndexer): Pro
   return count;
 }
 
-// ---------------------------------------------------------------------------
-// eCFR indexing (streaming)
-// ---------------------------------------------------------------------------
+// --- eCFR indexing (streaming) ---
 
 async function indexEcfrDocuments(contentDir: string, indexer: BatchIndexer): Promise<number> {
   const ecfrDir = join(contentDir, "ecfr", "sections");
@@ -302,9 +291,7 @@ async function indexEcfrDocuments(contentDir: string, indexer: BatchIndexer): Pr
   return count;
 }
 
-// ---------------------------------------------------------------------------
-// FR indexing (streaming — no _meta.json, reads frontmatter directly)
-// ---------------------------------------------------------------------------
+// --- FR indexing (streaming — no _meta.json, reads frontmatter directly) ---
 
 async function indexFrDocuments(contentDir: string, indexer: BatchIndexer): Promise<number> {
   const frDir = join(contentDir, "fr", "documents");
@@ -339,6 +326,7 @@ async function indexFrDocuments(contentDir: string, indexer: BatchIndexer): Prom
         const mdPath = join(monthPath, file);
         try {
           const raw = await readFile(mdPath, "utf-8");
+          // cache: false prevents unbounded memory growth in batch processing
           const { data, content } = matter(raw, { cache: false });
 
           const docNumber = (data.document_number as string) || file.replace(/\.md$/, "");
@@ -379,7 +367,9 @@ async function indexFrDocuments(contentDir: string, indexer: BatchIndexer): Prom
           count++;
           trackFileAndGC();
         } catch (err) {
-          console.warn(`  Warning: skipping ${file}: ${err instanceof Error ? err.message : String(err)}`);
+          console.warn(
+            `  Warning: skipping ${file}: ${err instanceof Error ? err.message : String(err)}`,
+          );
         }
       }
     }
@@ -388,9 +378,7 @@ async function indexFrDocuments(contentDir: string, indexer: BatchIndexer): Prom
   return count;
 }
 
-// ---------------------------------------------------------------------------
-// Meilisearch index configuration
-// ---------------------------------------------------------------------------
+// --- Meilisearch index configuration ---
 
 async function configureIndex(client: Meilisearch): Promise<void> {
   const index = client.index(INDEX_NAME);
@@ -409,7 +397,9 @@ async function configureIndex(client: Meilisearch): Promise<void> {
       "publication_date",
     ]),
   );
-  await wait(await index.updateSortableAttributes(["title_number", "identifier", "publication_date"]));
+  await wait(
+    await index.updateSortableAttributes(["title_number", "identifier", "publication_date"]),
+  );
   await wait(
     await index.updateDisplayedAttributes([
       "id",
@@ -439,9 +429,7 @@ async function configureIndex(client: Meilisearch): Promise<void> {
   console.log("  Index settings configured.");
 }
 
-// ---------------------------------------------------------------------------
-// Main
-// ---------------------------------------------------------------------------
+// --- Main ---
 
 async function main(): Promise<void> {
   const contentDir = resolve(process.argv[2] ?? "./content");

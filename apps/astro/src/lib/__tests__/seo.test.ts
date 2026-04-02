@@ -8,9 +8,7 @@ import {
 } from "../seo.js";
 import type { ContentFrontmatter, Breadcrumb } from "../types.js";
 
-// ---------------------------------------------------------------------------
-// Test fixtures
-// ---------------------------------------------------------------------------
+// --- Test fixtures ---
 
 const SITE_URL = "https://lexbuild.dev";
 
@@ -85,9 +83,7 @@ const TITLE_INDEX_BREADCRUMBS: Breadcrumb[] = [
   { label: "Title 26", href: "/usc/title-26" },
 ];
 
-// ---------------------------------------------------------------------------
-// buildTitle
-// ---------------------------------------------------------------------------
+// --- buildTitle ---
 
 describe("buildTitle", () => {
   it("returns toTitleCase(frontmatter.title) for USC section", () => {
@@ -131,9 +127,7 @@ describe("buildTitle", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// buildDescription
-// ---------------------------------------------------------------------------
+// --- buildDescription ---
 
 describe("buildDescription", () => {
   it("builds USC title index description with counts", () => {
@@ -212,9 +206,7 @@ describe("buildDescription", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// buildBreadcrumbJsonLd
-// ---------------------------------------------------------------------------
+// --- buildBreadcrumbJsonLd ---
 
 describe("buildBreadcrumbJsonLd", () => {
   it("produces BreadcrumbList with 1-indexed positions", () => {
@@ -247,9 +239,7 @@ describe("buildBreadcrumbJsonLd", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// buildJsonLd
-// ---------------------------------------------------------------------------
+// --- buildJsonLd ---
 
 describe("buildJsonLd", () => {
   it("returns Legislation + BreadcrumbList for USC section", () => {
@@ -330,9 +320,7 @@ describe("buildJsonLd", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// buildPageSEO
-// ---------------------------------------------------------------------------
+// --- buildPageSEO ---
 
 describe("buildPageSEO", () => {
   it("sets ogType to article for section pages", () => {

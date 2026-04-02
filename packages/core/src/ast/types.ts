@@ -225,10 +225,6 @@ export type ASTNode =
   | NotesContainerNode
   | QuotedContentNode;
 
-// ---------------------------------------------------------------------------
-// Context types used during AST building and rendering
-// ---------------------------------------------------------------------------
-
 /** Info about an ancestor level in the hierarchy */
 export interface AncestorInfo {
   /** The level type (e.g., "title", "chapter") */
@@ -272,10 +268,6 @@ export interface EmitContext {
   /** Document-level metadata from the <meta> block */
   documentMeta: DocumentMeta;
 }
-
-// ---------------------------------------------------------------------------
-// Frontmatter types
-// ---------------------------------------------------------------------------
 
 /** Legal provenance status of the source content */
 export type LegalStatus =

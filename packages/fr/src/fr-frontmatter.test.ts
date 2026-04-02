@@ -129,11 +129,7 @@ describe("buildFrFrontmatter", () => {
     });
 
     it("uses xmlMeta.rin for rin", () => {
-      const fm = buildFrFrontmatter(
-        makeNode(),
-        makeContext(),
-        makeXmlMeta({ rin: "3235-AM00" }),
-      );
+      const fm = buildFrFrontmatter(makeNode(), makeContext(), makeXmlMeta({ rin: "3235-AM00" }));
       expect(fm.rin).toBe("3235-AM00");
     });
 
