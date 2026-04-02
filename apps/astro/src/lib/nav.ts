@@ -74,10 +74,7 @@ export async function getFrYear(year: number): Promise<FrYearSummary | null> {
 }
 
 /** Load FR documents for a specific month. */
-export async function getFrMonthDocuments(
-  year: number,
-  month: number,
-): Promise<FrDocumentNav[]> {
+export async function getFrMonthDocuments(year: number, month: number): Promise<FrDocumentNav[]> {
   try {
     const monthStr = String(month).padStart(2, "0");
     const raw = await readFile(resolve(NAV_DIR, `fr/${year}-${monthStr}.json`), "utf-8");

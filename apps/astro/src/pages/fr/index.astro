@@ -10,10 +10,7 @@ const SOURCE_ID: SourceId = "fr";
 const years = await getFrYears();
 const totalDocs = years.reduce((sum, y) => sum + y.documentCount, 0);
 
-Astro.response.headers.set(
-  "Cache-Control",
-  "public, s-maxage=3600, stale-while-revalidate=86400",
-);
+Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400");
 
 const siteUrl = import.meta.env.SITE_URL ?? "https://lexbuild.dev";
 const seo: PageSEO = {
@@ -42,7 +39,9 @@ const seo: PageSEO = {
         Federal Register
       </h1>
       <p class="text-ink-muted mt-1 text-[15px]">
-        {totalDocs.toLocaleString()} documents across {years.length} year{years.length !== 1 ? "s" : ""}
+        {totalDocs.toLocaleString()} documents across {years.length} year{
+          years.length !== 1 ? "s" : ""
+        }
       </p>
     </div>
 

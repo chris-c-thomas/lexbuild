@@ -82,7 +82,9 @@ Source: https://uscode.house.gov/download/download.shtml`,
     }
 
     const label =
-      titleCount === 1 ? `Downloading Title ${titles?.[0]}` : `Downloading ${titleCount} USC titles`;
+      titleCount === 1
+        ? `Downloading Title ${titles?.[0]}`
+        : `Downloading ${titleCount} USC titles`;
 
     const spinner = createSpinner(`${label}...`);
     spinner.start();

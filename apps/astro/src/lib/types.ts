@@ -1,4 +1,3 @@
-
 /** Supported content sources */
 export type SourceId = "usc" | "ecfr" | "fr";
 
@@ -24,7 +23,6 @@ export interface SourceConfig {
   /** Slug segment count → granularity mapping */
   slugGranularity: Record<number, Granularity>;
 }
-
 
 /** Resolved route from a slug array */
 export interface ResolvedRoute {
@@ -98,7 +96,6 @@ export interface ContentFrontmatter {
   total_token_estimate?: number;
 }
 
-
 /** Title summary for index pages and sidebar root */
 export interface TitleSummary {
   number: number;
@@ -161,7 +158,6 @@ export interface FrDocumentNav {
   file: string;
 }
 
-
 /** Fully resolved SEO metadata for a single page. */
 export interface PageSEO {
   /** Page title (without " | LexBuild" suffix — SEOHead appends it). */
@@ -181,7 +177,6 @@ export interface PageSEO {
   /** When true, render title verbatim without " | LexBuild" suffix. */
   rawTitle?: boolean;
 }
-
 
 /** Props passed from Astro pages to the ContentViewer React island */
 export interface ContentViewerProps {

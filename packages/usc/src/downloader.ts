@@ -136,7 +136,12 @@ export async function downloadTitles(options: DownloadOptions): Promise<Download
   const errors: DownloadError[] = [];
 
   for (const [i, titleNum] of titles.entries()) {
-    onProgress?.({ current: i + 1, total: titles.length, titleNumber: titleNum, phase: "downloading" });
+    onProgress?.({
+      current: i + 1,
+      total: titles.length,
+      titleNumber: titleNum,
+      phase: "downloading",
+    });
     try {
       const file = await downloadAndExtractTitle(titleNum, releasePoint, options.outputDir);
       files.push(file);

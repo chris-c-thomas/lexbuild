@@ -367,7 +367,9 @@ async function indexFrDocuments(contentDir: string, indexer: BatchIndexer): Prom
           count++;
           trackFileAndGC();
         } catch (err) {
-          console.warn(`  Warning: skipping ${file}: ${err instanceof Error ? err.message : String(err)}`);
+          console.warn(
+            `  Warning: skipping ${file}: ${err instanceof Error ? err.message : String(err)}`,
+          );
         }
       }
     }
@@ -395,7 +397,9 @@ async function configureIndex(client: Meilisearch): Promise<void> {
       "publication_date",
     ]),
   );
-  await wait(await index.updateSortableAttributes(["title_number", "identifier", "publication_date"]));
+  await wait(
+    await index.updateSortableAttributes(["title_number", "identifier", "publication_date"]),
+  );
   await wait(
     await index.updateDisplayedAttributes([
       "id",

@@ -40,8 +40,19 @@ export function SidebarContent({ sourceId, currentPath }: SidebarContentProps) {
 // --- FR sidebar — year/month tree ---
 
 const MONTH_NAMES = [
-  "", "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 function parseFrActivePath(path: string) {
@@ -142,8 +153,7 @@ function FrSidebarContent({ currentPath }: { currentPath: string }) {
                             .sort((a, b) => b.month - a.month)
                             .map((m) => {
                               const monthStr = String(m.month).padStart(2, "0");
-                              const isActiveMonth =
-                                isActiveYear && active.month === monthStr;
+                              const isActiveMonth = isActiveYear && active.month === monthStr;
 
                               return (
                                 <li key={m.month}>
@@ -158,9 +168,7 @@ function FrSidebarContent({ currentPath }: { currentPath: string }) {
                                     <span className="text-slate-blue-700 dark:text-slate-blue-400 shrink-0 font-mono text-[0.65rem] font-semibold">
                                       {monthStr}
                                     </span>
-                                    <span className="min-w-0 truncate">
-                                      {MONTH_NAMES[m.month]}
-                                    </span>
+                                    <span className="min-w-0 truncate">{MONTH_NAMES[m.month]}</span>
                                     <span className="text-muted-foreground ml-auto shrink-0 text-[0.6rem]">
                                       {m.documentCount.toLocaleString()}
                                     </span>
@@ -330,7 +338,7 @@ function TitleSidebarContent({ sourceId, currentPath }: SidebarContentProps) {
                           ))}
                         </div>
                       ) : failedTitles.has(title.directory) ? (
-                        <div className="py-1.5 px-1">
+                        <div className="px-1 py-1.5">
                           <p className="text-muted-foreground text-xs">Failed to load.</p>
                           <button
                             onClick={() => {

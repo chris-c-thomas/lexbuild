@@ -8,11 +8,7 @@
 
 import { Command } from "commander";
 import { relative, resolve } from "node:path";
-import {
-  downloadFrDocuments,
-  downloadSingleFrDocument,
-  downloadFrBulk,
-} from "@lexbuild/fr";
+import { downloadFrDocuments, downloadSingleFrDocument, downloadFrBulk } from "@lexbuild/fr";
 import type { FrDocumentType } from "@lexbuild/fr";
 import {
   createSpinner,
@@ -47,10 +43,17 @@ interface DownloadFrOptions {
 export const downloadFrCommand = new Command("download-fr")
   .description("Download Federal Register XML and metadata")
   .option("-o, --output <dir>", "Download directory", "./downloads/fr")
-  .option("--source <source>", "Source: fr-api (default, per-document) or govinfo (bulk daily)", "fr-api")
+  .option(
+    "--source <source>",
+    "Source: fr-api (default, per-document) or govinfo (bulk daily)",
+    "fr-api",
+  )
   .option("--from <YYYY-MM-DD>", "Start date (inclusive)")
   .option("--to <YYYY-MM-DD>", "End date (inclusive, defaults to today)")
-  .option("--types <types>", "Document types: rule, proposed_rule, notice, presidential_document (fr-api only)")
+  .option(
+    "--types <types>",
+    "Document types: rule, proposed_rule, notice, presidential_document (fr-api only)",
+  )
   .option("--recent <days>", "Download last N days")
   .option("--document <number>", "Download a single document by number (fr-api only)")
   .option("--limit <n>", "Maximum number of documents (fr-api only)")
@@ -78,7 +81,9 @@ Document types (fr-api only):
   .action(async (options: DownloadFrOptions) => {
     // Validate source
     if (options.source !== "fr-api" && options.source !== "govinfo") {
-      console.error(error(`Invalid source "${options.source}". Use "fr-api" (default) or "govinfo".`));
+      console.error(
+        error(`Invalid source "${options.source}". Use "fr-api" (default) or "govinfo".`),
+      );
       process.exit(1);
     }
 
@@ -186,9 +191,8 @@ async function downloadGovinfo(
       to,
       concurrency,
       onProgress: (progress) => {
-        const pct = progress.totalDays > 0
-          ? Math.round((progress.downloaded / progress.totalDays) * 100)
-          : 0;
+        const pct =
+          progress.totalDays > 0 ? Math.round((progress.downloaded / progress.totalDays) * 100) : 0;
         spinner.text = `Downloading FR bulk XML (${formatNumber(progress.downloaded + progress.skipped)}/${formatNumber(progress.totalDays)}) ${pct}% ${progress.currentDate}`;
       },
     });
@@ -283,9 +287,10 @@ async function downloadFrApi(
       limit,
       concurrency,
       onProgress: (progress) => {
-        const pct = progress.totalDocuments > 0
-          ? Math.round((progress.documentsDownloaded / progress.totalDocuments) * 100)
-          : 0;
+        const pct =
+          progress.totalDocuments > 0
+            ? Math.round((progress.documentsDownloaded / progress.totalDocuments) * 100)
+            : 0;
         spinner.text = `Downloading FR documents (${formatNumber(progress.documentsDownloaded)}/${formatNumber(progress.totalDocuments)}) ${pct}% [${progress.currentChunk}] ${progress.currentDocument}`;
       },
     });

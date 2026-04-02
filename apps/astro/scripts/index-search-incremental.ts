@@ -422,7 +422,9 @@ async function indexFrIncremental(
           });
           indexed++;
         } catch (err) {
-          console.warn(`  Warning: skipping ${file}: ${err instanceof Error ? err.message : String(err)}`);
+          console.warn(
+            `  Warning: skipping ${file}: ${err instanceof Error ? err.message : String(err)}`,
+          );
         }
       }
     }
@@ -494,7 +496,9 @@ async function configureIndex(client: Meilisearch): Promise<void> {
       "publication_date",
     ]),
   );
-  await wait(await index.updateSortableAttributes(["title_number", "identifier", "publication_date"]));
+  await wait(
+    await index.updateSortableAttributes(["title_number", "identifier", "publication_date"]),
+  );
   await wait(
     await index.updateDisplayedAttributes([
       "id",
@@ -650,9 +654,7 @@ async function main(): Promise<void> {
     console.log("\nScanning FR documents...");
     const fr = await indexFrIncremental(resolvedDir, indexer, checkpoint, expectedIds);
     await indexer.flush();
-    console.log(
-      `  FR: ${fr.indexed} upserted, ${fr.skipped} skipped (unchanged since checkpoint)`,
-    );
+    console.log(`  FR: ${fr.indexed} upserted, ${fr.skipped} skipped (unchanged since checkpoint)`);
     totalIndexed += fr.indexed;
     totalSkipped += fr.skipped;
   }
@@ -660,7 +662,9 @@ async function main(): Promise<void> {
   // Prune orphaned documents (only safe when all sources are scanned)
   let pruned = 0;
   if (prune && sourceFilter) {
-    console.log("\n  --prune ignored: cannot prune when --source is set (would delete other sources)");
+    console.log(
+      "\n  --prune ignored: cannot prune when --source is set (would delete other sources)",
+    );
   } else if (prune) {
     pruned = await pruneOrphans(client, expectedIds);
   }

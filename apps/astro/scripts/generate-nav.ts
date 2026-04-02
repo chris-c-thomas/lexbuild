@@ -485,7 +485,8 @@ async function generateFrNav(contentDir: string, outDir: string): Promise<void> 
           const fm = raw.slice(4, endIdx);
 
           const docNum = extractYamlField(fm, "document_number") || file.replace(/\.md$/, "");
-          const title = extractYamlField(fm, "section_name") || extractYamlField(fm, "title") || docNum;
+          const title =
+            extractYamlField(fm, "section_name") || extractYamlField(fm, "title") || docNum;
           const docType = extractYamlField(fm, "document_type") || "unknown";
           const pubDate = extractYamlField(fm, "publication_date") || `${yearDir}-${monthDir}`;
           const agencyRaw = extractYamlField(fm, "agency") || "";

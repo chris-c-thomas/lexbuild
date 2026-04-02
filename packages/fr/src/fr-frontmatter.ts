@@ -86,8 +86,9 @@ export function buildFrFrontmatter(
   const documentNumber = jsonMeta?.document_number ?? xmlMeta.documentNumber ?? "";
   const subject = jsonMeta?.title ?? xmlMeta.subject ?? node.heading ?? "";
   const publicationDate = jsonMeta?.publication_date ?? xmlMeta.publicationDate ?? "";
-  const documentType =
-    jsonMeta ? normalizeDocumentType(jsonMeta.type) : xmlMeta.documentTypeNormalized;
+  const documentType = jsonMeta
+    ? normalizeDocumentType(jsonMeta.type)
+    : xmlMeta.documentTypeNormalized;
 
   // Build agencies list
   let agencies: string[] | undefined;
@@ -115,8 +116,7 @@ export function buildFrFrontmatter(
   }
 
   // Primary agency for the existing `agency` field
-  const primaryAgency =
-    agencies && agencies.length > 0 ? agencies[0] : undefined;
+  const primaryAgency = agencies && agencies.length > 0 ? agencies[0] : undefined;
 
   // FR citation
   const frCitation = jsonMeta?.citation;

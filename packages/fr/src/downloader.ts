@@ -290,7 +290,11 @@ async function downloadPool(
   docs: FrDocumentJsonMeta[],
   concurrency: number,
   outputDir: string,
-  onComplete: (doc: FrDocumentJsonMeta, result: FrDownloadedFile | null, error: string | null) => void,
+  onComplete: (
+    doc: FrDocumentJsonMeta,
+    result: FrDownloadedFile | null,
+    error: string | null,
+  ) => void,
 ): Promise<void> {
   let nextIndex = 0;
 
@@ -381,17 +385,13 @@ function buildMonthChunks(from: string, to: string): Array<{ from: string; to: s
     const chunkStart = current.toISOString().slice(0, 10);
 
     // End of this month
-    const monthEnd = new Date(
-      Date.UTC(current.getUTCFullYear(), current.getUTCMonth() + 1, 0),
-    );
+    const monthEnd = new Date(Date.UTC(current.getUTCFullYear(), current.getUTCMonth() + 1, 0));
     const chunkEnd = monthEnd <= end ? monthEnd.toISOString().slice(0, 10) : to;
 
     chunks.push({ from: chunkStart, to: chunkEnd });
 
     // Move to first day of next month
-    current = new Date(
-      Date.UTC(current.getUTCFullYear(), current.getUTCMonth() + 1, 1),
-    );
+    current = new Date(Date.UTC(current.getUTCFullYear(), current.getUTCMonth() + 1, 1));
   }
 
   return chunks;
@@ -422,12 +422,16 @@ async function fetchWithRetry(url: string, attempt = 0): Promise<Response> {
   if (response.ok) return response;
 
   // Retry on transient HTTP errors
-  if ((response.status === 429 || response.status === 503 || response.status === 504) && attempt < MAX_RETRIES) {
+  if (
+    (response.status === 429 || response.status === 503 || response.status === 504) &&
+    attempt < MAX_RETRIES
+  ) {
     const retryAfter = response.headers.get("Retry-After");
     const parsedRetry = retryAfter ? parseInt(retryAfter, 10) : NaN;
-    const delay = !isNaN(parsedRetry) && parsedRetry > 0
-      ? parsedRetry * 1000
-      : RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
+    const delay =
+      !isNaN(parsedRetry) && parsedRetry > 0
+        ? parsedRetry * 1000
+        : RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
     console.warn(
       `HTTP ${response.status} for ${url}. Retrying in ${delay}ms (attempt ${attempt + 1}/${MAX_RETRIES})...`,
     );
