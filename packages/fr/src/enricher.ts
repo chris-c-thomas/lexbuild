@@ -224,7 +224,8 @@ function applyEnrichment(fm: Record<string, unknown>, doc: FrDocumentJsonMeta): 
   }
 
   if (doc.agencies && doc.agencies.length > 0) {
-    fm["agency"] = doc.agencies[0]!.name;
+    const [primary] = doc.agencies;
+    if (primary) fm["agency"] = primary.name;
     fm["agencies"] = doc.agencies.map((a) => a.name);
   }
 
