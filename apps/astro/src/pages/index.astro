@@ -79,8 +79,15 @@ Amendment by  applicable with respect to group health plans for plan years begin
 
 Secretary authorized, effective , to promulgate regulations wherever provisions of this subchapter call for the promulgation of regulations, see .`;
 
-const highlightedYaml = await highlightYaml(sampleYaml);
-const highlightedMarkdown = await highlightMarkdown(sampleMarkdown);
+let highlightedYaml: string;
+let highlightedMarkdown: string;
+try {
+  highlightedYaml = await highlightYaml(sampleYaml);
+  highlightedMarkdown = await highlightMarkdown(sampleMarkdown);
+} catch {
+  highlightedYaml = `<pre><code>${sampleYaml}</code></pre>`;
+  highlightedMarkdown = `<pre><code>${sampleMarkdown}</code></pre>`;
+}
 
 const siteUrl = import.meta.env.SITE_URL ?? "https://lexbuild.dev";
 const seo: PageSEO = {
