@@ -25,24 +25,22 @@
 
 ## Overview
 
-The [United States Code](https://uscode.house.gov/) is the official codification of federal statutory law, organized into 54 titles. It is available as [USLM XML](https://github.com/usgpo/uslm) from the [Office of the Law Revision Counsel](https://uscode.house.gov/about_office.xhtml) (OLRC).
+The full text of U.S. federal law is publicly available from official government sources. The [U.S. Code](https://uscode.house.gov/) contains 54 titles of statutory law published by the [Office of the Law Revision Counsel](https://uscode.house.gov/about_office.xhtml). The [Electronic Code of Federal Regulations](https://www.ecfr.gov/) (eCFR) contains 50 titles of federal regulations updated daily. The [Federal Register](https://www.federalregister.gov/) publishes roughly 30,000 new documents each year including rules, proposed rules, notices, and presidential documents.
 
-The [Code of Federal Regulations](https://www.govinfo.gov/app/collection/cfr/) (CFR) is the official codification of federal administrative regulations, organized into 50 titles. The [Electronic Code of Federal Regulations](https://www.ecfr.gov/) (eCFR) is a continuously updated editorial compilation incorporating changes as they appear in the [Federal Register](https://www.federalregister.gov/). eCFR XML is available from the [ecfr.gov API](https://www.ecfr.gov/api/versioner/v1/titles) (daily-updated) and [GovInfo](https://www.govinfo.gov/bulkdata/ECFR) (bulk data).
+These sources are available in structured formats but they are complex and vary significantly from one source to the next. Working with them directly takes real effort.
 
-Both formats are dense and deeply nested, making them difficult to work with directly.
-
-LexBuild transforms this XML into per-section Markdown files with YAML frontmatter, predictable file paths, and content sized for typical embedding model context windows, making the full corpus of federal law and regulations accessible to LLMs, vector databases, and legal research tools.
+LexBuild handles the downloading and conversion. It produces per-section Markdown files with YAML frontmatter, predictable file paths, and content sized for typical context windows. The goal is to make the full corpus of federal law and regulations accessible to LLMs, RAG pipelines, vector databases, and legal research tools.
 
 ---
 
 ## Sources
 
-| Source | Package | Download From | Format | Update Frequency | Notes |
-|--------|---------|---------------|------------|------------------|-------|
-| U.S. Code | [`@lexbuild/usc`](packages/usc/) | [uscode.house.gov](https://uscode.house.gov/download/download.shtml) | USLM 1.0 XML | Irregular | 54 titles. Release point auto-detected from OLRC |
-| eCFR (default) | [`@lexbuild/ecfr`](packages/ecfr/) | [ecfr.gov](https://www.ecfr.gov/api/versioner/v1/titles) | GPO/SGML XML | Daily | 50 titles. Point-in-time support via `--date` flag |
-| eCFR (fallback) | [`@lexbuild/ecfr`](packages/ecfr/) | [govinfo.gov](https://www.govinfo.gov/bulkdata/ECFR) | GPO/SGML XML | Irregular | Bulk XML. Updates per-title as regulations change |
-| Federal Register | [`@lexbuild/fr`](packages/fr/) | [federalregister.gov](https://www.federalregister.gov/developers/documentation/api/v1) | GPO/SGML XML | Daily | ~30k docs/yr. Per-document XML + JSON metadata |
+| Source | Package | Format | Update Frequency | Notes |
+|--------|---------|--------|------------------|-------|
+| [U.S. Code](https://uscode.house.gov/download/download.shtml) | [`@lexbuild/usc`](packages/usc/) | USLM 1.0 XML | Irregular | 54 titles. Release point auto-detected from OLRC |
+| [eCFR](https://www.ecfr.gov/api/versioner/v1/titles) (default) | [`@lexbuild/ecfr`](packages/ecfr/) | GPO/SGML XML | Daily | 50 titles. Point-in-time support via `--date` flag |
+| [eCFR](https://www.govinfo.gov/bulkdata/ECFR) (fallback) | [`@lexbuild/ecfr`](packages/ecfr/) | GPO/SGML XML | Irregular | Bulk XML. Updates per-title as regulations change |
+| [Federal Register](https://www.federalregister.gov/developers/documentation/api/v1) | [`@lexbuild/fr`](packages/fr/) | GPO/SGML XML | Daily | ~30k docs/yr. Per-document XML + JSON metadata |
 
 ---
 
