@@ -147,21 +147,20 @@ if [ "$SKIP_DEPLOY" = true ]; then
   exit 0
 fi
 
-RSYNC_OPTS=(-avz --checksum)
-
 # Step 5: Rsync content + nav + sitemaps
 echo "--- Step 5/6: Syncing to VPS"
 
 if [ -d "output/fr" ]; then
   echo "    FR documents"
   ssh "$VPS_HOST" "mkdir -p ${CONTENT_DEST}/fr/documents"
-  rsync "${RSYNC_OPTS[@]}" output/fr/ "${VPS_HOST}:${CONTENT_DEST}/fr/documents/"
+  # mtime+size comparison (not --checksum) — FR updates are additive, no need to hash 770k+ files
+  rsync -avz output/fr/ "${VPS_HOST}:${CONTENT_DEST}/fr/documents/"
 fi
 
 if [ -d "apps/astro/public/nav" ]; then
   echo "    Nav JSON"
-  rsync "${RSYNC_OPTS[@]}" --delete apps/astro/public/nav/ "${VPS_HOST}:${NAV_DEST}/"
-  rsync "${RSYNC_OPTS[@]}" --delete apps/astro/public/nav/ "${VPS_HOST}:~/lexbuild/apps/astro/dist/client/nav/"
+  rsync -avz --delete apps/astro/public/nav/ "${VPS_HOST}:${NAV_DEST}/"
+  rsync -avz --delete apps/astro/public/nav/ "${VPS_HOST}:~/lexbuild/apps/astro/dist/client/nav/"
 fi
 
 HAVE_SITEMAPS=false

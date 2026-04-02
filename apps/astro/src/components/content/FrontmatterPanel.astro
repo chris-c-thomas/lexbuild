@@ -43,6 +43,9 @@ if (source === "fr") {
   if (frontmatter.agencies && frontmatter.agencies.length > 0) {
     fields.push({ label: "Agencies", value: frontmatter.agencies.join(", ") });
   }
+  if (frontmatter.fr_action) {
+    fields.push({ label: "Action", value: frontmatter.fr_action });
+  }
   if (frontmatter.effective_date) {
     fields.push({ label: "Effective", value: frontmatter.effective_date });
   }
@@ -74,6 +77,9 @@ if (isSection && frontmatter.source_credit) {
 }
 if (frontmatter.authority) {
   fullWidthFields.push({ label: "Authority", value: frontmatter.authority });
+}
+if (frontmatter.cfr_references && frontmatter.cfr_references.length > 0) {
+  fullWidthFields.push({ label: "CFR References", value: frontmatter.cfr_references.join(", ") });
 }
 if (frontmatter.docket_ids && frontmatter.docket_ids.length > 0) {
   fullWidthFields.push({ label: "Docket IDs", value: frontmatter.docket_ids.join(", ") });

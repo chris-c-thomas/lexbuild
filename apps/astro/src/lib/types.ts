@@ -83,6 +83,7 @@ export interface ContentFrontmatter {
   fr_volume?: number;
   publication_date?: string;
   agencies?: string[];
+  cfr_references?: string[];
   docket_ids?: string[];
   rin?: string;
   effective_date?: string;
