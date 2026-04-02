@@ -1,52 +1,128 @@
 # Architecture
 
-LexBuild is a layered monorepo that separates format-agnostic infrastructure from source-specific conversion logic. The architecture is designed to scale horizontally — each new legal source becomes its own package while sharing a common core.
+LexBuild converts U.S. legal source XML into structured Markdown. The CLI downloads source data, routes it through source-specific parsers and a shared core engine, and writes per-section `.md` files with YAML frontmatter.
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│  Layer 3: Applications & CLI                                        │
-│                                                                     │
-│  @lexbuild/cli                        apps/astro                    │
-│  ┌──────────────────────────┐         ┌──────────────────────────┐  │
-│  │  download-usc            │         │  Astro 6 SSR site        │  │
-│  │  convert-usc             │         │  (lexbuild.dev)          │  │
-│  │  download-ecfr           │         │                          │  │
-│  │  convert-ecfr            │         │  Consumes output files,  │  │
-│  │  list-release-points     │         │  not packages            │  │
-│  └──────────┬───────────────┘         └──────────────────────────┘  │
-│             │                                                       │
-├─────────────┼───────────────────────────────────────────────────────┤
-│  Layer 2:   │ Source Packages                                       │
-│             │                                                       │
-│  ┌──────────┴──────────┐  ┌─────────────────────┐  ┌────────────┐  │
-│  │  @lexbuild/usc      │  │  @lexbuild/ecfr     │  │  future    │  │
-│  │                     │  │                     │  │  packages  │  │
-│  │  OLRC downloader    │  │  eCFR API/govinfo   │  │  ...       │  │
-│  │  Conversion pipeline│  │  downloader         │  │            │  │
-│  │  (uses core's       │  │  EcfrASTBuilder     │  │            │  │
-│  │   ASTBuilder)       │  │  Conversion pipeline│  │            │  │
-│  └──────────┬──────────┘  └──────────┬──────────┘  └─────┬──────┘  │
-│             │                        │                    │         │
-├─────────────┼────────────────────────┼────────────────────┼─────────┤
-│  Layer 1:   │ Core Infrastructure    │                    │         │
-│             │                        │                    │         │
-│  ┌──────────┴────────────────────────┴────────────────────┴──────┐  │
-│  │  @lexbuild/core                                              │  │
-│  │                                                              │  │
-│  │  XML Parser (SAX)  ·  AST Builder (USLM)  ·  AST Types      │  │
-│  │  Markdown Renderer ·  Frontmatter Generator                  │  │
-│  │  Link Resolver     ·  Resilient File I/O                     │  │
-│  └──────────────────────────────────────────────────────────────┘  │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
+                        @lexbuild/cli
+                 Orchestrates the full pipeline
+               Download → Parse → Convert → Write
+                              │
+              ┌───────────────┼───────────────┐
+              │         CLI DEPENDS ON        │
+              ▼               ▼               ▼
+
+  SOURCE XML          CORE ENGINE                    OUTPUT
+  ──────────          ───────────                    ──────
+
+  USLM 1.0 XML       @lexbuild/core                 Structured Markdown
+  OLRC                ┌─────────────────────────┐    ┌────────────────────┐
+  uscode.house.gov    │                         │    │                    │
+                      │  SAX Parse → Typed AST  │    │  YAML frontmatter  │
+  eCFR GPO/SGML       │      → Render           │    │  + per-section     │
+  ecfr.gov            │                         │    │  .md files         │
+                      │  Frontmatter · Links    │    │                    │
+  FR GPO/SGML         │  Metadata · File I/O    │    └────────────────────┘
+  federalregister.gov └─────────────────────────┘
+                              ▲
+                       PARSERS USE
+                              │
+                      SOURCE PARSERS
+                      ──────────────
+
+                      @lexbuild/usc
+                      USLM schema → AST builder
+
+                      @lexbuild/ecfr
+                      eCFR GPO/SGML → AST builder
+
+                      @lexbuild/fr
+                      FR GPO/SGML → AST builder
+                      + API enricher
+
+                      @lexbuild/<source>
+                      New schema → AST builder
 ```
 
-**Three layers:**
+## Three Layers
 
-1. **Core Infrastructure** (`@lexbuild/core`) — Format-agnostic XML parsing, AST construction, Markdown rendering, frontmatter generation, cross-reference link resolution, and resilient file I/O. Shared by all source packages.
+### Layer 1: Core Infrastructure
 
-2. **Source Packages** (`@lexbuild/usc`, `@lexbuild/ecfr`) — Source-specific conversion logic. Each package orchestrates the pipeline for its source's XML format: download, parse, build AST, render, write files. Source packages depend only on core, never on each other.
+[`@lexbuild/core`](packages/core/) provides format-agnostic building blocks shared by all source packages:
 
-3. **Applications & CLI** (`@lexbuild/cli`, `apps/astro/`) — User-facing tools. The CLI delegates all heavy lifting to source packages. The Astro app consumes the converted output files directly — it has no code dependency on any `@lexbuild/*` package.
+- **XML Parser** — Streaming SAX parser (via `saxes`) that keeps memory bounded even for 100MB+ XML files
+- **AST Types** — Typed node hierarchy: levels, content, inline, notes, tables, TOC
+- **Markdown Renderer** — AST → Markdown conversion with configurable heading offsets, link styles, and note filtering
+- **Frontmatter Generator** — Ordered YAML frontmatter from structured metadata
+- **Link Resolver** — Cross-reference resolution with relative paths, canonical URLs, or plaintext fallbacks
+- **Resilient File I/O** — `writeFile`/`mkdir` wrappers with exponential backoff on file descriptor exhaustion
 
-For the full architecture documentation, see [`docs/architecture/`](docs/architecture/)
+### Layer 2: Source Packages
+
+Each source package handles one XML format's complete pipeline: download, parse, build AST, and convert to Markdown. Source packages depend only on core, never on each other.
+
+| Package | Source | XML Format | Download Sources |
+|---------|--------|------------|-----------------|
+| [`@lexbuild/usc`](packages/usc/) | U.S. Code | USLM 1.0 | OLRC bulk zip |
+| [`@lexbuild/ecfr`](packages/ecfr/) | Code of Federal Regulations | eCFR GPO/SGML | eCFR API, govinfo bulk |
+| [`@lexbuild/fr`](packages/fr/) | Federal Register | FR GPO/SGML + JSON | FederalRegister.gov API, govinfo bulk |
+
+Each source package provides:
+
+- **Downloader** — Fetches source data from official APIs or bulk endpoints
+- **AST Builder** — SAX event handler that constructs typed AST nodes from the source's XML schema
+- **Converter** — Orchestrates the pipeline: discover files → parse XML → build AST → render Markdown → write output
+
+`@lexbuild/fr` additionally provides an **enricher** that patches YAML frontmatter in existing `.md` files with metadata from the FederalRegister.gov API, without re-parsing XML or re-rendering Markdown.
+
+### Layer 3: Applications & CLI
+
+| Package | Purpose |
+|---------|---------|
+| [`@lexbuild/cli`](packages/cli/) | Published npm binary. Thin orchestration layer that delegates to source packages. |
+| [`apps/astro/`](apps/astro/) | Web application at [lexbuild.dev](https://lexbuild.dev). Consumes `.md` output files — no code dependency on any `@lexbuild/*` package. |
+
+## Conversion Pipeline
+
+The core pipeline is the same for every source:
+
+```
+Source XML → SAX events → Source-specific AST Builder → Typed AST nodes
+  → Core Markdown Renderer → YAML frontmatter + Markdown body → .md file
+```
+
+1. **Download** — Fetch XML (and optionally JSON metadata) from official sources
+2. **Parse** — Stream XML through the SAX parser, emitting events to a source-specific AST builder
+3. **Build AST** — The builder maintains a stack of frames, constructing typed nodes. When a complete unit (section, document) closes, it emits the subtree via callback and releases memory.
+4. **Render** — The core renderer walks the AST and produces Markdown with YAML frontmatter. Link resolution, note filtering, and heading offsets are applied at this stage.
+5. **Write** — Output files are written to a date-based (FR) or hierarchy-based (USC, eCFR) directory structure with `_meta.json` sidecar indexes.
+
+## Dependency Graph
+
+```
+@lexbuild/cli
+  ├── @lexbuild/usc  → @lexbuild/core
+  ├── @lexbuild/ecfr → @lexbuild/core
+  └── @lexbuild/fr   → @lexbuild/core
+
+apps/astro (no package dependencies — consumes output files only)
+```
+
+Source packages are independent — they never import from each other. ESLint `no-restricted-imports` rules enforce this boundary. Adding a new source means creating a new `@lexbuild/<source>` package that depends only on core.
+
+## Adding New Sources
+
+The multi-source architecture is proven by three independent implementations with completely different XML schemas. Adding a new source follows the established pattern:
+
+1. Create `packages/<source>/` with a dependency on `@lexbuild/core`
+2. Implement a SAX-based AST builder for the source's XML schema
+3. Implement download and convert functions
+4. Add CLI commands (`download-<source>`, `convert-<source>`)
+5. Register the package in changesets and ESLint boundary rules
+
+See [`docs/development/extending.md`](docs/development/extending.md) for the full walkthrough.
+
+## Further Reading
+
+- [`docs/architecture/`](docs/architecture/) — Detailed architecture documentation
+- [`docs/packages/`](docs/packages/) — Per-package documentation
+- [`docs/reference/cli-reference.md`](docs/reference/cli-reference.md) — Complete CLI reference
