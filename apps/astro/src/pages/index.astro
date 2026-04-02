@@ -233,15 +233,15 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
         </div>
         <div class="mt-4 mb-1 flex flex-col gap-1.5">
           <span class="text-[15px] font-normal"
-            >Or download and convert a single title — like <a
+            >Download and convert a single title, such as <a
               href="/usc/title-29"
               class="text-slate-blue-700 hover:text-slate-blue-900 dark:text-slate-blue-400 dark:hover:text-slate-blue-200 font-medium"
-              >Title 29 (Labor)</a
-            >, <a
-              href="/usc/title-29/chapter-18"
+              >Title 29</a
+            >, which includes <a
+              href="/usc/title-29/chapter-18/section-1022"
               class="text-slate-blue-700 hover:text-slate-blue-900 dark:text-slate-blue-400 dark:hover:text-slate-blue-200 font-medium"
-              >Chapter 18 (Employee Retirement Income Security Program)</a
-            >, which includes <a href="/usc/title-29/chapter-18/section-1022" class="text-slate-blue-700 hover:text-slate-blue-900 dark:text-slate-blue-400 dark:hover:text-slate-blue-200 font-medium">Section 1022 (Summary plan description)</a> shown in the <a
+              >Section 1022</a
+            > as shown in the <a
               href="#sample-output"
               class="text-slate-blue-700 hover:text-slate-blue-900 dark:text-slate-blue-400 dark:hover:text-slate-blue-200 font-medium"
               >sample output</a
@@ -893,7 +893,35 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
       </div>
       <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div
-          class="border-slate-blue-300 bg-slate-blue-50 hover:border-slate-blue-500 dark:bg-muted dark:border-slate-blue-700 dark:hover:border-slate-blue-500 rounded-sm border border-dashed p-5 transition-colors"
+          class="border-slate-blue-300 bg-slate-blue-50 hover:border-slate-blue-500 dark:bg-muted dark:border-slate-blue-700 dark:hover:border-slate-blue-500 flex flex-col rounded-sm border border-dashed p-5 transition-colors"
+        >
+          <div
+            class="text-slate-blue-700 dark:text-slate-blue-300 mb-1.5 font-mono text-[13px] font-medium"
+          >
+            @lexbuild/plaw
+          </div>
+          <div class="mb-1 text-[13px] font-semibold">Public Laws &amp; Statutes at Large</div>
+          <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
+            Enrolled bills and session laws from GovInfo.gov.
+          </p>
+          <div class="text-slate-blue-700 mt-auto pt-2.5 font-mono text-[12px] font-semibold">Planned</div>
+        </div>
+        <div
+          class="border-slate-blue-300 bg-slate-blue-50 hover:border-slate-blue-500 dark:bg-muted dark:border-slate-blue-700 dark:hover:border-slate-blue-500 flex flex-col rounded-sm border border-dashed p-5 transition-colors"
+        >
+          <div
+            class="text-slate-blue-700 dark:text-slate-blue-300 mb-1.5 font-mono text-[13px] font-medium"
+          >
+            @lexbuild/bills
+          </div>
+          <div class="mb-1 text-[13px] font-semibold">Congressional Bills</div>
+          <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
+            Bill text and amendments from Congress.gov.
+          </p>
+          <div class="text-slate-blue-700 mt-auto pt-2.5 font-mono text-[12px] font-semibold">Planned</div>
+        </div>
+        <div
+          class="border-slate-blue-300 bg-slate-blue-50 hover:border-slate-blue-500 dark:bg-muted dark:border-slate-blue-700 dark:hover:border-slate-blue-500 flex flex-col rounded-sm border border-dashed p-5 transition-colors"
         >
           <div
             class="text-slate-blue-700 dark:text-slate-blue-300 mb-1.5 font-mono text-[13px] font-medium"
@@ -902,12 +930,14 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           </div>
           <div class="mb-1 text-[13px] font-semibold">Annual CFR</div>
           <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
-            Official annual edition from govinfo.
+            Official annual edition from GovInfo.gov.
           </p>
-          <div class="text-slate-blue-700 mt-2.5 font-mono text-[12px] font-semibold">Planned</div>
+          <div class="text-slate-blue-700 mt-auto pt-2.5 font-mono text-[12px] font-semibold">Planned</div>
         </div>
+      </div>
+      <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div
-          class="border-slate-blue-300 bg-slate-blue-50 hover:border-slate-blue-500 dark:bg-muted dark:border-slate-blue-700 dark:hover:border-slate-blue-500 rounded-sm border border-dashed p-5 transition-colors sm:col-span-2"
+          class="border-slate-blue-300 bg-slate-blue-50 hover:border-slate-blue-500 dark:bg-muted dark:border-slate-blue-700 dark:hover:border-slate-blue-500 flex flex-col rounded-sm border border-dashed p-5 transition-colors"
         >
           <div
             class="text-slate-blue-700 dark:text-slate-blue-300 mb-1.5 font-mono text-[13px] font-medium"
@@ -918,10 +948,37 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
             State-level statutory code parsers. Same pipeline pattern, broader coverage.
           </p>
-          <div class="text-slate-blue-700 mt-2.5 font-mono text-[12px] font-semibold">Planned</div>
+          <div class="text-slate-blue-700 mt-auto pt-2.5 font-mono text-[12px] font-semibold">Planned</div>
+        </div>
+        <div
+          class="border-slate-blue-300 bg-slate-blue-50 hover:border-slate-blue-500 dark:bg-muted dark:border-slate-blue-700 dark:hover:border-slate-blue-500 flex flex-col rounded-sm border border-dashed p-5 transition-colors"
+        >
+          <div
+            class="text-slate-blue-700 dark:text-slate-blue-300 mb-1.5 font-mono text-[13px] font-medium"
+          >
+            @lexbuild/&lt;municipality&gt;
+          </div>
+          <div class="mb-1 text-[13px] font-semibold">Municipal Code</div>
+          <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
+            City and county ordinances, such as the Municipal Code of Chicago.
+          </p>
+          <div class="text-slate-blue-700 mt-auto pt-2.5 font-mono text-[12px] font-semibold">Planned</div>
         </div>
       </div>
-      <div class="mt-5 flex justify-center">
+      <div class="mt-8 flex justify-center gap-3">
+        <a
+          href="https://github.com/chris-c-thomas/LexBuild/tree/main/packages"
+          target="_blank"
+          rel="noopener"
+          class="text-slate-blue-700 border-slate-blue-200 hover:border-slate-blue-400 hover:bg-slate-blue-50 dark:bg-slate-blue-900 dark:text-slate-blue-200 dark:border-slate-blue-700 dark:hover:border-slate-blue-500 dark:hover:bg-slate-blue-800 inline-flex cursor-pointer items-center gap-2 rounded-sm border bg-white px-5 py-2.5 text-sm font-semibold transition-all duration-150"
+        >
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
+            ></path>
+          </svg>
+          View on GitHub
+        </a>
         <a
           href="https://www.npmjs.com/org/lexbuild"
           target="_blank"
