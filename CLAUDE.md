@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-LexBuild converts U.S. legal XML into structured Markdown for AI/RAG ingestion. It supports multiple source formats: U.S. Code (USLM schema), eCFR (GPO/SGML-derived XML), and Federal Register (FederalRegister.gov API), with an architecture designed for additional sources (annual CFR, Congressional bills, state statutes). It is a monorepo built with Turborepo, pnpm workspaces, TypeScript, and Node.js.
+LexBuild converts U.S. legal source data into structured Markdown for AI/RAG ingestion. It currently supports federal sources: U.S. Code (USLM schema), eCFR (GPO/SGML-derived XML), and Federal Register (FederalRegister.gov API), with an architecture designed for additional sources at the federal (public laws, congressional bills), state, and local level. It is a monorepo built with Turborepo, pnpm workspaces, TypeScript, and Node.js.
 
 ## Repository Structure
 

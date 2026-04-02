@@ -212,6 +212,10 @@ Initialized with radix-nova preset, zinc theme. Components in `src/components/ui
 - **gray-matter caching bugs**: (1) In SSR, the `.matter` property is a lazy getter consumed by `.data` access — on repeat requests the cached object returns `undefined` for `.matter`. (2) In batch scripts, caching causes unbounded RSS growth. Always use `matter(raw, { cache: false })` everywhere.
 - **React hydration with localStorage**: Don't read localStorage in `useState()` initializer — SSR renders the default, client reads stored value, causing hydration mismatch. Use `useLayoutEffect` to apply stored value after hydration but before paint.
 - **Error pages must be at `src/pages/` root** — Astro's 404/500 auto-routing only works for `src/pages/404.astro` and `src/pages/500.astro`. Subdirectories would break auto-routing.
+- **Sidebar auto-expand uses `userToggled` flag**: Both `FrSidebarContent` and `TitleSidebarContent` use a `userToggled` one-way latch to prevent auto-expand from fighting manual collapse. Once set to `true`, auto-expand is permanently disabled for that component lifecycle.
+- **Sidebar fetch errors use dedicated error states**: `titlesError`/`yearsError`/`failedTitles` track fetch failures separately from empty data. Never swallow fetch errors into empty arrays — show "Failed to load" instead of misleading "No titles found".
+- **`fetch()` must check `res.ok`**: `fetch` does not reject on HTTP errors. Always check `res.ok` before calling `res.json()`, otherwise a 404 produces a cryptic JSON parse error.
+- **Homepage sample output has three copies**: The `sampleYaml` and `sampleMarkdown` template literals drive the Shiki-highlighted tabs, but the "Preview" tabs use hardcoded HTML. When changing the sample section, update all three: frontmatter data, markdown data, AND the rendered HTML preview grids.
 
 ## SEO
 
