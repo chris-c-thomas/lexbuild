@@ -478,10 +478,10 @@ dump_and_push() {
       --master-key "$MEILI_MASTER_KEY" &
     MEILI_PID=$!
 
-    # Wait for import to complete — poll for port binding first
+    # Wait for port binding first (import starts, then server binds)
     echo "--- Waiting for Meilisearch to bind port 7700..."
-    IMPORT_TIMEOUT=600  # 10 minutes max for large indexes (1M+ docs)
-    for i in $(seq 1 $IMPORT_TIMEOUT); do
+    BIND_TIMEOUT=600
+    for i in $(seq 1 $BIND_TIMEOUT); do
       if ss -tlnp | grep -q ':7700 '; then
         echo "--- Meilisearch is listening on port 7700 after ~${i}s"
         break
@@ -493,22 +493,45 @@ dump_and_push() {
       sleep 1
     done
 
-    # Wait for document import to finish — poll until isIndexing is false and docs > 0
-    echo "--- Waiting for document import to complete (polling every 5s)..."
-    INDEX_WAIT_TIMEOUT=600  # 10 minutes for document indexing
-    for i in $(seq 1 5 $INDEX_WAIT_TIMEOUT); do
+    # Wait for document import to finish. Meilisearch reports 0 docs and
+    # isIndexing=true throughout the import, then jumps to the full count
+    # atomically. Poll until docs > 0 OR the process exits (crash/OOM).
+    # 60-minute timeout for 1M+ doc imports on memory-constrained VPS.
+    echo "--- Waiting for document import to complete (polling every 10s, up to 60min)..."
+    INDEX_WAIT_TIMEOUT=3600
+    ELAPSED=0
+    while [ "$ELAPSED" -lt "$INDEX_WAIT_TIMEOUT" ]; do
+      if ! kill -0 "$MEILI_PID" 2>/dev/null; then
+        echo "ERROR: Meilisearch import process died (likely OOM). Check: dmesg | tail"
+        exit 1
+      fi
+
       STATS=$(curl -sf http://127.0.0.1:7700/indexes/lexbuild/stats \
         -H "Authorization: Bearer ${MEILI_MASTER_KEY}" 2>/dev/null || echo "{}")
       DOC_COUNT=$(echo "$STATS" | python3 -c "import sys,json; print(json.load(sys.stdin).get('numberOfDocuments', 0))" 2>/dev/null || echo "0")
       IS_INDEXING=$(echo "$STATS" | python3 -c "import sys,json; print(json.load(sys.stdin).get('isIndexing', True))" 2>/dev/null || echo "True")
 
-      if [ "$IS_INDEXING" = "False" ] && [ "$DOC_COUNT" -gt 0 ] 2>/dev/null; then
-        echo "--- Import complete: $DOC_COUNT documents indexed after ~${i}s"
+      if [ "$DOC_COUNT" -gt 0 ] 2>/dev/null; then
+        echo "--- Import complete: $DOC_COUNT documents indexed after ~${ELAPSED}s"
+        # Wait for any final indexing to settle
+        if [ "$IS_INDEXING" = "True" ]; then
+          echo "    Waiting for indexing to finish..."
+          sleep 10
+        fi
         break
       fi
-      echo "    ... $DOC_COUNT docs, isIndexing=$IS_INDEXING (${i}s elapsed)"
-      sleep 5
+
+      MEM=$(ps -o rss= -p "$MEILI_PID" 2>/dev/null | awk '{printf "%.0fMB", $1/1024}')
+      echo "    ... $DOC_COUNT docs, isIndexing=$IS_INDEXING, meili RSS=$MEM (${ELAPSED}s elapsed)"
+      sleep 10
+      ELAPSED=$((ELAPSED + 10))
     done
+
+    if [ "$DOC_COUNT" -eq 0 ] 2>/dev/null; then
+      echo "ERROR: Import timed out after ${INDEX_WAIT_TIMEOUT}s with 0 documents."
+      kill "$MEILI_PID" 2>/dev/null || true
+      exit 1
+    fi
 
     # Kill the foreground Meilisearch process so PM2 can manage it
     kill "$MEILI_PID" 2>/dev/null || true
