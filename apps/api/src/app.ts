@@ -7,6 +7,9 @@ import { requestLogger } from "./middleware/request-logger.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { registerHealthRoutes } from "./routes/health.js";
 import { registerSourceRoutes } from "./routes/sources.js";
+import { registerUscRoutes } from "./routes/usc.js";
+import { registerCfrRoutes } from "./routes/cfr.js";
+import { registerFrRoutes } from "./routes/fr.js";
 
 /** Configuration for the Hono app factory. */
 export interface AppConfig {
@@ -34,6 +37,9 @@ export function createApp(config: AppConfig): OpenAPIHono {
   // Register route modules
   registerHealthRoutes(v1, db);
   registerSourceRoutes(v1, db);
+  registerUscRoutes(v1, db);
+  registerCfrRoutes(v1, db);
+  registerFrRoutes(v1, db);
 
   // OpenAPI spec
   v1.doc("/openapi.json", {
