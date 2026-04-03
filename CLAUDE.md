@@ -248,6 +248,9 @@ Note: identifiers use `/us/cfr/` (content type) not `/us/ecfr/` (data source). B
 - **`gray-matter` `cache` option not in TypeScript types**: The `{ cache: false }` option works at runtime but isn't in the type definitions. Use `as any` with an eslint-disable comment in typechecked code.
 - **`pnpm.onlyBuiltDependencies`**: Native packages like `better-sqlite3` need explicit approval in root `package.json` under `pnpm.onlyBuiltDependencies` to compile during install.
 - **Turborepo app task naming**: Apps excluded from default `build` need matching script names (e.g., `build:api` in both `turbo.json` and the app's `package.json`).
+- **Docker Meilisearch stores data at `data.ms/` inside the volume**: When tarring/extracting, use `-C /data/data.ms` not `-C /data`. Extracting at the wrong level causes "failed to infer database version" on the VPS.
+- **Docker volume profiles**: `MEILI_PROFILE=dev|full` selects volume (`meili-data-dev` or `meili-data-full`). Dev mode runs without master key (`MEILI_ENV=development`). Full mode requires `MEILI_MASTER_KEY` for VPS-compatible data.
+- **Commenting standard**: Follow `.claude/instructions/commenting-standard.md` — comments explain why, not what. No redundant comments. Exported APIs get docblocks. Internal code uses inline comments only for invariants, reasoning, performance, and edge cases. TODOs use `// TODO(lexbuild): Actionable description`.
 
 ## When Adding New Source Types
 

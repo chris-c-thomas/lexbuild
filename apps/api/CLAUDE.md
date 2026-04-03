@@ -102,3 +102,8 @@ lexbuild ingest ./output --db ./lexbuild.db --prune            # Remove deleted 
 - Batch upserts in SQLite transactions (default 1000 docs/batch)
 - WAL mode for concurrent read access
 - `gray-matter` with `{ cache: false }` to prevent memory leaks on 1M+ files
+
+## Common Pitfalls
+
+- **`better-sqlite3` requires build approval**: Must be listed in root `package.json` under `pnpm.onlyBuiltDependencies`. Without it, `pnpm install` skips native compilation and the module fails at runtime.
+- **`better-sqlite3` is platform-specific**: macOS binaries won't work on Linux. The VPS must run `pnpm install` or `pnpm rebuild better-sqlite3` after deployment.
