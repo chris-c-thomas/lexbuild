@@ -36,9 +36,9 @@ export function registerHealthRoutes(app: OpenAPIHono, db: Database.Database): v
       const count = db.prepare("SELECT count(*) as count FROM documents").get() as {
         count: number;
       };
-      const version = db
-        .prepare("SELECT value FROM schema_meta WHERE key = 'schema_version'")
-        .get() as { value: string };
+      const version = db.prepare("SELECT value FROM schema_meta WHERE key = 'schema_version'").get() as {
+        value: string;
+      };
       dbStatus = {
         connected: true,
         documents: count.count,

@@ -61,10 +61,5 @@ export type { LinkResolver, ParsedIdentifier } from "./markdown/links.js";
 export { writeFile, mkdir } from "./fs.js";
 
 // Database schema (shared between CLI ingest and Data API)
-export {
-  SCHEMA_VERSION,
-  DOCUMENTS_TABLE_SQL,
-  SCHEMA_META_TABLE_SQL,
-  INDEXES_SQL,
-} from "./db/schema.js";
+export { SCHEMA_VERSION, DOCUMENTS_TABLE_SQL, SCHEMA_META_TABLE_SQL, INDEXES_SQL } from "./db/schema.js";
 export type { DocumentRow } from "./db/schema.js";

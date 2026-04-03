@@ -14,21 +14,9 @@ import { createHash } from "node:crypto";
 import matter from "gray-matter";
 import Database from "better-sqlite3";
 import type { Database as DatabaseType } from "better-sqlite3";
-import {
-  SCHEMA_VERSION,
-  DOCUMENTS_TABLE_SQL,
-  SCHEMA_META_TABLE_SQL,
-  INDEXES_SQL,
-} from "@lexbuild/core";
+import { SCHEMA_VERSION, DOCUMENTS_TABLE_SQL, SCHEMA_META_TABLE_SQL, INDEXES_SQL } from "@lexbuild/core";
 import type { DocumentRow } from "@lexbuild/core";
-import {
-  createSpinner,
-  summaryBlock,
-  formatDuration,
-  formatNumber,
-  formatBytes,
-  error,
-} from "../ui.js";
+import { createSpinner, summaryBlock, formatDuration, formatNumber, formatBytes, error } from "../ui.js";
 
 /** Valid source types for the --source filter */
 type SourceFilter = "usc" | "ecfr" | "fr";
@@ -93,9 +81,7 @@ function initializeDatabase(dbPath: string): DatabaseType {
   }
 
   // Seed/verify schema version
-  const setVersion = db.prepare(
-    "INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)",
-  );
+  const setVersion = db.prepare("INSERT OR REPLACE INTO schema_meta (key, value) VALUES ('schema_version', ?)");
   const getVersion = db.prepare("SELECT value FROM schema_meta WHERE key = 'schema_version'");
 
   const row = getVersion.get() as { value: string } | undefined;
@@ -121,11 +107,7 @@ function initializeDatabase(dbPath: string): DatabaseType {
  * positive_law as 0/1, agency as first element of agencies array,
  * multi-value fields as JSON-stringified arrays.
  */
-function mapToDocumentRow(
-  filePath: string,
-  parsed: matter.GrayMatterFile<string>,
-  contentHash: string,
-): DocumentRow {
+function mapToDocumentRow(filePath: string, parsed: matter.GrayMatterFile<string>, contentHash: string): DocumentRow {
   const data = parsed.data as Record<string, unknown>;
   const identifier = data.identifier as string;
   const id = sanitizeId(identifier);
@@ -250,9 +232,7 @@ function walkMarkdownFiles(dir: string, contentDir: string): string[] {
  * Get the list of sources to process based on the --source filter.
  * Returns source names and their corresponding display labels.
  */
-function getSourcesToProcess(
-  sourceFilter: SourceFilter | undefined,
-): Array<{ source: SourceFilter; label: string }> {
+function getSourcesToProcess(sourceFilter: SourceFilter | undefined): Array<{ source: SourceFilter; label: string }> {
   const allSources: Array<{ source: SourceFilter; label: string }> = [
     { source: "usc", label: "USC" },
     { source: "ecfr", label: "eCFR" },
@@ -304,9 +284,7 @@ function ingestSource(
   let existingHashes: Map<string, string> | undefined;
   if (incremental) {
     existingHashes = new Map();
-    const hashQuery = db.prepare(
-      "SELECT file_path, content_hash FROM documents WHERE source = ?",
-    );
+    const hashQuery = db.prepare("SELECT file_path, content_hash FROM documents WHERE source = ?");
     const rows = hashQuery.all(source) as Array<{ file_path: string; content_hash: string }>;
     for (const row of rows) {
       existingHashes.set(row.file_path, row.content_hash);
@@ -391,11 +369,7 @@ function ingestSource(
  * (optionally filtered by source), checks if each exists on disk, and
  * deletes rows for missing files.
  */
-function pruneDeletedDocuments(
-  db: DatabaseType,
-  contentDir: string,
-  source: SourceFilter | undefined,
-): number {
+function pruneDeletedDocuments(db: DatabaseType, contentDir: string, source: SourceFilter | undefined): number {
   const query = source
     ? db.prepare("SELECT id, file_path FROM documents WHERE source = ?")
     : db.prepare("SELECT id, file_path FROM documents");
@@ -537,17 +511,9 @@ whose source files have been deleted.`,
         const spinner = createSpinner(`Ingesting ${label}`);
         spinner.start();
 
-        const counters = ingestSource(
-          db,
-          contentDir,
-          source,
-          label,
-          batchSize,
-          incremental,
-          (text) => {
-            spinner.text = text;
-          },
-        );
+        const counters = ingestSource(db, contentDir, source, label, batchSize, incremental, (text) => {
+          spinner.text = text;
+        });
 
         // Build per-source summary
         if (counters.total === 0) {
@@ -587,9 +553,7 @@ whose source files have been deleted.`,
       const dbSize = existsSync(dbPath) ? statSync(dbPath).size : 0;
 
       // Summary block
-      const summaryRows: [string, string][] = [
-        ["Total", `${formatNumber(totals.total)} documents`],
-      ];
+      const summaryRows: [string, string][] = [["Total", `${formatNumber(totals.total)} documents`]];
 
       if (incremental) {
         summaryRows.push(["New", formatNumber(totals.inserted)]);
