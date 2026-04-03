@@ -15,7 +15,8 @@ lexbuild/
 │   ├── fr/          # @lexbuild/fr — Federal Register converter and downloader
 │   └── cli/         # @lexbuild/cli — CLI binary (the published npm package users install)
 ├── apps/
-│   └── astro/       # LexBuild web app — Astro 6, SSR, browse U.S. Code + eCFR as Markdown
+│   ├── astro/       # LexBuild web app — Astro 6, SSR, browse U.S. Code + eCFR as Markdown
+│   └── api/         # @lexbuild/api — Data API (Hono, SQLite, Meilisearch proxy)
 ├── scripts/
 │   ├── deploy.sh           # Production deploy (code, content, or full remote pipeline)
 │   ├── setup-secrets.sh    # Initialize ~/.lexbuild-secrets on VPS
@@ -44,6 +45,7 @@ Each package and app has its own `CLAUDE.md` with architecture details, module s
 - [`packages/fr/CLAUDE.md`](packages/fr/CLAUDE.md) — Federal Register XML→AST→Markdown, document-centric structure, dual JSON+XML ingestion, API downloader
 - [`packages/cli/CLAUDE.md`](packages/cli/CLAUDE.md) — Commands, options, UI module, title parser, build config
 - [`apps/astro/CLAUDE.md`](apps/astro/CLAUDE.md) — Astro 6 SSR site, island architecture, multi-source content browser, deployment
+- [`apps/api/CLAUDE.md`](apps/api/CLAUDE.md) — Data API (Hono + SQLite + Meilisearch), endpoints, rate limiting, deployment
 
 ## Tech Stack
 
@@ -92,11 +94,18 @@ node packages/cli/dist/index.js list-release-points
 pnpm turbo dev:astro --filter=@lexbuild/astro      # Dev server (http://localhost:4321)
 pnpm turbo build:astro --filter=@lexbuild/astro    # Production build
 
+# Data API — NOT included in default `pnpm turbo build`
+pnpm turbo dev:api --filter=@lexbuild/api          # Dev server (http://localhost:4322)
+pnpm turbo build:api --filter=@lexbuild/api        # Production build
+
 # Deploy to production VPS (from monorepo root)
 ./scripts/deploy.sh                # Code only (git pull, build, pm2 reload)
 ./scripts/deploy.sh --content      # Code + rsync local output/ to VPS
 ./scripts/deploy.sh --content-only # Rsync only, no code deploy
 ./scripts/deploy.sh --remote       # Full pipeline on VPS (download + convert + build)
+./scripts/deploy.sh --api                        # Deploy API code (git pull, build:api, pm2 reload)
+./scripts/deploy.sh --api-db                     # Sync lexbuild.db to VPS + reload API
+./scripts/deploy.sh --api-full                   # API code + database sync + reload
 ./scripts/deploy.sh --search-docker              # Build search index in Docker, transfer to VPS
 ./scripts/deploy.sh --search-docker --source fr   # Incremental: index one source into existing volume
 ./scripts/deploy.sh --search-docker-seed          # Seed Docker volume from VPS (recover after volume loss)
@@ -115,6 +124,16 @@ The Astro app (`apps/astro/`) is deployed to a self-managed VPS (AWS Lightsail) 
 - **Excluded from `pnpm turbo build`** — no `build` script in its `package.json` (only `build:astro`). Prevents CI failures since the app requires content files that aren't in git.
 - **Excluded from changesets** — `"private": true` and listed in `.changeset/config.json` `ignore`.
 - **Content is gitignored** — `apps/astro/content/`, `public/nav/`, `public/sitemap.xml`, `*.highlighted.html` are all generated artifacts.
+
+### Data API
+
+The Data API (`apps/api/`) serves legal content programmatically at `https://lexbuild.dev/api/v1/`. Hono + SQLite + Meilisearch. See `apps/api/CLAUDE.md` for the full spec.
+
+- **Excluded from `pnpm turbo build`** — uses `build:api` (same pattern as Astro app)
+- **Excluded from changesets** — `"private": true`
+- **Two SQLite databases**: `lexbuild.db` (content, read-only, rebuilt by `lexbuild ingest`) and `lexbuild-keys.db` (API keys, read-write, persists across re-ingestion)
+- **`better-sqlite3` native bindings are platform-specific** — macOS binaries don't work on Linux. Run `pnpm install` on the VPS after code deployment.
+- **API port 4322 is not exposed in the Lightsail firewall** — traffic reaches the API through Caddy (ports 80/443). Same pattern as Meilisearch on 7700.
 
 ## Code Conventions
 
@@ -237,6 +256,15 @@ Note: identifiers use `/us/cfr/` (content type) not `/us/ecfr/` (data source). B
 - **Ora spinner text should NOT end with `...`**: The trailing dots conflict with ora's own dots animation. The spinner animation itself provides the "in progress" cue.
 - **Indexed array iteration with strict TypeScript**: `noUncheckedIndexedAccess` makes `arr[i]` return `T | undefined`, and `no-non-null-assertion` forbids `arr[i]!`. Use `for (const [i, item] of arr.entries())` to get typed values without assertions.
 - **Astro template expressions are plain JS, not TypeScript**: `new Map<string, T>()` and other generics in template `{}` expressions cause esbuild errors. Move complex typed logic to the `---` frontmatter section.
+- **Meilisearch dumps re-index on import**: Dumps are blueprints, not ready-to-use databases. Use Docker data directory transfer (`--search-docker`) instead — VPS import is instant.
+- **LMDB is architecture-dependent**: Meilisearch data directories from macOS won't work on Linux. Docker with `--platform linux/amd64` produces compatible data.
+- **SQLite is architecture-independent**: Unlike LMDB, SQLite `.db` files transfer between macOS and Linux without issues. SCP directly.
+- **`gray-matter` `cache` option not in TypeScript types**: The `{ cache: false }` option works at runtime but isn't in the type definitions. Use `as any` with an eslint-disable comment in typechecked code.
+- **`pnpm.onlyBuiltDependencies`**: Native packages like `better-sqlite3` need explicit approval in root `package.json` under `pnpm.onlyBuiltDependencies` to compile during install.
+- **Turborepo app task naming**: Apps excluded from default `build` need matching script names (e.g., `build:api` in both `turbo.json` and the app's `package.json`).
+- **Docker Meilisearch stores data at `data.ms/` inside the volume**: When tarring/extracting, use `-C /data/data.ms` not `-C /data`. Extracting at the wrong level causes "failed to infer database version" on the VPS.
+- **Docker volume profiles**: `MEILI_PROFILE=dev|full` selects volume (`meili-data-dev` or `meili-data-full`). Dev mode runs without master key (`MEILI_ENV=development`). Full mode requires `MEILI_MASTER_KEY` for VPS-compatible data.
+- **Commenting standard**: Follow `.claude/instructions/commenting-standard.md` — comments explain why, not what. No redundant comments. Exported APIs get docblocks. Internal code uses inline comments only for invariants, reasoning, performance, and edge cases. TODOs use `// TODO(lexbuild): Actionable description`.
 
 ## When Adding New Source Types
 

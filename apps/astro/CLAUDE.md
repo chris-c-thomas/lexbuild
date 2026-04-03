@@ -96,9 +96,20 @@ scripts/
 | `CONTENT_DIR` | `./content` | Root content directory |
 | `NAV_DIR` | `./public/nav` | Sidebar JSON directory |
 | `ENABLE_SEARCH` | `false` | Show search UI |
-| `MEILI_URL` | `http://127.0.0.1:7700` (dev) / `/search` (prod) | Meilisearch endpoint (starts with `/` = proxy mode) |
-| `MEILI_SEARCH_KEY` | — | Search-only API key |
+| `MEILI_URL` | `http://localhost:7711` (dev) / `/search` (prod) | Meilisearch endpoint (starts with `/` = proxy mode) |
+| `MEILI_SEARCH_KEY` | — | Search-only API key (empty in dev, populated in prod) |
 | `SITE_URL` | `https://lexbuild.dev` | Base URL for sitemap/OG |
+
+### Env Files
+
+| File | Purpose | Generated? |
+|---|---|---|
+| `.env.example` | Template for contributors (checked into git) | No |
+| `.env.local` | Local dev overrides (gitignored) | No — copy from `.env.example` |
+| `.env.production` | VPS production values (gitignored) | Yes — `deploy.sh` generates from `~/.lexbuild-secrets` on every deploy |
+| `.env.production.local` | Not used (placeholder for VPS overrides) | No |
+
+**`.env.production` is never manually maintained.** The deploy script regenerates it on every deploy. To change a production value, update `~/.lexbuild-secrets` on the VPS and redeploy.
 
 ## Route Resolution
 
@@ -197,8 +208,10 @@ Initialized with radix-nova preset, zinc theme. Components in `src/components/ui
 - **Caddy handles TLS.** Astro listens on HTTP localhost only.
 - **`rehype-sanitize` is critical.** Defense-in-depth against injection in Markdown content.
 - **PM2 reload not restart.** Use `pm2 reload lexbuild-astro --update-env` for zero-downtime.
-- **`ecosystem.config.cjs` manages 3 services**: `lexbuild-astro` (port 4321), `meilisearch` (port 7700), `uptime-kuma` (port 3001). Uptime Kuma is installed at `/srv/uptime-kuma`, not in the monorepo.
+- **`ecosystem.config.cjs` manages 4 services**: `lexbuild-astro` (port 4321), `meilisearch` (port 7700), `uptime-kuma` (port 3001), `lexbuild-api` (port 4322). Uptime Kuma is installed at `/srv/uptime-kuma`, not in the monorepo.
 - **Search index deployment uses Docker**: `./scripts/deploy.sh --search-docker` builds the Meilisearch index locally in a Docker container (linux/amd64), then transfers the pre-built data directory to the VPS. No re-indexing on the VPS. Use `--source fr|usc|ecfr` for incremental updates. Use `--search-docker-seed` to repopulate the Docker volume from VPS data if the volume is lost.
+- **Dev search uses Docker on port 7711**: `MEILI_PROFILE=dev docker compose -f docker-compose.meili.yml up -d`. No auth needed (dev mode). Configured in `.env.local` with `MEILI_URL=http://localhost:7711` and empty `MEILI_SEARCH_KEY`.
+- **Two Docker volume profiles**: `meili-data-full` (1M+ docs, seeded from VPS) and `meili-data-dev` (548 sample docs, indexed locally). Switch with `MEILI_PROFILE=dev|full`. Only one runs at a time (shared port 7711).
 - **Shiki uses LexBuild brand themes** (`lexbuild-light`/`lexbuild-dark`) defined in `src/lib/shiki-themes.ts` — the single source of truth imported by both `src/lib/shiki.ts` (runtime) and `scripts/generate-highlights.ts` (pre-render). After editing themes, delete existing `.highlighted.html` files from `output/` dirs (not `content/` — it's symlinked) and re-run `generate-highlights.ts`.
 - **Shiki word wrapping**: `.shiki-wrap` in `global.css` forces `pre-wrap` on Shiki output with `!important`.
 - **`<pre>` whitespace in Astro templates**: Template indentation inside `<pre>`/`<code>` tags renders as literal whitespace. Always collapse `<pre><code>{content}</code></pre>` onto one line with no surrounding whitespace.

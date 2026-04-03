@@ -20,6 +20,10 @@
         "tw-animate-css",
       ],
     },
+    "apps/api": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"],
+    },
   },
   "ignore": [
     "apps/astro/scripts/**",

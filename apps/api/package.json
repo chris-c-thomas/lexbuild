@@ -1,0 +1,32 @@
+{
+  "name": "@lexbuild/api",
+  "version": "1.16.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "dev:api": "tsx watch src/index.ts",
+    "build:api": "tsup",
+    "start": "node dist/index.js",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.14",
+    "@hono/zod-openapi": "^0.18",
+    "@lexbuild/core": "workspace:*",
+    "@scalar/hono-api-reference": "^0.10.6",
+    "better-sqlite3": "^11.9",
+    "hono": "^4.7",
+    "meilisearch": "^0.48",
+    "zod": "^3.25"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6",
+    "tsup": "^8.5",
+    "tsx": "^4.19",
+    "typescript": "^5.8",
+    "vitest": "^3.2"
+  }
+}

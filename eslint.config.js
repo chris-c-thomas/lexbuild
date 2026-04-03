@@ -85,6 +85,23 @@ export default tseslint.config(
       ],
     },
   },
+  // apps/api/ restrictions
+  {
+    files: ["apps/api/src/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            { group: ["@lexbuild/usc*"], message: "API app must not import source packages" },
+            { group: ["@lexbuild/ecfr*"], message: "API app must not import source packages" },
+            { group: ["@lexbuild/fr*"], message: "API app must not import source packages" },
+            { group: ["@lexbuild/cli*"], message: "API app must not import CLI package" },
+          ],
+        },
+      ],
+    },
+  },
   {
     ignores: ["**/dist/**", "**/node_modules/**", "**/*.config.ts", "**/*.config.js"],
   },

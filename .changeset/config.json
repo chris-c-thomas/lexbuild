@@ -7,5 +7,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@lexbuild/astro"]
+  "ignore": ["@lexbuild/astro", "@lexbuild/api"]
 }

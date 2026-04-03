@@ -88,5 +88,36 @@ module.exports = {
 
       kill_timeout: 5000,
     },
+    {
+      name: "lexbuild-api",
+      cwd: "/home/ubuntu/lexbuild/apps/api",
+      script: "./dist/index.js",
+      env: {
+        NODE_ENV: "production",
+        API_PORT: "4322",
+        LEXBUILD_DB_PATH: "/srv/lexbuild/data/lexbuild.db",
+        LEXBUILD_KEYS_DB_PATH: "/srv/lexbuild/data/lexbuild-keys.db",
+        MEILI_URL: "http://127.0.0.1:7700",
+        MEILI_MASTER_KEY: process.env.MEILI_MASTER_KEY || "",
+        MEILI_SEARCH_KEY: process.env.MEILI_SEARCH_KEY || "",
+      },
+      instances: 1,
+      exec_mode: "fork",
+
+      // Logging
+      out_file: `${LOG_DIR}/api-out.log`,
+      error_file: `${LOG_DIR}/api-error.log`,
+      log_date_format: "YYYY-MM-DD HH:mm:ss",
+      merge_logs: true,
+
+      // Stability
+      max_memory_restart: "1G",
+      max_restarts: 10,
+      min_uptime: "10s",
+      restart_delay: 1000,
+      exp_backoff_restart_delay: 100,
+
+      kill_timeout: 5000,
+    },
   ],
 };

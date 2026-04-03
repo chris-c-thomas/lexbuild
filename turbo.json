@@ -33,6 +33,16 @@
     "dev:astro": {
       "cache": false,
       "persistent": true
+    },
+    "build:api": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"],
+      "inputs": ["src/**/*.ts", "tsconfig.json", "tsup.config.ts"]
+    },
+    "dev:api": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
     }
   }
 }

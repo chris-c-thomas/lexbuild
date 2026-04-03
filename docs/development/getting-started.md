@@ -95,6 +95,31 @@ pnpm turbo dev:astro --filter=@lexbuild/astro
 
 The dev server runs at `http://localhost:4321`. See the Astro web app [documentation](../apps/astro.md) for the full architecture and deployment guide.
 
+### Local Search (Optional)
+
+Search in local dev uses Docker Meilisearch (`docker-compose.meili.yml` at repo root) on port 7711.
+
+```bash
+# Seed the dev volume with sample content from VPS (one-time)
+./scripts/deploy.sh --search-docker-seed --profile dev
+
+# Start dev Meilisearch (port 7711, no auth)
+MEILI_PROFILE=dev docker compose -f docker-compose.meili.yml up -d
+
+# Verify
+curl -s http://localhost:7711/health
+```
+
+Enable in `apps/astro/.env.local`:
+
+```
+ENABLE_SEARCH=true
+MEILI_URL=http://localhost:7711
+MEILI_SEARCH_KEY=
+```
+
+`MEILI_SEARCH_KEY` is empty in dev mode (no authentication required).
+
 ## Project Structure
 
 ```
