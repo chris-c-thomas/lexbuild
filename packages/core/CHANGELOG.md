@@ -1,5 +1,19 @@
 # @lexbuild/core
 
+## 1.17.2
+
+### Patch Changes
+
+- 47a48df: Use PBKDF2 for API key hashing and fix CI test runner
+- 0fef14e: Phase 5 of the Data API implementation. Adds full-text search across all three sources with faceted filtering, highlighting, and sort.
+- e63fd69: Refactor shared API key schema and hashing to @lexbuild/core
+- 92698e7: Phase 4 of the Data API implementation. Adds paginated document listings
+- 62e6ad0: Data API Phase 0 implementation
+- a94fa11: Phase 7 of the Data API implementation. Adds deploy script modes for API code and database deployment, and updates documentation across the monorepo.
+- a63e95e: Data API Phase 1
+- 2033419: Phase 3 of the Data API implementation.
+- 9b7b181: Phase 6 of the Data API implementation. Adds API key management with SQLite-backed storage, tiered rate limiting, usage tracking, and CLI commands for key lifecycle management.
+
 ## 1.17.1
 
 ### Patch Changes
