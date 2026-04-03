@@ -8,6 +8,7 @@
 #   ./scripts/deploy.sh --remote       # Full pipeline on VPS (code + download + convert + build)
 #   ./scripts/deploy.sh --search-docker                # Full reindex in Docker, transfer to VPS
 #   ./scripts/deploy.sh --search-docker --source fr    # Incremental: add/update one source only
+#   ./scripts/deploy.sh --search-docker-seed           # Seed Docker volume from VPS data
 #
 # Requires:
 #   - SSH access to the VPS (key-based auth)
@@ -91,6 +92,9 @@ case "${1:-}" in
       fi
     fi
     ;;
+  --search-docker-seed)
+    MODE="search-docker-seed"
+    ;;
   --help|-h)
     sed -n '2,/^$/{ s/^# //; s/^#$//; p }' "$0"
     exit 0
@@ -99,7 +103,7 @@ case "${1:-}" in
     ;; # default: code only
   *)
     echo "Unknown option: $1"
-    echo "Usage: ./scripts/deploy.sh [--content | --content-only | --nav-only | --sitemaps-only | --remote | --search-docker [--source <name>] | --help]"
+    echo "Usage: ./scripts/deploy.sh [--content | --content-only | --nav-only | --sitemaps-only | --remote | --search-docker [--source <name>] | --search-docker-seed | --help]"
     exit 1
     ;;
 esac
@@ -551,6 +555,73 @@ REMOTE
   rm -f "$TAR_PATH"
 }
 
+# --- Search docker seed: populate Docker volume from VPS data (used by: search-docker-seed) ---
+
+deploy_search_docker_seed() {
+  echo "==> Seeding Docker volume from VPS data directory..."
+
+  if ! command -v docker &> /dev/null; then
+    echo "Error: Docker is not installed or not in PATH."
+    exit 1
+  fi
+
+  if ! docker info &> /dev/null; then
+    echo "Error: Docker daemon is not running. Start Docker Desktop."
+    exit 1
+  fi
+
+  COMPOSE_FILE="$REPO_ROOT/docker-compose.meili.yml"
+  VOLUME_NAME="lexbuild_meili-data"
+
+  # Fetch master key (needed to verify after seeding)
+  echo "--- Fetching master key from VPS..."
+  MEILI_MASTER_KEY=$(ssh "$VPS_HOST" "source ~/.lexbuild-secrets && echo \$MEILI_MASTER_KEY")
+  if [ -z "$MEILI_MASTER_KEY" ]; then
+    echo "Error: Could not fetch MEILI_MASTER_KEY from VPS."
+    exit 1
+  fi
+  export MEILI_MASTER_KEY
+
+  # Download data directory from VPS
+  echo "--- Downloading Meilisearch data from VPS..."
+  TAR_PATH="$REPO_ROOT/.meili-data.tar.gz"
+  ssh "$VPS_HOST" "tar czf - -C /var/lib/meilisearch/data ." > "$TAR_PATH"
+
+  TAR_SIZE=$(du -h "$TAR_PATH" | cut -f1)
+  echo "--- Downloaded: $TAR_PATH ($TAR_SIZE)"
+
+  # Destroy existing volume and create fresh one
+  echo "--- Replacing Docker volume..."
+  docker compose -f "$COMPOSE_FILE" down -v 2>/dev/null || true
+  docker volume create "$VOLUME_NAME" > /dev/null
+
+  # Load data into volume
+  echo "--- Loading data into Docker volume..."
+  docker run --rm \
+    -v "${VOLUME_NAME}:/data" \
+    -v "${TAR_PATH}:/import.tar.gz:ro" \
+    --platform linux/amd64 \
+    alpine:latest \
+    sh -c "tar xzf /import.tar.gz -C /data/"
+
+  rm -f "$TAR_PATH"
+
+  # Verify by starting Meilisearch briefly
+  echo "--- Verifying seeded data..."
+  docker compose -f "$COMPOSE_FILE" up -d
+  sleep 3
+
+  DOC_COUNT=$(curl -sf "http://localhost:7711/indexes/lexbuild/stats" \
+    -H "Authorization: Bearer ${MEILI_MASTER_KEY}" 2>/dev/null \
+    | python3 -c "import sys,json; print(json.load(sys.stdin).get('numberOfDocuments', 0))" 2>/dev/null || echo "0")
+
+  docker compose -f "$COMPOSE_FILE" down
+
+  echo "--- Docker volume seeded with $DOC_COUNT documents from VPS"
+  echo "    You can now run: ./scripts/deploy.sh --search-docker --source <name>"
+  echo "==> Seed complete"
+}
+
 # --- Main ---
 
 case "$MODE" in
@@ -575,6 +646,9 @@ case "$MODE" in
     ;;
   search-docker)
     deploy_search_docker
+    ;;
+  search-docker-seed)
+    deploy_search_docker_seed
     ;;
 esac
 
