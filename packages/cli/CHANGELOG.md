@@ -1,5 +1,15 @@
 # @lexbuild/cli
 
+## 1.17.1
+
+### Patch Changes
+
+- 16aae5b: Prettier Formatting
+- Updated dependencies [16aae5b]
+  - @lexbuild/ecfr@1.17.1
+  - @lexbuild/usc@1.17.1
+  - @lexbuild/fr@1.17.1
+
 ## 1.17.0
 
 ### Minor Changes

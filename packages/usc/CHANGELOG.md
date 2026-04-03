@@ -1,5 +1,13 @@
 # @lexbuild/usc
 
+## 1.17.1
+
+### Patch Changes
+
+- 16aae5b: Prettier Formatting
+- Updated dependencies [16aae5b]
+  - @lexbuild/core@1.17.1
+
 ## 1.17.0
 
 ### Minor Changes
