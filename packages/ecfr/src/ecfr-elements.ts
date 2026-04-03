@@ -25,17 +25,7 @@ export const ECFR_TYPE_TO_LEVEL: Readonly<Record<string, LevelType>> = {
 };
 
 /** DIV element names (all route to the TYPE-based level mapping) */
-export const ECFR_DIV_ELEMENTS = new Set([
-  "DIV1",
-  "DIV2",
-  "DIV3",
-  "DIV4",
-  "DIV5",
-  "DIV6",
-  "DIV7",
-  "DIV8",
-  "DIV9",
-]);
+export const ECFR_DIV_ELEMENTS = new Set(["DIV1", "DIV2", "DIV3", "DIV4", "DIV5", "DIV6", "DIV7", "DIV8", "DIV9"]);
 
 /** Elements that contain text content directly */
 export const ECFR_CONTENT_ELEMENTS = new Set([

@@ -62,11 +62,7 @@ async function withRetry<T>(operation: () => Promise<T>): Promise<T> {
  * Write a file with retry on ENFILE/EMFILE.
  * Drop-in replacement for `fs/promises.writeFile`.
  */
-export async function writeFile(
-  path: string,
-  data: string,
-  encoding: BufferEncoding = "utf-8",
-): Promise<void> {
+export async function writeFile(path: string, data: string, encoding: BufferEncoding = "utf-8"): Promise<void> {
   await withRetry(() => fsWriteFile(path, data, encoding));
 }
 
@@ -74,9 +70,6 @@ export async function writeFile(
  * Create a directory with retry on ENFILE/EMFILE.
  * Drop-in replacement for `fs/promises.mkdir`.
  */
-export async function mkdir(
-  path: string,
-  options?: { recursive?: boolean },
-): Promise<string | undefined> {
+export async function mkdir(path: string, options?: { recursive?: boolean }): Promise<string | undefined> {
   return await withRetry(() => fsMkdir(path, options));
 }

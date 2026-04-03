@@ -228,11 +228,7 @@ async function generateUscNav(contentDir: string, outDir: string): Promise<void>
     const chapters: ChapterNav[] = [...chapterMap.values()];
 
     const titleNav: TitleNav = { chapters };
-    await writeFile(
-      join(outDir, `${titleDir}.json`),
-      JSON.stringify(titleNav, null, 2) + "\n",
-      "utf-8",
-    );
+    await writeFile(join(outDir, `${titleDir}.json`), JSON.stringify(titleNav, null, 2) + "\n", "utf-8");
   }
 
   // Add reserved titles that have no content
@@ -254,9 +250,7 @@ async function generateUscNav(contentDir: string, outDir: string): Promise<void>
 
   await writeFile(join(outDir, "titles.json"), JSON.stringify(titles, null, 2) + "\n", "utf-8");
 
-  console.log(
-    `  USC: ${titles.length} titles, ${titles.reduce((s, t) => s + t.sectionCount, 0)} sections`,
-  );
+  console.log(`  USC: ${titles.length} titles, ${titles.reduce((s, t) => s + t.sectionCount, 0)} sections`);
 }
 
 // --- eCFR navigation generation ---
@@ -276,9 +270,7 @@ async function generateEcfrNav(contentDir: string, outDir: string): Promise<void
     }
 
     // Discover chapter directories from filesystem
-    const chapterDirs = (await listDirs(join(ecfrDir, titleDir))).filter((d) =>
-      d.startsWith("chapter-"),
-    );
+    const chapterDirs = (await listDirs(join(ecfrDir, titleDir))).filter((d) => d.startsWith("chapter-"));
 
     // Build chapter → parts mapping by scanning chapter directories
     const chapters: ChapterNav[] = [];
@@ -347,11 +339,7 @@ async function generateEcfrNav(contentDir: string, outDir: string): Promise<void
     });
 
     const titleNav: TitleNav = { chapters };
-    await writeFile(
-      join(outDir, `${titleDir}.json`),
-      JSON.stringify(titleNav, null, 2) + "\n",
-      "utf-8",
-    );
+    await writeFile(join(outDir, `${titleDir}.json`), JSON.stringify(titleNav, null, 2) + "\n", "utf-8");
   }
 
   // Add reserved titles that have no content
@@ -485,8 +473,7 @@ async function generateFrNav(contentDir: string, outDir: string): Promise<void> 
           const fm = raw.slice(4, endIdx);
 
           const docNum = extractYamlField(fm, "document_number") || file.replace(/\.md$/, "");
-          const title =
-            extractYamlField(fm, "section_name") || extractYamlField(fm, "title") || docNum;
+          const title = extractYamlField(fm, "section_name") || extractYamlField(fm, "title") || docNum;
           const docType = extractYamlField(fm, "document_type") || "unknown";
           const pubDate = extractYamlField(fm, "publication_date") || `${yearDir}-${monthDir}`;
           const agencyRaw = extractYamlField(fm, "agency") || "";
@@ -512,8 +499,7 @@ async function generateFrNav(contentDir: string, outDir: string): Promise<void> 
       // Sort by publication date, then document number
       docs.sort(
         (a, b) =>
-          a.publication_date.localeCompare(b.publication_date) ||
-          a.document_number.localeCompare(b.document_number),
+          a.publication_date.localeCompare(b.publication_date) || a.document_number.localeCompare(b.document_number),
       );
 
       months.push({ month: monthNum, documentCount: docs.length, typeCounts });

@@ -79,9 +79,7 @@ describe("EcfrASTBuilder", () => {
       (c) =>
         c.type === "content" &&
         "children" in c &&
-        (c as { children: Array<{ inlineType?: string }> }).children.some(
-          (i) => i.inlineType === "italic",
-        ),
+        (c as { children: Array<{ inlineType?: string }> }).children.some((i) => i.inlineType === "italic"),
     );
     expect(hasItalic).toBe(true);
   });

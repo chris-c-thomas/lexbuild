@@ -6,11 +6,7 @@
  */
 
 import { Command } from "commander";
-import {
-  detectLatestReleasePoint,
-  fetchReleasePointHistory,
-  FALLBACK_RELEASE_POINT,
-} from "@lexbuild/usc";
+import { detectLatestReleasePoint, fetchReleasePointHistory, FALLBACK_RELEASE_POINT } from "@lexbuild/usc";
 import { createSpinner, summaryBlock, dataTable, error } from "../ui.js";
 
 /** Parsed options from the list-release-points command */
@@ -43,10 +39,7 @@ Source: https://uscode.house.gov/download/priorreleasepoints.htm`,
     spinner.start();
 
     // Fetch current and history in parallel
-    const [current, history] = await Promise.all([
-      detectLatestReleasePoint(),
-      fetchReleasePointHistory(),
-    ]);
+    const [current, history] = await Promise.all([detectLatestReleasePoint(), fetchReleasePointHistory()]);
 
     spinner.stop();
 

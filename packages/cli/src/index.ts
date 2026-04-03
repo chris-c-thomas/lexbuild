@@ -61,9 +61,7 @@ program.addCommand(
       console.error(error("Please specify a source:\n"));
       console.error("  lexbuild download-usc     Download U.S. Code XML from OLRC");
       console.error("  lexbuild download-ecfr    Download eCFR XML from govinfo");
-      console.error(
-        "  lexbuild download-fr      Download Federal Register XML from federalregister.gov",
-      );
+      console.error("  lexbuild download-fr      Download Federal Register XML from federalregister.gov");
       console.error("");
       process.exit(1);
     }),

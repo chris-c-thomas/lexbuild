@@ -7,15 +7,7 @@
 import { Command } from "commander";
 import { relative, resolve } from "node:path";
 import { downloadTitles, detectLatestReleasePoint, FALLBACK_RELEASE_POINT } from "@lexbuild/usc";
-import {
-  createSpinner,
-  summaryBlock,
-  dataTable,
-  formatDuration,
-  formatBytes,
-  success,
-  error,
-} from "../ui.js";
+import { createSpinner, summaryBlock, dataTable, formatDuration, formatBytes, success, error } from "../ui.js";
 import { parseTitles } from "../parse-titles.js";
 
 /** Parsed options from the download command */
@@ -81,10 +73,7 @@ Source: https://uscode.house.gov/download/download.shtml`,
       }
     }
 
-    const label =
-      titleCount === 1
-        ? `Downloading Title ${titles?.[0]}`
-        : `Downloading ${titleCount} USC titles`;
+    const label = titleCount === 1 ? `Downloading Title ${titles?.[0]}` : `Downloading ${titleCount} USC titles`;
 
     const spinner = createSpinner(`${label}...`);
     spinner.start();
@@ -123,9 +112,7 @@ Source: https://uscode.house.gov/download/download.shtml`,
       const totalBytes = result.files.reduce((sum, f) => sum + f.size, 0);
 
       // Summary header — show the actual release point used (may be auto-detected)
-      const rpLabel = options.releasePoint
-        ? result.releasePoint
-        : `${result.releasePoint} (auto-detected)`;
+      const rpLabel = options.releasePoint ? result.releasePoint : `${result.releasePoint} (auto-detected)`;
 
       const output = summaryBlock({
         title: "lexbuild — Download Summary",

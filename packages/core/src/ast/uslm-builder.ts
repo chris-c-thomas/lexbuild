@@ -228,12 +228,7 @@ export class ASTBuilder {
       return;
     }
 
-    if (
-      name === "note" ||
-      name === "statutoryNote" ||
-      name === "editorialNote" ||
-      name === "changeNote"
-    ) {
+    if (name === "note" || name === "statutoryNote" || name === "editorialNote" || name === "changeNote") {
       this.openNote(name, attrs);
       return;
     }
@@ -375,12 +370,7 @@ export class ASTBuilder {
     }
 
     // Handle note close
-    if (
-      name === "note" ||
-      name === "statutoryNote" ||
-      name === "editorialNote" ||
-      name === "changeNote"
-    ) {
+    if (name === "note" || name === "statutoryNote" || name === "editorialNote" || name === "changeNote") {
       this.closeNote();
       return;
     }
@@ -782,9 +772,7 @@ export class ASTBuilder {
     const parentFrame = this.peekFrame();
     if (
       parentFrame &&
-      (parentFrame.kind === "content" ||
-        parentFrame.kind === "inline" ||
-        parentFrame.kind === "sourceCredit")
+      (parentFrame.kind === "content" || parentFrame.kind === "inline" || parentFrame.kind === "sourceCredit")
     ) {
       // Flatten to inline quoted text
       const qNode: InlineNode = {
@@ -862,11 +850,7 @@ export class ASTBuilder {
         }
         children.push(textNode);
       }
-    } else if (
-      parentFrame.kind === "note" ||
-      parentFrame.kind === "level" ||
-      parentFrame.kind === "quotedContent"
-    ) {
+    } else if (parentFrame.kind === "note" || parentFrame.kind === "level" || parentFrame.kind === "quotedContent") {
       // Wrap in a ContentNode
       const textNode: InlineNode = { type: "inline", inlineType: "text", text };
       const contentNode: ContentNode = {

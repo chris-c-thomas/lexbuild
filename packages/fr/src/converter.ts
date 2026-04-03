@@ -140,10 +140,7 @@ export async function convertFrDocuments(options: FrConvertOptions): Promise<FrC
       const markdown = renderDocument(doc.node, frontmatter, {
         headingOffset: 0,
         linkStyle: options.linkStyle,
-        resolveLink:
-          options.linkStyle === "relative"
-            ? (id) => linkResolver.resolve(id, outputPath)
-            : undefined,
+        resolveLink: options.linkStyle === "relative" ? (id) => linkResolver.resolve(id, outputPath) : undefined,
       });
 
       await mkdir(dirname(outputPath), { recursive: true });
@@ -258,10 +255,9 @@ async function discoverXmlFiles(input: string, from?: string, to?: string): Prom
   try {
     inputStat = await stat(input);
   } catch (err) {
-    throw new Error(
-      `Cannot access input path "${input}": ${err instanceof Error ? err.message : String(err)}`,
-      { cause: err },
-    );
+    throw new Error(`Cannot access input path "${input}": ${err instanceof Error ? err.message : String(err)}`, {
+      cause: err,
+    });
   }
 
   if (inputStat.isFile()) {

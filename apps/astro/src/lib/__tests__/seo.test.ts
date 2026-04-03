@@ -1,11 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  buildPageSEO,
-  buildTitle,
-  buildDescription,
-  buildJsonLd,
-  buildBreadcrumbJsonLd,
-} from "../seo.js";
+import { buildPageSEO, buildTitle, buildDescription, buildJsonLd, buildBreadcrumbJsonLd } from "../seo.js";
 import type { ContentFrontmatter, Breadcrumb } from "../types.js";
 
 // --- Test fixtures ---

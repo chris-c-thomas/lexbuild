@@ -30,10 +30,7 @@ function parseAndCollect(xml: string, emitAt: ASTBuilderOptions["emitAt"] = "sec
 }
 
 /** Helper: parse a fixture file and collect emitted sections */
-async function parseFileAndCollect(
-  filename: string,
-  emitAt: ASTBuilderOptions["emitAt"] = "section",
-) {
+async function parseFileAndCollect(filename: string, emitAt: ASTBuilderOptions["emitAt"] = "section") {
   const emitted: Array<{ node: LevelNode; context: EmitContext }> = [];
 
   const builder = new ASTBuilder({
@@ -106,17 +103,14 @@ describe("ASTBuilder", () => {
       const section = emitted[0]!.node;
 
       // Find the content node
-      const contentNode = section.children.find((c) => c.type === "content") as
-        | ContentNode
-        | undefined;
+      const contentNode = section.children.find((c) => c.type === "content") as ContentNode | undefined;
       expect(contentNode).toBeDefined();
       expect(contentNode!.variant).toBe("content");
       expect(contentNode!.children.length).toBeGreaterThan(0);
 
       // Check that there is text
       const hasText = contentNode!.children.some(
-        (c) =>
-          c.type === "inline" && c.inlineType === "text" && c.text && c.text.includes("county"),
+        (c) => c.type === "inline" && c.inlineType === "text" && c.text && c.text.includes("county"),
       );
       expect(hasText).toBe(true);
     });
@@ -125,9 +119,7 @@ describe("ASTBuilder", () => {
       const { emitted } = await parseFileAndCollect("simple-section.xml");
       const section = emitted[0]!.node;
 
-      const sourceCredit = section.children.find((c) => c.type === "sourceCredit") as
-        | SourceCreditNode
-        | undefined;
+      const sourceCredit = section.children.find((c) => c.type === "sourceCredit") as SourceCreditNode | undefined;
       expect(sourceCredit).toBeDefined();
       expect(sourceCredit!.children.length).toBeGreaterThan(0);
     });
@@ -183,10 +175,7 @@ describe("ASTBuilder", () => {
       parser.on("closeElement", (name) => builder.onCloseElement(name));
       parser.on("text", (text) => builder.onText(text));
 
-      const stream = createReadStream(
-        resolve(FIXTURES_DIR, "section-with-subsections.xml"),
-        "utf-8",
-      );
+      const stream = createReadStream(resolve(FIXTURES_DIR, "section-with-subsections.xml"), "utf-8");
       await parser.parseStream(stream);
 
       expect(onEmit).toHaveBeenCalledTimes(1);
@@ -217,9 +206,9 @@ describe("ASTBuilder", () => {
       expect(content).toBeDefined();
 
       // Should have inline children including a ref
-      const refNode = content.children.find(
-        (c) => c.type === "inline" && c.inlineType === "ref",
-      ) as InlineNode | undefined;
+      const refNode = content.children.find((c) => c.type === "inline" && c.inlineType === "ref") as
+        | InlineNode
+        | undefined;
       expect(refNode).toBeDefined();
       expect(refNode!.href).toBe("/us/usc/t2/s100");
     });

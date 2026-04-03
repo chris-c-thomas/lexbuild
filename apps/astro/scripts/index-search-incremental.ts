@@ -168,11 +168,7 @@ async function readSourceCheckpoint(contentDir: string, source: string): Promise
   }
 }
 
-async function writeSourceCheckpoint(
-  contentDir: string,
-  source: string,
-  timestamp: number,
-): Promise<void> {
+async function writeSourceCheckpoint(contentDir: string, source: string, timestamp: number): Promise<void> {
   await writeFile(checkpointPath(contentDir, source), String(timestamp), "utf-8");
 }
 
@@ -268,11 +264,7 @@ async function indexUscIncremental(
           heading: section.name,
           body,
           status: section.status,
-          hierarchy: [
-            `Title ${meta.title_number}`,
-            `Chapter ${chapter.number}`,
-            `§ ${section.number}`,
-          ],
+          hierarchy: [`Title ${meta.title_number}`, `Chapter ${chapter.number}`, `§ ${section.number}`],
           url: `/usc/${titleDir}/${chapter.directory}/${section.file.replace(/\.md$/, "")}`,
         });
         indexed++;
@@ -300,9 +292,7 @@ async function indexEcfrIncremental(
     const titleMeta = await readJson<EcfrTitleMeta>(join(ecfrDir, titleDir, "_meta.json"));
     if (!titleMeta) continue;
 
-    const chapterDirs = (await listDirs(join(ecfrDir, titleDir))).filter((d) =>
-      d.startsWith("chapter-"),
-    );
+    const chapterDirs = (await listDirs(join(ecfrDir, titleDir))).filter((d) => d.startsWith("chapter-"));
 
     for (const chapterDir of chapterDirs) {
       const chapterPath = join(ecfrDir, titleDir, chapterDir);
@@ -442,9 +432,7 @@ async function indexFrIncremental(
           });
           indexed++;
         } catch (err) {
-          console.warn(
-            `  Warning: skipping ${file}: ${err instanceof Error ? err.message : String(err)}`,
-          );
+          console.warn(`  Warning: skipping ${file}: ${err instanceof Error ? err.message : String(err)}`);
         }
       }
     }
@@ -516,9 +504,7 @@ async function configureIndex(client: Meilisearch): Promise<void> {
       "publication_date",
     ]),
   );
-  await wait(
-    await index.updateSortableAttributes(["title_number", "identifier", "publication_date"]),
-  );
+  await wait(await index.updateSortableAttributes(["title_number", "identifier", "publication_date"]));
   await wait(
     await index.updateDisplayedAttributes([
       "id",
@@ -534,16 +520,7 @@ async function configureIndex(client: Meilisearch): Promise<void> {
       "publication_date",
     ]),
   );
-  await wait(
-    await index.updateRankingRules([
-      "words",
-      "typo",
-      "proximity",
-      "attribute",
-      "sort",
-      "exactness",
-    ]),
-  );
+  await wait(await index.updateRankingRules(["words", "typo", "proximity", "attribute", "sort", "exactness"]));
 
   console.log("  Index settings configured.");
 }
@@ -585,18 +562,14 @@ async function main(): Promise<void> {
     for (const src of targets) {
       await writeSourceCheckpoint(resolvedDir, src, now);
     }
-    console.log(
-      `Checkpoint set to ${new Date().toISOString()} for ${targets.join(", ")} in ${resolvedDir}`,
-    );
+    console.log(`Checkpoint set to ${new Date().toISOString()} for ${targets.join(", ")} in ${resolvedDir}`);
     return;
   }
 
   console.log(`Content directory: ${resolvedDir}`);
   console.log(`Meilisearch URL: ${MEILI_URL}`);
   console.log(`Index name: ${INDEX_NAME}`);
-  console.log(
-    `Mode: incremental upsert${prune ? " + prune" : ""}${sourceFilter ? ` (${sourceFilter} only)` : ""}`,
-  );
+  console.log(`Mode: incremental upsert${prune ? " + prune" : ""}${sourceFilter ? ` (${sourceFilter} only)` : ""}`);
   console.log(`  Preserves the existing index. Adds new documents and updates existing ones.`);
 
   const client = new Meilisearch({
@@ -657,9 +630,7 @@ async function main(): Promise<void> {
     console.log("\nScanning USC documents...");
     const usc = await indexUscIncremental(resolvedDir, indexer, checkpoints["usc"]!, expectedIds);
     await indexer.flush();
-    console.log(
-      `  USC: ${usc.indexed} upserted, ${usc.skipped} skipped (unchanged since checkpoint)`,
-    );
+    console.log(`  USC: ${usc.indexed} upserted, ${usc.skipped} skipped (unchanged since checkpoint)`);
     totalIndexed += usc.indexed;
     totalSkipped += usc.skipped;
   }
@@ -667,16 +638,9 @@ async function main(): Promise<void> {
   // Index eCFR
   if (!sourceFilter || sourceFilter === "ecfr") {
     console.log("\nScanning eCFR documents...");
-    const ecfr = await indexEcfrIncremental(
-      resolvedDir,
-      indexer,
-      checkpoints["ecfr"]!,
-      expectedIds,
-    );
+    const ecfr = await indexEcfrIncremental(resolvedDir, indexer, checkpoints["ecfr"]!, expectedIds);
     await indexer.flush();
-    console.log(
-      `  eCFR: ${ecfr.indexed} upserted, ${ecfr.skipped} skipped (unchanged since checkpoint)`,
-    );
+    console.log(`  eCFR: ${ecfr.indexed} upserted, ${ecfr.skipped} skipped (unchanged since checkpoint)`);
     totalIndexed += ecfr.indexed;
     totalSkipped += ecfr.skipped;
   }
@@ -694,9 +658,7 @@ async function main(): Promise<void> {
   // Prune orphaned documents (only safe when all sources are scanned)
   let pruned = 0;
   if (prune && sourceFilter) {
-    console.log(
-      "\n  --prune ignored: cannot prune when --source is set (would delete other sources)",
-    );
+    console.log("\n  --prune ignored: cannot prune when --source is set (would delete other sources)");
   } else if (prune) {
     pruned = await pruneOrphans(client, expectedIds);
   }

@@ -96,10 +96,7 @@ export class EcfrASTBuilder {
   }
 
   /** Get part-level notes (authority/source) captured during parsing */
-  getPartNotes(): ReadonlyMap<
-    string,
-    { authority?: string | undefined; regulatorySource?: string | undefined }
-  > {
+  getPartNotes(): ReadonlyMap<string, { authority?: string | undefined; regulatorySource?: string | undefined }> {
     return this.partNotes;
   }
 
@@ -859,10 +856,9 @@ export class EcfrASTBuilder {
  */
 function stripLevelPrefix(heading: string): string {
   // Match: CHAPTER I—text, PART 1—text, SUBCHAPTER A—text, SUBTITLE A—text
-  const match =
-    /^(?:CHAPTER|PART|SUBCHAPTER|SUBPART|SUBTITLE|DIVISION|ARTICLE)\s+[A-Za-z0-9]+\s*[—–-]\s*/i.exec(
-      heading,
-    );
+  const match = /^(?:CHAPTER|PART|SUBCHAPTER|SUBPART|SUBTITLE|DIVISION|ARTICLE)\s+[A-Za-z0-9]+\s*[—–-]\s*/i.exec(
+    heading,
+  );
   if (match) {
     const stripped = heading.slice(match[0].length).trim();
     return stripped || heading.trim();

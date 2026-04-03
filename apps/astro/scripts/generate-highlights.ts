@@ -89,11 +89,9 @@ async function isUpToDate(mdPath: string, htmlPath: string): Promise<boolean> {
 
 async function runWorker(): Promise<void> {
   // Receive file list via IPC from parent (avoids OS env size limits)
-  const { files, contentDir } = await new Promise<{ files: string[]; contentDir: string }>(
-    (resolve) => {
-      process.once("message", (msg) => resolve(msg as { files: string[]; contentDir: string }));
-    },
-  );
+  const { files, contentDir } = await new Promise<{ files: string[]; contentDir: string }>((resolve) => {
+    process.once("message", (msg) => resolve(msg as { files: string[]; contentDir: string }));
+  });
 
   const { createHighlighter } = await import("shiki");
   const { lexbuildLight: light, lexbuildDark: dark } = await import("../src/lib/shiki-themes");
@@ -246,9 +244,7 @@ async function main(): Promise<void> {
 
     const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
     const mem = (process.memoryUsage.rss() / 1024 / 1024).toFixed(0);
-    console.log(
-      `  ${chunkLabel} done — ${totalProcessed}/${toProcess.length} total (${elapsed}s, parent ${mem}MB)`,
-    );
+    console.log(`  ${chunkLabel} done — ${totalProcessed}/${toProcess.length} total (${elapsed}s, parent ${mem}MB)`);
   }
 
   const totalTime = ((performance.now() - startTime) / 1000).toFixed(1);

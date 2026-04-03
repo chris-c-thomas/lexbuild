@@ -19,11 +19,7 @@ import { join } from "node:path";
  * @param outputRoot - Output root directory (e.g., "./output")
  * @returns Full output file path (e.g., "output/fr/2026/03/2026-06029.md")
  */
-export function buildFrOutputPath(
-  documentNumber: string,
-  publicationDate: string,
-  outputRoot: string,
-): string {
+export function buildFrOutputPath(documentNumber: string, publicationDate: string, outputRoot: string): string {
   const { year, month } = parseDateComponents(publicationDate);
   return join(outputRoot, "fr", year, month, `${documentNumber}.md`);
 }
@@ -36,11 +32,7 @@ export function buildFrOutputPath(
  * @param downloadRoot - Download root directory (e.g., "./downloads/fr")
  * @returns Full download file path (e.g., "downloads/fr/2026/03/2026-06029.xml")
  */
-export function buildFrDownloadXmlPath(
-  documentNumber: string,
-  publicationDate: string,
-  downloadRoot: string,
-): string {
+export function buildFrDownloadXmlPath(documentNumber: string, publicationDate: string, downloadRoot: string): string {
   const { year, month } = parseDateComponents(publicationDate);
   return join(downloadRoot, year, month, `${documentNumber}.xml`);
 }
@@ -53,11 +45,7 @@ export function buildFrDownloadXmlPath(
  * @param downloadRoot - Download root directory
  * @returns Full download file path (e.g., "downloads/fr/2026/03/2026-06029.json")
  */
-export function buildFrDownloadJsonPath(
-  documentNumber: string,
-  publicationDate: string,
-  downloadRoot: string,
-): string {
+export function buildFrDownloadJsonPath(documentNumber: string, publicationDate: string, downloadRoot: string): string {
   const { year, month } = parseDateComponents(publicationDate);
   return join(downloadRoot, year, month, `${documentNumber}.json`);
 }

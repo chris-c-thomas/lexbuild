@@ -14,11 +14,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { parse, stringify } from "yaml";
 import { buildFrOutputPath } from "./fr-path.js";
-import {
-  buildFrApiListUrl,
-  fetchWithRetry,
-  buildMonthChunks,
-} from "./downloader.js";
+import { buildFrApiListUrl, fetchWithRetry, buildMonthChunks } from "./downloader.js";
 import type { FrApiListResponse } from "./downloader.js";
 import type { FrDocumentJsonMeta } from "./fr-frontmatter.js";
 
@@ -99,9 +95,7 @@ export async function enrichFrDocuments(options: EnrichFrOptions): Promise<Enric
       const data = (await response.json()) as FrApiListResponse;
 
       if (typeof data.count !== "number") {
-        throw new Error(
-          `Unexpected API response for ${listUrl}: missing or invalid 'count' field.`,
-        );
+        throw new Error(`Unexpected API response for ${listUrl}: missing or invalid 'count' field.`);
       }
 
       if (page === 1) {
@@ -113,11 +107,7 @@ export async function enrichFrDocuments(options: EnrichFrOptions): Promise<Enric
       for (const doc of results) {
         if (!doc.document_number || !doc.publication_date) continue;
 
-        const mdPath = buildFrOutputPath(
-          doc.document_number,
-          doc.publication_date,
-          options.output,
-        );
+        const mdPath = buildFrOutputPath(doc.document_number, doc.publication_date, options.output);
 
         if (!existsSync(mdPath)) {
           notFound++;
@@ -230,9 +220,7 @@ function applyEnrichment(fm: Record<string, unknown>, doc: FrDocumentJsonMeta): 
   }
 
   if (doc.cfr_references && doc.cfr_references.length > 0) {
-    fm["cfr_references"] = doc.cfr_references.map(
-      (r) => `${r.title} CFR Part ${r.part}`,
-    );
+    fm["cfr_references"] = doc.cfr_references.map((r) => `${r.title} CFR Part ${r.part}`);
   }
 
   if (doc.docket_ids && doc.docket_ids.length > 0) {

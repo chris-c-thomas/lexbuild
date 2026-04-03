@@ -134,9 +134,7 @@ function trackFileAndGC(): void {
   filesProcessed++;
   if (filesProcessed % GC_INTERVAL === 0) {
     const mem = (process.memoryUsage.rss() / 1024 / 1024).toFixed(0);
-    console.log(
-      `  [GC] ${filesProcessed} files processed, ${mem}MB RSS — forcing garbage collection`,
-    );
+    console.log(`  [GC] ${filesProcessed} files processed, ${mem}MB RSS — forcing garbage collection`);
     if (global.gc) {
       global.gc();
       const memAfter = (process.memoryUsage.rss() / 1024 / 1024).toFixed(0);
@@ -223,11 +221,7 @@ async function indexUscDocuments(contentDir: string, indexer: BatchIndexer): Pro
           heading: section.name,
           body,
           status: section.status,
-          hierarchy: [
-            `Title ${meta.title_number}`,
-            `Chapter ${chapter.number}`,
-            `§ ${section.number}`,
-          ],
+          hierarchy: [`Title ${meta.title_number}`, `Chapter ${chapter.number}`, `§ ${section.number}`],
           url: `/usc/${titleDir}/${chapter.directory}/${section.file.replace(/\.md$/, "")}`,
         });
         count++;
@@ -250,9 +244,7 @@ async function indexEcfrDocuments(contentDir: string, indexer: BatchIndexer): Pr
     const titleMeta = await readJson<EcfrTitleMeta>(join(ecfrDir, titleDir, "_meta.json"));
     if (!titleMeta) continue;
 
-    const chapterDirs = (await listDirs(join(ecfrDir, titleDir))).filter((d) =>
-      d.startsWith("chapter-"),
-    );
+    const chapterDirs = (await listDirs(join(ecfrDir, titleDir))).filter((d) => d.startsWith("chapter-"));
 
     for (const chapterDir of chapterDirs) {
       const chapterPath = join(ecfrDir, titleDir, chapterDir);
@@ -371,9 +363,7 @@ async function indexFrDocuments(contentDir: string, indexer: BatchIndexer): Prom
           count++;
           trackFileAndGC();
         } catch (err) {
-          console.warn(
-            `  Warning: skipping ${file}: ${err instanceof Error ? err.message : String(err)}`,
-          );
+          console.warn(`  Warning: skipping ${file}: ${err instanceof Error ? err.message : String(err)}`);
         }
       }
     }
@@ -401,9 +391,7 @@ async function configureIndex(client: Meilisearch): Promise<void> {
       "publication_date",
     ]),
   );
-  await wait(
-    await index.updateSortableAttributes(["title_number", "identifier", "publication_date"]),
-  );
+  await wait(await index.updateSortableAttributes(["title_number", "identifier", "publication_date"]));
   await wait(
     await index.updateDisplayedAttributes([
       "id",
@@ -419,16 +407,7 @@ async function configureIndex(client: Meilisearch): Promise<void> {
       "publication_date",
     ]),
   );
-  await wait(
-    await index.updateRankingRules([
-      "words",
-      "typo",
-      "proximity",
-      "attribute",
-      "sort",
-      "exactness",
-    ]),
-  );
+  await wait(await index.updateRankingRules(["words", "typo", "proximity", "attribute", "sort", "exactness"]));
 
   console.log("  Index settings configured.");
 }

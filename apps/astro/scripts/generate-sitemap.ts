@@ -107,9 +107,7 @@ async function collectEcfrUrls(contentDir: string): Promise<string[]> {
     // Title page
     urls.push(`/ecfr/${titleDir}`);
 
-    const chapterDirs = (await listDirs(join(ecfrDir, titleDir))).filter((d) =>
-      d.startsWith("chapter-"),
-    );
+    const chapterDirs = (await listDirs(join(ecfrDir, titleDir))).filter((d) => d.startsWith("chapter-"));
 
     for (const chapterDir of chapterDirs) {
       // Chapter page
@@ -264,37 +262,24 @@ async function main(): Promise<void> {
   if (sourceFilter) console.log(`Source filter: ${sourceFilter}`);
   console.log();
 
-  const uscUrls =
-    !sourceFilter || sourceFilter === "usc" ? await collectUscUrls(resolvedContentDir) : [];
-  const ecfrUrls =
-    !sourceFilter || sourceFilter === "ecfr" ? await collectEcfrUrls(resolvedContentDir) : [];
-  const frUrls =
-    !sourceFilter || sourceFilter === "fr" ? await collectFrUrls(resolvedContentDir) : [];
+  const uscUrls = !sourceFilter || sourceFilter === "usc" ? await collectUscUrls(resolvedContentDir) : [];
+  const ecfrUrls = !sourceFilter || sourceFilter === "ecfr" ? await collectEcfrUrls(resolvedContentDir) : [];
+  const frUrls = !sourceFilter || sourceFilter === "fr" ? await collectFrUrls(resolvedContentDir) : [];
 
-  if (!sourceFilter || sourceFilter === "usc")
-    console.log(`USC: ${uscUrls.length.toLocaleString()} URLs`);
-  if (!sourceFilter || sourceFilter === "ecfr")
-    console.log(`eCFR: ${ecfrUrls.length.toLocaleString()} URLs`);
-  if (!sourceFilter || sourceFilter === "fr")
-    console.log(`FR: ${frUrls.length.toLocaleString()} URLs`);
-  console.log(
-    `Total: ${(uscUrls.length + ecfrUrls.length + frUrls.length + 1).toLocaleString()} URLs\n`,
-  );
+  if (!sourceFilter || sourceFilter === "usc") console.log(`USC: ${uscUrls.length.toLocaleString()} URLs`);
+  if (!sourceFilter || sourceFilter === "ecfr") console.log(`eCFR: ${ecfrUrls.length.toLocaleString()} URLs`);
+  if (!sourceFilter || sourceFilter === "fr") console.log(`FR: ${frUrls.length.toLocaleString()} URLs`);
+  console.log(`Total: ${(uscUrls.length + ecfrUrls.length + frUrls.length + 1).toLocaleString()} URLs\n`);
 
   // Write homepage as a misc sitemap
   const miscUrls = ["/"];
   const allFilenames: string[] = [];
 
-  if (!sourceFilter)
-    allFilenames.push(
-      ...(await writeChunkedSitemaps(miscUrls, "misc", outputDir, today, "weekly")),
-    );
+  if (!sourceFilter) allFilenames.push(...(await writeChunkedSitemaps(miscUrls, "misc", outputDir, today, "weekly")));
   if (!sourceFilter || sourceFilter === "usc")
     allFilenames.push(...(await writeChunkedSitemaps(uscUrls, "usc", outputDir, today, "monthly")));
   if (!sourceFilter || sourceFilter === "ecfr")
-    allFilenames.push(
-      ...(await writeChunkedSitemaps(ecfrUrls, "ecfr", outputDir, today, "weekly")),
-    );
+    allFilenames.push(...(await writeChunkedSitemaps(ecfrUrls, "ecfr", outputDir, today, "weekly")));
   if (!sourceFilter || sourceFilter === "fr")
     allFilenames.push(...(await writeChunkedSitemaps(frUrls, "fr", outputDir, today, "daily")));
 

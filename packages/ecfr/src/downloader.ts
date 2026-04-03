@@ -83,9 +83,7 @@ export function buildEcfrDownloadUrl(titleNumber: number): string {
 /**
  * Download eCFR XML files from govinfo bulk data.
  */
-export async function downloadEcfrTitles(
-  options: EcfrDownloadOptions,
-): Promise<EcfrDownloadResult> {
+export async function downloadEcfrTitles(options: EcfrDownloadOptions): Promise<EcfrDownloadResult> {
   const { output, onProgress } = options;
   const titles = options.titles ?? ECFR_TITLE_NUMBERS;
   const downloadable = titles.filter((t) => !RESERVED_TITLES.has(t));

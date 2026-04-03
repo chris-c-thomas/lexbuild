@@ -124,10 +124,7 @@ function extractNoteText(node: LevelNode, noteType: string): string | undefined 
  * Try to find note text from part-level ancestor context.
  * This is a best-effort extraction since we only have ancestor info, not the full AST.
  */
-function extractNoteTextFromAncestors(
-  _context: EmitContext,
-  _noteType: string,
-): string | undefined {
+function extractNoteTextFromAncestors(_context: EmitContext, _noteType: string): string | undefined {
   // Ancestor info doesn't include note children — this would require
   // the converter to pass enriched context. Return undefined for now;
   // authority/source will be populated from part-level notes during

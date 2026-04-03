@@ -242,11 +242,7 @@ async function downloadAndExtractTitle(
 /**
  * Extract a specific XML file from a zip archive.
  */
-function extractXmlFromZip(
-  zipPath: string,
-  targetFileName: string,
-  outputPath: string,
-): Promise<void> {
+function extractXmlFromZip(zipPath: string, targetFileName: string, outputPath: string): Promise<void> {
   return new Promise((resolve, reject) => {
     yauzlOpen(zipPath, { lazyEntries: true }, (err, zipFile) => {
       if (err) {

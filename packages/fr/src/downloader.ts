@@ -140,12 +140,7 @@ export interface FrApiListResponse {
 /**
  * Build the API documents listing URL for a date range.
  */
-export function buildFrApiListUrl(
-  from: string,
-  to: string,
-  page: number,
-  types?: FrDocumentType[],
-): string {
+export function buildFrApiListUrl(from: string, to: string, page: number, types?: FrDocumentType[]): string {
   const params = new URLSearchParams();
   params.set("conditions[publication_date][gte]", from);
   params.set("conditions[publication_date][lte]", to);
@@ -262,19 +257,14 @@ export async function downloadFrDocuments(options: FrDownloadOptions): Promise<F
  *
  * Fetches both the JSON metadata and XML full text.
  */
-export async function downloadSingleFrDocument(
-  documentNumber: string,
-  output: string,
-): Promise<FrDownloadedFile> {
+export async function downloadSingleFrDocument(documentNumber: string, output: string): Promise<FrDownloadedFile> {
   // Fetch JSON metadata first to get publication date and XML URL
   const metaUrl = `${FR_API_BASE}/documents/${documentNumber}.json?${new URLSearchParams(API_FIELDS.map((f) => ["fields[]", f])).toString()}`;
   const metaResponse = await fetchWithRetry(metaUrl);
   const doc = (await metaResponse.json()) as FrDocumentJsonMeta;
 
   if (!doc.document_number || !doc.publication_date) {
-    throw new Error(
-      `Invalid API response for document ${documentNumber}: missing document_number or publication_date`,
-    );
+    throw new Error(`Invalid API response for document ${documentNumber}: missing document_number or publication_date`);
   }
 
   return downloadSingleDocument(doc, output);
@@ -290,11 +280,7 @@ async function downloadPool(
   docs: FrDocumentJsonMeta[],
   concurrency: number,
   outputDir: string,
-  onComplete: (
-    doc: FrDocumentJsonMeta,
-    result: FrDownloadedFile | null,
-    error: string | null,
-  ) => void,
+  onComplete: (doc: FrDocumentJsonMeta, result: FrDownloadedFile | null, error: string | null) => void,
 ): Promise<void> {
   let nextIndex = 0;
 
@@ -316,19 +302,12 @@ async function downloadPool(
   await Promise.all(Array.from({ length: workerCount }, () => worker()));
 }
 
-async function downloadSingleDocument(
-  doc: FrDocumentJsonMeta,
-  outputDir: string,
-): Promise<FrDownloadedFile> {
+async function downloadSingleDocument(doc: FrDocumentJsonMeta, outputDir: string): Promise<FrDownloadedFile> {
   if (!doc.document_number || !doc.publication_date) {
-    throw new Error(
-      `Invalid document in API response: missing document_number or publication_date`,
-    );
+    throw new Error(`Invalid document in API response: missing document_number or publication_date`);
   }
   if (!doc.full_text_xml_url) {
-    throw new Error(
-      `Document ${doc.document_number} has no full_text_xml_url — cannot download XML`,
-    );
+    throw new Error(`Document ${doc.document_number} has no full_text_xml_url — cannot download XML`);
   }
 
   const xmlPath = buildFrDownloadXmlPath(doc.document_number, doc.publication_date, outputDir);
@@ -422,16 +401,11 @@ export async function fetchWithRetry(url: string, attempt = 0): Promise<Response
   if (response.ok) return response;
 
   // Retry on transient HTTP errors
-  if (
-    (response.status === 429 || response.status === 503 || response.status === 504) &&
-    attempt < MAX_RETRIES
-  ) {
+  if ((response.status === 429 || response.status === 503 || response.status === 504) && attempt < MAX_RETRIES) {
     const retryAfter = response.headers.get("Retry-After");
     const parsedRetry = retryAfter ? parseInt(retryAfter, 10) : NaN;
     const delay =
-      !isNaN(parsedRetry) && parsedRetry > 0
-        ? parsedRetry * 1000
-        : RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
+      !isNaN(parsedRetry) && parsedRetry > 0 ? parsedRetry * 1000 : RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
     console.warn(
       `HTTP ${response.status} for ${url}. Retrying in ${delay}ms (attempt ${attempt + 1}/${MAX_RETRIES})...`,
     );

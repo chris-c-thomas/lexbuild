@@ -33,15 +33,11 @@ const seo: PageSEO = {
 
   <div class="flex flex-col gap-6">
     <div>
-      <h1
-        class="font-display text-slate-blue-800 dark:text-slate-blue-200 text-2xl font-semibold tracking-tight"
-      >
+      <h1 class="font-display text-slate-blue-800 dark:text-slate-blue-200 text-2xl font-semibold tracking-tight">
         Federal Register
       </h1>
       <p class="text-ink-muted mt-1 text-[15px]">
-        {totalDocs.toLocaleString()} documents across {years.length} year{
-          years.length !== 1 ? "s" : ""
-        }
+        {totalDocs.toLocaleString()} documents across {years.length} year{years.length !== 1 ? "s" : ""}
       </p>
     </div>
 
@@ -53,8 +49,7 @@ const seo: PageSEO = {
             .map((year) => (
               <a
                 href={`/fr/${year.year}`}
-                class="border-slate-blue-200 hover:border-slate-blue-400 dark:bg-card dark:border-border dark:hover:border-slate-blue-600 flex flex-col rounded-sm border bg-white p-5 transition-colors"
-              >
+                class="border-slate-blue-200 hover:border-slate-blue-400 dark:bg-card dark:border-border dark:hover:border-slate-blue-600 flex flex-col rounded-sm border bg-white p-5 transition-colors">
                 <div class="font-display text-slate-blue-700 dark:text-slate-blue-300 mb-1 text-base font-semibold">
                   {year.year}
                 </div>

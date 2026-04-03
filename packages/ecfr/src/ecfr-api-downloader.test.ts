@@ -78,9 +78,7 @@ describe("fetchEcfrTitlesMeta", () => {
   });
 
   it("throws on non-200 response", async () => {
-    vi.mocked(globalThis.fetch).mockResolvedValueOnce(
-      new Response("Server Error", { status: 500 }),
-    );
+    vi.mocked(globalThis.fetch).mockResolvedValueOnce(new Response("Server Error", { status: 500 }));
 
     await expect(fetchEcfrTitlesMeta()).rejects.toThrow("HTTP 500");
   });

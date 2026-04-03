@@ -6,15 +6,7 @@ import { Command } from "commander";
 import { relative, resolve } from "node:path";
 import { downloadEcfrTitles, downloadEcfrTitlesFromApi, fetchEcfrTitlesMeta } from "@lexbuild/ecfr";
 import type { EcfrTitlesResponse } from "@lexbuild/ecfr";
-import {
-  createSpinner,
-  summaryBlock,
-  dataTable,
-  formatDuration,
-  formatBytes,
-  success,
-  error,
-} from "../ui.js";
+import { createSpinner, summaryBlock, dataTable, formatDuration, formatBytes, success, error } from "../ui.js";
 import { parseTitles } from "../parse-titles.js";
 
 /** Valid download source values */
@@ -34,11 +26,7 @@ export const downloadEcfrCommand = new Command("download-ecfr")
   .option("-o, --output <dir>", "Download directory", "./downloads/ecfr/xml")
   .option("--titles <spec>", "Title(s) to download: 1, 1-5, or 1-5,8,17")
   .option("--all", "Download all 50 eCFR titles", false)
-  .option(
-    "--source <source>",
-    "Download source: ecfr-api (daily-updated) or govinfo (bulk data)",
-    "ecfr-api",
-  )
+  .option("--source <source>", "Download source: ecfr-api (daily-updated) or govinfo (bulk data)", "ecfr-api")
   .option("--date <YYYY-MM-DD>", "Point-in-time date (ecfr-api source only)")
   .addHelpText(
     "after",
@@ -63,9 +51,7 @@ Sources:
     // Validate source
     const validSources: EcfrSource[] = ["govinfo", "ecfr-api"];
     if (!validSources.includes(options.source)) {
-      console.error(
-        error(`Invalid source "${options.source}". Valid sources: ${validSources.join(", ")}`),
-      );
+      console.error(error(`Invalid source "${options.source}". Valid sources: ${validSources.join(", ")}`));
       process.exit(1);
     }
 
@@ -242,16 +228,10 @@ async function downloadFromApi(
   // Check if any titles used different dates
   const uniqueDates = new Set(result.files.map((f) => f.asOfDate));
   const dateDisplay =
-    uniqueDates.size <= 1
-      ? result.asOfDate
-      : `${result.asOfDate} (${uniqueDates.size - 1} titles at earlier dates)`;
+    uniqueDates.size <= 1 ? result.asOfDate : `${result.asOfDate} (${uniqueDates.size - 1} titles at earlier dates)`;
 
   const fileRows = result.files.map((file) => {
-    const row = [
-      String(file.titleNumber),
-      formatBytes(file.size),
-      relative(outputDir, file.path) || file.path,
-    ];
+    const row = [String(file.titleNumber), formatBytes(file.size), relative(outputDir, file.path) || file.path];
     // Show the date if it differs from the primary
     if (file.asOfDate !== result.asOfDate) {
       row.push(file.asOfDate);
@@ -288,9 +268,7 @@ async function downloadFromApi(
       const nums = processing.map((f) => `Title ${f.titleNumber}`).join(", ");
       console.log(`  ${error(`Unavailable (processing on server): ${nums}`)}`);
       console.log(`    The eCFR API cannot serve these titles while an import is in progress.`);
-      console.log(
-        `    Re-run this command later to download them. Existing local files (if any) are preserved.`,
-      );
+      console.log(`    Re-run this command later to download them. Existing local files (if any) are preserved.`);
     }
     if (other.length > 0) {
       const nums = other.map((f) => `Title ${f.titleNumber} (${f.status})`).join(", ");

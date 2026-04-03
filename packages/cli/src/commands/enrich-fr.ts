@@ -9,13 +9,7 @@
 import { Command } from "commander";
 import { resolve } from "node:path";
 import { enrichFrDocuments } from "@lexbuild/fr";
-import {
-  createSpinner,
-  summaryBlock,
-  formatDuration,
-  formatNumber,
-  error,
-} from "../ui.js";
+import { createSpinner, summaryBlock, formatDuration, formatNumber, error } from "../ui.js";
 
 /** Parsed options from the enrich-fr command */
 interface EnrichFrCliOptions {
@@ -51,12 +45,7 @@ Files that already have fr_citation are skipped unless --force is used.`,
   .action(async (options: EnrichFrCliOptions) => {
     // Validate: need --from or --recent
     if (!options.from && !options.recent) {
-      console.error(
-        error(
-          "Specify --from <date> or --recent <days>\n" +
-            "Examples: --from 2000-01-01, --recent 30",
-        ),
-      );
+      console.error(error("Specify --from <date> or --recent <days>\n" + "Examples: --from 2000-01-01, --recent 30"));
       process.exit(1);
     }
 
@@ -88,9 +77,7 @@ Files that already have fr_citation are skipped unless --force is used.`,
     const outputDir = resolve(options.output);
     const startTime = performance.now();
 
-    const spinner = createSpinner(
-      `Enriching FR frontmatter (${from} to ${to})`,
-    );
+    const spinner = createSpinner(`Enriching FR frontmatter (${from} to ${to})`);
     spinner.start();
 
     try {
@@ -101,18 +88,13 @@ Files that already have fr_citation are skipped unless --force is used.`,
         force: options.force,
         onProgress: (progress) => {
           const processed = progress.enriched + progress.skipped + progress.notFound;
-          const pct =
-            progress.total > 0
-              ? Math.round((processed / progress.total) * 100)
-              : 0;
+          const pct = progress.total > 0 ? Math.round((processed / progress.total) * 100) : 0;
           spinner.text = `Enriching FR frontmatter (${formatNumber(progress.enriched)} enriched, ${formatNumber(progress.skipped)} skipped) ${pct}% [${progress.currentChunk}] ${progress.currentDocument}`;
         },
       });
 
       const elapsed = performance.now() - startTime;
-      spinner.succeed(
-        `Enriched ${formatNumber(result.enriched)} FR documents`,
-      );
+      spinner.succeed(`Enriched ${formatNumber(result.enriched)} FR documents`);
 
       console.log();
       const rows: [string, string][] = [

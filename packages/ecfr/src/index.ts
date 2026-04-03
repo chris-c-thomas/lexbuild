@@ -5,12 +5,7 @@ export { convertEcfrTitle } from "./converter.js";
 export type { EcfrConvertOptions, EcfrConvertResult } from "./converter.js";
 
 // Downloader (govinfo bulk data)
-export {
-  downloadEcfrTitles,
-  buildEcfrDownloadUrl,
-  ECFR_TITLE_COUNT,
-  ECFR_TITLE_NUMBERS,
-} from "./downloader.js";
+export { downloadEcfrTitles, buildEcfrDownloadUrl, ECFR_TITLE_COUNT, ECFR_TITLE_NUMBERS } from "./downloader.js";
 export type {
   EcfrDownloadOptions,
   EcfrDownloadProgress,
@@ -20,11 +15,7 @@ export type {
 } from "./downloader.js";
 
 // Downloader (eCFR API — daily-updated, point-in-time)
-export {
-  downloadEcfrTitlesFromApi,
-  buildEcfrApiDownloadUrl,
-  fetchEcfrTitlesMeta,
-} from "./ecfr-api-downloader.js";
+export { downloadEcfrTitlesFromApi, buildEcfrApiDownloadUrl, fetchEcfrTitlesMeta } from "./ecfr-api-downloader.js";
 export type {
   EcfrApiDownloadOptions,
   EcfrApiDownloadResult,

@@ -170,9 +170,7 @@ export function buildEcfrApiDownloadUrl(titleNumber: number, date: string): stri
  * Retries transient errors (503, 504) up to MAX_RETRIES times with
  * exponential backoff.
  */
-export async function downloadEcfrTitlesFromApi(
-  options: EcfrApiDownloadOptions,
-): Promise<EcfrApiDownloadResult> {
+export async function downloadEcfrTitlesFromApi(options: EcfrApiDownloadOptions): Promise<EcfrApiDownloadResult> {
   const { output, onProgress } = options;
   const titles = options.titles ?? ECFR_TITLE_NUMBERS;
 
@@ -204,10 +202,7 @@ export async function downloadEcfrTitlesFromApi(
         titleDateMap.set(num, titleMeta.upToDateAsOf);
       } else if (titleMeta?.upToDateAsOf) {
         // Use the title's own date if available, falling back to global
-        titleDateMap.set(
-          num,
-          titleMeta.upToDateAsOf < globalDate ? titleMeta.upToDateAsOf : globalDate,
-        );
+        titleDateMap.set(num, titleMeta.upToDateAsOf < globalDate ? titleMeta.upToDateAsOf : globalDate);
       } else {
         titleDateMap.set(num, globalDate);
       }
@@ -240,8 +235,7 @@ export async function downloadEcfrTitlesFromApi(
   for (const file of files) {
     dateCounts.set(file.asOfDate, (dateCounts.get(file.asOfDate) ?? 0) + 1);
   }
-  const primaryDate =
-    options.date ?? [...dateCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? meta.date;
+  const primaryDate = options.date ?? [...dateCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? meta.date;
 
   return { titlesDownloaded: files.length, files, totalBytes, asOfDate: primaryDate, failed };
 }

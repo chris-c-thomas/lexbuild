@@ -25,16 +25,12 @@ describe("releasePointToPath", () => {
 describe("buildDownloadUrl", () => {
   it("builds URL for Title 1 with current release point", () => {
     const url = buildDownloadUrl(1, FALLBACK_RELEASE_POINT);
-    expect(url).toBe(
-      `https://uscode.house.gov/download/releasepoints/us/pl/119/73not60/xml_usc01@119-73not60.zip`,
-    );
+    expect(url).toBe(`https://uscode.house.gov/download/releasepoints/us/pl/119/73not60/xml_usc01@119-73not60.zip`);
   });
 
   it("builds URL for Title 26 with current release point", () => {
     const url = buildDownloadUrl(26, FALLBACK_RELEASE_POINT);
-    expect(url).toBe(
-      `https://uscode.house.gov/download/releasepoints/us/pl/119/73not60/xml_usc26@119-73not60.zip`,
-    );
+    expect(url).toBe(`https://uscode.house.gov/download/releasepoints/us/pl/119/73not60/xml_usc26@119-73not60.zip`);
   });
 
   it("zero-pads single-digit title numbers", () => {
@@ -49,18 +45,14 @@ describe("buildDownloadUrl", () => {
 
   it("uses custom release point", () => {
     const url = buildDownloadUrl(1, "118-200");
-    expect(url).toBe(
-      "https://uscode.house.gov/download/releasepoints/us/pl/118/200/xml_usc01@118-200.zip",
-    );
+    expect(url).toBe("https://uscode.house.gov/download/releasepoints/us/pl/118/200/xml_usc01@118-200.zip");
   });
 });
 
 describe("buildAllTitlesUrl", () => {
   it("builds URL for all titles zip", () => {
     const url = buildAllTitlesUrl(FALLBACK_RELEASE_POINT);
-    expect(url).toBe(
-      `https://uscode.house.gov/download/releasepoints/us/pl/119/73not60/xml_uscAll@119-73not60.zip`,
-    );
+    expect(url).toBe(`https://uscode.house.gov/download/releasepoints/us/pl/119/73not60/xml_uscAll@119-73not60.zip`);
   });
 });
 

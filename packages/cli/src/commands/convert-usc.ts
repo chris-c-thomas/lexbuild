@@ -37,13 +37,8 @@ interface ConvertCommandOptions {
 }
 
 /** Build the shared convert options from CLI flags. */
-function buildConvertOptions(
-  inputPath: string,
-  outputPath: string,
-  options: ConvertCommandOptions,
-) {
-  const hasSelectiveFlags =
-    options.includeEditorialNotes || options.includeStatutoryNotes || options.includeAmendments;
+function buildConvertOptions(inputPath: string, outputPath: string, options: ConvertCommandOptions) {
+  const hasSelectiveFlags = options.includeEditorialNotes || options.includeStatutoryNotes || options.includeAmendments;
   const includeNotes = hasSelectiveFlags ? false : options.includeNotes;
 
   return {
@@ -145,10 +140,7 @@ async function convertSingleFile(
       rows.push(["Files Written", formatNumber(result.files.length)]);
     }
 
-    rows.push(
-      ["Peak Memory", formatBytes(result.peakMemoryBytes)],
-      ["Duration", formatDuration(elapsed)],
-    );
+    rows.push(["Peak Memory", formatBytes(result.peakMemoryBytes)], ["Duration", formatDuration(elapsed)]);
 
     const titleLabel = result.dryRun
       ? `lexbuild — Title ${result.titleNumber}: ${result.titleName} [dry-run]`
@@ -229,9 +221,7 @@ Examples:
     // Validate: must specify exactly one of <input>, --titles, or --all
     const modeCount = [input, options.titles, options.all].filter(Boolean).length;
     if (modeCount === 0) {
-      console.error(
-        error("Specify an input file, --titles <spec>, or --all (e.g. --titles 1-5,8,11)"),
-      );
+      console.error(error("Specify an input file, --titles <spec>, or --all (e.g. --titles 1-5,8,11)"));
       process.exit(1);
     }
     if (modeCount > 1) {
@@ -304,9 +294,7 @@ Examples:
 
     // Summary header
     const outputRelative = relative(process.cwd(), outputPath) || outputPath;
-    const headerTitle = options.dryRun
-      ? "lexbuild — Conversion Summary [dry-run]"
-      : "lexbuild — Conversion Summary";
+    const headerTitle = options.dryRun ? "lexbuild — Conversion Summary [dry-run]" : "lexbuild — Conversion Summary";
     const header = summaryBlock({
       title: headerTitle,
       rows: [["Directory", outputRelative]],
@@ -327,12 +315,7 @@ Examples:
       totalElapsed += elapsed;
 
       if (granularity === "title") {
-        return [
-          result.titleNumber,
-          result.titleName,
-          formatNumber(result.totalTokenEstimate),
-          formatDuration(elapsed),
-        ];
+        return [result.titleNumber, result.titleName, formatNumber(result.totalTokenEstimate), formatDuration(elapsed)];
       } else if (granularity === "chapter") {
         return [
           result.titleNumber,

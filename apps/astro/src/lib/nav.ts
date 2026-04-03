@@ -23,19 +23,13 @@ export async function getTitles(sourceId: SourceId): Promise<TitleSummary[]> {
 }
 
 /** Load a single title summary by directory name. */
-export async function getTitleSummary(
-  sourceId: SourceId,
-  titleDir: string,
-): Promise<TitleSummary | null> {
+export async function getTitleSummary(sourceId: SourceId, titleDir: string): Promise<TitleSummary | null> {
   const titles = await getTitles(sourceId);
   return titles.find((t) => t.directory === titleDir) ?? null;
 }
 
 /** Load the nav data for a specific title (chapters, parts, sections). */
-export async function getTitleNav(
-  sourceId: SourceId,
-  titleDir: string,
-): Promise<TitleNavData | null> {
+export async function getTitleNav(sourceId: SourceId, titleDir: string): Promise<TitleNavData | null> {
   try {
     const raw = await readFile(resolve(NAV_DIR, `${sourceId}/${titleDir}.json`), "utf-8");
     return JSON.parse(raw) as TitleNavData;

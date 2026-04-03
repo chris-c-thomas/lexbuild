@@ -42,8 +42,7 @@ export default function ThemeToggle() {
       onClick={toggle}
       aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
       title={isDark ? "Switch to light theme" : "Switch to dark theme"}
-      className="border-border bg-muted hover:bg-muted/80 relative inline-flex h-8 w-[52px] cursor-pointer items-center rounded-full border p-0.5 transition-colors"
-    >
+      className="border-border bg-muted hover:bg-muted/80 relative inline-flex h-8 w-[52px] cursor-pointer items-center rounded-full border p-0.5 transition-colors">
       {/* Sliding indicator */}
       <span
         className="bg-background absolute h-6 w-6 rounded-full shadow-sm transition-transform duration-200"
@@ -53,15 +52,13 @@ export default function ThemeToggle() {
       <span
         className={`relative z-10 flex h-6 w-6 items-center justify-center rounded-full transition-colors ${
           !isDark ? "text-foreground" : "text-muted-foreground"
-        }`}
-      >
+        }`}>
         <Sun className="h-3.5 w-3.5" aria-hidden="true" />
       </span>
       <span
         className={`relative z-10 flex h-6 w-6 items-center justify-center rounded-full transition-colors ${
           isDark ? "text-foreground" : "text-muted-foreground"
-        }`}
-      >
+        }`}>
         <Moon className="h-3.5 w-3.5" aria-hidden="true" />
       </span>
     </button>

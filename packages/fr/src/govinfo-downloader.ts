@@ -150,9 +150,7 @@ export async function downloadFrBulk(options: FrGovinfoBulkOptions): Promise<FrG
           skipped++;
         }
       } catch (err) {
-        console.warn(
-          `Warning: Failed to download ${date}: ${err instanceof Error ? err.message : String(err)}`,
-        );
+        console.warn(`Warning: Failed to download ${date}: ${err instanceof Error ? err.message : String(err)}`);
         failed++;
       }
     }
@@ -185,11 +183,7 @@ export async function downloadFrBulk(options: FrGovinfoBulkOptions): Promise<FrG
 /**
  * Download a single day's FR issue XML. Returns null if 404 (no issue).
  */
-async function downloadSingleDay(
-  url: string,
-  filePath: string,
-  date: string,
-): Promise<FrGovinfoDownloadedFile | null> {
+async function downloadSingleDay(url: string, filePath: string, date: string): Promise<FrGovinfoDownloadedFile | null> {
   const response = await fetchWithRetry(url);
 
   if (response.status === 404) {
@@ -253,16 +247,11 @@ async function fetchWithRetry(url: string, attempt = 0): Promise<Response> {
 
   if (response.ok || response.status === 404) return response;
 
-  if (
-    (response.status === 429 || response.status === 503 || response.status === 504) &&
-    attempt < MAX_RETRIES
-  ) {
+  if ((response.status === 429 || response.status === 503 || response.status === 504) && attempt < MAX_RETRIES) {
     const retryAfter = response.headers.get("Retry-After");
     const parsedRetry = retryAfter ? parseInt(retryAfter, 10) : NaN;
     const delay =
-      !isNaN(parsedRetry) && parsedRetry > 0
-        ? parsedRetry * 1000
-        : RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
+      !isNaN(parsedRetry) && parsedRetry > 0 ? parsedRetry * 1000 : RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
     await sleep(delay);
     return fetchWithRetry(url, attempt + 1);
   }

@@ -53,10 +53,7 @@ describe("createLinkResolver", () => {
       const resolver = createLinkResolver();
       resolver.register("/us/usc/t1/s7", "output/usc/title-01/chapter-01/section-7.md");
 
-      const result = resolver.resolve(
-        "/us/usc/t1/s7",
-        "output/usc/title-01/chapter-01/section-1.md",
-      );
+      const result = resolver.resolve("/us/usc/t1/s7", "output/usc/title-01/chapter-01/section-1.md");
       expect(result).toBe("section-7.md");
     });
 
@@ -64,10 +61,7 @@ describe("createLinkResolver", () => {
       const resolver = createLinkResolver();
       resolver.register("/us/usc/t1/s201", "output/usc/title-01/chapter-03/section-201.md");
 
-      const result = resolver.resolve(
-        "/us/usc/t1/s201",
-        "output/usc/title-01/chapter-01/section-1.md",
-      );
+      const result = resolver.resolve("/us/usc/t1/s201", "output/usc/title-01/chapter-01/section-1.md");
       expect(result).toBe("../chapter-03/section-201.md");
     });
 
@@ -75,10 +69,7 @@ describe("createLinkResolver", () => {
       const resolver = createLinkResolver();
       resolver.register("/us/usc/t2/s100", "output/usc/title-02/chapter-05/section-100.md");
 
-      const result = resolver.resolve(
-        "/us/usc/t2/s100",
-        "output/usc/title-01/chapter-01/section-1.md",
-      );
+      const result = resolver.resolve("/us/usc/t2/s100", "output/usc/title-01/chapter-01/section-1.md");
       expect(result).toBe("../../title-02/chapter-05/section-100.md");
     });
 
@@ -87,19 +78,13 @@ describe("createLinkResolver", () => {
       resolver.register("/us/usc/t1/s7", "output/usc/title-01/chapter-01/section-7.md");
 
       // Reference to subsection (a) should resolve to the section file
-      const result = resolver.resolve(
-        "/us/usc/t1/s7/a",
-        "output/usc/title-01/chapter-01/section-1.md",
-      );
+      const result = resolver.resolve("/us/usc/t1/s7/a", "output/usc/title-01/chapter-01/section-1.md");
       expect(result).toBe("section-7.md");
     });
 
     it("returns null for unregistered identifiers", () => {
       const resolver = createLinkResolver();
-      const result = resolver.resolve(
-        "/us/usc/t99/s1",
-        "output/usc/title-01/chapter-01/section-1.md",
-      );
+      const result = resolver.resolve("/us/usc/t99/s1", "output/usc/title-01/chapter-01/section-1.md");
       expect(result).toBeNull();
     });
   });
@@ -108,9 +93,7 @@ describe("createLinkResolver", () => {
     it("generates OLRC URL for USC section", () => {
       const resolver = createLinkResolver();
       const url = resolver.fallbackUrl("/us/usc/t42/s1983");
-      expect(url).toBe(
-        "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title42-section1983",
-      );
+      expect(url).toBe("https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title42-section1983");
     });
 
     it("generates OLRC URL for USC title", () => {

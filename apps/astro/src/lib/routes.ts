@@ -131,8 +131,7 @@ function buildBreadcrumbs(sourceId: SourceId, slug: string[]): Breadcrumb[] {
   let path = source.basePath;
   for (const [i, segment] of slug.entries()) {
     path = `${path}/${segment}`;
-    const label =
-      sourceId === "fr" ? formatFrSegmentLabel(segment, i) : formatSegmentLabel(segment);
+    const label = sourceId === "fr" ? formatFrSegmentLabel(segment, i) : formatSegmentLabel(segment);
     crumbs.push({ label, href: path });
   }
 

@@ -57,13 +57,11 @@ export function Sidebar({ sourceId, currentPath }: SidebarProps) {
     <div
       ref={sidebarRef}
       style={{ width: `${width}px` }}
-      className="relative hidden shrink-0 lg:sticky lg:top-14 lg:block lg:h-[calc(100vh-3.5rem)]"
-    >
+      className="relative hidden shrink-0 lg:sticky lg:top-14 lg:block lg:h-[calc(100vh-3.5rem)]">
       {/* Scrollable content area */}
       <div
         className="border-sidebar-border bg-sidebar h-full overflow-y-auto border-r"
-        style={{ scrollbarGutter: "stable" }}
-      >
+        style={{ scrollbarGutter: "stable" }}>
         <SidebarContent sourceId={sourceId} currentPath={currentPath} />
       </div>
 
@@ -73,8 +71,7 @@ export function Sidebar({ sourceId, currentPath }: SidebarProps) {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         className="group absolute top-0 right-0 z-10 hidden h-full w-1.5 cursor-col-resize select-none lg:block"
-        aria-hidden="true"
-      >
+        aria-hidden="true">
         <div className="bg-sidebar-accent-foreground/40 mx-auto h-full w-px opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-active:opacity-100" />
       </div>
     </div>

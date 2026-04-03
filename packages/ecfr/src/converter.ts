@@ -107,8 +107,7 @@ export async function convertEcfrTitle(options: EcfrConvertOptions): Promise<Ecf
   // Map granularity to emit level.
   // Chapter and section granularity both emit at section level — chapter mode
   // groups sections by chapter ancestor in the write phase.
-  const emitAt: LevelType =
-    granularity === "title" ? "title" : granularity === "part" ? "part" : "section";
+  const emitAt: LevelType = granularity === "title" ? "title" : granularity === "part" ? "part" : "section";
 
   // Collect phase
   const collected: CollectedSection[] = [];
@@ -344,9 +343,7 @@ export async function convertEcfrTitle(options: EcfrConvertOptions): Promise<Ecf
       ? files.length
       : granularity === "chapter"
         ? new Set(
-            collected
-              .map((c) => c.context.ancestors.find((a) => a.levelType === "part")?.numValue)
-              .filter(Boolean),
+            collected.map((c) => c.context.ancestors.find((a) => a.levelType === "part")?.numValue).filter(Boolean),
           ).size
         : 0;
 
@@ -383,8 +380,7 @@ function buildDryRunResult(
     }
     count = chapterKeys.size;
   } else {
-    const targetLevel =
-      granularity === "title" ? "title" : granularity === "part" ? "part" : "section";
+    const targetLevel = granularity === "title" ? "title" : granularity === "part" ? "part" : "section";
     const filtered = collected.filter((c) => c.node.levelType === targetLevel);
     count = filtered.length;
     for (const { node } of filtered) {
@@ -426,8 +422,7 @@ function buildNotesFilter(options: EcfrConvertOptions): NotesFilter | undefined 
   if (options.includeNotes) return undefined; // Include all
 
   // Check if any selective flag is set
-  const hasSelective =
-    options.includeEditorialNotes || options.includeStatutoryNotes || options.includeAmendments;
+  const hasSelective = options.includeEditorialNotes || options.includeStatutoryNotes || options.includeAmendments;
 
   if (!hasSelective) {
     return { editorial: false, statutory: false, amendments: false };

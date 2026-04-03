@@ -131,8 +131,7 @@ describe("FrASTBuilder", () => {
           if (inline.type === "inline" && (inline as InlineNode).inlineType === "italic") {
             const italicNode = inline as InlineNode;
             const text = italicNode.text ?? "";
-            const childText =
-              italicNode.children?.map((c) => (c as InlineNode).text ?? "").join("") ?? "";
+            const childText = italicNode.children?.map((c) => (c as InlineNode).text ?? "").join("") ?? "";
             if (text.includes("Effective date") || childText.includes("Effective date")) {
               foundItalicEmphasis = true;
             }

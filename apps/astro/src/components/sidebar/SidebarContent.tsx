@@ -130,8 +130,7 @@ function FrSidebarContent({ currentPath }: { currentPath: string }) {
                           ? "bg-sidebar-accent text-sidebar-accent-foreground"
                           : "text-sidebar-foreground hover:bg-sidebar-accent/50"
                       }`}
-                      aria-expanded={isExpanded}
-                    >
+                      aria-expanded={isExpanded}>
                       <ChevronRight
                         className={`text-sidebar-foreground/40 size-3.5 shrink-0 transition-transform ${
                           isExpanded ? "rotate-90" : ""
@@ -140,9 +139,7 @@ function FrSidebarContent({ currentPath }: { currentPath: string }) {
                       <span className="text-slate-blue-700 dark:text-slate-blue-400 shrink-0 font-mono text-xs font-semibold">
                         {yr.year}
                       </span>
-                      <span className="min-w-0 truncate font-medium">
-                        {yr.documentCount.toLocaleString()} docs
-                      </span>
+                      <span className="min-w-0 truncate font-medium">{yr.documentCount.toLocaleString()} docs</span>
                     </button>
 
                     {isExpanded && (
@@ -163,8 +160,7 @@ function FrSidebarContent({ currentPath }: { currentPath: string }) {
                                       isActiveMonth
                                         ? "bg-sidebar-accent/70 text-sidebar-accent-foreground font-medium"
                                         : "text-sidebar-foreground/80 hover:bg-sidebar-accent/40"
-                                    }`}
-                                  >
+                                    }`}>
                                     <span className="text-slate-blue-700 dark:text-slate-blue-400 shrink-0 font-mono text-[0.65rem] font-semibold">
                                       {monthStr}
                                     </span>
@@ -311,8 +307,7 @@ function TitleSidebarContent({ sourceId, currentPath }: SidebarContentProps) {
                         ? "bg-sidebar-accent text-sidebar-accent-foreground"
                         : "text-sidebar-foreground hover:bg-sidebar-accent/50"
                     }`}
-                    aria-expanded={isExpanded}
-                  >
+                    aria-expanded={isExpanded}>
                     <ChevronRight
                       className={`text-sidebar-foreground/40 size-3.5 shrink-0 transition-transform ${
                         isExpanded ? "rotate-90" : ""
@@ -349,8 +344,7 @@ function TitleSidebarContent({ sourceId, currentPath }: SidebarContentProps) {
                               });
                               void loadTitleNav(title.directory);
                             }}
-                            className="text-slate-blue-700 dark:text-slate-blue-400 hover:text-slate-blue-900 dark:hover:text-slate-blue-200 mt-1 text-xs font-medium"
-                          >
+                            className="text-slate-blue-700 dark:text-slate-blue-400 hover:text-slate-blue-900 dark:hover:text-slate-blue-200 mt-1 text-xs font-medium">
                             Retry
                           </button>
                         </div>
@@ -422,8 +416,7 @@ function ChapterList({
                   ? "bg-sidebar-accent/70 text-sidebar-accent-foreground"
                   : "text-sidebar-foreground/80 hover:bg-sidebar-accent/40"
               }`}
-              aria-expanded={isExpanded}
-            >
+              aria-expanded={isExpanded}>
               <ChevronRight
                 className={`text-sidebar-foreground/40 size-3 shrink-0 transition-transform ${
                   isExpanded ? "rotate-90" : ""
@@ -448,11 +441,7 @@ function ChapterList({
                     currentPath={currentPath}
                   />
                 ) : hasSections ? (
-                  <SectionList
-                    sections={chapter.sections!}
-                    basePath={basePath}
-                    currentPath={currentPath}
-                  />
+                  <SectionList sections={chapter.sections!} basePath={basePath} currentPath={currentPath} />
                 ) : (
                   <p className="text-muted-foreground py-1 text-xs">Empty</p>
                 )}
@@ -477,15 +466,7 @@ interface PartListProps {
   currentPath: string;
 }
 
-function PartList({
-  parts,
-  sourceId,
-  titleDir,
-  chapterDir,
-  expandedPart,
-  togglePart,
-  currentPath,
-}: PartListProps) {
+function PartList({ parts, sourceId, titleDir, chapterDir, expandedPart, togglePart, currentPath }: PartListProps) {
   return (
     <ul className="space-y-0.5">
       {parts.map((part) => {
@@ -501,8 +482,7 @@ function PartList({
                   ? "bg-sidebar-accent/50 text-sidebar-accent-foreground"
                   : "text-sidebar-foreground/70 hover:bg-sidebar-accent/30"
               }`}
-              aria-expanded={isExpanded}
-            >
+              aria-expanded={isExpanded}>
               <ChevronRight
                 className={`text-sidebar-foreground/40 size-2.5 shrink-0 transition-transform ${
                   isExpanded ? "rotate-90" : ""
@@ -516,11 +496,7 @@ function PartList({
 
             {isExpanded && (
               <div className="border-sidebar-border/40 mt-0.5 ml-3 border-l pl-2">
-                <SectionList
-                  sections={part.sections}
-                  basePath={basePath}
-                  currentPath={currentPath}
-                />
+                <SectionList sections={part.sections} basePath={basePath} currentPath={currentPath} />
               </div>
             )}
           </li>

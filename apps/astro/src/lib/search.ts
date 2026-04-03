@@ -115,8 +115,6 @@ export async function search(
     query: result.query,
     processingTimeMs: result.processingTimeMs,
     estimatedTotalHits: result.estimatedTotalHits ?? 0,
-    facetDistribution: result.facetDistribution as
-      | Record<string, Record<string, number>>
-      | undefined,
+    facetDistribution: result.facetDistribution as Record<string, Record<string, number>> | undefined,
   };
 }

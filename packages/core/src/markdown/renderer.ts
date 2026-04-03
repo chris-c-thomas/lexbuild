@@ -63,10 +63,7 @@ export function renderDocument(
 /**
  * Render a section-level node to Markdown.
  */
-export function renderSection(
-  node: LevelNode,
-  options: RenderOptions = DEFAULT_RENDER_OPTIONS,
-): string {
+export function renderSection(node: LevelNode, options: RenderOptions = DEFAULT_RENDER_OPTIONS): string {
   const parts: string[] = [];
 
   // Section heading: # § {number}. {heading}
@@ -461,11 +458,7 @@ function renderNotesContainer(node: NotesContainerNode, options: RenderOptions):
 }
 
 /** Amendment-related topics */
-const AMENDMENT_TOPICS = new Set([
-  "amendments",
-  "effectiveDateOfAmendment",
-  "shortTitleOfAmendment",
-]);
+const AMENDMENT_TOPICS = new Set(["amendments", "effectiveDateOfAmendment", "shortTitleOfAmendment"]);
 
 /** Editorial-specific topics */
 const EDITORIAL_TOPICS = new Set(["codification", "dispositionOfSections"]);
@@ -483,10 +476,7 @@ const STATUTORY_TOPICS = new Set([
 /**
  * Check if a category of notes should be included based on the filter.
  */
-function shouldIncludeCategory(
-  category: "editorial" | "statutory" | "unknown",
-  filter: NotesFilter,
-): boolean {
+function shouldIncludeCategory(category: "editorial" | "statutory" | "unknown", filter: NotesFilter): boolean {
   if (category === "editorial") return filter.editorial || filter.amendments;
   if (category === "statutory") return filter.statutory || filter.amendments;
   // Unknown category — include if any filter is enabled

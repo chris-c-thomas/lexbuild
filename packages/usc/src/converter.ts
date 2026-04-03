@@ -256,8 +256,7 @@ export async function convertTitle(options: ConvertOptions): Promise<ConvertResu
   // For title granularity, use the accurate estimate from the full rendered body
   // (includes structural headings); for other modes, sum per-section content lengths
   const totalTokens =
-    titleLevelTokenEstimate ??
-    sectionMetas.reduce((sum, s) => sum + Math.ceil(s.contentLength / 4), 0);
+    titleLevelTokenEstimate ?? sectionMetas.reduce((sum, s) => sum + Math.ceil(s.contentLength / 4), 0);
 
   return {
     sectionsWritten:
@@ -308,9 +307,7 @@ async function writeSection(
   const renderOpts: RenderOptions = {
     headingOffset: 0,
     linkStyle: options.linkStyle,
-    resolveLink: linkResolver
-      ? (identifier: string) => linkResolver.resolve(identifier, filePath)
-      : undefined,
+    resolveLink: linkResolver ? (identifier: string) => linkResolver.resolve(identifier, filePath) : undefined,
     notesFilter,
   };
 
@@ -528,9 +525,7 @@ function generateTitleReadme(meta: {
     const sectionCount = ch.sections.length;
     lines.push(`### Chapter ${ch.number} — ${ch.name}`);
     lines.push("");
-    lines.push(
-      `${sectionCount} section${sectionCount !== 1 ? "s" : ""} · [${ch.directory}/](${ch.directory}/)`,
-    );
+    lines.push(`${sectionCount} section${sectionCount !== 1 ? "s" : ""} · [${ch.directory}/](${ch.directory}/)`);
     lines.push("");
   }
 
@@ -998,8 +993,7 @@ function buildChapterDir(context: EmitContext): string | undefined {
  */
 function buildFrontmatter(node: LevelNode, context: EmitContext): FrontmatterData {
   const meta = context.documentMeta;
-  const titleAncestor =
-    findAncestor(context.ancestors, "title") ?? findAncestor(context.ancestors, "appendix");
+  const titleAncestor = findAncestor(context.ancestors, "title") ?? findAncestor(context.ancestors, "appendix");
   const chapterAncestor =
     findAncestor(context.ancestors, "chapter") ??
     findAncestor(context.ancestors, "compiledAct") ??
@@ -1089,9 +1083,7 @@ function buildSectionMetaDryRun(
   const chapterNum = chapterAncestor?.numValue ?? "0";
   const chapterDir = chapterNum !== "0" ? `chapter-${padTwo(chapterNum)}` : "";
 
-  const hasNotes = sectionNode.children.some(
-    (c) => c.type === "notesContainer" || c.type === "note",
-  );
+  const hasNotes = sectionNode.children.some((c) => c.type === "notesContainer" || c.type === "note");
 
   // Rough content length estimate from AST text nodes
   let contentLength = 0;
@@ -1129,11 +1121,7 @@ function buildNotesFilter(options: ConvertOptions): NotesFilter | undefined {
   if (options.includeNotes) return undefined;
 
   // No notes at all
-  if (
-    !options.includeEditorialNotes &&
-    !options.includeStatutoryNotes &&
-    !options.includeAmendments
-  ) {
+  if (!options.includeEditorialNotes && !options.includeStatutoryNotes && !options.includeAmendments) {
     return { editorial: false, statutory: false, amendments: false };
   }
 
@@ -1145,10 +1133,7 @@ function buildNotesFilter(options: ConvertOptions): NotesFilter | undefined {
   };
 }
 
-function findAncestor(
-  ancestors: readonly AncestorInfo[],
-  levelType: string,
-): AncestorInfo | undefined {
+function findAncestor(ancestors: readonly AncestorInfo[], levelType: string): AncestorInfo | undefined {
   return ancestors.find((a) => a.levelType === levelType);
 }
 

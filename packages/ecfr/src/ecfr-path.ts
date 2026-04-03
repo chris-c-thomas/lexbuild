@@ -11,11 +11,7 @@ import type { LevelNode, EmitContext } from "@lexbuild/core";
 /**
  * Build the output file path for an eCFR section.
  */
-export function buildEcfrOutputPath(
-  node: LevelNode,
-  context: EmitContext,
-  outputRoot: string,
-): string {
+export function buildEcfrOutputPath(node: LevelNode, context: EmitContext, outputRoot: string): string {
   const titleNum = findAncestorValue(context, "title") ?? node.numValue ?? "0";
   const chapterNum = findAncestorValue(context, "chapter");
   const partNum = findAncestorValue(context, "part");

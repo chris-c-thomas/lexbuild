@@ -43,8 +43,7 @@ function buildConvertOptions(
   outputPath: string,
   options: ConvertEcfrCommandOptions,
 ): EcfrConvertOptions {
-  const hasSelectiveFlags =
-    options.includeEditorialNotes || options.includeStatutoryNotes || options.includeAmendments;
+  const hasSelectiveFlags = options.includeEditorialNotes || options.includeStatutoryNotes || options.includeAmendments;
   const includeNotes = hasSelectiveFlags ? false : options.includeNotes;
 
   return {
@@ -127,10 +126,7 @@ async function convertSingleFile(
       rows.push(["Files Written", formatNumber(result.files.length)]);
     }
 
-    rows.push(
-      ["Peak Memory", formatBytes(result.peakMemoryBytes)],
-      ["Duration", formatDuration(elapsed)],
-    );
+    rows.push(["Peak Memory", formatBytes(result.peakMemoryBytes)], ["Duration", formatDuration(elapsed)]);
 
     const titleLabel = result.dryRun
       ? `lexbuild — eCFR Title ${result.titleNumber}: ${result.titleName} [dry-run]`
@@ -210,9 +206,7 @@ Examples:
   .action(async (input: string | undefined, options: ConvertEcfrCommandOptions) => {
     const modeCount = [input, options.titles, options.all].filter(Boolean).length;
     if (modeCount === 0) {
-      console.error(
-        error("Specify an input file, --titles <spec>, or --all (e.g. --titles 1-5,17)"),
-      );
+      console.error(error("Specify an input file, --titles <spec>, or --all (e.g. --titles 1-5,17)"));
       process.exit(1);
     }
     if (modeCount > 1) {
@@ -305,12 +299,7 @@ Examples:
       totalElapsed += elapsed;
 
       if (granularity === "title") {
-        return [
-          result.titleNumber,
-          result.titleName,
-          formatNumber(result.totalTokenEstimate),
-          formatDuration(elapsed),
-        ];
+        return [result.titleNumber, result.titleName, formatNumber(result.totalTokenEstimate), formatDuration(elapsed)];
       } else if (granularity === "chapter") {
         return [
           result.titleNumber,

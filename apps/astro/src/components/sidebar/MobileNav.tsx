@@ -1,12 +1,6 @@
 import { useState } from "react";
 import { Layers, Menu } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { SidebarContent } from "./SidebarContent";
 import { cn } from "@/lib/utils";
@@ -31,15 +25,11 @@ export function MobileNav({ source, currentPath }: MobileNavProps) {
         size="icon-sm"
         className="lg:hidden"
         onClick={() => setOpen(true)}
-        aria-label="Open navigation"
-      >
+        aria-label="Open navigation">
         <Menu className="size-5" />
       </Button>
 
-      <SheetContent
-        side="left"
-        className="bg-sidebar flex w-72 flex-col overflow-y-auto p-0 sm:max-w-72"
-      >
+      <SheetContent side="left" className="bg-sidebar flex w-72 flex-col overflow-y-auto p-0 sm:max-w-72">
         <SheetHeader className="border-sidebar-border flex shrink-0 flex-row items-center gap-2 border-b px-4 py-3">
           <Layers className="text-slate-blue-900 dark:text-slate-blue-200 size-5" />
           <SheetTitle className="font-display text-slate-blue-900 dark:text-slate-blue-200 text-base font-semibold">
@@ -58,8 +48,7 @@ export function MobileNav({ source, currentPath }: MobileNavProps) {
               activeSource === "usc"
                 ? "bg-sidebar-accent text-sidebar-accent-foreground"
                 : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
-            )}
-          >
+            )}>
             U.S. Code
           </button>
           <button
@@ -70,8 +59,7 @@ export function MobileNav({ source, currentPath }: MobileNavProps) {
               activeSource === "ecfr"
                 ? "bg-sidebar-accent text-sidebar-accent-foreground"
                 : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
-            )}
-          >
+            )}>
             eCFR
           </button>
           <button
@@ -82,8 +70,7 @@ export function MobileNav({ source, currentPath }: MobileNavProps) {
               activeSource === "fr"
                 ? "bg-sidebar-accent text-sidebar-accent-foreground"
                 : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
-            )}
-          >
+            )}>
             FR
           </button>
         </nav>
@@ -95,38 +82,33 @@ export function MobileNav({ source, currentPath }: MobileNavProps) {
         <div className="mt-auto">
           <nav
             className="border-sidebar-border flex items-center gap-4 border-t px-4 py-2.5"
-            aria-label="External links"
-          >
+            aria-label="External links">
             <a
               href="https://www.npmjs.com/package/@lexbuild/cli"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sidebar-foreground/60 hover:text-sidebar-foreground text-xs font-medium transition-colors"
-            >
+              className="text-sidebar-foreground/60 hover:text-sidebar-foreground text-xs font-medium transition-colors">
               CLI
             </a>
             <a
               href="https://github.com/chris-c-thomas/LexBuild/tree/main/docs"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sidebar-foreground/60 hover:text-sidebar-foreground text-xs font-medium transition-colors"
-            >
+              className="text-sidebar-foreground/60 hover:text-sidebar-foreground text-xs font-medium transition-colors">
               Docs
             </a>
             <a
               href="https://github.com/chris-c-thomas/LexBuild"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sidebar-foreground/60 hover:text-sidebar-foreground text-xs font-medium transition-colors"
-            >
+              className="text-sidebar-foreground/60 hover:text-sidebar-foreground text-xs font-medium transition-colors">
               GitHub
             </a>
             <span
-              className="text-sidebar-foreground/30 inline-flex items-center gap-1 cursor-default select-none text-xs font-medium"
-              aria-disabled="true"
-            >
+              className="text-sidebar-foreground/30 inline-flex cursor-default items-center gap-1 text-xs font-medium select-none"
+              aria-disabled="true">
               API
-              <span className="bg-sidebar-accent text-sidebar-foreground/50 rounded-full px-1.5 py-0.5 text-[10px] font-medium leading-none">
+              <span className="bg-sidebar-accent text-sidebar-foreground/50 rounded-full px-1.5 py-0.5 text-[10px] leading-none font-medium">
                 Soon
               </span>
             </span>

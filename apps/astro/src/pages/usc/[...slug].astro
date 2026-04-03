@@ -25,10 +25,7 @@ if (!route) {
 }
 
 // Cache headers
-Astro.response.headers.set(
-  "Cache-Control",
-  "public, s-maxage=31536000, stale-while-revalidate=86400",
-);
+Astro.response.headers.set("Cache-Control", "public, s-maxage=31536000, stale-while-revalidate=86400");
 
 // ── Prepare data based on granularity ──
 
@@ -173,11 +170,7 @@ const seo = buildPageSEO({
           </h1>
           <div class="flex shrink-0 gap-2">
             <CopyButton client:load text={fullFileContent} />
-            <DownloadButton
-              client:load
-              content={fullFileContent}
-              filename={sectionDownloadFilename}
-            />
+            <DownloadButton client:load content={fullFileContent} filename={sectionDownloadFilename} />
           </div>
         </div>
         <FrontmatterPanel frontmatter={frontmatter} source={SOURCE_ID} rawYaml={rawYaml} />

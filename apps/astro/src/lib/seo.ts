@@ -111,11 +111,7 @@ export function buildTitle(
 
   // Index pages: build from NavContext
   const titleNum = nav?.titleNumber ?? fm?.title_number;
-  const titleName = nav?.titleName
-    ? toTitleCase(nav.titleName)
-    : fm?.title_name
-      ? toTitleCase(fm.title_name)
-      : "";
+  const titleName = nav?.titleName ? toTitleCase(nav.titleName) : fm?.title_name ? toTitleCase(fm.title_name) : "";
 
   if (granularity === "title") {
     return `Title ${titleNum} — ${titleName}`;
@@ -164,11 +160,7 @@ export function buildDescription(
   }
 
   const titleNum = nav?.titleNumber ?? fm?.title_number;
-  const titleName = nav?.titleName
-    ? toTitleCase(nav.titleName)
-    : fm?.title_name
-      ? toTitleCase(fm.title_name)
-      : "";
+  const titleName = nav?.titleName ? toTitleCase(nav.titleName) : fm?.title_name ? toTitleCase(fm.title_name) : "";
   const sourceName = source === "usc" ? "U.S. Code" : "Code of Federal Regulations";
 
   // ── Title index ──
@@ -203,9 +195,7 @@ export function buildDescription(
     const sectionName = fm.section_name ? toTitleCase(fm.section_name) : "";
 
     if (source === "usc") {
-      const chapterCtx = fm.chapter_name
-        ? `Chapter ${fm.chapter_number}, ${toTitleCase(fm.chapter_name)}`
-        : "";
+      const chapterCtx = fm.chapter_name ? `Chapter ${fm.chapter_number}, ${toTitleCase(fm.chapter_name)}` : "";
       return `${fm.title_number} U.S.C. § ${fm.section_number ?? ""}${sectionName ? ` — ${sectionName}` : ""}. ${chapterCtx ? `${chapterCtx}. ` : ""}Title ${fm.title_number}, ${toTitleCase(fm.title_name)}.`;
     }
 
@@ -293,10 +283,7 @@ export function buildJsonLd(params: JsonLdParams): Record<string, unknown>[] {
  * Each breadcrumb becomes a ListItem. The last item (current page) omits the
  * `item` URL per Google's spec.
  */
-export function buildBreadcrumbJsonLd(
-  breadcrumbs: Breadcrumb[],
-  siteUrl: string,
-): Record<string, unknown> {
+export function buildBreadcrumbJsonLd(breadcrumbs: Breadcrumb[], siteUrl: string): Record<string, unknown> {
   const items = breadcrumbs.map((crumb, i) => {
     const isLast = i === breadcrumbs.length - 1;
     const entry: Record<string, unknown> = {

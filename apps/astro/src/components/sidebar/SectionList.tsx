@@ -29,8 +29,7 @@ export function SectionList({ sections, basePath, currentPath }: SectionListProp
                   isActive
                     ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                     : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                }`}
-              >
+                }`}>
                 <span className="text-slate-blue-700 dark:text-slate-blue-400 shrink-0 font-mono text-[0.65rem] font-semibold">
                   §{section.number}
                 </span>
@@ -43,9 +42,7 @@ export function SectionList({ sections, basePath, currentPath }: SectionListProp
     );
   }
 
-  return (
-    <VirtualizedSectionList sections={sections} basePath={basePath} currentPath={currentPath} />
-  );
+  return <VirtualizedSectionList sections={sections} basePath={basePath} currentPath={currentPath} />;
 }
 
 function VirtualizedSectionList({ sections, basePath, currentPath }: SectionListProps) {
@@ -59,18 +56,13 @@ function VirtualizedSectionList({ sections, basePath, currentPath }: SectionList
   });
 
   return (
-    <div
-      ref={parentRef}
-      className="max-h-[60vh] overflow-y-auto"
-      style={{ overscrollBehavior: "contain" }}
-    >
+    <div ref={parentRef} className="max-h-[60vh] overflow-y-auto" style={{ overscrollBehavior: "contain" }}>
       <div
         style={{
           height: virtualizer.getTotalSize(),
           width: "100%",
           position: "relative",
-        }}
-      >
+        }}>
         {virtualizer.getVirtualItems().map((virtualRow) => {
           const section = sections[virtualRow.index]!;
           const href = `${basePath}/${section.file}`;
@@ -87,8 +79,7 @@ function VirtualizedSectionList({ sections, basePath, currentPath }: SectionList
                 left: 0,
                 width: "100%",
                 transform: `translateY(${virtualRow.start}px)`,
-              }}
-            >
+              }}>
               <a
                 href={href}
                 aria-current={isActive ? "page" : undefined}
@@ -96,8 +87,7 @@ function VirtualizedSectionList({ sections, basePath, currentPath }: SectionList
                   isActive
                     ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                     : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                }`}
-              >
+                }`}>
                 <span className="text-slate-blue-700 dark:text-slate-blue-400 shrink-0 font-mono text-[0.65rem] font-semibold">
                   §{section.number}
                 </span>

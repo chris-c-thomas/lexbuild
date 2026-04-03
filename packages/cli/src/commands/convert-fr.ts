@@ -38,10 +38,7 @@ export const convertFrCommand = new Command("convert-fr")
   .option("--all", "Convert all downloaded documents in input directory", false)
   .option("--from <YYYY-MM-DD>", "Filter: start date")
   .option("--to <YYYY-MM-DD>", "Filter: end date")
-  .option(
-    "--types <types>",
-    "Filter: document types (rule, proposed_rule, notice, presidential_document)",
-  )
+  .option("--types <types>", "Filter: document types (rule, proposed_rule, notice, presidential_document)")
   .option("--link-style <style>", "Link style: relative, canonical, plaintext", "plaintext")
   .option("--dry-run", "Parse only, don't write files", false)
   .option("-v, --verbose", "Print detailed file output", false)
@@ -76,9 +73,7 @@ Examples:
         const mapped = VALID_TYPES.get(normalized);
         if (!mapped) {
           console.error(
-            error(
-              `Invalid document type "${raw.trim()}". Valid types: ${[...VALID_TYPES.keys()].join(", ")}`,
-            ),
+            error(`Invalid document type "${raw.trim()}". Valid types: ${[...VALID_TYPES.keys()].join(", ")}`),
           );
           process.exit(1);
         }
@@ -106,9 +101,7 @@ Examples:
     const startTime = performance.now();
 
     const spinner = createSpinner(
-      options.dryRun
-        ? "Analyzing Federal Register documents (dry run)"
-        : "Converting Federal Register documents",
+      options.dryRun ? "Analyzing Federal Register documents (dry run)" : "Converting Federal Register documents",
     );
     spinner.start();
 
@@ -122,10 +115,7 @@ Examples:
         to: options.to,
         types,
         onProgress: (progress) => {
-          const pct =
-            progress.totalFiles > 0
-              ? Math.round((progress.filesProcessed / progress.totalFiles) * 100)
-              : 0;
+          const pct = progress.totalFiles > 0 ? Math.round((progress.filesProcessed / progress.totalFiles) * 100) : 0;
           spinner.text = `Converting FR documents (${formatNumber(progress.documentsConverted)} docs, ${formatNumber(progress.filesProcessed)}/${formatNumber(progress.totalFiles)} files) ${pct}%`;
         },
       });
@@ -133,13 +123,9 @@ Examples:
       const elapsed = performance.now() - startTime;
 
       if (options.dryRun) {
-        spinner.succeed(
-          `Dry run: ${formatNumber(result.documentsConverted)} documents would be converted`,
-        );
+        spinner.succeed(`Dry run: ${formatNumber(result.documentsConverted)} documents would be converted`);
       } else {
-        spinner.succeed(
-          `Converted ${formatNumber(result.documentsConverted)} Federal Register documents`,
-        );
+        spinner.succeed(`Converted ${formatNumber(result.documentsConverted)} Federal Register documents`);
       }
 
       console.log();

@@ -82,21 +82,13 @@ describe("buildFrFrontmatter", () => {
 
   describe("XML-only mode (no JSON sidecar)", () => {
     it("uses xmlMeta.documentNumber for document_number", () => {
-      const fm = buildFrFrontmatter(
-        makeNode(),
-        makeContext(),
-        makeXmlMeta({ documentNumber: "2026-06029" }),
-      );
+      const fm = buildFrFrontmatter(makeNode(), makeContext(), makeXmlMeta({ documentNumber: "2026-06029" }));
       expect(fm.document_number).toBe("2026-06029");
       expect(fm.section_number).toBe("2026-06029");
     });
 
     it("uses xmlMeta.subject for title", () => {
-      const fm = buildFrFrontmatter(
-        makeNode(),
-        makeContext(),
-        makeXmlMeta({ subject: "Test Subject" }),
-      );
+      const fm = buildFrFrontmatter(makeNode(), makeContext(), makeXmlMeta({ subject: "Test Subject" }));
       expect(fm.title).toBe("Test Subject");
       expect(fm.section_name).toBe("Test Subject");
     });
@@ -120,11 +112,7 @@ describe("buildFrFrontmatter", () => {
     });
 
     it("uses xmlMeta.cfrCitation for cfr_references", () => {
-      const fm = buildFrFrontmatter(
-        makeNode(),
-        makeContext(),
-        makeXmlMeta({ cfrCitation: "17 CFR Part 240" }),
-      );
+      const fm = buildFrFrontmatter(makeNode(), makeContext(), makeXmlMeta({ cfrCitation: "17 CFR Part 240" }));
       expect(fm.cfr_references).toEqual(["17 CFR Part 240"]);
     });
 
@@ -161,12 +149,7 @@ describe("buildFrFrontmatter", () => {
     });
 
     it("normalizes JSON document type", () => {
-      const fm = buildFrFrontmatter(
-        makeNode(),
-        makeContext(),
-        makeXmlMeta(),
-        makeJsonMeta({ type: "Proposed Rule" }),
-      );
+      const fm = buildFrFrontmatter(makeNode(), makeContext(), makeXmlMeta(), makeJsonMeta({ type: "Proposed Rule" }));
       expect(fm.document_type).toBe("proposed_rule");
     });
 
@@ -206,12 +189,7 @@ describe("buildFrFrontmatter", () => {
     });
 
     it("omits empty docket_ids", () => {
-      const fm = buildFrFrontmatter(
-        makeNode(),
-        makeContext(),
-        makeXmlMeta(),
-        makeJsonMeta({ docket_ids: [] }),
-      );
+      const fm = buildFrFrontmatter(makeNode(), makeContext(), makeXmlMeta(), makeJsonMeta({ docket_ids: [] }));
       expect(fm.docket_ids).toBeUndefined();
     });
 
@@ -259,12 +237,7 @@ describe("buildFrFrontmatter", () => {
     });
 
     it("uses JSON action for fr_action", () => {
-      const fm = buildFrFrontmatter(
-        makeNode(),
-        makeContext(),
-        makeXmlMeta(),
-        makeJsonMeta({ action: "Final rule." }),
-      );
+      const fm = buildFrFrontmatter(makeNode(), makeContext(), makeXmlMeta(), makeJsonMeta({ action: "Final rule." }));
       expect(fm.fr_action).toBe("Final rule.");
     });
 
@@ -287,20 +260,12 @@ describe("buildFrFrontmatter", () => {
 
   describe("identifier", () => {
     it("uses node.identifier when present", () => {
-      const fm = buildFrFrontmatter(
-        makeNode({ identifier: "/us/fr/2026-06029" }),
-        makeContext(),
-        makeXmlMeta(),
-      );
+      const fm = buildFrFrontmatter(makeNode({ identifier: "/us/fr/2026-06029" }), makeContext(), makeXmlMeta());
       expect(fm.identifier).toBe("/us/fr/2026-06029");
     });
 
     it("constructs identifier from document number when node has none", () => {
-      const fm = buildFrFrontmatter(
-        makeNode(),
-        makeContext(),
-        makeXmlMeta({ documentNumber: "2026-06029" }),
-      );
+      const fm = buildFrFrontmatter(makeNode(), makeContext(), makeXmlMeta({ documentNumber: "2026-06029" }));
       expect(fm.identifier).toBe("/us/fr/2026-06029");
     });
   });

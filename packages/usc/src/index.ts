@@ -12,13 +12,7 @@ export {
   FALLBACK_RELEASE_POINT,
   USC_TITLE_NUMBERS,
 } from "./downloader.js";
-export type {
-  DownloadOptions,
-  DownloadProgress,
-  DownloadResult,
-  DownloadedFile,
-  DownloadError,
-} from "./downloader.js";
+export type { DownloadOptions, DownloadProgress, DownloadResult, DownloadedFile, DownloadError } from "./downloader.js";
 
 // Release point detection and history
 export {

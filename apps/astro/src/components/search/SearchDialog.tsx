@@ -67,14 +67,8 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
     } catch (err) {
       setResults(null);
       const message = err instanceof Error ? err.message : String(err);
-      if (
-        message.includes("fetch") ||
-        message.includes("connect") ||
-        message.includes("ECONNREFUSED")
-      ) {
-        setError(
-          "Search service is unavailable at this time. Meilisearch may be down or experiencing issues.",
-        );
+      if (message.includes("fetch") || message.includes("connect") || message.includes("ECONNREFUSED")) {
+        setError("Search service is unavailable at this time. Meilisearch may be down or experiencing issues.");
       } else {
         setError("Search failed. Please try again.");
       }
@@ -95,8 +89,7 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="border-input bg-background text-muted-foreground hover:bg-muted flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border text-sm transition-colors sm:w-48 sm:cursor-text sm:justify-between sm:px-3"
-      >
+        className="border-input bg-background text-muted-foreground hover:bg-muted flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border text-sm transition-colors sm:w-48 sm:cursor-text sm:justify-between sm:px-3">
         <span className="flex items-center gap-2">
           <Search className="size-3.5" />
           <span className="hidden sm:inline">Search</span>
@@ -111,18 +104,14 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
   return createPortal(
     <>
       {/* Backdrop — starts below the header (h-14 = 3.5rem) */}
-      <div
-        className="fixed inset-0 top-14 z-50 bg-black/50 backdrop-blur-sm"
-        onClick={() => setOpen(false)}
-      />
+      <div className="fixed inset-0 top-14 z-50 bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
 
       {/* Dialog */}
       <div className="fixed inset-x-0 top-[15vh] z-50 mx-auto w-full max-w-xl px-4">
         <div
           role="dialog"
           aria-label="Search LexBuild"
-          className="border-border bg-background overflow-hidden rounded-xl border shadow-2xl"
-        >
+          className="border-border bg-background overflow-hidden rounded-xl border shadow-2xl">
           {/* Search input */}
           <div className="border-border flex items-center border-b px-4">
             <Search className="text-muted-foreground size-4 shrink-0" />
@@ -141,26 +130,20 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
               <button
                 onClick={() => setQuery("")}
                 aria-label="Clear search"
-                className="text-muted-foreground hover:text-foreground rounded p-0.5"
-              >
+                className="text-muted-foreground hover:text-foreground rounded p-0.5">
                 <X className="size-3.5" />
               </button>
             )}
             <button
               onClick={() => setOpen(false)}
-              className="border-border text-muted-foreground hover:text-foreground ml-2 rounded border px-1.5 py-0.5 text-[0.65rem]"
-            >
+              className="border-border text-muted-foreground hover:text-foreground ml-2 rounded border px-1.5 py-0.5 text-[0.65rem]">
               ESC
             </button>
           </div>
 
           {/* Source filter tabs */}
           <div className="border-border flex gap-1 border-b px-4 py-2">
-            <FilterTab
-              label="All"
-              active={sourceFilter === null}
-              onClick={() => setSourceFilter(null)}
-            />
+            <FilterTab label="All" active={sourceFilter === null} onClick={() => setSourceFilter(null)} />
             <FilterTab
               label="U.S. Code"
               active={sourceFilter === "usc"}
@@ -182,20 +165,10 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
           </div>
 
           {/* Results */}
-          <div
-            className="max-h-[50vh] overflow-y-auto"
-            style={{ overscrollBehavior: "contain" }}
-            aria-live="polite"
-          >
-            {loading && (
-              <div className="text-muted-foreground px-4 py-8 text-center text-sm">
-                Searching...
-              </div>
-            )}
+          <div className="max-h-[50vh] overflow-y-auto" style={{ overscrollBehavior: "contain" }} aria-live="polite">
+            {loading && <div className="text-muted-foreground px-4 py-8 text-center text-sm">Searching...</div>}
 
-            {!loading && error && (
-              <div className="text-destructive px-4 py-8 text-center text-sm">{error}</div>
-            )}
+            {!loading && error && <div className="text-destructive px-4 py-8 text-center text-sm">{error}</div>}
 
             {!loading && !error && query && results && results.hits.length === 0 && (
               <div className="text-muted-foreground px-4 py-8 text-center text-sm">
@@ -212,20 +185,15 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
                     <a
                       href={hit.url}
                       className="hover:bg-muted flex items-center gap-3 px-4 py-2.5 transition-colors"
-                      onClick={() => setOpen(false)}
-                    >
+                      onClick={() => setOpen(false)}>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-baseline gap-2">
                           <span className="bg-slate-blue-100 text-slate-blue-700 dark:bg-slate-blue-900 dark:text-slate-blue-300 shrink-0 rounded px-1.5 py-0.5 font-mono text-[0.6rem] font-medium uppercase">
                             {hit.source}
                           </span>
-                          <span className="text-foreground truncate text-sm font-medium">
-                            {hit.identifier}
-                          </span>
+                          <span className="text-foreground truncate text-sm font-medium">{hit.identifier}</span>
                         </div>
-                        <p className="text-muted-foreground mt-0.5 truncate text-xs">
-                          {hit.heading}
-                        </p>
+                        <p className="text-muted-foreground mt-0.5 truncate text-xs">{hit.heading}</p>
                         <div className="text-muted-foreground/60 mt-0.5 flex items-center gap-1 text-[0.65rem]">
                           {hit.hierarchy.map((h, i) => (
                             <span key={i} className="flex items-center gap-1">
@@ -244,8 +212,8 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
 
             {!loading && !query && (
               <div className="text-muted-foreground px-4 py-8 text-center text-sm">
-                Search across <span className="text-foreground font-medium">290,000+</span> sections
-                and documents of U.S. law and regulations
+                Search across <span className="text-foreground font-medium">290,000+</span> sections and documents of
+                U.S. law and regulations
               </div>
             )}
           </div>
@@ -281,8 +249,7 @@ function FilterTab({
         active
           ? "bg-slate-blue-600 dark:bg-slate-blue-500 dark:text-slate-blue-950 text-white"
           : "text-muted-foreground hover:bg-muted hover:text-foreground"
-      }`}
-    >
+      }`}>
       {label}
       {count !== undefined && <span className="ml-1 opacity-60">({count.toLocaleString()})</span>}
     </button>

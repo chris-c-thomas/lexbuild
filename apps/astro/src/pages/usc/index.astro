@@ -37,9 +37,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
 <BaseLayout seo={seo} source="usc">
   <div class="flex flex-col gap-6">
     <div>
-      <h1
-        class="font-display text-slate-blue-900 dark:text-slate-blue-200 text-2xl font-semibold tracking-tight"
-      >
+      <h1 class="font-display text-slate-blue-900 dark:text-slate-blue-200 text-2xl font-semibold tracking-tight">
         {source.name}
       </h1>
       <p class="text-ink-muted mt-2 text-[15px] leading-relaxed">{source.description}</p>
@@ -51,8 +49,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           {titles.map((t) => (
             <a
               href={`/usc/${t.directory}`}
-              class="border-slate-blue-200 hover:border-slate-blue-400 dark:bg-card dark:border-border dark:hover:border-slate-blue-600 flex flex-col rounded-sm border bg-white p-5 transition-colors"
-            >
+              class="border-slate-blue-200 hover:border-slate-blue-400 dark:bg-card dark:border-border dark:hover:border-slate-blue-600 flex flex-col rounded-sm border bg-white p-5 transition-colors">
               <div class="font-display text-slate-blue-800 dark:text-slate-blue-300 mb-1 text-base font-semibold">
                 Title {t.number}
               </div>
@@ -71,8 +68,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
         <div class="border-slate-blue-200 dark:bg-card dark:border-border rounded-sm border bg-white p-12 text-center">
           <p class="text-muted-foreground font-medium">No navigation data available.</p>
           <p class="text-muted-foreground mt-1 text-sm">
-            Run <code class="text-foreground">scripts/generate-nav.ts</code> after converting
-            content.
+            Run <code class="text-foreground">scripts/generate-nav.ts</code> after converting content.
           </p>
         </div>
       )
