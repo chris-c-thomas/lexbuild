@@ -1,5 +1,15 @@
 # @lexbuild/cli
 
+## 1.16.1
+
+### Patch Changes
+
+- ae8e01c: Update documentation and CLAUDE.md files
+- Updated dependencies [ae8e01c]
+  - @lexbuild/fr@1.16.1
+  - @lexbuild/ecfr@1.16.1
+  - @lexbuild/usc@1.16.1
+
 ## 1.16.0
 
 ### Minor Changes

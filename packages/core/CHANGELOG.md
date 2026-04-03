@@ -1,5 +1,11 @@
 # @lexbuild/core
 
+## 1.16.1
+
+### Patch Changes
+
+- ae8e01c: Update documentation and CLAUDE.md files
+
 ## 1.16.0
 
 ### Minor Changes
