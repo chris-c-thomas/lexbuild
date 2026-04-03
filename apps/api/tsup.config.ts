@@ -11,8 +11,15 @@ export default defineConfig({
   // Bundle all dependencies except native bindings and workspace deps
   noExternal: [/(.*)/],
   external: ["better-sqlite3", "@lexbuild/core"],
-  // Provide createRequire for external CJS modules (better-sqlite3) loaded from ESM bundle
+  // Provide CJS globals for dependencies that assume CommonJS context
   banner: {
-    js: 'import { createRequire } from "node:module"; const require = createRequire(import.meta.url);',
+    js: [
+      'import { createRequire } from "node:module";',
+      'import { fileURLToPath as __node_fileURLToPath } from "node:url";',
+      'import { dirname as __node_dirname } from "node:path";',
+      "const require = createRequire(import.meta.url);",
+      "const __filename = __node_fileURLToPath(import.meta.url);",
+      "const __dirname = __node_dirname(__filename);",
+    ].join(" "),
   },
 });
