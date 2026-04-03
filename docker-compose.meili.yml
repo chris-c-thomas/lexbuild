@@ -13,8 +13,11 @@
 #   ./scripts/deploy.sh --search-docker-seed               # Seed full volume from VPS
 #   ./scripts/deploy.sh --search-docker-seed --profile dev # Seed dev volume (small subset)
 #
-# Start for dev:
+# Start for dev (no master key needed):
 #   MEILI_PROFILE=dev docker compose -f docker-compose.meili.yml up -d
+#
+# Start for production builds (master key required):
+#   MEILI_MASTER_KEY=<key> docker compose -f docker-compose.meili.yml up -d
 
 services:
   meilisearch:
@@ -26,8 +29,8 @@ services:
     volumes:
       - meili-data-${MEILI_PROFILE:-full}:/meili_data
     environment:
-      - MEILI_ENV=production
-      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY}
+      - MEILI_ENV=${MEILI_ENV:-development}
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-}
       - MEILI_LOG_LEVEL=WARN
 
 volumes:

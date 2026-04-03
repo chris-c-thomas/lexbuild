@@ -597,33 +597,55 @@ deploy_search_docker_seed() {
     # --- Dev profile: index a small subset locally ---
     echo "==> Seeding dev volume with sample data..."
 
-    # Content symlinks
+    # Build a subset content directory with one title per source + recent FR
     TEMP_CONTENT="$REPO_ROOT/.search-docker-content"
     rm -rf "$TEMP_CONTENT"
-    mkdir -p "$TEMP_CONTENT/usc" "$TEMP_CONTENT/ecfr" "$TEMP_CONTENT/fr"
 
-    for src_dir in usc ecfr; do
-      if [ -d "$REPO_ROOT/output/$src_dir" ]; then
-        ln -s "$REPO_ROOT/output/$src_dir" "$TEMP_CONTENT/$src_dir/sections"
-      else
-        echo "Error: output/$src_dir not found. Run the converter first."
-        rm -rf "$TEMP_CONTENT"
-        exit 1
-      fi
-    done
-
-    if [ -d "$REPO_ROOT/output/fr" ]; then
-      ln -s "$REPO_ROOT/output/fr" "$TEMP_CONTENT/fr/documents"
+    # USC: title-01 only
+    USC_TITLE="$REPO_ROOT/output/usc/title-01"
+    if [ -d "$USC_TITLE" ]; then
+      mkdir -p "$TEMP_CONTENT/usc/sections/title-01"
+      cp "$USC_TITLE/_meta.json" "$TEMP_CONTENT/usc/sections/title-01/" 2>/dev/null || true
+      # Symlink chapter dirs
+      for ch in "$USC_TITLE"/chapter-*/; do
+        [ -d "$ch" ] && ln -s "$ch" "$TEMP_CONTENT/usc/sections/title-01/$(basename "$ch")"
+      done
     else
-      echo "Error: output/fr not found. Run the converter first."
-      rm -rf "$TEMP_CONTENT"
-      exit 1
+      echo "Warning: output/usc/title-01 not found, skipping USC"
     fi
 
-    # Fresh volume
+    # eCFR: title-01 only
+    ECFR_TITLE="$REPO_ROOT/output/ecfr/title-01"
+    if [ -d "$ECFR_TITLE" ]; then
+      mkdir -p "$TEMP_CONTENT/ecfr/sections/title-01"
+      cp "$ECFR_TITLE/_meta.json" "$TEMP_CONTENT/ecfr/sections/title-01/" 2>/dev/null || true
+      for ch in "$ECFR_TITLE"/chapter-*/; do
+        [ -d "$ch" ] && ln -s "$ch" "$TEMP_CONTENT/ecfr/sections/title-01/$(basename "$ch")"
+      done
+    else
+      echo "Warning: output/ecfr/title-01 not found, skipping eCFR"
+    fi
+
+    # FR: most recent year + most recent month only
+    FR_DIR="$REPO_ROOT/output/fr"
+    if [ -d "$FR_DIR" ]; then
+      LATEST_YEAR=$(ls -1 "$FR_DIR" | grep -E '^[0-9]{4}$' | sort -rn | head -1)
+      if [ -n "$LATEST_YEAR" ]; then
+        LATEST_MONTH=$(ls -1 "$FR_DIR/$LATEST_YEAR" | grep -E '^[0-9]{2}$' | sort -rn | head -1)
+        if [ -n "$LATEST_MONTH" ]; then
+          mkdir -p "$TEMP_CONTENT/fr/documents/$LATEST_YEAR"
+          ln -s "$FR_DIR/$LATEST_YEAR/$LATEST_MONTH" "$TEMP_CONTENT/fr/documents/$LATEST_YEAR/$LATEST_MONTH"
+          echo "    FR sample: $LATEST_YEAR/$LATEST_MONTH"
+        fi
+      fi
+    else
+      echo "Warning: output/fr not found, skipping FR"
+    fi
+
+    # Fresh volume — dev mode (no master key, no auth needed)
     docker compose -f "$COMPOSE_FILE" down 2>/dev/null || true
     docker volume rm "$VOLUME_NAME" 2>/dev/null || true
-    docker compose -f "$COMPOSE_FILE" up -d
+    MEILI_ENV=development MEILI_MASTER_KEY="" docker compose -f "$COMPOSE_FILE" up -d
 
     echo "--- Waiting for Docker Meilisearch..."
     for i in $(seq 1 60); do
@@ -634,36 +656,20 @@ deploy_search_docker_seed() {
       sleep 1
     done
 
-    # Index one title per source + a small FR sample
-    echo "--- Indexing sample data (USC title 1 + eCFR title 1 + recent FR docs)..."
+    # Index the subset — no auth needed in dev mode
+    echo "--- Indexing sample data (USC title 1 + eCFR title 1 + recent FR month)..."
     cd "$REPO_ROOT/apps/astro"
-
-    # USC title 1 only (~200 docs)
     MEILI_URL="http://localhost:$DOCKER_PORT" \
-    MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
-      pnpm dlx tsx scripts/index-search-incremental.ts "$TEMP_CONTENT" --source usc 2>&1 | \
-      awk '/upserted|skipped|checkpoint/ { print "    " $0 }'
-
-    # eCFR title 1 only (~100 docs)
-    MEILI_URL="http://localhost:$DOCKER_PORT" \
-    MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
-      pnpm dlx tsx scripts/index-search-incremental.ts "$TEMP_CONTENT" --source ecfr 2>&1 | \
-      awk '/upserted|skipped|checkpoint/ { print "    " $0 }'
-
-    # FR — index all (incremental indexer scans all, but only recent files will be quick)
-    MEILI_URL="http://localhost:$DOCKER_PORT" \
-    MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
-      pnpm dlx tsx scripts/index-search-incremental.ts "$TEMP_CONTENT" --source fr 2>&1 | \
-      awk '/upserted|skipped|checkpoint/ { print "    " $0 }'
-
+    MEILI_MASTER_KEY="" \
+      pnpm dlx tsx scripts/index-search.ts "$TEMP_CONTENT"
     cd "$REPO_ROOT"
+
     rm -rf "$TEMP_CONTENT"
 
-    DOC_COUNT=$(curl -sf "http://localhost:$DOCKER_PORT/indexes/lexbuild/stats" \
-      -H "Authorization: Bearer ${MEILI_MASTER_KEY}" 2>/dev/null \
+    DOC_COUNT=$(curl -sf "http://localhost:$DOCKER_PORT/indexes/lexbuild/stats" 2>/dev/null \
       | python3 -c "import sys,json; print(json.load(sys.stdin).get('numberOfDocuments', 0))" 2>/dev/null || echo "0")
 
-    docker compose -f "$COMPOSE_FILE" down
+    MEILI_ENV=development MEILI_MASTER_KEY="" docker compose -f "$COMPOSE_FILE" down
 
     echo "--- Dev volume seeded with $DOC_COUNT documents"
     echo "    Start with: MEILI_PROFILE=dev docker compose -f docker-compose.meili.yml up -d"
