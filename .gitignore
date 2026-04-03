@@ -183,3 +183,8 @@ storage/
 
 # Meilisearch Local Data
 data.ms/
+
+# SQLite databases
+*.db
+*.db-wal
+*.db-shm

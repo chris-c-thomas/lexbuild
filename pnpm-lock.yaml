@@ -204,6 +204,9 @@ importers:
 
   packages/cli:
     dependencies:
+      '@lexbuild/core':
+        specifier: workspace:*
+        version: link:../core
       '@lexbuild/ecfr':
         specifier: workspace:*
         version: link:../ecfr
@@ -213,6 +216,9 @@ importers:
       '@lexbuild/usc':
         specifier: workspace:*
         version: link:../usc
+      better-sqlite3:
+        specifier: ^11.9
+        version: 11.10.0
       chalk:
         specifier: ^5.6.2
         version: 5.6.2
@@ -222,10 +228,16 @@ importers:
       commander:
         specifier: ^13.1.0
         version: 13.1.0
+      gray-matter:
+        specifier: ^4.0
+        version: 4.0.3
       ora:
         specifier: ^8.2.0
         version: 8.2.0
     devDependencies:
+      '@types/better-sqlite3':
+        specifier: ^7.6
+        version: 7.6.13
       '@types/node':
         specifier: ^25.3.2
         version: 25.3.3
