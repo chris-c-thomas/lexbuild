@@ -9,7 +9,6 @@ import { toApiSource } from "../lib/source-registry.js";
 
 const INDEX_NAME = "lexbuild";
 
-/** Shape of documents stored in the Meilisearch index. */
 interface MeiliSearchDocument {
   id: string;
   source: "usc" | "ecfr" | "fr";
@@ -25,7 +24,6 @@ interface MeiliSearchDocument {
   agency?: string;
 }
 
-/** Facets allowed in search requests. */
 const ALLOWED_FACETS = new Set([
   "source",
   "title_number",
@@ -36,7 +34,6 @@ const ALLOWED_FACETS = new Set([
   "publication_date",
 ]);
 
-/** Sort fields allowed in Meilisearch queries. */
 const ALLOWED_SORT_FIELDS = new Set(["publication_date", "title_number", "identifier", "document_number"]);
 
 /** Translate API query params into a Meilisearch filter string. */

@@ -32,23 +32,20 @@ export interface AppConfig {
 export function createApp(config: AppConfig): OpenAPIHono {
   const app = new OpenAPIHono();
 
-  // Database connections
   const db = createDatabase(config.dbPath);
   const keysDb = initKeysDatabase(config.keysDbPath ?? "./lexbuild-keys.db");
 
-  // Global middleware (order matters)
+  // Order matters: request-id must precede logger, error handler must wrap all routes
   app.use("*", requestId());
   app.use("*", requestLogger());
   app.use("*", cors({ origin: "*" }));
   app.use("*", errorHandler());
 
-  // Versioned API routes
   const v1 = new OpenAPIHono();
 
-  // Rate limiting (after global middleware, before routes)
+  // Must run after request-id (for key tracking) and before route handlers
   v1.use("*", rateLimitMiddleware(keysDb));
 
-  // Register route modules
   registerHealthRoutes(v1, db);
   registerSourceRoutes(v1, db);
   registerUscRoutes(v1, db);
@@ -59,12 +56,10 @@ export function createApp(config: AppConfig): OpenAPIHono {
   registerFrHierarchyRoutes(v1, db);
   registerStatsRoutes(v1, db);
 
-  // Search (Meilisearch proxy)
   const meiliUrl = config.meiliUrl ?? "http://127.0.0.1:7700";
   const meiliKey = config.meiliKey ?? "";
   registerSearchRoutes(v1, meiliUrl, meiliKey);
 
-  // OpenAPI spec with security schemes
   v1.doc("/openapi.json", {
     openapi: "3.1.0",
     info: {
@@ -82,7 +77,6 @@ export function createApp(config: AppConfig): OpenAPIHono {
     security: [{ apiKey: [] }],
   });
 
-  // Scalar API reference UI
   v1.get(
     "/docs",
     apiReference({

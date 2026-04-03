@@ -12,11 +12,10 @@ export function createDatabase(dbPath: string): Database.Database {
 
   const db = new Database(dbPath, { readonly: true });
 
-  // Read-only performance pragmas (WAL + synchronous are set by the ingest command)
-  db.pragma("cache_size = -64000"); // 64MB
+  // WAL + synchronous are set by ingest; these are read-path optimizations only
+  db.pragma("cache_size = -64000");
   db.pragma("mmap_size = 268435456"); // 256MB memory-mapped I/O
 
-  // Validate schema version
   let row: { value: string } | undefined;
   try {
     row = db.prepare("SELECT value FROM schema_meta WHERE key = 'schema_version'").get() as

@@ -24,7 +24,6 @@ serve({ fetch: app.fetch, port }, (info) => {
   console.log(`LexBuild API listening on port ${info.port}`);
 });
 
-// Graceful shutdown
 function shutdown(): void {
   closeDatabase();
   closeKeysDatabase();

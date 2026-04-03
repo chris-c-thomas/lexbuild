@@ -41,11 +41,9 @@ const sourcesRoute = createRoute({
 
 /** Register the sources metadata endpoint. */
 export function registerSourceRoutes(app: OpenAPIHono, db: Database.Database): void {
-  // Prepared statement for source document counts
   const countBySource = db.prepare("SELECT source, count(*) as count FROM documents GROUP BY source");
 
   app.openapi(sourcesRoute, (c) => {
-    // Get live document counts from the database
     const counts = new Map<string, number>();
     try {
       const rows = countBySource.all() as Array<{ source: string; count: number }>;

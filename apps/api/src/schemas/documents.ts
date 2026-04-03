@@ -1,6 +1,5 @@
 import { z } from "@hono/zod-openapi";
 
-/** Full document response (metadata + body) wrapped in standard envelope. */
 export const documentResponseSchema = z.object({
   data: z.object({
     id: z.string(),
@@ -16,7 +15,6 @@ export const documentResponseSchema = z.object({
   }),
 });
 
-/** Query parameters for document retrieval. */
 export const documentQuerySchema = z.object({
   fields: z.string().optional().openapi({
     description:

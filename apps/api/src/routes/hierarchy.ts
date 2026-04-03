@@ -5,8 +5,6 @@ import { HTTPException } from "hono/http-exception";
 import { errorResponseSchema } from "../schemas/errors.js";
 import { URL_TO_DB_SOURCE } from "../lib/source-registry.js";
 
-// ----- USC/CFR Titles -----
-
 const titlesResponseSchema = z.object({
   data: z.array(
     z.object({
@@ -238,8 +236,6 @@ export function registerCfrHierarchyRoutes(app: OpenAPIHono, db: Database.Databa
     );
   });
 }
-
-// ----- FR Year/Month Hierarchy -----
 
 const yearsResponseSchema = z.object({
   data: z.array(

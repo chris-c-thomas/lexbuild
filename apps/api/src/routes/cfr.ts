@@ -68,7 +68,6 @@ export function registerCfrRoutes(app: OpenAPIHono, db: Database.Database): void
   // eCFR updates daily but individual sections change less often
   app.use("/cfr/*", cacheHeaders({ maxAge: 3600, sMaxAge: 43200, staleWhileRevalidate: 604800 }));
 
-  // List documents
   app.openapi(listDocumentsRoute, (c) => {
     const { limit, offset, cursor, sort = "identifier", fields, ...filters } = c.req.valid("query");
     const result = queryDocuments(db, {
@@ -82,7 +81,6 @@ export function registerCfrRoutes(app: OpenAPIHono, db: Database.Database): void
     return c.json(buildListingResponse(result, "/api/v1/cfr/documents", { ...filters, sort, fields }));
   });
 
-  // Get single document
   app.openapi(getDocumentRoute, (c) => {
     const rawIdentifier = c.req.param("identifier");
     const identifier = resolveIdentifier("cfr", rawIdentifier);

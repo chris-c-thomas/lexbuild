@@ -105,7 +105,7 @@ export function queryDocuments(db: Database.Database, options: QueryOptions): Qu
   const whereClause = conditions.join(" AND ");
   const orderClause = parseSortParam(sort);
 
-  // Cursor-based pagination: add a WHERE condition to skip past the cursor
+  // Cursor pagination: skip past the last-seen sort key
   if (options.cursor) {
     const descending = sort.startsWith("-");
     const field = descending ? sort.slice(1) : sort;
@@ -118,11 +118,10 @@ export function queryDocuments(db: Database.Database, options: QueryOptions): Qu
 
   const cursorWhereClause = conditions.join(" AND ");
 
-  // Count query (uses base filters, not cursor)
+  // Total uses base filters, not cursor — cursor only affects the data page
   const countSql = `SELECT count(*) as total FROM documents WHERE ${whereClause}`;
   const { total } = db.prepare(countSql).get(params) as { total: number };
 
-  // Data query (uses cursor if provided, otherwise offset)
   const useCursor = options.cursor && SORTABLE_COLUMNS.has(sort.startsWith("-") ? sort.slice(1) : sort);
   const dataSql = useCursor
     ? `SELECT ${LISTING_COLUMNS} FROM documents WHERE ${cursorWhereClause} ORDER BY ${orderClause} LIMIT @limit`

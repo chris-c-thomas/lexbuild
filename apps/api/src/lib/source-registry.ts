@@ -6,23 +6,16 @@ export type DbSource = "usc" | "ecfr" | "fr";
 
 /** Configuration for a content source exposed via the API. */
 export interface ApiSourceConfig {
-  /** Source identifier used in URLs and database queries */
   id: ApiSourceId;
-  /** Human-readable name */
   name: string;
-  /** Short name for compact display */
   shortName: string;
-  /** Description for API docs */
   description: string;
-  /** URL prefix (e.g., "/usc", "/cfr", "/fr") */
   urlPrefix: string;
-  /** Hierarchical levels in order (e.g., ["title", "chapter", "section"]) */
+  /** Ordered browsing levels (e.g., ["title", "chapter", "section"]) */
   hierarchy: string[];
-  /** Fields available for filtering */
   filterableFields: string[];
-  /** Fields available for sorting */
   sortableFields: string[];
-  /** Whether this source uses title_number for hierarchy */
+  /** Whether this source's top-level grouping is by title_number */
   hasTitles: boolean;
 }
 

@@ -1,13 +1,11 @@
 import { z } from "@hono/zod-openapi";
 import { paginationSchema } from "./pagination.js";
 
-/** ISO date string pattern (YYYY-MM-DD). */
 const dateString = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, "Must be YYYY-MM-DD format")
   .optional();
 
-/** USC document listing filter parameters. */
 export const uscFilterSchema = paginationSchema.extend({
   title_number: z.coerce.number().int().optional(),
   chapter_number: z.string().optional(),
@@ -22,7 +20,6 @@ export const uscFilterSchema = paginationSchema.extend({
   }),
 });
 
-/** CFR document listing filter parameters. */
 export const cfrFilterSchema = paginationSchema.extend({
   title_number: z.coerce.number().int().optional(),
   chapter_number: z.string().optional(),
@@ -34,7 +31,6 @@ export const cfrFilterSchema = paginationSchema.extend({
   fields: z.string().optional(),
 });
 
-/** FR document listing filter parameters. */
 export const frFilterSchema = paginationSchema.extend({
   document_type: z.enum(["rule", "proposed_rule", "notice", "presidential_document"]).optional(),
   agency: z.string().optional(),

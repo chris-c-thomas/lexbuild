@@ -68,7 +68,6 @@ export function registerUscRoutes(app: OpenAPIHono, db: Database.Database): void
   // USC content updates irregularly per release point
   app.use("/usc/*", cacheHeaders({ maxAge: 3600, sMaxAge: 86400, staleWhileRevalidate: 604800 }));
 
-  // List documents
   app.openapi(listDocumentsRoute, (c) => {
     const { limit, offset, cursor, sort = "identifier", fields, ...filters } = c.req.valid("query");
     const result = queryDocuments(db, {
@@ -82,7 +81,6 @@ export function registerUscRoutes(app: OpenAPIHono, db: Database.Database): void
     return c.json(buildListingResponse(result, "/api/v1/usc/documents", { ...filters, sort, fields }));
   });
 
-  // Get single document
   app.openapi(getDocumentRoute, (c) => {
     const rawIdentifier = c.req.param("identifier");
     const identifier = resolveIdentifier("usc", rawIdentifier);

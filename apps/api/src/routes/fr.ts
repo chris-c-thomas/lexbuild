@@ -68,7 +68,6 @@ export function registerFrRoutes(app: OpenAPIHono, db: Database.Database): void 
   // Published FR documents never change after publication
   app.use("/fr/*", cacheHeaders({ maxAge: 3600, sMaxAge: 86400, staleWhileRevalidate: 2592000 }));
 
-  // List documents
   app.openapi(listDocumentsRoute, (c) => {
     const { limit, offset, cursor, sort = "-publication_date", fields, ...filters } = c.req.valid("query");
     const result = queryDocuments(db, {
@@ -82,7 +81,6 @@ export function registerFrRoutes(app: OpenAPIHono, db: Database.Database): void 
     return c.json(buildListingResponse(result, "/api/v1/fr/documents", { ...filters, sort, fields }));
   });
 
-  // Get single document
   app.openapi(getDocumentRoute, (c) => {
     const rawIdentifier = c.req.param("identifier");
     const identifier = resolveIdentifier("fr", rawIdentifier);

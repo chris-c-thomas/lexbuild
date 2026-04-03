@@ -1,6 +1,5 @@
 import { z } from "@hono/zod-openapi";
 
-/** Standard error response envelope. */
 export const errorResponseSchema = z.object({
   error: z.object({
     status: z.number().openapi({ example: 404 }),

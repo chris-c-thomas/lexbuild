@@ -51,7 +51,6 @@ export function buildMetadata(row: DocumentRow): Record<string, unknown> {
     last_updated: row.last_updated,
   };
 
-  // Source-specific fields — only include when present
   if (row.source === "usc") {
     meta.source_credit = row.source_credit;
   }
@@ -104,11 +103,10 @@ export function selectFields(
     return { metadata: {}, includeBody: true };
   }
 
-  // Comma-separated field names
   const requested = new Set(fields.split(",").map((f) => f.trim()));
   const filtered: Record<string, unknown> = {};
 
-  // Always include identifier and source
+  // Identifier and source are always returned regardless of field selection
   filtered.identifier = row.identifier;
   filtered.source = toApiSource(row.source);
 
@@ -126,7 +124,6 @@ export function selectFields(
  * ETag, and field selection. Returns the Hono Response.
  */
 export function renderDocumentResponse(c: Context, row: DocumentRow): Response {
-  // ETag from content hash
   const etag = `"${row.content_hash.slice(0, 16)}"`;
   c.header("ETag", etag);
 
@@ -146,7 +143,6 @@ export function renderDocumentResponse(c: Context, row: DocumentRow): Response {
     return c.body(stripMarkdown(row.markdown_body));
   }
 
-  // JSON with field selection
   const fields = c.req.query("fields");
   const { metadata, includeBody } = selectFields(row, fields);
 

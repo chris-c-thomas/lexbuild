@@ -2,23 +2,20 @@ import type { Context, MiddlewareHandler } from "hono";
 import type Database from "better-sqlite3";
 import { validateApiKey, trackUsage } from "../db/keys.js";
 
-/** Anonymous tier defaults. */
 const ANON_LIMIT = 100;
 const ANON_WINDOW = 60;
 
-/** Sliding window rate limit entry. */
 interface RateLimitEntry {
   count: number;
   windowStart: number;
 }
 
-/** In-memory sliding window rate limiter. No external dependencies needed for single-node. */
+// Single-node deployment — no need for Redis or external rate limit store
 class InMemoryRateLimiter {
   private store = new Map<string, RateLimitEntry>();
   private cleanupInterval: ReturnType<typeof setInterval>;
 
   constructor() {
-    // Clean expired entries every 5 minutes
     this.cleanupInterval = setInterval(() => this.cleanup(), 300_000);
     // Prevent the interval from keeping the process alive during shutdown
     this.cleanupInterval.unref();
@@ -44,7 +41,7 @@ class InMemoryRateLimiter {
 
   private cleanup(): void {
     const now = Date.now();
-    const maxAge = 3600_000; // 1 hour
+    const maxAge = 3600_000;
     for (const [key, entry] of this.store) {
       if (now - entry.windowStart > maxAge) {
         this.store.delete(key);
@@ -104,14 +101,12 @@ export function rateLimitMiddleware(keysDb: Database.Database): MiddlewareHandle
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
         console.error(`[rate-limit] API key validation failed, falling back to anonymous: ${msg}`);
-        // Fall through to anonymous tier
       }
     }
 
     const rateLimitKey = keyId ?? getClientIp(c);
     const result = limiter.check(rateLimitKey, limit, windowSeconds);
 
-    // Set rate limit headers on all responses
     c.header("X-RateLimit-Limit", String(limit));
     c.header("X-RateLimit-Remaining", String(result.remaining));
     c.header("X-RateLimit-Reset", String(result.resetAt));
@@ -135,7 +130,7 @@ export function rateLimitMiddleware(keysDb: Database.Database): MiddlewareHandle
 
     await next();
 
-    // Track usage for authenticated requests (non-critical, don't fail the request)
+    // Non-critical — don't fail the request if tracking errors
     if (keyId) {
       try {
         trackUsage(keysDb, keyId);

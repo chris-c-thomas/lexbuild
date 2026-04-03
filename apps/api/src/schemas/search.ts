@@ -1,6 +1,5 @@
 import { z } from "@hono/zod-openapi";
 
-/** Search query parameters. */
 export const searchQuerySchema = z.object({
   q: z.string().min(1).max(500).openapi({
     description: "Search query text",
@@ -38,7 +37,6 @@ export const searchQuerySchema = z.object({
   }),
 });
 
-/** Search result response. */
 export const searchResultSchema = z.object({
   data: z.object({
     hits: z.array(

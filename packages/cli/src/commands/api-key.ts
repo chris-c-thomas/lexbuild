@@ -1,12 +1,10 @@
-/** lexbuild api-key — Manage API keys for the LexBuild Data API */
-
 import { Command } from "commander";
 import Database from "better-sqlite3";
 import { pbkdf2Sync, randomBytes, randomUUID } from "node:crypto";
 import chalk from "chalk";
 import { summaryBlock, dataTable, success, error as errorMsg } from "../ui.js";
 
-// PBKDF2 configuration — must match apps/api/src/db/keys.ts
+// Must match apps/api/src/db/keys.ts — shared key derivation parameters
 const API_KEY_PBKDF2_ITERATIONS = 100_000;
 const API_KEY_PBKDF2_KEYLEN = 32;
 const API_KEY_PBKDF2_DIGEST = "sha256";
@@ -23,7 +21,6 @@ function deriveApiKeyHash(key: string): string {
   ).toString("hex");
 }
 
-/** Default rate limits per tier. */
 const TIER_DEFAULTS: Record<string, { rate_limit: number; rate_window: number }> = {
   standard: { rate_limit: 1000, rate_window: 60 },
   elevated: { rate_limit: 5000, rate_window: 60 },
@@ -77,8 +74,6 @@ function timeAgo(isoDate: string | null): string {
 
 export const apiKeyCommand = new Command("api-key").description("Manage API keys for the LexBuild Data API");
 
-// ----- create -----
-
 apiKeyCommand
   .command("create")
   .description("Create a new API key")
@@ -128,8 +123,6 @@ apiKeyCommand
     console.log(chalk.yellow("  \u26A0  Save this key now. It cannot be retrieved later.\n"));
   });
 
-// ----- list -----
-
 apiKeyCommand
   .command("list")
   .description("List all API keys")
@@ -172,8 +165,6 @@ apiKeyCommand
     console.log(dataTable(["Prefix", "Label", "Tier", "Requests", "Last Used", "Status"], tableRows));
   });
 
-// ----- revoke -----
-
 apiKeyCommand
   .command("revoke")
   .description("Revoke an API key")
@@ -195,8 +186,6 @@ apiKeyCommand
 
     success(`Key ${options.prefix} revoked`);
   });
-
-// ----- update -----
 
 apiKeyCommand
   .command("update")

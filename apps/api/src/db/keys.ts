@@ -1,9 +1,8 @@
 import Database from "better-sqlite3";
 import { pbkdf2Sync, randomBytes, randomUUID } from "node:crypto";
 
-// PBKDF2 configuration for API key hashing
 const API_KEY_PBKDF2_ITERATIONS = 100_000;
-const API_KEY_PBKDF2_KEYLEN = 32; // 256-bit output
+const API_KEY_PBKDF2_KEYLEN = 32;
 const API_KEY_PBKDF2_DIGEST = "sha256";
 // Not a secret — fixed application-level salt for deterministic key derivation
 const API_KEY_PBKDF2_SALT = "lexbuild-api-key-derivation-v1";
@@ -11,7 +10,6 @@ const API_KEY_PBKDF2_SALT = "lexbuild-api-key-derivation-v1";
 /** Rate limit tier for API keys. */
 export type Tier = "standard" | "elevated" | "unlimited";
 
-/** SQL to create the api_keys table. */
 const API_KEYS_TABLE_SQL = `
 CREATE TABLE IF NOT EXISTS api_keys (
   id              TEXT PRIMARY KEY,
@@ -34,7 +32,7 @@ CREATE INDEX IF NOT EXISTS idx_keys_prefix ON api_keys(key_prefix);
 
 let _keysDb: Database.Database | null = null;
 
-/** Open (or return existing) keys database connection. Auto-creates schema. */
+/** Open (or return existing) keys database connection. Auto-creates schema on first use. */
 export function initKeysDatabase(dbPath: string): Database.Database {
   if (_keysDb) return _keysDb;
 
@@ -57,7 +55,7 @@ export function closeKeysDatabase(): void {
   }
 }
 
-/** Derive a PBKDF2 hash from an API key. Synchronous for use in request-path validation. */
+/** Derive a PBKDF2 hash from an API key. Synchronous for use in the request-path hot loop. */
 function deriveApiKeyHash(key: string): string {
   const derived = pbkdf2Sync(
     key,
@@ -69,16 +67,16 @@ function deriveApiKeyHash(key: string): string {
   return derived.toString("hex");
 }
 
-/** Generate a new API key. Returns the plaintext key (shown once), its hash, and prefix. */
+/** Generate a new API key. The plaintext key is returned once and never stored. */
 export function generateApiKey(): { key: string; hash: string; prefix: string } {
-  const raw = randomBytes(20).toString("hex"); // 40 hex chars
+  const raw = randomBytes(20).toString("hex");
   const key = `lxb_${raw}`;
   const hash = deriveApiKeyHash(key);
-  const prefix = key.slice(0, 12); // "lxb_a1b2c3d4"
+  const prefix = key.slice(0, 12);
   return { key, hash, prefix };
 }
 
-/** Hash an API key for lookup. */
+/** Hash an API key for database lookup. */
 export function hashApiKey(key: string): string {
   return deriveApiKeyHash(key);
 }
@@ -91,7 +89,10 @@ export interface ApiKeyData {
   rate_window: number;
 }
 
-/** Validate an API key against the database. Returns key data or null if invalid/expired/revoked. */
+/**
+ * Validate an API key against the database.
+ * @returns Key data if valid and active, null if invalid/expired/revoked.
+ */
 export function validateApiKey(keysDb: Database.Database, key: string): ApiKeyData | null {
   const hash = hashApiKey(key);
 
@@ -106,7 +107,7 @@ export function validateApiKey(keysDb: Database.Database, key: string): ApiKeyDa
   return row ?? null;
 }
 
-/** Increment request count and update last_used timestamp for a key. */
+/** Increment request count and update last_used timestamp. */
 export function trackUsage(keysDb: Database.Database, keyId: string): void {
   keysDb
     .prepare(
@@ -118,14 +119,13 @@ export function trackUsage(keysDb: Database.Database, keyId: string): void {
     .run(keyId);
 }
 
-/** Default rate limits per tier. */
 export const TIER_DEFAULTS: Record<Tier, { rate_limit: number; rate_window: number }> = {
   standard: { rate_limit: 1000, rate_window: 60 },
   elevated: { rate_limit: 5000, rate_window: 60 },
   unlimited: { rate_limit: 0, rate_window: 0 },
 };
 
-/** Insert a new API key into the database. Returns the generated UUID. */
+/** Insert a new API key record. Returns the generated UUID. */
 export function createApiKeyRecord(
   keysDb: Database.Database,
   options: {

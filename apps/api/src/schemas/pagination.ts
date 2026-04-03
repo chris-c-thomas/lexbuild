@@ -1,6 +1,5 @@
 import { z } from "@hono/zod-openapi";
 
-/** Shared pagination query parameters. */
 export const paginationSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20).openapi({
     description: "Number of results to return (1-100)",
@@ -13,7 +12,6 @@ export const paginationSchema = z.object({
   }),
 });
 
-/** Collection listing response envelope. */
 export const collectionResponseSchema = z.object({
   data: z.array(
     z.object({
