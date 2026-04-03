@@ -20,7 +20,8 @@ src/
     ├── download-fr.ts          # lexbuild download-fr command
     ├── convert-fr.ts           # lexbuild convert-fr command
     ├── enrich-fr.ts           # lexbuild enrich-fr command
-    └── ingest.ts              # lexbuild ingest command (SQLite population)
+    ├── ingest.ts              # lexbuild ingest command (SQLite population)
+    └── api-key.ts             # lexbuild api-key create|list|revoke|update
 ```
 
 ## Commands
@@ -38,6 +39,10 @@ All commands support `--help` for full option details.
 | `enrich-fr` | Enrich FR .md frontmatter with API metadata | `--from`/`--to`, `--recent <days>`, `--force` |
 | `ingest` | Populate SQLite DB from converted .md files | `[content-dir]`, `--db`, `--source`, `--incremental`, `--prune`, `--batch-size`, `--stats` |
 | `list-release-points` | List OLRC release points | `-n <count>` |
+| `api-key create` | Create a new API key | `--label`, `--tier`, `--rate-limit`, `--expires`, `--db` |
+| `api-key list` | List all API keys | `--db`, `--include-revoked` |
+| `api-key revoke` | Revoke an API key | `--prefix`, `--db` |
+| `api-key update` | Update key tier/limit | `--prefix`, `--tier`, `--rate-limit`, `--db` |
 
 **Common convert options**: `--output <dir>` (default `./output`), `--link-style relative|canonical|plaintext`, `--include-notes`, `--include-editorial-notes`, `--include-statutory-notes`, `--include-amendments`, `--dry-run`, `-v`.
 
