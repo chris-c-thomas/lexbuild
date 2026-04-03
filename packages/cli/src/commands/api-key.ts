@@ -2,9 +2,25 @@
 
 import { Command } from "commander";
 import Database from "better-sqlite3";
-import { createHash, randomBytes, randomUUID } from "node:crypto";
+import { pbkdf2Sync, randomBytes, randomUUID } from "node:crypto";
 import chalk from "chalk";
 import { summaryBlock, dataTable, success, error as errorMsg } from "../ui.js";
+
+// PBKDF2 configuration — must match apps/api/src/db/keys.ts
+const API_KEY_PBKDF2_ITERATIONS = 100_000;
+const API_KEY_PBKDF2_KEYLEN = 32;
+const API_KEY_PBKDF2_DIGEST = "sha256";
+const API_KEY_PBKDF2_SALT = "lxb_api_key_pbkdf2_salt_v1";
+
+function deriveApiKeyHash(key: string): string {
+  return pbkdf2Sync(
+    key,
+    API_KEY_PBKDF2_SALT,
+    API_KEY_PBKDF2_ITERATIONS,
+    API_KEY_PBKDF2_KEYLEN,
+    API_KEY_PBKDF2_DIGEST,
+  ).toString("hex");
+}
 
 /** Default rate limits per tier. */
 const TIER_DEFAULTS: Record<string, { rate_limit: number; rate_window: number }> = {
@@ -83,7 +99,7 @@ apiKeyCommand
 
     const raw = randomBytes(20).toString("hex");
     const key = `lxb_${raw}`;
-    const hash = createHash("sha256").update(key, "utf-8").digest("hex");
+    const hash = deriveApiKeyHash(key);
     const prefix = key.slice(0, 12);
     const id = randomUUID();
 

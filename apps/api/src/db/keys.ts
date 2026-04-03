@@ -1,5 +1,11 @@
 import Database from "better-sqlite3";
-import { createHash, randomBytes, randomUUID } from "node:crypto";
+import { pbkdf2Sync, randomBytes, randomUUID } from "node:crypto";
+
+// PBKDF2 configuration for API key hashing
+const API_KEY_PBKDF2_ITERATIONS = 100_000;
+const API_KEY_PBKDF2_KEYLEN = 32; // 256-bit output
+const API_KEY_PBKDF2_DIGEST = "sha256";
+const API_KEY_PBKDF2_SALT = "lxb_api_key_pbkdf2_salt_v1";
 
 /** SQL to create the api_keys table. */
 const API_KEYS_TABLE_SQL = `
@@ -47,18 +53,30 @@ export function closeKeysDatabase(): void {
   }
 }
 
+/** Derive a PBKDF2 hash from an API key. Synchronous for use in request-path validation. */
+function deriveApiKeyHash(key: string): string {
+  const derived = pbkdf2Sync(
+    key,
+    API_KEY_PBKDF2_SALT,
+    API_KEY_PBKDF2_ITERATIONS,
+    API_KEY_PBKDF2_KEYLEN,
+    API_KEY_PBKDF2_DIGEST,
+  );
+  return derived.toString("hex");
+}
+
 /** Generate a new API key. Returns the plaintext key (shown once), its hash, and prefix. */
 export function generateApiKey(): { key: string; hash: string; prefix: string } {
   const raw = randomBytes(20).toString("hex"); // 40 hex chars
   const key = `lxb_${raw}`;
-  const hash = createHash("sha256").update(key, "utf-8").digest("hex");
+  const hash = deriveApiKeyHash(key);
   const prefix = key.slice(0, 12); // "lxb_a1b2c3d4"
   return { key, hash, prefix };
 }
 
 /** Hash an API key for lookup. */
 export function hashApiKey(key: string): string {
-  return createHash("sha256").update(key, "utf-8").digest("hex");
+  return deriveApiKeyHash(key);
 }
 
 /** Data returned when validating an API key. */
