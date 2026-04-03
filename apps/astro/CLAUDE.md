@@ -96,9 +96,20 @@ scripts/
 | `CONTENT_DIR` | `./content` | Root content directory |
 | `NAV_DIR` | `./public/nav` | Sidebar JSON directory |
 | `ENABLE_SEARCH` | `false` | Show search UI |
-| `MEILI_URL` | `http://127.0.0.1:7700` (dev) / `/search` (prod) | Meilisearch endpoint (starts with `/` = proxy mode) |
-| `MEILI_SEARCH_KEY` | — | Search-only API key |
+| `MEILI_URL` | `http://localhost:7711` (dev) / `/search` (prod) | Meilisearch endpoint (starts with `/` = proxy mode) |
+| `MEILI_SEARCH_KEY` | — | Search-only API key (empty in dev, populated in prod) |
 | `SITE_URL` | `https://lexbuild.dev` | Base URL for sitemap/OG |
+
+### Env Files
+
+| File | Purpose | Generated? |
+|---|---|---|
+| `.env.example` | Template for contributors (checked into git) | No |
+| `.env.local` | Local dev overrides (gitignored) | No — copy from `.env.example` |
+| `.env.production` | VPS production values (gitignored) | Yes — `deploy.sh` generates from `~/.lexbuild-secrets` on every deploy |
+| `.env.production.local` | Not used (placeholder for VPS overrides) | No |
+
+**`.env.production` is never manually maintained.** The deploy script regenerates it on every deploy. To change a production value, update `~/.lexbuild-secrets` on the VPS and redeploy.
 
 ## Route Resolution
 
