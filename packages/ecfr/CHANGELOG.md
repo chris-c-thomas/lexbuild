@@ -1,5 +1,24 @@
 # @lexbuild/ecfr
 
+## 1.17.0
+
+### Minor Changes
+
+- 15c21c9: Meilisearch Docker Container
+
+### Patch Changes
+
+- Updated dependencies [15c21c9]
+  - @lexbuild/core@1.17.0
+
+## 1.16.1
+
+### Patch Changes
+
+- ae8e01c: Update documentation and CLAUDE.md files
+- Updated dependencies [ae8e01c]
+  - @lexbuild/core@1.16.1
+
 ## 1.16.0
 
 ### Minor Changes
