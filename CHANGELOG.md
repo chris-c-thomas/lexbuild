@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.17.0]
+
+### Added
+
+- Docker-based Meilisearch search index deployment (`--search-docker`) — indexes locally in a linux/amd64 container, transfers pre-built data directory to VPS with no re-indexing
+- Incremental source indexing (`--search-docker --source fr`) — add/update a single source without full rebuild
+- Docker volume seeding from VPS (`--search-docker-seed`) — recover local index from production
+- `BatchIndexer.flush()` fix — prevents cascading failures when Meilisearch is unavailable
+- FR content support in search dump pipeline
+- Comprehensive internal documentation set (`.claude/internal/docs/`)
+
+### Changed
+
+- Search deployment uses Docker data directory transfer instead of Meilisearch dumps (removed `--search-dump` and `--search-push`)
+- Deploy script cleanup: removed dump-based functions, added Docker container lifecycle management
+
 ## [1.16.1]
 
 ### Changed
