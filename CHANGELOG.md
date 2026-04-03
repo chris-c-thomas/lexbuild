@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.17.2]
+
+### Added
+
+- Data API (`apps/api/`) — Hono-based REST API serving U.S. legal content from SQLite with Meilisearch search proxy
+- Document retrieval endpoints for USC, CFR, and FR with content negotiation (JSON/Markdown/plaintext), field selection, and ETag caching
+- Paginated collection listings with multi-field filtering, sorting, and cursor-based pagination
+- Hierarchy browsing endpoints: USC/CFR titles, FR years/months
+- Corpus statistics endpoint
+- Cross-source full-text search with faceted filtering and result highlighting
+- API key authentication with PBKDF2 hashing and tiered rate limiting (anonymous/standard/elevated/unlimited)
+- CLI commands: `lexbuild api-key create|list|revoke|update`
+- Deploy script modes: `--api`, `--api-db`, `--api-full` for API code and database deployment
+- Shared API key schema and hashing utilities in `@lexbuild/core`
+- OpenAPI 3.1 spec generation with Scalar API reference UI at `/api/v1/docs`
+- PM2 ecosystem entry for API process on port 4322
+
 ## [1.17.1]
 
 ### Changed
