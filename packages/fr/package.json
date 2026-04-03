@@ -1,6 +1,6 @@
 {
   "name": "@lexbuild/fr",
-  "version": "1.16.0",
+  "version": "1.16.1",
   "description": "Federal Register XML to Markdown converter for LexBuild",
   "author": "Chris Thomas",
   "license": "MIT",
