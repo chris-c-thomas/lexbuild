@@ -64,6 +64,7 @@ NAV_DEST="${NAV_DEST:-/srv/lexbuild/nav}"
 
 MODE="code" # code | content | content-only | nav-only | sitemaps-only | remote | search-docker
 SEARCH_SOURCE=""  # optional --source filter for --search-docker
+MEILI_PROFILE="full"  # full | dev — selects which Docker volume to use
 
 case "${1:-}" in
   --content)
@@ -94,6 +95,13 @@ case "${1:-}" in
     ;;
   --search-docker-seed)
     MODE="search-docker-seed"
+    if [ "${2:-}" = "--profile" ] && [ -n "${3:-}" ]; then
+      MEILI_PROFILE="$3"
+      if [[ ! "$MEILI_PROFILE" =~ ^(full|dev)$ ]]; then
+        echo "Error: --profile must be full or dev (got: $MEILI_PROFILE)"
+        exit 1
+      fi
+    fi
     ;;
   --help|-h)
     sed -n '2,/^$/{ s/^# //; s/^#$//; p }' "$0"
@@ -419,8 +427,9 @@ deploy_search_docker() {
 
   COMPOSE_FILE="$REPO_ROOT/docker-compose.meili.yml"
   DOCKER_PORT=7711
+  export MEILI_PROFILE
 
-  echo "--- Starting Docker Meilisearch (linux/amd64)..."
+  echo "--- Starting Docker Meilisearch (linux/amd64, profile=$MEILI_PROFILE)..."
   if [ "$INCREMENTAL" = true ]; then
     # Incremental: keep existing volume, just start the container
     docker compose -f "$COMPOSE_FILE" up -d
@@ -484,7 +493,7 @@ deploy_search_docker() {
   docker compose -f "$COMPOSE_FILE" stop
 
   echo "--- Extracting data directory from Docker volume..."
-  VOLUME_NAME="lexbuild_meili-data"
+  VOLUME_NAME="lexbuild_meili-data-${MEILI_PROFILE}"
   TAR_PATH="$REPO_ROOT/.meili-data.tar.gz"
 
   # Tar the data directory from the Docker volume.
@@ -560,8 +569,6 @@ REMOTE
 # --- Search docker seed: populate Docker volume from VPS data (used by: search-docker-seed) ---
 
 deploy_search_docker_seed() {
-  echo "==> Seeding Docker volume from VPS data directory..."
-
   if ! command -v docker &> /dev/null; then
     echo "Error: Docker is not installed or not in PATH."
     exit 1
@@ -573,9 +580,11 @@ deploy_search_docker_seed() {
   fi
 
   COMPOSE_FILE="$REPO_ROOT/docker-compose.meili.yml"
-  VOLUME_NAME="lexbuild_meili-data"
+  VOLUME_NAME="lexbuild_meili-data-${MEILI_PROFILE}"
+  DOCKER_PORT=7711
+  export MEILI_PROFILE
 
-  # Fetch master key (needed to verify after seeding)
+  # Fetch master key
   echo "--- Fetching master key from VPS..."
   MEILI_MASTER_KEY=$(ssh "$VPS_HOST" "source ~/.lexbuild-secrets && echo \$MEILI_MASTER_KEY")
   if [ -z "$MEILI_MASTER_KEY" ]; then
@@ -584,43 +593,120 @@ deploy_search_docker_seed() {
   fi
   export MEILI_MASTER_KEY
 
-  # Download data directory from VPS
-  echo "--- Downloading Meilisearch data from VPS..."
-  TAR_PATH="$REPO_ROOT/.meili-data.tar.gz"
-  ssh "$VPS_HOST" "tar czf - -C /var/lib/meilisearch/data ." > "$TAR_PATH"
+  if [ "$MEILI_PROFILE" = "dev" ]; then
+    # --- Dev profile: index a small subset locally ---
+    echo "==> Seeding dev volume with sample data..."
 
-  TAR_SIZE=$(du -h "$TAR_PATH" | cut -f1)
-  echo "--- Downloaded: $TAR_PATH ($TAR_SIZE)"
+    # Content symlinks
+    TEMP_CONTENT="$REPO_ROOT/.search-docker-content"
+    rm -rf "$TEMP_CONTENT"
+    mkdir -p "$TEMP_CONTENT/usc" "$TEMP_CONTENT/ecfr" "$TEMP_CONTENT/fr"
 
-  # Destroy existing volume and create fresh one
-  echo "--- Replacing Docker volume..."
-  docker compose -f "$COMPOSE_FILE" down -v 2>/dev/null || true
-  docker volume create "$VOLUME_NAME" > /dev/null
+    for src_dir in usc ecfr; do
+      if [ -d "$REPO_ROOT/output/$src_dir" ]; then
+        ln -s "$REPO_ROOT/output/$src_dir" "$TEMP_CONTENT/$src_dir/sections"
+      else
+        echo "Error: output/$src_dir not found. Run the converter first."
+        rm -rf "$TEMP_CONTENT"
+        exit 1
+      fi
+    done
 
-  # Load data into volume
-  echo "--- Loading data into Docker volume..."
-  docker run --rm \
-    -v "${VOLUME_NAME}:/data" \
-    -v "${TAR_PATH}:/import.tar.gz:ro" \
-    --platform linux/amd64 \
-    alpine:latest \
-    sh -c "mkdir -p /data/data.ms && tar xzf /import.tar.gz -C /data/data.ms/"
+    if [ -d "$REPO_ROOT/output/fr" ]; then
+      ln -s "$REPO_ROOT/output/fr" "$TEMP_CONTENT/fr/documents"
+    else
+      echo "Error: output/fr not found. Run the converter first."
+      rm -rf "$TEMP_CONTENT"
+      exit 1
+    fi
 
-  rm -f "$TAR_PATH"
+    # Fresh volume
+    docker compose -f "$COMPOSE_FILE" down 2>/dev/null || true
+    docker volume rm "$VOLUME_NAME" 2>/dev/null || true
+    docker compose -f "$COMPOSE_FILE" up -d
 
-  # Verify by starting Meilisearch briefly
-  echo "--- Verifying seeded data..."
-  docker compose -f "$COMPOSE_FILE" up -d
-  sleep 3
+    echo "--- Waiting for Docker Meilisearch..."
+    for i in $(seq 1 60); do
+      if curl -sf "http://localhost:$DOCKER_PORT/health" > /dev/null 2>&1; then
+        echo "--- Docker Meilisearch healthy after ${i}s"
+        break
+      fi
+      sleep 1
+    done
 
-  DOC_COUNT=$(curl -sf "http://localhost:7711/indexes/lexbuild/stats" \
-    -H "Authorization: Bearer ${MEILI_MASTER_KEY}" 2>/dev/null \
-    | python3 -c "import sys,json; print(json.load(sys.stdin).get('numberOfDocuments', 0))" 2>/dev/null || echo "0")
+    # Index one title per source + a small FR sample
+    echo "--- Indexing sample data (USC title 1 + eCFR title 1 + recent FR docs)..."
+    cd "$REPO_ROOT/apps/astro"
 
-  docker compose -f "$COMPOSE_FILE" down
+    # USC title 1 only (~200 docs)
+    MEILI_URL="http://localhost:$DOCKER_PORT" \
+    MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
+      pnpm dlx tsx scripts/index-search-incremental.ts "$TEMP_CONTENT" --source usc 2>&1 | \
+      awk '/upserted|skipped|checkpoint/ { print "    " $0 }'
 
-  echo "--- Docker volume seeded with $DOC_COUNT documents from VPS"
-  echo "    You can now run: ./scripts/deploy.sh --search-docker --source <name>"
+    # eCFR title 1 only (~100 docs)
+    MEILI_URL="http://localhost:$DOCKER_PORT" \
+    MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
+      pnpm dlx tsx scripts/index-search-incremental.ts "$TEMP_CONTENT" --source ecfr 2>&1 | \
+      awk '/upserted|skipped|checkpoint/ { print "    " $0 }'
+
+    # FR — index all (incremental indexer scans all, but only recent files will be quick)
+    MEILI_URL="http://localhost:$DOCKER_PORT" \
+    MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
+      pnpm dlx tsx scripts/index-search-incremental.ts "$TEMP_CONTENT" --source fr 2>&1 | \
+      awk '/upserted|skipped|checkpoint/ { print "    " $0 }'
+
+    cd "$REPO_ROOT"
+    rm -rf "$TEMP_CONTENT"
+
+    DOC_COUNT=$(curl -sf "http://localhost:$DOCKER_PORT/indexes/lexbuild/stats" \
+      -H "Authorization: Bearer ${MEILI_MASTER_KEY}" 2>/dev/null \
+      | python3 -c "import sys,json; print(json.load(sys.stdin).get('numberOfDocuments', 0))" 2>/dev/null || echo "0")
+
+    docker compose -f "$COMPOSE_FILE" down
+
+    echo "--- Dev volume seeded with $DOC_COUNT documents"
+    echo "    Start with: MEILI_PROFILE=dev docker compose -f docker-compose.meili.yml up -d"
+  else
+    # --- Full profile: seed from VPS data directory ---
+    echo "==> Seeding full volume from VPS data directory..."
+
+    TAR_PATH="$REPO_ROOT/.meili-data.tar.gz"
+    echo "--- Downloading Meilisearch data from VPS..."
+    ssh "$VPS_HOST" "tar czf - -C /var/lib/meilisearch/data ." > "$TAR_PATH"
+
+    TAR_SIZE=$(du -h "$TAR_PATH" | cut -f1)
+    echo "--- Downloaded: $TAR_PATH ($TAR_SIZE)"
+
+    # Fresh volume
+    docker compose -f "$COMPOSE_FILE" down 2>/dev/null || true
+    docker volume rm "$VOLUME_NAME" 2>/dev/null || true
+    docker volume create "$VOLUME_NAME" > /dev/null
+
+    echo "--- Loading data into Docker volume..."
+    docker run --rm \
+      -v "${VOLUME_NAME}:/data" \
+      -v "${TAR_PATH}:/import.tar.gz:ro" \
+      --platform linux/amd64 \
+      alpine:latest \
+      sh -c "mkdir -p /data/data.ms && tar xzf /import.tar.gz -C /data/data.ms/"
+
+    rm -f "$TAR_PATH"
+
+    # Verify
+    echo "--- Verifying seeded data..."
+    docker compose -f "$COMPOSE_FILE" up -d
+    sleep 5
+
+    DOC_COUNT=$(curl -sf "http://localhost:$DOCKER_PORT/indexes/lexbuild/stats" \
+      -H "Authorization: Bearer ${MEILI_MASTER_KEY}" 2>/dev/null \
+      | python3 -c "import sys,json; print(json.load(sys.stdin).get('numberOfDocuments', 0))" 2>/dev/null || echo "0")
+
+    docker compose -f "$COMPOSE_FILE" down
+
+    echo "--- Full volume seeded with $DOC_COUNT documents from VPS"
+  fi
+
   echo "==> Seed complete"
 }
 
