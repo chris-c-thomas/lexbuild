@@ -212,7 +212,7 @@ export function SearchDialog({ meiliUrl, meiliSearchKey }: SearchDialogProps) {
 
             {!loading && !query && (
               <div className="text-muted-foreground px-4 py-8 text-center text-sm">
-                Search across <span className="text-foreground font-medium">290,000+</span> sections and documents of
+                Search across <span className="text-foreground font-medium">1,050,000+</span> sections and documents of
                 U.S. law and regulations
               </div>
             )}
