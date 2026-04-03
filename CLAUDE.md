@@ -45,6 +45,7 @@ Each package and app has its own `CLAUDE.md` with architecture details, module s
 - [`packages/fr/CLAUDE.md`](packages/fr/CLAUDE.md) — Federal Register XML→AST→Markdown, document-centric structure, dual JSON+XML ingestion, API downloader
 - [`packages/cli/CLAUDE.md`](packages/cli/CLAUDE.md) — Commands, options, UI module, title parser, build config
 - [`apps/astro/CLAUDE.md`](apps/astro/CLAUDE.md) — Astro 6 SSR site, island architecture, multi-source content browser, deployment
+- [`apps/api/CLAUDE.md`](apps/api/CLAUDE.md) — Data API (Hono + SQLite + Meilisearch), endpoints, rate limiting, deployment
 
 ## Tech Stack
 
@@ -102,6 +103,9 @@ pnpm turbo build:api --filter=@lexbuild/api        # Production build
 ./scripts/deploy.sh --content      # Code + rsync local output/ to VPS
 ./scripts/deploy.sh --content-only # Rsync only, no code deploy
 ./scripts/deploy.sh --remote       # Full pipeline on VPS (download + convert + build)
+./scripts/deploy.sh --api                        # Deploy API code (git pull, build:api, pm2 reload)
+./scripts/deploy.sh --api-db                     # Sync lexbuild.db to VPS + reload API
+./scripts/deploy.sh --api-full                   # API code + database sync + reload
 ./scripts/deploy.sh --search-docker              # Build search index in Docker, transfer to VPS
 ./scripts/deploy.sh --search-docker --source fr   # Incremental: index one source into existing volume
 ./scripts/deploy.sh --search-docker-seed          # Seed Docker volume from VPS (recover after volume loss)
@@ -120,6 +124,16 @@ The Astro app (`apps/astro/`) is deployed to a self-managed VPS (AWS Lightsail) 
 - **Excluded from `pnpm turbo build`** — no `build` script in its `package.json` (only `build:astro`). Prevents CI failures since the app requires content files that aren't in git.
 - **Excluded from changesets** — `"private": true` and listed in `.changeset/config.json` `ignore`.
 - **Content is gitignored** — `apps/astro/content/`, `public/nav/`, `public/sitemap.xml`, `*.highlighted.html` are all generated artifacts.
+
+### Data API
+
+The Data API (`apps/api/`) serves legal content programmatically at `https://lexbuild.dev/api/v1/`. Hono + SQLite + Meilisearch. See `apps/api/CLAUDE.md` for the full spec.
+
+- **Excluded from `pnpm turbo build`** — uses `build:api` (same pattern as Astro app)
+- **Excluded from changesets** — `"private": true`
+- **Two SQLite databases**: `lexbuild.db` (content, read-only, rebuilt by `lexbuild ingest`) and `lexbuild-keys.db` (API keys, read-write, persists across re-ingestion)
+- **`better-sqlite3` native bindings are platform-specific** — macOS binaries don't work on Linux. Run `pnpm install` on the VPS after code deployment.
+- **API port 4322 is not exposed in the Lightsail firewall** — traffic reaches the API through Caddy (ports 80/443). Same pattern as Meilisearch on 7700.
 
 ## Code Conventions
 

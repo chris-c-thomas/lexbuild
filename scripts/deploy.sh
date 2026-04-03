@@ -6,6 +6,9 @@
 #   ./scripts/deploy.sh --content      # Deploy code + rsync content from local output/
 #   ./scripts/deploy.sh --content-only # Rsync content only, no code deploy
 #   ./scripts/deploy.sh --remote       # Full pipeline on VPS (code + download + convert + build)
+#   ./scripts/deploy.sh --api          # Deploy API code only (git pull, build:api, pm2 reload)
+#   ./scripts/deploy.sh --api-db       # Sync lexbuild.db to VPS + reload API
+#   ./scripts/deploy.sh --api-full     # API code + database sync + reload
 #   ./scripts/deploy.sh --search-docker                # Full reindex in Docker, transfer to VPS
 #   ./scripts/deploy.sh --search-docker --source fr    # Incremental: add/update one source only
 #   ./scripts/deploy.sh --search-docker-seed           # Seed Docker volume from VPS data
@@ -62,9 +65,10 @@ NAV_DEST="${NAV_DEST:-/srv/lexbuild/nav}"
 
 # --- Parse arguments ---
 
-MODE="code" # code | content | content-only | nav-only | sitemaps-only | remote | search-docker
+MODE="code" # code | content | content-only | nav-only | sitemaps-only | remote | api | api-db | api-full | search-docker
 SEARCH_SOURCE=""  # optional --source filter for --search-docker
 MEILI_PROFILE="full"  # full | dev — selects which Docker volume to use
+DATA_DEST="${DATA_DEST:-/srv/lexbuild/data}"
 
 case "${1:-}" in
   --content)
@@ -81,6 +85,15 @@ case "${1:-}" in
     ;;
   --remote)
     MODE="remote"
+    ;;
+  --api)
+    MODE="api"
+    ;;
+  --api-db)
+    MODE="api-db"
+    ;;
+  --api-full)
+    MODE="api-full"
     ;;
   --search-docker)
     MODE="search-docker"
@@ -111,7 +124,7 @@ case "${1:-}" in
     ;; # default: code only
   *)
     echo "Unknown option: $1"
-    echo "Usage: ./scripts/deploy.sh [--content | --content-only | --nav-only | --sitemaps-only | --remote | --search-docker [--source <name>] | --search-docker-seed | --help]"
+    echo "Usage: ./scripts/deploy.sh [--content | --content-only | --nav-only | --sitemaps-only | --remote | --api | --api-db | --api-full | --search-docker [--source <name>] | --search-docker-seed | --help]"
     exit 1
     ;;
 esac
@@ -364,6 +377,80 @@ EOF
     pm2 reload lexbuild-astro --update-env
 
     echo "==> Remote deploy complete"
+REMOTE
+}
+
+# --- API code deploy (used by: api, api-full) ---
+
+deploy_api() {
+  echo "==> Deploying API code to VPS..."
+
+  ssh "$VPS_HOST" << 'REMOTE'
+    set -euo pipefail
+    cd ~/lexbuild
+
+    echo "--- git pull"
+    git pull
+
+    echo "--- pnpm install (required for better-sqlite3 native bindings)"
+    pnpm install --frozen-lockfile
+
+    echo "--- Building API"
+    pnpm turbo build:api --filter=@lexbuild/api
+
+    echo "--- Reloading API process"
+    pm2 reload lexbuild-api --update-env
+    echo "==> API code deploy complete"
+REMOTE
+}
+
+# --- API database sync (used by: api-db, api-full) ---
+
+deploy_api_db() {
+  echo "==> Syncing content database to VPS..."
+
+  LOCAL_DB="${2:-./lexbuild.db}"
+  if [ ! -f "$LOCAL_DB" ]; then
+    echo "Error: Database not found at $LOCAL_DB"
+    echo "Build it with: lexbuild ingest ./output --db $LOCAL_DB"
+    exit 1
+  fi
+
+  DB_SIZE=$(du -h "$LOCAL_DB" | cut -f1)
+  echo "--- Local database: $LOCAL_DB ($DB_SIZE)"
+
+  # Compress for transfer
+  echo "--- Compressing with zstd..."
+  zstd -T0 -19 -f "$LOCAL_DB" -o "${LOCAL_DB}.zst"
+  ZST_SIZE=$(du -h "${LOCAL_DB}.zst" | cut -f1)
+  echo "--- Compressed: ${LOCAL_DB}.zst ($ZST_SIZE)"
+
+  # Transfer
+  echo "--- Transferring to VPS..."
+  rsync -avz --progress "${LOCAL_DB}.zst" "${VPS_HOST}:${DATA_DEST}/lexbuild.db.zst.new"
+  rm -f "${LOCAL_DB}.zst"
+
+  # Atomic swap on VPS
+  echo "--- Atomic database swap on VPS..."
+  ssh "$VPS_HOST" << REMOTE
+    set -euo pipefail
+    cd ${DATA_DEST}
+
+    echo "--- Decompressing..."
+    zstd -d -f lexbuild.db.zst.new -o lexbuild.db.new
+    rm -f lexbuild.db.zst.new
+
+    echo "--- Stopping API for database swap"
+    pm2 stop lexbuild-api 2>/dev/null || true
+
+    mv lexbuild.db lexbuild.db.bak 2>/dev/null || true
+    mv lexbuild.db.new lexbuild.db
+    rm -f lexbuild.db.bak lexbuild.db-wal lexbuild.db-shm
+
+    echo "--- Restarting API"
+    pm2 start lexbuild-api --update-env
+
+    echo "==> Database swap complete"
 REMOTE
 }
 
@@ -737,6 +824,16 @@ case "$MODE" in
     ;;
   remote)
     deploy_remote
+    ;;
+  api)
+    deploy_api
+    ;;
+  api-db)
+    deploy_api_db
+    ;;
+  api-full)
+    deploy_api
+    deploy_api_db
     ;;
   search-docker)
     deploy_search_docker

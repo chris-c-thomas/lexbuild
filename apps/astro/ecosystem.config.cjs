@@ -99,6 +99,7 @@ module.exports = {
         LEXBUILD_KEYS_DB_PATH: "/srv/lexbuild/data/lexbuild-keys.db",
         MEILI_URL: "http://127.0.0.1:7700",
         MEILI_MASTER_KEY: process.env.MEILI_MASTER_KEY || "",
+        MEILI_SEARCH_KEY: process.env.MEILI_SEARCH_KEY || "",
       },
       instances: 1,
       exec_mode: "fork",
