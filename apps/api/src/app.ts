@@ -1,5 +1,6 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { apiReference } from "@scalar/hono-api-reference";
+import { SCALAR_THEME_CSS } from "./lib/scalar-theme.js";
 import { cors } from "hono/cors";
 import { createDatabase } from "./db/client.js";
 import { initKeysDatabase } from "./db/keys.js";
@@ -81,9 +82,13 @@ export function createApp(config: AppConfig): OpenAPIHono {
     "/docs",
     apiReference({
       url: "/api/openapi.json",
-      theme: "kepler",
+      theme: "none",
       title: "LexBuild API Reference",
       defaultOpenAllTags: false,
+      darkMode: false,
+      withDefaultFonts: false,
+      customCss: SCALAR_THEME_CSS,
+      favicon: "https://lexbuild.dev/favicon.svg",
     }),
   );
 
