@@ -2,7 +2,7 @@
 
 LexBuild is a platform for converting legislative XML into structured Markdown optimized for AI ingestion. It supports three source formats -- U.S. Code (USLM 1.0 schema), eCFR (GPO/SGML-derived XML), and Federal Register (GPO/SGML via FederalRegister.gov API) -- with an architecture designed for additional sources.
 
-The system is organized as a TypeScript monorepo with five packages and one application, arranged in three dependency layers. Each layer depends only on the layer below it, enforcing a clean separation between shared infrastructure, source-specific logic, and user-facing interfaces.
+The system is organized as a TypeScript monorepo with five packages and two applications, arranged in three dependency layers. Each layer depends only on the layer below it, enforcing a clean separation between shared infrastructure, source-specific logic, and user-facing interfaces.
 
 ## Three-Layer Architecture
 
@@ -92,8 +92,9 @@ The top layer contains user-facing interfaces. Neither component contains conver
 
 - **`@lexbuild/cli`** -- Command-line interface built with [commander](https://github.com/tj/commander.js). Provides `download-usc`, `convert-usc`, `download-ecfr`, `convert-ecfr`, `download-fr`, and `convert-fr` commands following a `{action}-{source}` naming pattern. The CLI handles argument parsing, progress display, and error reporting. All conversion work is delegated to the source packages.
 - **`apps/astro`** -- Astro 6 SSR web application served at [lexbuild.dev](https://lexbuild.dev). Provides a browsable interface for the converted content with full-text search via Meilisearch. Has **no code dependency** on any `@lexbuild/*` package -- it consumes the output Markdown files and `_meta.json` sidecar indexes directly from the filesystem.
+- **`apps/api`** -- Hono REST API served at [lexbuild.dev/api](https://lexbuild.dev/api). Provides programmatic access to the corpus from a SQLite database with full text search via Meilisearch. Depends on `@lexbuild/core` for shared database schema types but has no dependency on source packages. Content is populated by the `lexbuild ingest` CLI command.
 
-See the [CLI](../packages/cli.md) package and the [Astro](../apps/astro.md) app.
+See the [CLI](../packages/cli.md) package, the [Astro](../apps/astro.md) app, and the [Data API](../apps/api.md).
 
 ## Package Dependency Graph
 
@@ -109,6 +110,9 @@ See the [CLI](../packages/cli.md) package and the [Astro](../apps/astro.md) app.
 
 apps/astro
   └── (no package dependencies — consumes output files only)
+
+apps/api
+  └── @lexbuild/core (shared database schema types and key hashing utilities)
 ```
 
 All internal dependencies use the pnpm `workspace:*` protocol. Turborepo builds packages in topological order: `core` first, then `usc`, `ecfr`, and `fr` in parallel, then `cli`. All packages use lockstep versioning managed by [Changesets](https://github.com/changesets/changesets).

@@ -120,6 +120,27 @@ MEILI_SEARCH_KEY=
 
 `MEILI_SEARCH_KEY` is empty in dev mode (no authentication required).
 
+## Data API Development
+
+The Data API requires a populated SQLite database. To set up a local instance:
+
+```bash
+# Build packages and convert at least one title
+pnpm turbo build
+node packages/cli/dist/index.js download-usc --titles 1
+node packages/cli/dist/index.js convert-usc --titles 1 -o ./output
+
+# Ingest converted content into SQLite
+node packages/cli/dist/index.js ingest ./output --db ./lexbuild.db
+
+# Start the API dev server
+LEXBUILD_DB_PATH=./lexbuild.db pnpm turbo dev:api --filter=@lexbuild/api
+```
+
+The dev server runs at `http://localhost:4322`. Interactive API documentation is at `http://localhost:4322/api/docs`. The search endpoint requires a running Meilisearch instance (see Local Search above).
+
+See the Data API [documentation](../apps/api.md) for the full architecture and endpoint reference.
+
 ## Project Structure
 
 ```
@@ -131,7 +152,8 @@ lexbuild/
 │   ├── fr/       # @lexbuild/fr
 │   └── cli/      # @lexbuild/cli
 ├── apps/
-│   └── astro/    # Web app (Astro 6, SSR)
+│   ├── astro/    # Web app (Astro 6, SSR)
+│   └── api/      # Data API (Hono, SQLite)
 ├── fixtures/     # Test fixtures (fragments + expected output)
 ├── downloads/    # Downloaded XML (gitignored)
 ├── docs/         # Documentation
@@ -154,6 +176,9 @@ lexbuild/
   ├── @lexbuild/ecfr
   └── @lexbuild/fr
         └── @lexbuild/cli (depends on core, usc, ecfr, fr)
+
+apps/api (depends on core only)
+apps/astro (no package dependencies)
 ```
 
-Source packages depend only on `core` and never on each other. The CLI depends on all four.
+Source packages depend only on `core` and never on each other. The CLI depends on all four. The Data API depends on `core` for shared database schema types. The Astro app has no package dependencies.

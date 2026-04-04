@@ -6,7 +6,7 @@
 [![Node](https://img.shields.io/badge/node-%3E%3D22-brightgreen?style=for-the-badge)](https://nodejs.org/)
 [![license](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 
-[LexBuild](https://lexbuild.dev) is an open-source toolchain for U.S. legal texts. It transforms official source XML into structured Markdown with rich metadata, optimized for LLMs, RAG pipelines, and semantic search.
+[LexBuild](https://lexbuild.dev) is an open-source toolchain for U.S. legal texts. It transforms official source XML into structured Markdown with rich metadata, optimized for LLMs, RAG pipelines, and semantic search. It also provides a [REST API](https://lexbuild.dev/api/docs) for programmatic access to the full corpus.
 
 ## Table of Contents
 
@@ -297,6 +297,49 @@ lexbuild enrich-fr --from 2000-01-01 --force                 # Overwrite already
 
 Files that already have `fr_citation` in their frontmatter are skipped unless `--force` is used. Only YAML frontmatter is updated — the Markdown body is preserved as-is.
 
+### `ingest`
+
+Populate a SQLite database from converted Markdown files. The database powers the [LexBuild Data API](https://lexbuild.dev/api/docs).
+
+```bash
+lexbuild ingest ./output --db ./lexbuild.db                           # Full ingest
+lexbuild ingest ./output --db ./lexbuild.db --source fr --incremental # Incremental FR only
+lexbuild ingest ./output --db ./lexbuild.db --prune                   # Remove entries for deleted files
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `[content-dir]` | `./output` | Path to converted content directory |
+| `--db <path>` | `./lexbuild.db` | SQLite database file path |
+| `--source <name>` | all | Ingest only one source: `usc`, `ecfr`, or `fr` |
+| `--incremental` | — | Skip files with unchanged content hashes |
+| `--prune` | — | Remove database entries for files no longer on disk |
+| `--batch-size <n>` | `1000` | Documents per SQLite transaction batch |
+| `--stats` | — | Print corpus statistics after ingestion |
+
+The ingest command walks all `.md` files (excluding `README.md`), parses their YAML frontmatter, computes SHA-256 content hashes for change detection, and batch-upserts rows into a single denormalized `documents` table. WAL mode is enabled for concurrent read access by the API.
+
+### `api-key`
+
+Create and manage API keys for the LexBuild Data API.
+
+```bash
+lexbuild api-key create --label "My Research Project"       # Create a new key
+lexbuild api-key create --label "Admin" --tier unlimited     # Create an unlimited key
+lexbuild api-key list                                        # List all active keys
+lexbuild api-key revoke --prefix lxb_a1b2c3d4               # Revoke a key
+lexbuild api-key update --prefix lxb_a1b2c3d4 --tier elevated # Upgrade a key
+```
+
+| Subcommand | Key Options |
+|------------|-------------|
+| `api-key create` | `--label` (required), `--tier standard\|elevated\|unlimited`, `--rate-limit <n>`, `--expires <date>` |
+| `api-key list` | `--include-revoked` |
+| `api-key revoke` | `--prefix <prefix>` (required) |
+| `api-key update` | `--prefix <prefix>` (required), `--tier`, `--rate-limit <n>` |
+
+All subcommands accept `--db <path>` to specify the keys database location (default: `./lexbuild-keys.db`). Keys use the `lxb_` prefix followed by 40 hex characters. The plaintext key is displayed once at creation and cannot be retrieved later.
+
 ---
 
 ## Output
@@ -480,7 +523,8 @@ lexbuild/
 │   ├── fr/            # @lexbuild/fr   — Federal Register converter and downloader
 │   └── cli/           # @lexbuild/cli  — CLI binary
 ├── apps/
-│   └── astro/         # LexBuild web app (https://lexbuild.dev)
+│   ├── astro/         # LexBuild web app (https://lexbuild.dev)
+│   └── api/           # LexBuild Data API (https://lexbuild.dev/api)
 ├── docs/              
 ├── fixtures/          
 ├── downloads/         # Downloaded source data (gitignored)
@@ -501,6 +545,9 @@ lexbuild/
   └── @lexbuild/core
 
 @lexbuild/astro (No direct dependency on packages. Consumes converted output only.)
+
+@lexbuild/api
+  └── @lexbuild/core (shared database schema types and key hashing utilities)
 ```
 
 Source packages are independent — `@lexbuild/usc`, `@lexbuild/ecfr`, and `@lexbuild/fr` never import from each other. Future source packages follow the same pattern.
@@ -526,6 +573,9 @@ Each package has its own README with full API documentation.
 | Package | Description |
 |---------|-------------|
 | [`@lexbuild/astro`](apps/astro/) | LexBuild web application |
+| [`@lexbuild/api`](apps/api/) | LexBuild Data API |
+
+### Web Application
 
 [LexBuild](https://lexbuild.dev) is a server-rendered legal web resource and content browser built with Astro 6, React 19, Tailwind CSS 4, and shadcn/ui.
 
@@ -540,6 +590,22 @@ Each package has its own README with full API documentation.
 The web app consumes LexBuild's output (`.md` files and `_meta.json` sidecars) and has no code dependency on the conversion packages.
 
 See [`apps/astro/README.md`](apps/astro/README.md) for setup and development instructions.
+
+### Data API
+
+The [LexBuild API](https://lexbuild.dev/api/docs) provides programmatic access to the full corpus via a Hono REST API backed by SQLite and Meilisearch.
+
+- **1,000,000+ documents** searchable and retrievable as JSON, Markdown, or plaintext
+- **Content negotiation** with field selection and ETag caching
+- **Paginated listings** with multi-field filtering and sorting
+- **Hierarchy browsing** for titles (USC/CFR) and years (FR)
+- **Full text search** with faceted filtering and result highlighting
+- **API key authentication** with tiered rate limiting
+- **OpenAPI 3.1 spec** with interactive Scalar documentation
+
+The API depends on `@lexbuild/core` for shared database schema types and has no dependency on source packages.
+
+See [`apps/api/README.md`](apps/api/README.md) for setup and development instructions.
 
 ---
 
@@ -601,6 +667,22 @@ bash scripts/link-content.sh
 npx tsx scripts/generate-nav.ts
 pnpm dev
 ```
+
+### Data API Development
+
+```bash
+# Build packages and convert content (see Web App Development above)
+pnpm turbo build
+
+# Ingest converted content into SQLite
+node packages/cli/dist/index.js ingest ./output --db ./lexbuild.db
+
+# Start the API dev server
+LEXBUILD_DB_PATH=./lexbuild.db pnpm turbo dev:api --filter=@lexbuild/api
+# → http://localhost:4322/api/docs
+```
+
+See [`apps/api/README.md`](apps/api/README.md) for full setup and endpoint documentation.
 
 ---
 

@@ -819,3 +819,7 @@ Output file paths are deterministic: converting the same source XML at the same 
 - The granularity option changes.
 
 This stability makes file paths suitable as document identifiers in vector stores, provided the source version is also tracked.
+
+### Programmatic Access via the Data API
+
+The [LexBuild Data API](../apps/api.md) provides REST access to the same content stored in a SQLite database. The `lexbuild ingest` CLI command populates the database from the section-level output files. All frontmatter fields are available as JSON response fields, and the full Markdown body is retrievable per document. The API supports content negotiation (JSON, Markdown, or plaintext), field selection, full text search with faceted filtering, and paginated listings with sorting. This is an alternative to direct file ingestion for applications that prefer an HTTP interface over filesystem access.

@@ -74,8 +74,11 @@ Applications are marked `"private": true` in their `package.json`. They are neve
 | App | Purpose |
 |-----|---------|
 | `apps/astro/` | Server-rendered web app for browsing converted legal content at [lexbuild.dev](https://lexbuild.dev) |
+| `apps/api/` | REST API for programmatic access to the corpus at [lexbuild.dev/api](https://lexbuild.dev/api) |
 
 The Astro app has **no runtime dependency** on any `@lexbuild/*` package. It reads the `.md` files and `_meta.json` sidecar indexes that the CLI produces. This decoupling means the app can be built and deployed independently of the conversion packages.
+
+The Data API depends on `@lexbuild/core` for shared database schema types (`DocumentRow`, SQL constants) and key hashing utilities, but has no dependency on source packages. It reads from a SQLite database populated by the `lexbuild ingest` CLI command. Like the Astro app, it uses a dedicated build task (`build:api`) and is excluded from the default Turborepo build and from changesets.
 
 ## What Lives Where
 
