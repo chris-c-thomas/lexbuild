@@ -1,5 +1,16 @@
 # @lexbuild/cli
 
+## 1.17.3
+
+### Patch Changes
+
+- 66af7d2: Update documentation for Data API: README.md, docs/, and internal docs
+- Updated dependencies [66af7d2]
+  - @lexbuild/core@1.17.3
+  - @lexbuild/ecfr@1.17.3
+  - @lexbuild/fr@1.17.3
+  - @lexbuild/usc@1.17.3
+
 ## 1.17.2
 
 ### Patch Changes

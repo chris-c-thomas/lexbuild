@@ -1,5 +1,11 @@
 # @lexbuild/core
 
+## 1.17.3
+
+### Patch Changes
+
+- 66af7d2: Update documentation for Data API: README.md, docs/, and internal docs
+
 ## 1.17.2
 
 ### Patch Changes

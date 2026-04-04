@@ -1,5 +1,12 @@
 # @lexbuild/usc
 
+## 1.17.3
+
+### Patch Changes
+
+- Updated dependencies [66af7d2]
+  - @lexbuild/core@1.17.3
+
 ## 1.17.2
 
 ### Patch Changes
