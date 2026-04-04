@@ -427,8 +427,9 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
                   </div>
                   <div>
                     <div class="pipeline-source-title">USLM 1.0 XML</div>
-                    <div class="pipeline-source-sub font-semibold">
-                      OLRC - <a class="font-normal hover:underline" href="https://uscode.house.gov">uscode.house.gov</a>
+                    <div class="pipeline-source-meta">
+                      <span class="pipeline-source-badge pipeline-source-badge-usc">OLRC</span>
+                      <a class="pipeline-source-url hover:underline" href="https://uscode.house.gov">uscode.house.gov</a>
                     </div>
                   </div>
                 </div>
@@ -453,9 +454,10 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
                     </svg>
                   </div>
                   <div>
-                    <div class="pipeline-source-title pb-1">eCFR GPO/SGML</div>
-                    <div class="pipeline-source-sub font-semibold">
-                      eCFR - <a class="font-normal hover:underline" href="https://www.ecfr.gov">ecfr.gov</a>
+                    <div class="pipeline-source-title">eCFR GPO/SGML</div>
+                    <div class="pipeline-source-meta">
+                      <span class="pipeline-source-badge pipeline-source-badge-ecfr">eCFR</span>
+                      <a class="pipeline-source-url hover:underline" href="https://www.ecfr.gov">ecfr.gov</a>
                     </div>
                   </div>
                 </div>
@@ -480,11 +482,10 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
                     </svg>
                   </div>
                   <div>
-                    <div class="pipeline-source-title pb-1">FR GPO/SGML</div>
-                    <div class="pipeline-source-sub font-semibold">
-                      FR - <a class="font-normal hover:underline" href="https://www.federalregister.gov">
-                        federalregister.gov
-                      </a>
+                    <div class="pipeline-source-title">FR GPO/SGML</div>
+                    <div class="pipeline-source-meta">
+                      <span class="pipeline-source-badge pipeline-source-badge-fr">FR</span>
+                      <a class="pipeline-source-url hover:underline" href="https://www.federalregister.gov">federalregister.gov</a>
                     </div>
                   </div>
                 </div>
@@ -502,7 +503,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
                     </svg>
                   </div>
                   <div>
-                    <div class="pipeline-source-title pb-1">Any Legal Schema</div>
+                    <div class="pipeline-source-title">Any Legal Schema</div>
                     <div class="pipeline-source-sub">Annual CFR, state statutes, etc.</div>
                   </div>
                 </div>
@@ -580,19 +581,19 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
               <div class="pipeline-stage-label">Source Parsers</div>
               <div class="pipeline-source-stack">
                 <div class="pipeline-parser pipeline-parser-usc">
-                  <div class="pipeline-parser-name pb-1">@lexbuild/usc</div>
+                  <div class="pipeline-parser-name">@lexbuild/usc</div>
                   <div class="pipeline-parser-desc">USLM schema → AST builder</div>
                 </div>
                 <div class="pipeline-parser pipeline-parser-ecfr">
-                  <div class="pipeline-parser-name pb-1">@lexbuild/ecfr</div>
+                  <div class="pipeline-parser-name">@lexbuild/ecfr</div>
                   <div class="pipeline-parser-desc">eCFR GPO/SGML → AST builder</div>
                 </div>
                 <div class="pipeline-parser pipeline-parser-fr">
-                  <div class="pipeline-parser-name pb-1">@lexbuild/fr</div>
+                  <div class="pipeline-parser-name">@lexbuild/fr</div>
                   <div class="pipeline-parser-desc">FR GPO/SGML → AST builder</div>
                 </div>
                 <div class="pipeline-parser pipeline-parser-future">
-                  <div class="pipeline-parser-name pb-1">@lexbuild/&lt;source&gt;</div>
+                  <div class="pipeline-parser-name">@lexbuild/&lt;source&gt;</div>
                   <div class="pipeline-parser-desc">New schema → AST builder</div>
                 </div>
               </div>
@@ -641,7 +642,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
                   </svg>
                 </div>
                 <div>
-                  <div class="pipeline-output-title pb-1">Structured Markdown</div>
+                  <div class="pipeline-output-title">Structured Markdown</div>
                   <div class="pipeline-output-sub">
                     YAML frontmatter + <br />per-section .md files
                   </div>
@@ -694,8 +695,8 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
             </svg>
           </div>
           <div>
-            <div class="pipeline-consumer-pkg">@lexbuild/astro</div>
             <div class="pipeline-consumer-title">Web Resource</div>
+            <div class="pipeline-consumer-pkg">@lexbuild/astro</div>
             <div class="pipeline-consumer-sub">
               <a class="hover:underline" href="https://lexbuild.dev">lexbuild.dev</a>
             </div>
@@ -745,8 +746,8 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
             </svg>
           </div>
           <div>
-            <div class="pipeline-consumer-pkg">@lexbuild/api</div>
             <div class="pipeline-consumer-title">Data API</div>
+            <div class="pipeline-consumer-pkg">@lexbuild/api</div>
             <div class="pipeline-consumer-sub">
               <a class="hover:underline" href="https://lexbuild.dev/api/">lexbuild.dev/api/</a>
             </div>
@@ -1520,12 +1521,75 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
     font-weight: 600;
     color: var(--foreground);
     line-height: 1.2;
+    margin-bottom: 0.3125rem;
+  }
+
+  .pipeline-source-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  .pipeline-source-badge {
+    display: inline-block;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 0.0625rem 0.3125rem;
+    border-radius: 0.1875rem;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+
+  .pipeline-source-badge-usc {
+    background: var(--color-slate-blue-100, #e7f0f3);
+    color: var(--color-slate-blue-700, #476c85);
+    border: 1px solid var(--color-slate-blue-200, #d3e3e9);
+  }
+
+  :global(.dark) .pipeline-source-badge-usc {
+    background: var(--color-slate-blue-900, #354754);
+    color: var(--color-slate-blue-300, #b4cfda);
+    border-color: var(--color-slate-blue-700, #476c85);
+  }
+
+  .pipeline-source-badge-ecfr {
+    background: var(--color-summer-green-100, #e9f1ed);
+    color: var(--color-summer-green-700, #487061);
+    border: 1px solid var(--color-summer-green-200, #d6e4dc);
+  }
+
+  :global(.dark) .pipeline-source-badge-ecfr {
+    background: var(--color-summer-green-900, #354b43);
+    color: var(--color-summer-green-300, #b8d1c5);
+    border-color: var(--color-summer-green-700, #487061);
+  }
+
+  .pipeline-source-badge-fr {
+    background: var(--color-lavender-100, #f1f1f6);
+    color: var(--color-lavender-700, #736b96);
+    border: 1px solid var(--color-lavender-200, #e2e2ec);
+  }
+
+  :global(.dark) .pipeline-source-badge-fr {
+    background: var(--color-lavender-900, #504b67);
+    color: var(--color-lavender-400, #b6b5d0);
+    border-color: var(--color-lavender-700, #736b96);
+  }
+
+  .pipeline-source-url {
+    font-size: 0.6875rem;
+    color: var(--color-slate-blue-600, #5285a3);
+  }
+
+  :global(.dark) .pipeline-source-url {
+    color: var(--color-slate-blue-400, #94b7c7);
   }
 
   .pipeline-source-sub {
     font-size: 0.6875rem;
     color: var(--color-slate-blue-600, #5285a3);
-    margin-top: 0.0625rem;
+    margin-top: 0.1875rem;
   }
 
   .pipeline-source-sub a {
@@ -1605,6 +1669,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--color-slate-blue-700, #476c85);
+    margin-bottom: 0.1875rem;
   }
 
   :global(.dark) .pipeline-parser-name {
@@ -1739,6 +1804,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
     font-weight: 600;
     color: var(--foreground);
     line-height: 1.2;
+    margin-bottom: 0.1875rem;
   }
 
   .pipeline-output-sub {
@@ -2031,30 +2097,37 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
     color: var(--color-summer-green-300, #b8d1c5);
   }
 
-  .pipeline-consumer-pkg {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    font-weight: 600;
-    color: var(--color-slate-blue-700, #476c85);
-    line-height: 1.2;
-    margin-bottom: 0.125rem;
-  }
-
-  :global(.dark) .pipeline-consumer-pkg {
-    color: var(--color-slate-blue-300, #b4cfda);
-  }
-
   .pipeline-consumer-title {
     font-size: 0.8125rem;
     font-weight: 600;
     color: var(--foreground);
     line-height: 1.2;
+    margin-bottom: 0.3125rem;
+  }
+
+  .pipeline-consumer-pkg {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: var(--color-slate-blue-700, #476c85);
+    line-height: 1;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.1875rem;
+    background: var(--color-slate-blue-50, #f5f9fa);
+    border: 1px solid var(--color-slate-blue-200, #d3e3e9);
+  }
+
+  :global(.dark) .pipeline-consumer-pkg {
+    color: var(--color-slate-blue-300, #b4cfda);
+    background: var(--color-slate-blue-900, #354754);
+    border-color: var(--color-slate-blue-700, #476c85);
   }
 
   .pipeline-consumer-sub {
     font-size: 0.6875rem;
     color: var(--color-slate-blue-600, #5285a3);
-    margin-top: 0.0625rem;
+    margin-top: 0.25rem;
   }
 
   .pipeline-consumer-sub a {
