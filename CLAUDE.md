@@ -47,6 +47,17 @@ Each package and app has its own `CLAUDE.md` with architecture details, module s
 - [`apps/astro/CLAUDE.md`](apps/astro/CLAUDE.md) — Astro 6 SSR site, island architecture, multi-source content browser, deployment
 - [`apps/api/CLAUDE.md`](apps/api/CLAUDE.md) — Data API (Hono + SQLite + Meilisearch), endpoints, rate limiting, deployment
 
+## Additional Project Instructions and References
+
+- [`.claude/rules/conventions.md`](.claude/rules/conventions.md) — Coding conventions, architectural rules, and quality standards for the LexBuild monorepo
+- [`.claude/reference/uslm-xml-user-guide.md`](.claude/reference/uslm-xml-user-guide.md) — USLM XML user guide
+- [`.claude/reference/uslm-schema/`](.claude/reference/uslm-schema/) — USLM XML schema reference files (XSD, documentation)
+- [`.claude/reference/ecfr-xml-user-guide.md`](.claude/reference/ecfr-xml-user-guide.md) — Electronic Code of Federal Regulations XML user guide
+- [`.claude/reference/fr-xml-user-guide.md`](.claude/reference/fr-xml-user-guide.md) — Federal Register XML User Guide
+- [`.claude/reference/cfr-xml-user-guide.md`](.claude/reference/cfr-xml-user-guide.md) — Code of Federal Regulations XML user guide
+- [`.claude/reference/bills-xml-user-guide.md`](.claude/reference/bills-xml-user-guide.md) — Bills XML user guide
+- [`.claude/reference/bills-summary-xml-user-guide.md`](.claude/reference/bills-summary-xml-user-guide.md) — Bills Summary XML user guide
+
 ## Tech Stack
 
 - **Runtime**: Node.js >= 22 LTS (ESM)
@@ -111,7 +122,7 @@ pnpm turbo build:api --filter=@lexbuild/api        # Production build
 ./scripts/deploy.sh --search-docker-seed          # Seed Docker volume from VPS (recover after volume loss)
 ```
 
-See `packages/cli/CLAUDE.md` for full command options. See `apps/astro/CLAUDE.md` for content pipeline scripts. See `.claude/internal/lexbuild-ops.md` for the full operations guide.
+See `packages/cli/CLAUDE.md` for full command options. See `apps/astro/CLAUDE.md` for content pipeline scripts.
 
 ### CI / Release
 
@@ -238,7 +249,7 @@ Note: identifiers use `/us/cfr/` (content type) not `/us/ecfr/` (data source). B
 
 8. **Resilient file I/O**: `@lexbuild/core` exports `writeFile` and `mkdir` wrappers (`packages/core/src/fs.ts`) that retry on `ENFILE`/`EMFILE` errors with exponential backoff, preventing file descriptor exhaustion when writing ~60k+ files.
 
-9. **Secrets management**: `~/.lexbuild-secrets` on the VPS is the single source of truth. `ecosystem.config.cjs` reads secrets from `process.env` (populated via `~/.zshenv` → `~/.lexbuild-secrets`). `.env.production` is **generated** by `scripts/deploy.sh` on every deploy — never manually maintained. See `.claude/internal/lexbuild-ops.md` for details.
+9. **Secrets management**: `~/.lexbuild-secrets` on the VPS is the single source of truth. `ecosystem.config.cjs` reads secrets from `process.env` (populated via `~/.zshenv` → `~/.lexbuild-secrets`). `.env.production` is **generated** by `scripts/deploy.sh` on every deploy — never manually maintained.
 
 ## Common Pitfalls
 
@@ -265,7 +276,6 @@ Note: identifiers use `/us/cfr/` (content type) not `/us/ecfr/` (data source). B
 - **Turborepo app task naming**: Apps excluded from default `build` need matching script names (e.g., `build:api` in both `turbo.json` and the app's `package.json`).
 - **Docker Meilisearch stores data at `data.ms/` inside the volume**: When tarring/extracting, use `-C /data/data.ms` not `-C /data`. Extracting at the wrong level causes "failed to infer database version" on the VPS.
 - **Docker volume profiles**: `MEILI_PROFILE=dev|full` selects volume (`meili-data-dev` or `meili-data-full`). Dev mode runs without master key (`MEILI_ENV=development`). Full mode requires `MEILI_MASTER_KEY` for VPS-compatible data.
-- **Commenting standard**: Follow `.claude/instructions/commenting-standard.md` — comments explain why, not what. No redundant comments. Exported APIs get docblocks. Internal code uses inline comments only for invariants, reasoning, performance, and edge cases. TODOs use `// TODO(lexbuild): Actionable description`.
 
 ## When Adding New Source Types
 

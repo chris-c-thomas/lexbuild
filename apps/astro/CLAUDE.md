@@ -11,7 +11,7 @@ The app serves U.S. Code (54 titles, ~60k sections) and eCFR (50 titles, ~200k+ 
 - **`"private": true`** — excluded from changesets and npm publishing
 - **No `build` script** — only `build:astro`. Do NOT add to the default `build` task in turbo.json.
 - **Content is gitignored** — `content/`, `public/nav/`, `public/sitemap.xml`, `*.highlighted.html`
-- **Deploy** via `./scripts/deploy.sh` from the monorepo root (see `.claude/internal/lexbuild-ops.md`)
+- **Deploy** via `./scripts/deploy.sh` from the monorepo root
 
 ## Tech Stack
 
