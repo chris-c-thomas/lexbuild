@@ -111,11 +111,10 @@ tags
 *.sublime-project
 *.sublime-workspace
 
-# Agents
-/.agents/
-
 # Anthropic
-/.claude/
+/.claude/*
+!/.claude/rules/
+!/.claude/settings.json
 .mcp.json
 
 # OpenAI
@@ -127,7 +126,6 @@ tags
 # .gemini/styleguide.md
 
 # Skills
-skills-lock.json
 
 # Plugins
 
