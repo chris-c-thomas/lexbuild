@@ -179,6 +179,15 @@ async function collectFrUrls(contentDir: string): Promise<string[]> {
   return urls;
 }
 
+// --- Docs URLs (from static nav tree, no filesystem scanning) ---
+
+async function collectDocsUrls(): Promise<string[]> {
+  // Dynamic import to load the ESM nav module from TypeScript source
+  const { flattenNav } = await import("../src/lib/docs-nav.js");
+  const items = flattenNav();
+  return ["/docs/", ...items.map((item: { slug: string }) => `/docs/${item.slug}`)];
+}
+
 // --- Sitemap XML generation ---
 
 function buildUrlset(urls: string[], today: string, sourceChangefreq: string): string {
@@ -265,11 +274,15 @@ async function main(): Promise<void> {
   const uscUrls = !sourceFilter || sourceFilter === "usc" ? await collectUscUrls(resolvedContentDir) : [];
   const ecfrUrls = !sourceFilter || sourceFilter === "ecfr" ? await collectEcfrUrls(resolvedContentDir) : [];
   const frUrls = !sourceFilter || sourceFilter === "fr" ? await collectFrUrls(resolvedContentDir) : [];
+  const docsUrls = !sourceFilter ? await collectDocsUrls() : [];
 
   if (!sourceFilter || sourceFilter === "usc") console.log(`USC: ${uscUrls.length.toLocaleString()} URLs`);
   if (!sourceFilter || sourceFilter === "ecfr") console.log(`eCFR: ${ecfrUrls.length.toLocaleString()} URLs`);
   if (!sourceFilter || sourceFilter === "fr") console.log(`FR: ${frUrls.length.toLocaleString()} URLs`);
-  console.log(`Total: ${(uscUrls.length + ecfrUrls.length + frUrls.length + 1).toLocaleString()} URLs\n`);
+  if (!sourceFilter) console.log(`Docs: ${docsUrls.length.toLocaleString()} URLs`);
+  console.log(
+    `Total: ${(uscUrls.length + ecfrUrls.length + frUrls.length + docsUrls.length + 1).toLocaleString()} URLs\n`,
+  );
 
   // Write homepage as a misc sitemap
   const miscUrls = ["/"];
@@ -282,6 +295,8 @@ async function main(): Promise<void> {
     allFilenames.push(...(await writeChunkedSitemaps(ecfrUrls, "ecfr", outputDir, today, "weekly")));
   if (!sourceFilter || sourceFilter === "fr")
     allFilenames.push(...(await writeChunkedSitemaps(frUrls, "fr", outputDir, today, "daily")));
+  if (!sourceFilter)
+    allFilenames.push(...(await writeChunkedSitemaps(docsUrls, "docs", outputDir, today, "weekly")));
 
   // Write sitemap index (only when generating all sources — partial index would break it)
   if (!sourceFilter) {

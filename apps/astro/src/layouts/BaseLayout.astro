@@ -117,7 +117,12 @@ const meiliSearchKey = isProxyMode ? undefined : (import.meta.env.MEILI_SEARCH_K
             </a>
             <a
               href="/docs/"
-              class="nav-link text-muted-foreground hover:text-slate-blue-700 dark:hover:text-slate-blue-300 inline-flex items-center gap-1.5 transition-colors">
+              class:list={[
+                "nav-link inline-flex items-center gap-1.5 transition-colors",
+                currentPath.startsWith("/docs")
+                  ? "text-foreground font-semibold"
+                  : "text-muted-foreground hover:text-slate-blue-700 dark:hover:text-slate-blue-300",
+              ]}>
               Docs
             </a>
           </nav>

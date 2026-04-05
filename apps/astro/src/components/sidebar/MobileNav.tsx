@@ -3,6 +3,7 @@ import { Layers, Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { SidebarContent } from "./SidebarContent";
+import DocsSidebar from "@/components/docs/DocsSidebar";
 import { cn } from "@/lib/utils";
 import type { SourceId } from "@/lib/types";
 
@@ -17,6 +18,7 @@ export function MobileNav({ source, currentPath }: MobileNavProps) {
   // On the home page, let the user pick a source to browse inline.
   const [previewSource, setPreviewSource] = useState<SourceId | null>(null);
   const activeSource = previewSource ?? source;
+  const isDocsPage = currentPath.startsWith("/docs");
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -38,45 +40,52 @@ export function MobileNav({ source, currentPath }: MobileNavProps) {
           <SheetDescription className="sr-only">Site navigation</SheetDescription>
         </SheetHeader>
 
-        {/* Source switcher */}
-        <nav className="border-sidebar-border flex gap-1 border-b p-2" aria-label="Sources">
-          <button
-            type="button"
-            onClick={() => setPreviewSource("usc")}
-            className={cn(
-              "flex-1 rounded-md px-3 py-2 text-center text-sm font-medium transition-colors",
-              activeSource === "usc"
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
-            )}>
-            U.S. Code
-          </button>
-          <button
-            type="button"
-            onClick={() => setPreviewSource("ecfr")}
-            className={cn(
-              "flex-1 rounded-md px-3 py-2 text-center text-sm font-medium transition-colors",
-              activeSource === "ecfr"
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
-            )}>
-            eCFR
-          </button>
-          <button
-            type="button"
-            onClick={() => setPreviewSource("fr")}
-            className={cn(
-              "flex-1 rounded-md px-3 py-2 text-center text-sm font-medium transition-colors",
-              activeSource === "fr"
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
-            )}>
-            FR
-          </button>
-        </nav>
+        {isDocsPage ? (
+          /* Docs navigation tree */
+          <DocsSidebar currentPath={currentPath} />
+        ) : (
+          <>
+            {/* Source switcher */}
+            <nav className="border-sidebar-border flex gap-1 border-b p-2" aria-label="Sources">
+              <button
+                type="button"
+                onClick={() => setPreviewSource("usc")}
+                className={cn(
+                  "flex-1 rounded-md px-3 py-2 text-center text-sm font-medium transition-colors",
+                  activeSource === "usc"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
+                )}>
+                U.S. Code
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewSource("ecfr")}
+                className={cn(
+                  "flex-1 rounded-md px-3 py-2 text-center text-sm font-medium transition-colors",
+                  activeSource === "ecfr"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
+                )}>
+                eCFR
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewSource("fr")}
+                className={cn(
+                  "flex-1 rounded-md px-3 py-2 text-center text-sm font-medium transition-colors",
+                  activeSource === "fr"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
+                )}>
+                FR
+              </button>
+            </nav>
 
-        {/* Sidebar tree */}
-        {activeSource && <SidebarContent sourceId={activeSource} currentPath={currentPath} />}
+            {/* Sidebar tree */}
+            {activeSource && <SidebarContent sourceId={activeSource} currentPath={currentPath} />}
+          </>
+        )}
 
         {/* Footer: secondary links */}
         <div className="mt-auto">
