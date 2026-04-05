@@ -2,6 +2,7 @@ dist
 node_modules
 pnpm-lock.yaml
 *.md
+*.mdx
 downloads
 reference
 xml
