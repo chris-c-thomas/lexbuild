@@ -1,5 +1,11 @@
 # @lexbuild/core
 
+## 1.18.0
+
+### Minor Changes
+
+- 434ecfe: Bump version for docs site version sync
+
 ## 1.17.3
 
 ### Patch Changes

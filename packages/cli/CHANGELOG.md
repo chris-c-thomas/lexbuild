@@ -1,5 +1,19 @@
 # @lexbuild/cli
 
+## 1.18.0
+
+### Minor Changes
+
+- 434ecfe: Bump version for docs site version sync
+
+### Patch Changes
+
+- Updated dependencies [434ecfe]
+  - @lexbuild/core@1.18.0
+  - @lexbuild/ecfr@1.18.0
+  - @lexbuild/fr@1.18.0
+  - @lexbuild/usc@1.18.0
+
 ## 1.17.3
 
 ### Patch Changes
