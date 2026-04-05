@@ -11,6 +11,7 @@
 ## Table of Contents
 
 - [Overview](#overview)
+- [Documentation](#documentation)
 - [Sources](#sources)
 - [Install](#install)
 - [Quick Start](#quick-start)
@@ -30,6 +31,12 @@ The full text of U.S. law is publicly available from official government sources
 These sources are available in structured formats but they are complex, dense and deeply nested, and vary significantly from one source to the next. Working with them directly takes real effort.
 
 LexBuild handles the downloading and conversion. It produces per-section Markdown files with YAML frontmatter, predictable file paths, and content sized for typical AI context windows. The goal is to make U.S. law accessible to LLMs, agentic workflows, RAG pipelines, vector databases, and other legal research tools.
+
+---
+
+## Documentation
+
+Full documentation is available at **[lexbuild.dev/docs](https://lexbuild.dev/docs/)** covering installation, CLI usage, API reference, source-specific guides, architecture, and the output format specification.
 
 ---
 
@@ -525,7 +532,6 @@ lexbuild/
 ├── apps/
 │   ├── astro/         # LexBuild web app (https://lexbuild.dev)
 │   └── api/           # LexBuild Data API (https://lexbuild.dev/api)
-├── docs/              
 ├── fixtures/          
 ├── downloads/         # Downloaded source data (gitignored)
 ├── output/            # Generated Markdown output (gitignored)
