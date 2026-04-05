@@ -201,7 +201,7 @@ Initialized with radix-nova preset, zinc theme. Components in `src/components/ui
 
 - **Tailwind v4 uses `@tailwindcss/vite`**, NOT `@astrojs/tailwind` (Tailwind v3). No `postcss.config.mjs` needed.
 - **Tailwind v4 `@theme inline` vars are build-time only** — not runtime CSS custom properties. However, `var()` references to `:root`/`.dark` runtime vars ARE preserved. Scoped `<style>` must use runtime vars or hex directly.
-- **Tailwind v4 utilities may silently fail in `.astro`** scoped content. Verify with DevTools; use scoped `<style>` as fallback for layout-critical properties.
+- **Tailwind v4 utilities may silently fail in `.astro` scoped `<style>` blocks** — but work reliably in template HTML classes, including arbitrary values (`border-[1.5px]`, `rounded-[calc(var(--radius)-2px)]`, `flex-[1.5]`), `dark:` on custom palette colors, and `max-md:` responsive. Prefer Tailwind in template HTML; use scoped `<style>` only for what Tailwind cannot express.
 - **eCFR has 4 hierarchy levels, USC has 3.** A 3-segment slug = "section" for USC but "part" for eCFR.
 - **Title-level files can be very large** (~10MB). Pre-rendered highlights avoid runtime Shiki cost.
 - **`content/` and `public/nav/` are gitignored.** Run `link-content.sh` and `generate-nav.ts` before dev server works.
@@ -230,6 +230,7 @@ Initialized with radix-nova preset, zinc theme. Components in `src/components/ui
 - **Sidebar fetch errors use dedicated error states**: `titlesError`/`yearsError`/`failedTitles` track fetch failures separately from empty data. Never swallow fetch errors into empty arrays — show "Failed to load" instead of misleading "No titles found".
 - **`fetch()` must check `res.ok`**: `fetch` does not reject on HTTP errors. Always check `res.ok` before calling `res.json()`, otherwise a 404 produces a cryptic JSON parse error.
 - **Homepage sample output has three copies**: The `sampleYaml` and `sampleMarkdown` template literals drive the Shiki-highlighted tabs, but the "Preview" tabs use hardcoded HTML. When changing the sample section, update all three: frontmatter data, markdown data, AND the rendered HTML preview grids.
+- **Homepage residual CSS is minimal (~50 lines)**: Only `color-mix()` backgrounds, JS-toggled `.active` tab states, `:global()` Shiki overrides, `auto-fit minmax` grid, and adjacent sibling combinators remain as scoped CSS. Everything else uses Tailwind utilities on the markup. The `sample-tab` class is kept as a JS hook (queried by the tab `<script>`) and CSS anchor for hover/active rules.
 
 ## SEO
 
