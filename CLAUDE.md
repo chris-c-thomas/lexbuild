@@ -57,6 +57,7 @@ Each package and app has its own `CLAUDE.md` with architecture details, module s
 - [`.claude/reference/cfr-xml-user-guide.md`](.claude/reference/cfr-xml-user-guide.md) — Code of Federal Regulations XML user guide
 - [`.claude/reference/bills-xml-user-guide.md`](.claude/reference/bills-xml-user-guide.md) — Bills XML user guide
 - [`.claude/reference/bills-summary-xml-user-guide.md`](.claude/reference/bills-summary-xml-user-guide.md) — Bills Summary XML user guide
+- [`.claude/llms/`](.claude/llms/) - Various llms.txt files for Cloudflare, Astro, Hono, and Scalar
 
 ## Tech Stack
 
