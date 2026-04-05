@@ -41,23 +41,23 @@
   "engines": {
     "node": ">=22"
   },
-  "scripts": {
-    "build": "turbo run build",
-    "test": "turbo run test",
-    "typecheck": "turbo run typecheck",
-    "lint": "turbo run lint",
-    "lint:fix": "turbo run lint:fix",
-    "lint:knip": "knip",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "dev": "turbo run dev",
-    "changeset": "changeset",
-    "version-packages": "changeset version",
-    "release": "changeset publish",
-    "release:local": "turbo run build && changeset publish",
-    "setup:skills": "tsx scripts/link-skills.ts --force",
-    "setup": "pnpm setup:skills"
-  },
+"scripts": {
+  "build": "turbo run build",
+  "test": "turbo run test",
+  "typecheck": "turbo run typecheck",
+  "lint": "turbo run lint",
+  "lint:fix": "turbo run lint:fix",
+  "lint:knip": "knip",
+  "format": "prettier --write .",
+  "format:check": "prettier --check .",
+  "dev": "turbo run dev",
+  "changeset": "changeset",
+  "version-packages": "changeset version",
+  "release": "changeset publish",
+  "release:local": "turbo run build && changeset publish",
+  "agent:skills": "tsx scripts/link-skills.ts --force",
+  "agent:setup": "pnpm run agent:skills"
+},
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.2",
     "@changesets/cli": "^2.29.8",
