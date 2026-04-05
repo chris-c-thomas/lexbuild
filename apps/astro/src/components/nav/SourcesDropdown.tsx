@@ -55,7 +55,7 @@ export function SourcesDropdown({ source }: SourcesDropdownProps) {
   const activeLabel = ALL_ACTIVE_SOURCES.find((s) => s.id === source)?.label;
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger
         className={cn(
           "nav-link inline-flex items-center gap-1 transition-colors focus:outline-none",
