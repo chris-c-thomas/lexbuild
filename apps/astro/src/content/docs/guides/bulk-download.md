@@ -61,13 +61,10 @@ lexbuild download-fr --from 2000-01-01
 lexbuild convert-fr --all
 ```
 
-This downloads document metadata and XML for every FR document since 2000. The download size depends on the date range.
+This downloads both XML and JSON metadata for every FR document since 2000 using the default `fr-api` source. The converter automatically uses the JSON sidecar to populate rich frontmatter fields (agencies, CFR references, docket IDs, citations, etc.), so no separate enrichment step is needed.
 
-After conversion, run the enrichment step to populate additional metadata fields (`agencies`, `cfr_references`, `docket_ids`, etc.):
-
-```bash
-lexbuild enrich-fr --from 2000-01-01
-```
+> [!NOTE]
+> The `enrich-fr` command is only needed when using `--source govinfo` for historical backfill. The govinfo source provides XML only without JSON metadata. See [Federal Register CLI docs](/docs/cli/sources/federal-register) for details.
 
 ### Everything at Once
 
@@ -81,9 +78,6 @@ lexbuild download-fr --from 2000-01-01
 lexbuild convert-usc --all
 lexbuild convert-ecfr --all
 lexbuild convert-fr --all
-
-# Enrich FR metadata
-lexbuild enrich-fr --from 2000-01-01
 ```
 
 ## Single Title Processing
@@ -140,10 +134,11 @@ Without `--date`, you get the most current version.
 Use `--recent` to download only the most recent documents:
 
 ```bash
-# Download FR documents from the last 30 days
+# Download FR documents from the last 30 days (XML + JSON from FR API)
 lexbuild download-fr --recent 30
-lexbuild convert-fr --all
-lexbuild enrich-fr --from 2026-03-01
+
+# Convert only the new date range (not --all, which reconverts everything)
+lexbuild convert-fr --from 2026-03-01
 ```
 
 ## Output Granularity

@@ -110,9 +110,12 @@ lexbuild convert-fr ./downloads/fr/2026/03/2026-06029.xml
 > [!NOTE]
 > FR documents are atomic -- there is no granularity option. Each document produces a single `.md` file.
 
-## Enrich
+## Enrich (govinfo bulk only)
 
-The `enrich-fr` command patches YAML frontmatter in existing `.md` files with rich metadata from the FederalRegister.gov API. This is especially useful for documents originally downloaded from govinfo, which lack metadata like agency names, CFR references, and docket IDs.
+The `enrich-fr` command patches YAML frontmatter in existing `.md` files with rich metadata from the FederalRegister.gov API. This command is only needed for documents downloaded from govinfo bulk (`--source govinfo`), which provides XML only without the JSON metadata sidecar.
+
+> [!NOTE]
+> When using the default `fr-api` download source, the `enrich-fr` step is not needed. The `fr-api` source downloads both XML and JSON for each document, and the converter automatically uses the JSON sidecar to populate rich frontmatter fields (agencies, CFR references, docket IDs, citations, etc.).
 
 ```bash
 lexbuild enrich-fr --from 2000-01-01
@@ -129,17 +132,31 @@ The enrich step does not re-parse XML or re-render Markdown. It only fetches met
 
 ## Full Pipeline
 
-The complete FR workflow involves three steps:
+### Using the FR API (default, recommended)
+
+The default `fr-api` source downloads both XML and JSON per document, so the pipeline is two steps:
 
 ```bash
-# 1. Download XML and JSON metadata
+# 1. Download XML + JSON metadata
 lexbuild download-fr --from 2026-01-01
+
+# 2. Convert XML to Markdown (JSON sidecar used automatically)
+lexbuild convert-fr --all
+```
+
+### Using govinfo bulk (historical backfill)
+
+The govinfo bulk source downloads XML only. Use `enrich-fr` afterward to add API metadata:
+
+```bash
+# 1. Download bulk daily-issue XML
+lexbuild download-fr --source govinfo --from 2000-01-01 --to 2025-12-31
 
 # 2. Convert XML to Markdown
 lexbuild convert-fr --all
 
 # 3. Enrich frontmatter with API metadata
-lexbuild enrich-fr --from 2026-01-01
+lexbuild enrich-fr --from 2000-01-01
 ```
 
 ## Output Structure

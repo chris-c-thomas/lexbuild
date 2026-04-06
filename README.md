@@ -125,7 +125,7 @@ lexbuild download-fr --from 2026-01-01 --types rule
 # Download a single document
 lexbuild download-fr --document 2026-06029
 
-# Enrich govinfo-backfilled files with API metadata
+# Enrich govinfo-backfilled files with API metadata (not needed for fr-api downloads)
 lexbuild enrich-fr --from 2000-01-01
 ```
 
@@ -285,7 +285,7 @@ lexbuild convert-fr ./downloads/fr/2026/03/2026-06029.xml           # Single fil
 
 ### `enrich-fr`
 
-Enrich existing FR Markdown frontmatter with metadata from the FederalRegister.gov API. Useful for backfilling rich metadata (agencies, CFR references, docket IDs, citations, etc.) into files originally converted from govinfo bulk XML.
+Enrich existing FR Markdown frontmatter with metadata from the FederalRegister.gov API. This command is only needed for files originally converted from govinfo bulk XML, which lacks the JSON metadata sidecar. When using the default `fr-api` download source, each document already includes a JSON file alongside the XML, and the converter automatically uses it to populate rich frontmatter fields (agencies, CFR references, docket IDs, citations, etc.).
 
 ```bash
 lexbuild enrich-fr --from 2000-01-01                         # Enrich all from 2000 onward

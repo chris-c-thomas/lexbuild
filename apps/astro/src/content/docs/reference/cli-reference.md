@@ -460,7 +460,9 @@ lexbuild convert-fr --all --dry-run
 
 ## enrich-fr
 
-Enrich existing Federal Register Markdown files with metadata from the FederalRegister.gov API listing endpoint. This command patches YAML frontmatter in `.md` files that were originally converted from govinfo bulk XML, adding fields like `fr_citation`, `agencies`, `cfr_references`, `docket_ids`, `effective_date`, `comments_close_date`, and `fr_action` that are only available from the API's JSON metadata.
+Enrich existing Federal Register Markdown files with metadata from the FederalRegister.gov API listing endpoint. This command is only needed for files originally converted from govinfo bulk XML (`--source govinfo`), which lacks the JSON metadata sidecar. When using the default `fr-api` download source, the converter automatically uses the downloaded JSON sidecar to populate these fields, making the enrich step unnecessary.
+
+The enricher adds fields like `fr_citation`, `agencies`, `cfr_references`, `docket_ids`, `effective_date`, `comments_close_date`, and `fr_action` that are only available from the API's JSON metadata.
 
 ```
 lexbuild enrich-fr [options]
@@ -522,11 +524,11 @@ lexbuild convert-usc --titles 1-5 -o ./output
 lexbuild download-ecfr --titles 1-5
 lexbuild convert-ecfr --titles 1-5 -o ./output
 
-# Full FR pipeline (recent documents)
+# Full FR pipeline using fr-api (default — no enrich step needed)
 lexbuild download-fr --recent 30
 lexbuild convert-fr --all -o ./output
 
-# Backfill FR metadata from govinfo bulk
+# Full FR pipeline using govinfo bulk (requires enrich step)
 lexbuild download-fr --source govinfo --from 2000-01-01 --to 2025-12-31
 lexbuild convert-fr --all -o ./output
 lexbuild enrich-fr --from 2000-01-01 -o ./output
