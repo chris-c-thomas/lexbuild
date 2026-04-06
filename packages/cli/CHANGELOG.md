@@ -1,5 +1,19 @@
 # @lexbuild/cli
 
+## 1.19.0
+
+### Minor Changes
+
+- fe043bf: Add incremental content update pipeline and documentation
+
+### Patch Changes
+
+- Updated dependencies [fe043bf]
+  - @lexbuild/core@1.19.0
+  - @lexbuild/ecfr@1.19.0
+  - @lexbuild/usc@1.19.0
+  - @lexbuild/fr@1.19.0
+
 ## 1.18.1
 
 ### Patch Changes

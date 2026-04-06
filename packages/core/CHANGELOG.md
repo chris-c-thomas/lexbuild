@@ -1,5 +1,11 @@
 # @lexbuild/core
 
+## 1.19.0
+
+### Minor Changes
+
+- fe043bf: Add incremental content update pipeline and documentation
+
 ## 1.18.1
 
 ### Patch Changes
