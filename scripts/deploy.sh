@@ -536,8 +536,16 @@ deploy_search_docker() {
   # --- Content symlinks ---
 
   TEMP_CONTENT="$REPO_ROOT/.search-docker-content"
+  CHECKPOINT_DIR="$REPO_ROOT/downloads/.search-checkpoints"
+  mkdir -p "$CHECKPOINT_DIR"
   rm -rf "$TEMP_CONTENT"
   mkdir -p "$TEMP_CONTENT/usc" "$TEMP_CONTENT/ecfr" "$TEMP_CONTENT/fr"
+
+  # Restore checkpoint files from persistent storage so incremental indexing
+  # can skip unchanged documents across Docker runs
+  for cpfile in "$CHECKPOINT_DIR"/.search-indexed-at-*; do
+    [ -f "$cpfile" ] && cp "$cpfile" "$TEMP_CONTENT/"
+  done
 
   for src_dir in usc ecfr; do
     if [ -d "$REPO_ROOT/output/$src_dir" ]; then
@@ -606,6 +614,11 @@ deploy_search_docker() {
       pnpm dlx tsx scripts/index-search.ts "$TEMP_CONTENT"
   fi
   cd "$REPO_ROOT"
+
+  # Preserve checkpoint files for future incremental runs
+  for cpfile in "$TEMP_CONTENT"/.search-indexed-at-*; do
+    [ -f "$cpfile" ] && cp "$cpfile" "$CHECKPOINT_DIR/"
+  done
 
   rm -rf "$TEMP_CONTENT"
 
