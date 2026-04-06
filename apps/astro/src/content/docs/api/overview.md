@@ -74,7 +74,7 @@ curl https://lexbuild.dev/api/usc/documents/t1/s1
 
 The API includes a built-in interactive reference powered by Scalar. You can browse all endpoints, see request/response schemas, and test requests directly in your browser:
 
-- **API Reference UI:** [lexbuild.dev/api/docs](https://lexbuild.dev/api/docs)
+- **API Reference UI:** [lexbuild.dev/docs/api](https://lexbuild.dev/docs/api)
 - **OpenAPI Spec:** [lexbuild.dev/api/openapi.json](https://lexbuild.dev/api/openapi.json)
 
 The OpenAPI 3.1 spec can be imported into tools like Postman, Insomnia, or any OpenAPI-compatible client.

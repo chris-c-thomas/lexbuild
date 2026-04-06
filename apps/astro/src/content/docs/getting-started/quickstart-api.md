@@ -111,7 +111,7 @@ curl "https://lexbuild.dev/api/search?q=securities+fraud&source=cfr&limit=5"
 ```
 
 > [!TIP]
-> The interactive API reference with request builder is available at [lexbuild.dev/api/docs](https://lexbuild.dev/api/docs).
+> The interactive API reference with request builder is available at [lexbuild.dev/docs/api](https://lexbuild.dev/docs/api).
 
 ## Next Steps
 

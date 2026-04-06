@@ -1,0 +1,38 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ApiReference from "@/components/api-reference/ApiReference";
+import type { PageSEO } from "@/lib/types";
+
+Astro.response.headers.set(
+  "Cache-Control",
+  "public, s-maxage=86400, stale-while-revalidate=3600",
+);
+
+const siteUrl = import.meta.env.SITE_URL ?? "https://lexbuild.dev";
+
+const seo: PageSEO = {
+  title: "API Reference",
+  description:
+    "Interactive API reference for the LexBuild Data API. Browse endpoints, try requests, and explore the OpenAPI specification.",
+  canonicalUrl: `${siteUrl}/docs/api`,
+  ogType: "website",
+  ogImage: `${siteUrl}/og-image.png`,
+  jsonLd: [
+    {
+      "@type": "WebPage",
+      name: "LexBuild API Reference",
+      description:
+        "Interactive API reference for the LexBuild Data API. Browse endpoints, try requests, and explore the OpenAPI specification.",
+      url: `${siteUrl}/docs/api`,
+    },
+  ],
+};
+---
+
+<BaseLayout seo={seo}>
+  <ApiReference client:only="react" specUrl={`${siteUrl}/api/openapi.json`}>
+    <div slot="fallback" style="display: flex; align-items: center; justify-content: center; height: 16rem;">
+      <p style="color: var(--muted-foreground);">Loading API reference...</p>
+    </div>
+  </ApiReference>
+</BaseLayout>

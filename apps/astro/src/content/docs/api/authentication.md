@@ -116,4 +116,4 @@ The `Retry-After` value is in seconds. Wait at least that long before retrying.
 
 For a complete interactive reference with all endpoints, schemas, and a built-in request tester, visit the Scalar API docs:
 
-[lexbuild.dev/api/docs](https://lexbuild.dev/api/docs)
+[lexbuild.dev/docs/api](https://lexbuild.dev/docs/api)
