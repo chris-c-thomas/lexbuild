@@ -1,5 +1,11 @@
 # @lexbuild/core
 
+## 1.18.1
+
+### Patch Changes
+
+- bee35c5: Docs update; Version bump
+
 ## 1.18.0
 
 ### Minor Changes

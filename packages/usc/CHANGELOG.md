@@ -1,5 +1,13 @@
 # @lexbuild/usc
 
+## 1.18.1
+
+### Patch Changes
+
+- bee35c5: Docs update; Version bump
+- Updated dependencies [bee35c5]
+  - @lexbuild/core@1.18.1
+
 ## 1.18.0
 
 ### Minor Changes

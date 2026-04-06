@@ -1,5 +1,16 @@
 # @lexbuild/cli
 
+## 1.18.1
+
+### Patch Changes
+
+- bee35c5: Docs update; Version bump
+- Updated dependencies [bee35c5]
+  - @lexbuild/fr@1.18.1
+  - @lexbuild/core@1.18.1
+  - @lexbuild/ecfr@1.18.1
+  - @lexbuild/usc@1.18.1
+
 ## 1.18.0
 
 ### Minor Changes
