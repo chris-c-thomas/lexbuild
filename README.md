@@ -129,6 +129,20 @@ lexbuild download-fr --document 2026-06029
 lexbuild enrich-fr --from 2000-01-01
 ```
 
+### Incremental Updates
+
+Update scripts handle change detection, download, convert, and deploy in one command:
+
+```bash
+# Update all sources (auto-detects changes)
+./scripts/update.sh --skip-deploy
+
+# Update individual sources
+./scripts/update-ecfr.sh --skip-deploy
+./scripts/update-fr.sh --days 3 --skip-deploy
+./scripts/update-usc.sh --skip-deploy
+```
+
 ---
 
 ## Commands
@@ -236,6 +250,7 @@ lexbuild convert-ecfr ./downloads/ecfr/xml/ECFR-title17.xml  # Direct file path
 | `--include-editorial-notes` | — | Include editorial/regulatory notes only |
 | `--include-statutory-notes` | — | Include statutory notes only |
 | `--include-amendments` | — | Include amendment notes only |
+| `--currency-date <YYYY-MM-DD>` | today | Currency date for frontmatter (from eCFR API metadata) |
 | `--dry-run` | — | Parse and report without writing |
 | `-v, --verbose` | — | Verbose output |
 

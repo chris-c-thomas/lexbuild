@@ -33,7 +33,7 @@ All commands support `--help` for full option details.
 | `download-usc` | Download USC XML from OLRC | `--all`, `--titles <spec>`, `--release-point <id>` |
 | `convert-usc` | Convert USC XML to Markdown | `[input]`, `--all`, `--titles`, `-g section\|chapter\|title` |
 | `download-ecfr` | Download eCFR XML | `--all`, `--titles`, `--source ecfr-api\|govinfo`, `--date` |
-| `convert-ecfr` | Convert eCFR XML to Markdown | `[input]`, `--all`, `--titles`, `-g section\|part\|chapter\|title` |
+| `convert-ecfr` | Convert eCFR XML to Markdown | `[input]`, `--all`, `--titles`, `-g section\|part\|chapter\|title`, `--currency-date` |
 | `download-fr` | Download FR documents (XML+JSON) | `--from`/`--to`, `--recent <days>`, `--document <number>` |
 | `convert-fr` | Convert FR XML to Markdown | `[input]`, `--all`, `--from`/`--to`, `--types` |
 | `enrich-fr` | Enrich FR .md frontmatter with API metadata | `--from`/`--to`, `--recent <days>`, `--force` |

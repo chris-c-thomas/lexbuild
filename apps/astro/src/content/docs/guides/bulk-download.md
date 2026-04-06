@@ -141,6 +141,27 @@ lexbuild download-fr --recent 30
 lexbuild convert-fr --from 2026-03-01
 ```
 
+### Update Scripts
+
+For streamlined incremental updates, wrapper scripts handle the full pipeline (detect changes, download, convert, generate artifacts, deploy):
+
+```bash
+# All sources — auto-detects changes, downloads, converts, deploys
+./scripts/update.sh
+
+# Individual sources
+./scripts/update-ecfr.sh               # Only changed titles (via API metadata)
+./scripts/update-fr.sh --days 3         # Last 3 days
+./scripts/update-usc.sh                 # Checks OLRC release point
+
+# Local only (no VPS deploy)
+./scripts/update.sh --skip-deploy
+```
+
+The eCFR script compares `latestAmendedOn` dates from the eCFR API against a local checkpoint to detect which titles have new amendments. The USC script checks for new OLRC release points. The FR script uses date-range filtering.
+
+All converters use `writeFileIfChanged()` internally, so unchanged sections keep their original file timestamps. This means downstream tools (Shiki highlighting, Meilisearch indexing) automatically skip reprocessing unchanged content.
+
 ## Output Granularity
 
 The `--granularity` (or `-g`) flag controls how much content goes into each file. You can convert the same source at different granularity levels to different output directories:

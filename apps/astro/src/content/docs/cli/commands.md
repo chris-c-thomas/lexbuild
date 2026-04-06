@@ -98,6 +98,20 @@ lexbuild convert-fr --all
 > [!NOTE]
 > The `enrich-fr` step is only needed when using `--source govinfo` (bulk XML without JSON metadata). The default `fr-api` source downloads both XML and JSON, so the converter produces rich frontmatter automatically.
 
+## Update Scripts
+
+For routine updates, wrapper scripts handle the full pipeline (detect changes, download, convert, generate artifacts, deploy):
+
+```bash
+./scripts/update.sh                      # All sources
+./scripts/update.sh --source ecfr        # One source
+./scripts/update-ecfr.sh --skip-deploy   # eCFR, local only
+./scripts/update-fr.sh --days 3          # FR, last 3 days
+./scripts/update-usc.sh                  # USC, checks release point
+```
+
+Each script auto-detects what changed and only processes updates. See [Incremental Updates](/docs/guides/bulk-download#incremental-updates) for details.
+
 ## Getting Help
 
 Every command supports `--help` for a full description of its options and usage examples:

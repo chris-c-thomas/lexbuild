@@ -295,6 +295,7 @@ lexbuild convert-ecfr [input] [options]
 | `--include-amendments` | `false` | Include amendment history notes only |
 | `--dry-run` | `false` | Parse and report structure without writing files |
 | `-v, --verbose` | `false` | Print detailed file output |
+| `--currency-date <YYYY-MM-DD>` | today | Currency date for frontmatter (from eCFR API metadata) |
 
 ### Input Modes
 

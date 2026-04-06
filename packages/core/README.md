@@ -100,6 +100,7 @@ await parser.parseStream(createReadStream("usc01.xml"));
 | Export | Description |
 |--------|-------------|
 | `writeFile()` | Write with ENFILE/EMFILE retry and exponential backoff |
+| `writeFileIfChanged()` | Write only if content differs. Returns `true` if written, `false` if skipped (mtime preserved). Used by converters for incremental updates. |
 | `mkdir()` | Recursive mkdir with retry |
 
 ## Compatibility

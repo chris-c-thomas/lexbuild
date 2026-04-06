@@ -72,6 +72,17 @@ Convert a single XML file by path:
 lexbuild convert-ecfr ./downloads/ecfr/xml/ECFR-title1.xml
 ```
 
+### Currency Date
+
+When converting a point-in-time snapshot, pass `--currency-date` to populate the frontmatter `currency` field with the snapshot date instead of today:
+
+```bash
+lexbuild download-ecfr --all --date 2026-01-01
+lexbuild convert-ecfr --all --currency-date 2026-01-01
+```
+
+This makes frontmatter deterministic across runs, which is important for incremental updates. When omitted, the currency date defaults to today.
+
 ### Granularity
 
 The eCFR converter supports four granularity levels. The additional `part` level reflects the CFR's part-based organizational structure.

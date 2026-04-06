@@ -18,9 +18,14 @@ lexbuild/
 │   ├── astro/       # LexBuild web app — Astro 6, SSR, browse U.S. Code + eCFR as Markdown
 │   └── api/         # @lexbuild/api — Data API (Hono, SQLite, Meilisearch proxy)
 ├── scripts/
-│   ├── deploy.sh           # Production deploy (code, content, or full remote pipeline)
-│   ├── setup-secrets.sh    # Initialize ~/.lexbuild-secrets on VPS
-│   └── .deploy.env.example # Template for .deploy.env (VPS_HOST config)
+│   ├── deploy.sh              # Production deploy (code, content, or full remote pipeline)
+│   ├── update.sh              # Unified incremental content update (all sources)
+│   ├── update-ecfr.sh         # eCFR incremental update (auto-detects changed titles)
+│   ├── update-fr.sh           # FR incremental update (date-range based)
+│   ├── update-usc.sh          # USC incremental update (release point detection)
+│   ├── ecfr-changed-titles.ts # eCFR change detection helper (API metadata vs checkpoint)
+│   ├── setup-secrets.sh       # Initialize ~/.lexbuild-secrets on VPS
+│   └── .deploy.env.example    # Template for .deploy.env (VPS_HOST config)
 ├── downloads/
 │   ├── usc/
 │   │   └── xml/     # Full USC XML files (usc01.xml ... usc54.xml) — gitignored
@@ -120,6 +125,15 @@ pnpm turbo build:api --filter=@lexbuild/api        # Production build
 ./scripts/deploy.sh --search-docker              # Build search index in Docker, transfer to VPS
 ./scripts/deploy.sh --search-docker --source fr   # Incremental: index one source into existing volume
 ./scripts/deploy.sh --search-docker-seed          # Seed Docker volume from VPS (recover after volume loss)
+
+# Incremental content updates (from monorepo root)
+./scripts/update.sh                                # All sources incrementally
+./scripts/update.sh --source ecfr                  # One source
+./scripts/update.sh --skip-deploy                  # Local only
+./scripts/update-ecfr.sh                           # eCFR only (auto-detects changed titles)
+./scripts/update-ecfr.sh --titles 1,17             # Specific eCFR titles
+./scripts/update-fr.sh --days 3                    # FR last 3 days
+./scripts/update-usc.sh                            # USC (checks for new release point)
 ```
 
 See `packages/cli/CLAUDE.md` for full command options. See `apps/astro/CLAUDE.md` for content pipeline scripts.
@@ -247,7 +261,7 @@ Note: identifiers use `/us/cfr/` (content type) not `/us/ecfr/` (data source). B
 
 7. **Identifier scheme**: USC uses `/us/usc/` identifiers from USLM `identifier` attributes. CFR uses `/us/cfr/` identifiers constructed from the eCFR `NODE` and `N` attributes. Both eCFR and future annual CFR share the `/us/cfr/` space since they represent the same content.
 
-8. **Resilient file I/O**: `@lexbuild/core` exports `writeFile` and `mkdir` wrappers (`packages/core/src/fs.ts`) that retry on `ENFILE`/`EMFILE` errors with exponential backoff, preventing file descriptor exhaustion when writing ~60k+ files.
+8. **Resilient file I/O**: `@lexbuild/core` exports `writeFile`, `writeFileIfChanged`, and `mkdir` wrappers (`packages/core/src/fs.ts`). `writeFile` retries on `ENFILE`/`EMFILE` errors with exponential backoff. `writeFileIfChanged` additionally compares content before writing, preserving mtimes on unchanged files so downstream tools (highlights, search indexing) skip reprocessing.
 
 9. **Secrets management**: `~/.lexbuild-secrets` on the VPS is the single source of truth. `ecosystem.config.cjs` reads secrets from `process.env` (populated via `~/.zshenv` → `~/.lexbuild-secrets`). `.env.production` is **generated** by `scripts/deploy.sh` on every deploy — never manually maintained.
 

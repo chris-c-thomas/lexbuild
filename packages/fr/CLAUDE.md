@@ -37,6 +37,8 @@ Key exports (see `index.ts` for full list):
 | `fetchWithRetry()` | Fetch with retry on 429/503/504 and network errors |
 | `FrASTBuilder` | SAX→AST builder for FR XML |
 
+The converter uses `writeFileIfChanged()` from core for all `.md` writes, preserving mtimes on unchanged documents. FR frontmatter is deterministic (uses `publication_date` from source data), so content comparison works immediately.
+
 ## FR XML Schema
 
 **Source**: FederalRegister.gov API — `https://www.federalregister.gov/api/v1/`

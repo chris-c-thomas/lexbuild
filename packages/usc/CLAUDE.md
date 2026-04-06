@@ -42,6 +42,8 @@ Input XML → [1] createReadStream
           → [6] writeMetaFiles() (_meta.json + README.md)
 ```
 
+All `.md` writes use `writeFileIfChanged()` from core, preserving mtimes on unchanged sections. USC frontmatter is already deterministic (uses `parseCurrency()` from XML metadata), so content comparison works immediately. The `scripts/update-usc.sh` wrapper detects new OLRC release points and only runs the pipeline when one is available.
+
 ### Collect-Then-Write Pattern
 
 Sections are collected synchronously during SAX parsing (no async I/O in SAX event handlers). All file writes happen after parsing completes. This avoids backpressure issues and enables two-pass duplicate detection and link resolution.

@@ -42,6 +42,7 @@ const result = await convertEcfrTitle({
   includeEditorialNotes: false,
   includeStatutoryNotes: false,
   includeAmendments: false,
+  currencyDate: download.asOfDate, // Optional: defaults to today
   dryRun: false,
 });
 
@@ -101,7 +102,7 @@ const result = await downloadEcfrTitles({
 
 | Export | Description |
 |--------|-------------|
-| `EcfrConvertOptions` | Options for `convertEcfrTitle()` — input, output, granularity, link style, note filters |
+| `EcfrConvertOptions` | Options for `convertEcfrTitle()` — input, output, granularity, link style, note filters, `currencyDate` |
 | `EcfrConvertResult` | Conversion result — sections written, parts, files, token estimate |
 | `EcfrApiDownloadOptions` | Options for `downloadEcfrTitlesFromApi()` — output, titles, optional date |
 | `EcfrApiDownloadResult` | API download result — files, bytes, as-of date |

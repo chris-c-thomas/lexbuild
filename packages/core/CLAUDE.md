@@ -9,7 +9,7 @@
 ```
 src/
 ├── index.ts                     # Barrel exports
-├── fs.ts                        # Resilient writeFile/mkdir with ENFILE/EMFILE retry
+├── fs.ts                        # Resilient writeFile/writeFileIfChanged/mkdir with ENFILE/EMFILE retry
 ├── xml/
 │   ├── uslm-elements.ts        # USLM/XHTML namespace constants & element classification sets
 │   └── parser.ts                # Streaming SAX parser wrapping saxes
