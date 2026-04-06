@@ -29,6 +29,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 SOURCES=""
 SHARED_ARGS=""
+SKIP_DEPLOY=false
+DEPLOY_ONLY=false
 ECFR_ARGS=""
 FR_ARGS=""
 USC_ARGS=""
@@ -39,8 +41,14 @@ while [[ $# -gt 0 ]]; do
       SOURCES="$2"
       shift 2
       ;;
-    --skip-deploy|--deploy-only)
+    --skip-deploy)
       SHARED_ARGS="$SHARED_ARGS $1"
+      SKIP_DEPLOY=true
+      shift
+      ;;
+    --deploy-only)
+      SHARED_ARGS="$SHARED_ARGS $1"
+      DEPLOY_ONLY=true
       shift
       ;;
     # eCFR pass-through
@@ -89,6 +97,11 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+if [ "$SKIP_DEPLOY" = true ] && [ "$DEPLOY_ONLY" = true ]; then
+  echo "Error: --skip-deploy and --deploy-only are mutually exclusive."
+  exit 1
+fi
 
 # Default: all sources
 if [ -z "$SOURCES" ]; then

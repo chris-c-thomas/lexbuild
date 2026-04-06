@@ -78,6 +78,11 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+if [ "$SKIP_DEPLOY" = true ] && [ "$DEPLOY_ONLY" = true ]; then
+  echo "Error: --skip-deploy and --deploy-only are mutually exclusive."
+  exit 1
+fi
+
 # Compute date range
 if [ -n "$FROM" ]; then
   DATE_FROM="$FROM"

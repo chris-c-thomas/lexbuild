@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import type { LevelNode, EmitContext, AncestorInfo } from "@lexbuild/core";
 import { buildEcfrFrontmatter } from "./ecfr-frontmatter.js";
 
@@ -56,6 +56,10 @@ function makeContext(overrides?: {
 
 describe("buildEcfrFrontmatter", () => {
   describe("currencyDate parameter", () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
     it("uses provided currencyDate for currency and last_updated fields", () => {
       const fm = buildEcfrFrontmatter(
         makeSection(),
@@ -68,19 +72,23 @@ describe("buildEcfrFrontmatter", () => {
     });
 
     it("falls back to today when currencyDate is omitted", () => {
-      const today = new Date().toISOString().slice(0, 10);
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-06-15T12:00:00Z"));
+
       const fm = buildEcfrFrontmatter(makeSection(), makeContext({ partNum: "1" }));
 
-      expect(fm.currency).toBe(today);
-      expect(fm.last_updated).toBe(today);
+      expect(fm.currency).toBe("2026-06-15");
+      expect(fm.last_updated).toBe("2026-06-15");
     });
 
     it("falls back to today when currencyDate is undefined", () => {
-      const today = new Date().toISOString().slice(0, 10);
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-06-15T12:00:00Z"));
+
       const fm = buildEcfrFrontmatter(makeSection(), makeContext({ partNum: "1" }), undefined);
 
-      expect(fm.currency).toBe(today);
-      expect(fm.last_updated).toBe(today);
+      expect(fm.currency).toBe("2026-06-15");
+      expect(fm.last_updated).toBe("2026-06-15");
     });
   });
 

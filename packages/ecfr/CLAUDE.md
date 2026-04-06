@@ -169,7 +169,7 @@ eCFR XML → [XMLParser(defaultNamespace: "")] → SAX events
 
 For chapter granularity, sections are emitted individually then grouped by chapter ancestor into composite files. For part/title granularity, nodes are filtered to the target level.
 
-All `.md` writes use `writeFileIfChanged()` from core, preserving mtimes on unchanged sections. `EcfrConvertOptions` accepts optional `currencyDate` (YYYY-MM-DD) from eCFR API metadata; when provided, frontmatter `currency` and `last_updated` use that date instead of `new Date()`, making output deterministic across runs. The `scripts/update-ecfr.sh` wrapper passes `upToDateAsOf` from the API's `/titles` endpoint.
+All `.md` writes use `writeFileIfChanged()` from core, preserving mtimes on unchanged sections. `EcfrConvertOptions` accepts optional `currencyDate` (YYYY-MM-DD) from eCFR API metadata; when provided, frontmatter `currency` and `last_updated` use that date instead of `new Date()`, making output deterministic across runs. The `scripts/update-ecfr.sh` wrapper passes the currency date computed by `scripts/ecfr-changed-titles.ts`, which mirrors the downloader's date logic: `meta.date` when no import is in progress, or `meta.date - 1 day` when an import is active (since `meta.date` advances to tomorrow during nightly imports).
 
 ## Output Structure
 

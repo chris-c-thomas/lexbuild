@@ -96,11 +96,19 @@ async function main(): Promise<void> {
   changedTitles.sort((a, b) => a - b);
 
   if (jsonMode) {
-    // Output full metadata for the update script to consume
+    // Mirror the downloader's date logic: when an import is in progress,
+    // meta.date is tomorrow's date — use previous day for accurate frontmatter
+    const currencyDate = meta.importInProgress
+      ? (() => {
+          const prev = new Date(meta.date);
+          prev.setDate(prev.getDate() - 1);
+          return prev.toISOString().slice(0, 10);
+        })()
+      : meta.date;
+
     const output = {
       changedTitles,
-      // Use the global dataset currency date for frontmatter
-      currencyDate: meta.date,
+      currencyDate,
       totalTitles: meta.titles.filter((t) => !t.reserved).length,
       importInProgress: meta.importInProgress,
     };

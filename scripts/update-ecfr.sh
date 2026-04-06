@@ -82,6 +82,11 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+if [ "$SKIP_DEPLOY" = true ] && [ "$DEPLOY_ONLY" = true ]; then
+  echo "Error: --skip-deploy and --deploy-only are mutually exclusive."
+  exit 1
+fi
+
 CLI="node packages/cli/dist/index.js"
 
 # --- Preflight checks ---
