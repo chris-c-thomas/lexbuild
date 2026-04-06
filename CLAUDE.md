@@ -98,7 +98,7 @@ node packages/cli/dist/index.js download-ecfr --all
 node packages/cli/dist/index.js convert-ecfr --all
 node packages/cli/dist/index.js download-fr --recent 30
 node packages/cli/dist/index.js convert-fr --all
-node packages/cli/dist/index.js enrich-fr --from 2000-01-01
+node packages/cli/dist/index.js enrich-fr --from 2000-01-01  # Only needed for govinfo bulk downloads
 node packages/cli/dist/index.js list-release-points
 
 # Astro app — NOT included in default `pnpm turbo build`

@@ -51,7 +51,7 @@ All commands support `--help` for full option details.
 - Convert commands have three input modes (mutually exclusive): positional `[input]`, `--titles`, or `--all`.
 - If any selective note flag is set, the broad `--include-notes` is automatically disabled.
 - FR has no `--granularity` (documents are already atomic) and no `--titles` (date-based).
-- `enrich-fr` patches YAML frontmatter only (no XML re-parse or Markdown re-render). Skips files that already have `fr_citation` unless `--force`.
+- `enrich-fr` patches YAML frontmatter only (no XML re-parse or Markdown re-render). Skips files that already have `fr_citation` unless `--force`. Only needed for govinfo bulk downloads; the default `fr-api` source downloads JSON sidecars that the converter uses automatically.
 - Bare `download`/`convert` without a source suffix prints an error listing available commands.
 
 ### Convert Summary Footer

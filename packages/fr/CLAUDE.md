@@ -30,7 +30,7 @@ Key exports (see `index.ts` for full list):
 | Export | Purpose |
 |--------|---------|
 | `convertFrDocuments()` | Convert FR XML files to Markdown |
-| `enrichFrDocuments()` | Enrich existing .md frontmatter with API metadata |
+| `enrichFrDocuments()` | Enrich existing .md frontmatter with API metadata (govinfo bulk only) |
 | `downloadFrDocuments()` | Download FR documents by date range |
 | `downloadSingleFrDocument()` | Download a single document by number |
 | `buildMonthChunks()` | Break date range into month-sized chunks |

@@ -29,7 +29,7 @@ Each source follows the same general pattern:
 
 1. **Download** the raw XML from the official source
 2. **Convert** the XML into structured Markdown files
-3. **Enrich** (FR only) the converted files with additional API metadata
+3. **Enrich** (FR govinfo bulk only) the converted files with additional API metadata
 
 ## Title Specification
 
@@ -88,15 +88,15 @@ lexbuild convert-ecfr --all
 ### Federal Register
 
 ```bash
-# Download the last 30 days of FR documents
+# Download the last 30 days of FR documents (XML + JSON from FR API)
 lexbuild download-fr --recent 30
 
-# Convert all downloaded documents
+# Convert all downloaded documents (JSON sidecar used automatically for rich frontmatter)
 lexbuild convert-fr --all
-
-# Enrich frontmatter with API metadata
-lexbuild enrich-fr --recent 30
 ```
+
+> [!NOTE]
+> The `enrich-fr` step is only needed when using `--source govinfo` (bulk XML without JSON metadata). The default `fr-api` source downloads both XML and JSON, so the converter produces rich frontmatter automatically.
 
 ## Getting Help
 
