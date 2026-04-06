@@ -292,6 +292,7 @@ Note: identifiers use `/us/cfr/` (content type) not `/us/ecfr/` (data source). B
 - **`pnpm.onlyBuiltDependencies`**: Native packages like `better-sqlite3` need explicit approval in root `package.json` under `pnpm.onlyBuiltDependencies` to compile during install.
 - **Turborepo app task naming**: Apps excluded from default `build` need matching script names (e.g., `build:api` in both `turbo.json` and the app's `package.json`).
 - **Docker Meilisearch stores data at `data.ms/` inside the volume**: When tarring/extracting, use `-C /data/data.ms` not `-C /data`. Extracting at the wrong level causes "failed to infer database version" on the VPS.
+- **Docker search index checkpoints**: The incremental indexing script writes checkpoint files (`.search-indexed-at-{source}`) into the content directory. For Docker runs, these are persisted in `downloads/.search-checkpoints/` and restored into the temp content dir on each run. If this directory is deleted, the next Docker index run will scan all files from scratch.
 - **Docker volume profiles**: `MEILI_PROFILE=dev|full` selects volume (`meili-data-dev` or `meili-data-full`). Dev mode runs without master key (`MEILI_ENV=development`). Full mode requires `MEILI_MASTER_KEY` for VPS-compatible data.
 
 ## When Adding New Source Types

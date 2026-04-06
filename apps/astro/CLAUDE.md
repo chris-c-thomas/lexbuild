@@ -12,6 +12,7 @@ The app serves U.S. Code (54 titles, ~60k sections) and eCFR (50 titles, ~200k+ 
 - **No `build` script** — only `build:astro`. Do NOT add to the default `build` task in turbo.json.
 - **Content is gitignored** — `content/`, `public/nav/`, `public/sitemap.xml`, `*.highlighted.html`
 - **Deploy** via `./scripts/deploy.sh` from the monorepo root
+- **Individual asset deploy**: `deploy.sh --nav-only`, `--sitemaps-only`, `--highlights-only` deploy individual generated assets without a full content rsync
 
 ## Tech Stack
 
