@@ -194,14 +194,12 @@ if [ -d "apps/astro/public/nav" ]; then
   rsync -avz --delete apps/astro/public/nav/ "${VPS_HOST}:~/lexbuild/apps/astro/dist/client/nav/"
 fi
 
-HAVE_SITEMAPS=false
-for f in apps/astro/public/sitemap*.xml; do
-  [ -e "$f" ] && HAVE_SITEMAPS=true && break
-done
-if [ "$HAVE_SITEMAPS" = true ]; then
+SITEMAP_FILES=(apps/astro/public/sitemap*.xml)
+[ -f apps/astro/public/robots.txt ] && SITEMAP_FILES+=(apps/astro/public/robots.txt)
+if [ ${#SITEMAP_FILES[@]} -gt 0 ] && [ -e "${SITEMAP_FILES[0]}" ]; then
   echo "    Sitemaps"
-  rsync -avz apps/astro/public/sitemap*.xml apps/astro/public/robots.txt "${VPS_HOST}:~/lexbuild/apps/astro/public/" 2>/dev/null
-  rsync -avz apps/astro/public/sitemap*.xml apps/astro/public/robots.txt "${VPS_HOST}:~/lexbuild/apps/astro/dist/client/" 2>/dev/null
+  rsync -avz "${SITEMAP_FILES[@]}" "${VPS_HOST}:~/lexbuild/apps/astro/public/"
+  rsync -avz "${SITEMAP_FILES[@]}" "${VPS_HOST}:~/lexbuild/apps/astro/dist/client/"
 fi
 echo ""
 
