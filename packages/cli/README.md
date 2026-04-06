@@ -142,7 +142,7 @@ lexbuild convert-ecfr ./downloads/ecfr/xml/ECFR-title17.xml  # Direct file path
 | `--include-editorial-notes` | — | Include editorial/regulatory notes only |
 | `--include-statutory-notes` | — | Include statutory notes only |
 | `--include-amendments` | — | Include amendment notes only |
-| `--currency-date <YYYY-MM-DD>` | — | Currency date for frontmatter (from eCFR API metadata) |
+| `--currency-date <YYYY-MM-DD>` | `today` | Currency date for frontmatter (from eCFR API metadata) |
 | `--dry-run` | — | Parse and report without writing |
 | `-v, --verbose` | — | Verbose file output |
 
