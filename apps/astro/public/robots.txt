@@ -1,6 +1,6 @@
 # =============================================================================
 # robots.txt for lexbuild.dev
-# Updated: 2026-03-23
+# Updated: 2026-04-06
 #
 # LexBuild converts U.S. legal sources into structured Markdown for LLMs,
 # RAG pipelines, and semantic search.
@@ -73,6 +73,18 @@ Allow: /
 User-agent: Timpibot
 Allow: /
 
+User-agent: DeepSeekBot
+Allow: /
+
+User-agent: Google-CloudVertexBot
+Allow: /
+
+User-agent: MistralBot
+Allow: /
+
+User-agent: xAI-Grok
+Allow: /
+
 User-agent: img2dataset
 Disallow: /
 
@@ -118,14 +130,22 @@ User-agent: FirecrawlAgent
 Allow: /
 
 # ---------------------------------------------------------------------------
-# SEO audit / competitive intelligence bots (blocked)
+# SEO audit bots (allowed with rate consideration)
+#
+# These provide useful site audit data. Aggressive scrapers are still blocked.
 # ---------------------------------------------------------------------------
+User-agent: Screaming Frog SEO Spider
+Allow: /
+
 User-agent: AhrefsBot
-Disallow: /
+Allow: /
 
 User-agent: AhrefsSiteAudit
-Disallow: /
+Allow: /
 
+# ---------------------------------------------------------------------------
+# SEO crawlers (blocked — aggressive or low-value)
+# ---------------------------------------------------------------------------
 User-agent: SemrushBot
 Disallow: /
 
@@ -177,9 +197,6 @@ Disallow: /
 User-agent: PetalBot
 Disallow: /
 
-User-agent: Screaming Frog SEO Spider
-Disallow: /
-
 # ---------------------------------------------------------------------------
 # Miscellaneous bad actors / resource wasters (blocked)
 # ---------------------------------------------------------------------------
@@ -212,6 +229,7 @@ Disallow: /
 # ---------------------------------------------------------------------------
 User-agent: *
 Allow: /
+Allow: /api/openapi.json
 Disallow: /api/
 
 Sitemap: https://lexbuild.dev/sitemap.xml
