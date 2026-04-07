@@ -38,7 +38,7 @@ const statsRoute = createRoute({
   method: "get",
   path: "/stats",
   tags: ["System"],
-  summary: "Corpus statistics",
+  summary: "Corpus Statistics",
   description:
     "Returns corpus-wide statistics including document counts per source, title counts, date ranges, and database metadata.",
   responses: {

@@ -28,7 +28,7 @@ const sourcesRoute = createRoute({
   method: "get",
   path: "/sources",
   tags: ["System"],
-  summary: "List sources",
+  summary: "List Sources",
   description:
     "Returns metadata about all content sources, including document counts, hierarchy structure, and available filters.",
   responses: {
