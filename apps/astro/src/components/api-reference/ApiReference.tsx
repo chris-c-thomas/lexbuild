@@ -3,7 +3,7 @@ import "@scalar/api-reference-react/style.css";
 import { Component, useEffect, useLayoutEffect, useState } from "react";
 import type { ErrorInfo, ReactNode } from "react";
 
-import { SCALAR_THEME_CSS } from "@/lib/scalar-theme";
+import { SCALAR_CONFIG } from "@/lib/scalar-config";
 
 interface ApiReferenceProps {
   specUrl: string;
@@ -58,33 +58,9 @@ export default function ApiReference({ specUrl }: ApiReferenceProps) {
     <ApiReferenceErrorBoundary specUrl={specUrl}>
       <ApiReferenceReact
         configuration={{
+          ...SCALAR_CONFIG,
           url: specUrl,
-          theme: "none",
           darkMode: isDark,
-          withDefaultFonts: false,
-          customCss: SCALAR_THEME_CSS,
-          defaultOpenAllTags: false,
-          defaultHttpClient: { targetKey: "shell", clientKey: "curl" },
-          hiddenClients: {
-            c: true,
-            csharp: true,
-            clojure: true,
-            go: true,
-            java: true,
-            kotlin: true,
-            objc: true,
-            ocaml: true,
-            php: true,
-            powershell: true,
-            r: true,
-            ruby: true,
-            swift: true,
-          },
-          expandAllResponses: true,
-          hideClientButton: true,
-          hideDarkModeToggle: true,
-          hideModels: true,
-          hideSearch: true,
         }}
       />
     </ApiReferenceErrorBoundary>
