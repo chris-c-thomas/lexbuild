@@ -213,7 +213,8 @@ export const SCALAR_THEME_CSS = /* css */ `
 
 /* No pill-shaped elements — enforce rounded-sm (3px) globally in Scalar. */
 .scalar-app button,
-.scalar-app .scalar-card {
+.scalar-app .scalar-card,
+.scalar-app .schema-properties {
   border-radius: 3px !important;
 }
 
