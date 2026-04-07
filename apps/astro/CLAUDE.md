@@ -216,7 +216,8 @@ Initialized with radix-nova preset, zinc theme. Components in `src/components/ui
 Interactive API docs powered by `@scalar/api-reference-react`, embedded as a `client:only="react"` island inside BaseLayout.
 
 - **Component**: `src/components/api-reference/ApiReference.tsx` — React wrapper with dark mode sync
-- **Theme**: `src/lib/scalar-theme.ts` — LexBuild brand CSS variables (no Google Fonts import, uses `@fontsource`)
+- **Theme**: `src/lib/scalar-theme.ts` — LexBuild brand CSS variables (no Google Fonts import, uses `@fontsource`). Exports a `SCALAR_THEME_CSS` template literal string passed via the `customCss` config prop (with `theme: "none"`).
+- **Tailwind cannot style Scalar internals**: `customCss` is a raw CSS string injected into Scalar's internal stylesheet — not HTML class attributes. Scalar owns its DOM. Tailwind v4 `@theme inline` vars aren't runtime CSS custom properties. Use plain CSS targeting Scalar's internal class names. Runtime `:root`/`.dark` vars (e.g., `var(--primary)`, `var(--surface)`) do work inside the string. See `.claude/internal/docs/astro-app.md` for the full class name reference.
 - **Page**: `src/pages/docs/api.astro` — no `source` prop, loads spec from `${siteUrl}/api/openapi.json`
 - **Scalar's `darkMode` config prop only applies on init**: `useColorMode` reads `initialColorMode` once during Scalar's internal initialization. Subsequent prop changes via `updateConfiguration()` do NOT toggle the theme. Workaround: directly toggle `.dark-mode`/`.light-mode` on `document.body` via a React `useEffect`.
 - **Scalar defaults to `position: fixed; overflow: hidden` on `.scalar-container`**: This creates a full-viewport overlay that blocks page scrolling. Override to `position: static; overflow: visible` in `customCss`.
