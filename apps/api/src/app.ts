@@ -71,7 +71,6 @@ export function createApp(config: AppConfig): OpenAPIHono {
     },
     servers: [
       { url: "https://lexbuild.dev/api", description: "Production" },
-      { url: "http://localhost:4322/api", description: "Local development" },
     ],
     security: [{ apiKey: [] }],
   });

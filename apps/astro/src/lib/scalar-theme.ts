@@ -153,12 +153,65 @@ export const SCALAR_THEME_CSS = /* css */ `
   background: var(--scalar-background-3, #1c2d3c) !important;
 }
 
-/* Make Scalar's sidebar sticky below the site header */
+/* ---- Sidebar styling (match docs/sources sidebars) ---- */
 .t-doc__sidebar {
   position: sticky !important;
   top: 3.5rem !important;
   height: calc(100vh - 3.5rem) !important;
   overflow-y: auto !important;
+  padding: 0.75rem !important;
+  --scalar-sidebar-indent: 12px !important;
+
+  /* Override Scalar sidebar color tokens to match docs sidebar */
+  --sidebar-c-1: var(--scalar-color-1) !important;
+  --sidebar-c-2: var(--scalar-color-2) !important;
+  --sidebar-b-hover: var(--scalar-background-3) !important;
+  --sidebar-active-c: var(--scalar-color-1) !important;
+}
+
+/* Group headers: bold, dark text like docs section headings */
+.t-doc__sidebar .group\/group-button > button {
+  font-weight: 700 !important;
+  font-size: 0.875rem !important;
+  color: var(--scalar-color-1) !important;
+  padding: 0.375rem 0.5rem !important;
+  border-radius: 6px !important;
+}
+
+/* All sidebar buttons: rounded with visible hover */
+.t-doc__sidebar button {
+  border-radius: 6px !important;
+}
+.t-doc__sidebar .group\/item > button:hover,
+.t-doc__sidebar .group\/group-button > button:hover {
+  background: var(--scalar-background-3) !important;
+}
+
+/* Active/selected item: prominent background highlight */
+.t-doc__sidebar .group\/item > button[aria-selected="true"],
+.t-doc__sidebar .group\/item > button.active {
+  background: var(--scalar-background-3) !important;
+  color: var(--scalar-color-1) !important;
+  font-weight: 500 !important;
+}
+
+/* Endpoint items: match docs text size */
+.t-doc__sidebar .group\/items .group\/item > button {
+  font-size: 0.875rem !important;
+  padding: 0.25rem 0.5rem !important;
+}
+
+/* GET badges: visible but compact */
+.t-doc__sidebar .sidebar-heading-type {
+  font-size: 0.75rem !important;
+  opacity: 0.9 !important;
+  font-weight: 600 !important;
+}
+
+/* Hide the API name/license badges (LexBuild | MIT) from the intro header.
+   Redundant since the site header and page title already identify the API. */
+.section-header-wrapper > .custom-scroll {
+  display: none !important;
 }
 
 /* Hide Scalar's sidebar footer (dark mode toggle, MCP links, branding).
