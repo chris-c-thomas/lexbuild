@@ -45,7 +45,6 @@ src/
 └── lib/
     ├── content-negotiation.ts
     ├── markdown-strip.ts   # Markdown to plaintext conversion
-    ├── scalar-theme.ts     # Custom Scalar API reference theme (LexBuild brand)
     ├── source-registry.ts  # API_SOURCES config, URL_TO_DB_SOURCE mapping
     ├── documents.ts        # Identifier resolution, metadata building, field selection
     └── listings.ts         # Collection response envelope builder
@@ -120,7 +119,7 @@ lexbuild ingest ./output --db ./lexbuild.db --prune            # Remove deleted 
 | GET | `/api/health` | Health check with DB stats |
 | GET | `/api/sources` | Source metadata with live counts |
 | GET | `/api/openapi.json` | OpenAPI 3.1 spec |
-| GET | `/api/docs` | Scalar API reference UI |
+| GET | `/api/docs` | 301 redirect to `/docs/api` (Astro) |
 | GET | `/api/stats` | Corpus-wide statistics |
 | GET | `/api/search` | Cross-source Meilisearch proxy with facets |
 | GET | `/api/usc/documents` | List/filter/sort USC sections |
@@ -147,7 +146,7 @@ All endpoints: API key auth (optional), tiered rate limiting, X-RateLimit header
 - **`better-sqlite3` is platform-specific**: macOS binaries won't work on Linux. The VPS must run `pnpm install` or `pnpm rebuild better-sqlite3` after deployment.
 - **tsup `noExternal` regex overrides `external` array**: `noExternal: [/(.*)/]` with `external: ["better-sqlite3"]` does NOT work. Use a negative lookahead: `noExternal: [/^(?!better-sqlite3|bindings|file-uri-to-path|@lexbuild\/)/]`.
 - **ESM bundle needs CJS shims for native modules**: The bundled ESM output needs `createRequire`, `__filename`, and `__dirname` provided via tsup `banner` for `better-sqlite3` and its `bindings` dependency to resolve native `.node` files.
-- **`@scalar/hono-api-reference` API changed**: Use `url` (not `spec: { url }`) and `title` (not `pageTitle`) in the config object. The `spec` property is deprecated.
+- **`/api/docs` redirects to `/docs/api`**: The standalone Scalar API reference was moved to the Astro app. The Hono endpoint is a 301 redirect. `@scalar/hono-api-reference` is no longer used.
 - **Hono `createMiddleware` + `noImplicitReturns`**: If the middleware catch block returns a Response, the try block must also have an explicit `return`. Use a named function returning `MiddlewareHandler` instead of arrow + `createMiddleware` to avoid this.
 - **CFR source mapping**: API URL uses `/cfr/` but database stores `source = "ecfr"`. `URL_TO_DB_SOURCE` in `lib/source-registry.ts` handles this translation. Always use it for DB queries.
 - **`noUncheckedIndexedAccess` on `URL_TO_DB_SOURCE`**: `URL_TO_DB_SOURCE["usc"]` returns `string | undefined`. Use `?? "usc"` fallback when passing to typed function params.

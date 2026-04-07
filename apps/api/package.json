@@ -1,6 +1,6 @@
 {
   "name": "@lexbuild/api",
-  "version": "1.18.1",
+  "version": "1.20.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -16,7 +16,6 @@
     "@hono/node-server": "^1.14",
     "@hono/zod-openapi": "^0.18",
     "@lexbuild/core": "workspace:*",
-    "@scalar/hono-api-reference": "^0.10.6",
     "better-sqlite3": "^11.9",
     "hono": "^4.7",
     "meilisearch": "^0.48",

@@ -1,6 +1,6 @@
 {
   "name": "@lexbuild/astro",
-  "version": "1.18.1",
+  "version": "1.20.0",
   "type": "module",
   "private": true,
   "engines": {
@@ -20,6 +20,7 @@
     "@fontsource-variable/ibm-plex-sans": "^5.2.8",
     "@fontsource/ibm-plex-mono": "^5.2.7",
     "@fontsource/ibm-plex-serif": "^5.2.7",
+    "@scalar/api-reference-react": "^0.9.20",
     "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.1.8",
     "@tanstack/react-virtual": "^3.13.22",

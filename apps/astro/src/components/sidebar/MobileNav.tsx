@@ -112,7 +112,7 @@ export function MobileNav({ source, currentPath }: MobileNavProps) {
               GitHub
             </a>
             <a
-              href="/api/docs"
+              href="/docs/api"
               className="text-sidebar-foreground/60 hover:text-sidebar-foreground text-xs font-medium transition-colors">
               API
             </a>

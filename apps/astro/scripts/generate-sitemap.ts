@@ -185,7 +185,7 @@ async function collectDocsUrls(): Promise<string[]> {
   try {
     const { flattenNav } = await import("../src/lib/docs-nav.js");
     const items = flattenNav();
-    return ["/docs/", ...items.map((item: { slug: string }) => `/docs/${item.slug}`)];
+    return ["/docs/", "/docs/api", ...items.map((item: { slug: string }) => `/docs/${item.slug}`)];
   } catch (err) {
     console.warn("Warning: Could not load docs nav for sitemap. Skipping docs URLs.", err);
     return [];

@@ -2,7 +2,7 @@
 
 The REST API for [LexBuild](https://github.com/chris-c-thomas/LexBuild), providing structured access to over one million U.S. legal documents including the U.S. Code (54 titles), Code of Federal Regulations (50 titles), and Federal Register (rules, notices, and presidential documents dating back to 2000). Content is available as JSON with rich metadata, raw Markdown, or stripped plaintext, with full text search, faceted filtering, and paginated listings.
 
-**Production:** [lexbuild.dev/api/docs](https://lexbuild.dev/api/docs) (interactive API reference)
+**Production:** [lexbuild.dev/docs/api](https://lexbuild.dev/docs/api) (interactive API reference)
 
 ## Tech Stack
 
@@ -13,7 +13,7 @@ The REST API for [LexBuild](https://github.com/chris-c-thomas/LexBuild), providi
 | Validation | [Zod](https://zod.dev/) + `@hono/zod-openapi` (auto-generated OpenAPI 3.1 spec) |
 | Content Database | [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) (SQLite, read-only) |
 | Search | [Meilisearch](https://www.meilisearch.com/) client (search proxy) |
-| API Docs | [Scalar](https://scalar.com/) API reference UI |
+| API Docs | [Scalar](https://scalar.com/) via `@scalar/api-reference-react` (embedded in Astro app) |
 | Build | [tsup](https://tsup.egoist.dev/) (bundled ESM, except native bindings) |
 | Dev | [tsx](https://tsx.is/) (watch mode) |
 
@@ -52,7 +52,7 @@ pnpm turbo dev:api --filter=@lexbuild/api
 
 ### 4. Open the API Reference
 
-Navigate to [http://localhost:4322/api/docs](http://localhost:4322/api/docs) for the interactive Scalar API reference with all endpoints, schemas, and a built-in request tester.
+Navigate to [http://localhost:4321/docs/api](http://localhost:4321/docs/api) for the interactive API reference (requires the Astro dev server). The old `/api/docs` path redirects there automatically.
 
 ## Environment Variables
 
@@ -67,7 +67,7 @@ Navigate to [http://localhost:4322/api/docs](http://localhost:4322/api/docs) for
 
 ## Endpoints
 
-Full interactive documentation is available at [`/api/docs`](https://lexbuild.dev/api/docs). The following table provides a quick reference.
+Full interactive documentation is available at [`/docs/api`](https://lexbuild.dev/docs/api). The following table provides a quick reference.
 
 | Method | Path | Description |
 |---|---|---|
@@ -76,7 +76,7 @@ Full interactive documentation is available at [`/api/docs`](https://lexbuild.de
 | GET | `/api/stats` | Corpus-wide statistics |
 | GET | `/api/search` | Cross-source full text search with faceted filtering |
 | GET | `/api/openapi.json` | OpenAPI 3.1 specification |
-| GET | `/api/docs` | Scalar API reference UI |
+| GET | `/api/docs` | 301 redirect to `/docs/api` |
 | GET | `/api/usc/documents` | List and filter USC sections |
 | GET | `/api/usc/documents/{identifier}` | Retrieve a single USC section |
 | GET | `/api/usc/titles` | List all USC titles with document counts |

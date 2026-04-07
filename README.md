@@ -6,7 +6,7 @@
 [![Node](https://img.shields.io/badge/node-%3E%3D22-brightgreen?style=for-the-badge)](https://nodejs.org/)
 [![license](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 
-[LexBuild](https://lexbuild.dev) is an open-source toolchain for U.S. legal texts. It transforms official source XML into structured Markdown with rich metadata, optimized for LLMs, RAG pipelines, and semantic search. It also provides a [REST API](https://lexbuild.dev/api/docs) for programmatic access to the full corpus.
+[LexBuild](https://lexbuild.dev) is an open-source toolchain for U.S. legal texts. It transforms official source XML into structured Markdown with rich metadata, optimized for LLMs, RAG pipelines, and semantic search. It also provides a [REST API](https://lexbuild.dev/docs/api) for programmatic access to the full corpus.
 
 ## Table of Contents
 
@@ -321,7 +321,7 @@ Files that already have `fr_citation` in their frontmatter are skipped unless `-
 
 ### `ingest`
 
-Populate a SQLite database from converted Markdown files. The database powers the [LexBuild Data API](https://lexbuild.dev/api/docs).
+Populate a SQLite database from converted Markdown files. The database powers the [LexBuild Data API](https://lexbuild.dev/docs/api).
 
 ```bash
 lexbuild ingest ./output --db ./lexbuild.db                           # Full ingest
@@ -614,7 +614,7 @@ See [`apps/astro/README.md`](apps/astro/README.md) for setup and development ins
 
 ### Data API
 
-The [LexBuild API](https://lexbuild.dev/api/docs) provides programmatic access to the full corpus via a Hono REST API backed by SQLite and Meilisearch.
+The [LexBuild API](https://lexbuild.dev/docs/api) provides programmatic access to the full corpus via a Hono REST API backed by SQLite and Meilisearch.
 
 - **1,000,000+ documents** searchable and retrievable as JSON, Markdown, or plaintext
 - **Content negotiation** with field selection and ETag caching
@@ -700,7 +700,7 @@ node packages/cli/dist/index.js ingest ./output --db ./lexbuild.db
 
 # Start the API dev server (DB path auto-detected from monorepo root)
 pnpm turbo dev:api --filter=@lexbuild/api
-# → http://localhost:4322/api/docs
+# → http://localhost:4322/api/docs (redirects to /docs/api)
 ```
 
 See [`apps/api/README.md`](apps/api/README.md) for full setup and endpoint documentation.

@@ -4,10 +4,11 @@
  * Color values are derived from `apps/astro/src/styles/global.css` (the
  * authoritative palette). Uses `theme: "none"` in the Scalar config so
  * these variables have full control without fighting a built-in theme.
+ *
+ * Omits font `@import` since the Astro app loads IBM Plex via `@fontsource`
+ * packages.
  */
 export const SCALAR_THEME_CSS = /* css */ `
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap');
-
 /* ---- Light mode ---- */
 .light-mode {
   --scalar-font: "IBM Plex Sans", system-ui, sans-serif;
@@ -89,5 +90,32 @@ export const SCALAR_THEME_CSS = /* css */ `
   --scalar-radius: 3px;
   --scalar-radius-lg: 5px;
   --scalar-radius-xl: 7px;
+}
+
+/* ---- Embedded layout overrides ---- */
+/* Scalar defaults to a fixed full-viewport container. Override to flow within the page. */
+.scalar-container {
+  position: static !important;
+  overflow: visible !important;
+  height: auto !important;
+  width: auto !important;
+}
+
+.scalar-app-exit {
+  display: none !important;
+}
+
+/* Make Scalar's sidebar sticky below the site header */
+.t-doc__sidebar {
+  position: sticky !important;
+  top: 3.5rem !important;
+  height: calc(100vh - 3.5rem) !important;
+  overflow-y: auto !important;
+}
+
+/* Hide Scalar's sidebar footer (dark mode toggle, MCP links, branding).
+   The site navbar ThemeToggle is the single dark mode control. */
+.darklight-reference {
+  display: none !important;
 }
 `;

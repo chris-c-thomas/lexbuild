@@ -49,6 +49,7 @@ Browser → Cloudflare Edge (cache HIT? → serve) → Caddy → Astro (port 432
 | `MobileNav` | `client:load` | Hamburger + Sheet drawer |
 | `SearchDialog` | `client:idle` | Cmd+K search |
 | `ThemeToggle` | `client:load` | Dark mode toggle |
+| `ApiReference` | `client:only="react"` | Scalar API reference with dark mode sync |
 
 Static components (no JS): `BaseLayout.astro`, `FrontmatterPanel.astro`, `BreadcrumbNav.astro`
 
@@ -62,7 +63,7 @@ src/
 │   ├── usc/                        # USC routes (index + [...slug] catch-all)
 │   ├── ecfr/                       # eCFR routes (index + [...slug] catch-all)
 │   ├── fr/                         # FR routes (index + [...slug] catch-all)
-│   ├── docs/                       # Docs routes (index + [...slug] catch-all)
+│   ├── docs/                       # Docs routes (index + [...slug] catch-all + api.astro)
 │   ├── 400–504.astro              # HTTP error pages (11 total, see Error Pages below)
 │   └── health.ts                  # Health check endpoint
 ├── components/
@@ -71,6 +72,7 @@ src/
 │   ├── search/SearchDialog.tsx
 │   ├── nav/SourcesDropdown.tsx     # Source navigation dropdown
 │   ├── docs/                       # DocsPagination, DocsSidebar, TableOfContents
+│   ├── api-reference/               # ApiReference (Scalar embed with dark mode sync)
 │   ├── seo/                        # SEOHead, JsonLd
 │   └── ui/                         # shadcn/ui primitives
 ├── lib/
@@ -83,6 +85,7 @@ src/
 │   ├── highlight.ts                # Pre-rendered .highlighted.html loader
 │   ├── shiki.ts                    # Runtime Shiki singleton (dev fallback)
 │   ├── shiki-themes.ts             # LexBuild brand Shiki themes (single source of truth)
+│   ├── scalar-theme.ts              # Custom Scalar API reference theme (LexBuild brand)
 │   ├── search.ts                   # Meilisearch client wrapper
 │   ├── nav.ts                      # Nav JSON reader
 │   ├── seo.ts                      # SEO metadata builders (pure functions)
@@ -207,6 +210,18 @@ Initialized with radix-nova preset, zinc theme. Components in `src/components/ui
 - **FrontmatterPanel**: Has YAML/Preview toggle (Astro inline `<script>`, not React island). Toolbar matches shadcn TabsList/TabsTrigger styling via scoped CSS with `--color-slate-blue-*` vars. Uses `data-frontmatter-toggle` / `data-frontmatter-view` attributes for JS toggle. Grid view uses scoped `<style>` with plain CSS (Tailwind v4 `grid-cols-*` can silently fail in `.astro` files).
 - **Copy/Download buttons**: Standalone React islands in the route pages (not inside ContentViewer). Receive the full reconstructed file (`---\n${rawYaml}\n---\n${body}`) so users get the complete `.md` with frontmatter.
 - **Sidebar is resizable**: Drag handle via pointer events, width persisted to localStorage (`lexbuild-sidebar-width`), 200–500px range. Two-div structure: outer positioning container + inner scrollable area with `scrollbar-gutter: stable`.
+
+## Embedded API Reference (/docs/api)
+
+Interactive API docs powered by `@scalar/api-reference-react`, embedded as a `client:only="react"` island inside BaseLayout.
+
+- **Component**: `src/components/api-reference/ApiReference.tsx` — React wrapper with dark mode sync
+- **Theme**: `src/lib/scalar-theme.ts` — LexBuild brand CSS variables (no Google Fonts import, uses `@fontsource`)
+- **Page**: `src/pages/docs/api.astro` — no `source` prop, loads spec from `${siteUrl}/api/openapi.json`
+- **Scalar's `darkMode` config prop only applies on init**: `useColorMode` reads `initialColorMode` once during Scalar's internal initialization. Subsequent prop changes via `updateConfiguration()` do NOT toggle the theme. Workaround: directly toggle `.dark-mode`/`.light-mode` on `document.body` via a React `useEffect`.
+- **Scalar defaults to `position: fixed; overflow: hidden` on `.scalar-container`**: This creates a full-viewport overlay that blocks page scrolling. Override to `position: static; overflow: visible` in `customCss`.
+- **Scalar's sidebar footer** (`.darklight-reference`) contains its own dark mode toggle, MCP links, and branding. Hidden via CSS to avoid conflicting with the site's `ThemeToggle`.
+- **Dark code blocks in light mode are intentional**: Scalar applies `.dark-mode` to individual `scalar-card` elements for request snippets. This is Scalar's default design, not a bug.
 
 ## Common Pitfalls
 

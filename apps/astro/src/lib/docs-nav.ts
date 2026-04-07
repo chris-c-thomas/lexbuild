@@ -46,6 +46,7 @@ export const DOCS_NAV: DocsNavSection[] = [
   {
     title: "API",
     items: [
+      { title: "API Reference", slug: "api", badge: "Interactive" },
       { title: "Overview", slug: "api/overview", badge: "New" },
       { title: "Authentication", slug: "api/authentication" },
       { title: "Documents", slug: "api/endpoints/documents" },
