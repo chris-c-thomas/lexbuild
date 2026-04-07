@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.20.0]
+
+### Added
+
+- Embedded Scalar API reference at `/docs/api` with unified site navbar, footer, and dark mode sync
+- `ApiReference` React island (`client:only="react"`) wrapping `@scalar/api-reference-react`
+- React Error Boundary for Scalar render failures with fallback link to raw OpenAPI spec
+- Custom Scalar theme CSS matching LexBuild brand palette (slate-blue light/dark)
+- API Reference entry in docs sidebar navigation with "Interactive" badge
+- `/docs/api` included in sitemap generation
+- Active state on header "API" nav link when on `/docs/api`
+
+### Changed
+
+- API reference URL moved from `/api/docs` to `/docs/api` — all nav links, docs content, and README references updated
+- `/api/docs` now returns a 301 redirect to `/docs/api` for backward compatibility
+- Removed `@scalar/hono-api-reference` dependency from API app (no longer used)
+- Scalar's fixed-viewport layout overridden to flow within the page with sticky sidebar
+- Dark mode syncs via direct body class manipulation (Scalar's config-driven toggle only applies on init)
+- Scalar's built-in dark mode toggle and branding hidden in favor of site navbar ThemeToggle
+
+### Fixed
+
+- Body class cleanup on unmount prevents Scalar CSS variable bleed after navigation
+- localStorage access wrapped in try-catch for restricted browser contexts
+- Stale JSDoc referencing deleted file removed from scalar-theme.ts
+
 ## [1.18.1]
 
 ### Changed
