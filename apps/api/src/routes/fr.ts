@@ -16,7 +16,7 @@ const listDocumentsRoute = createRoute({
   method: "get",
   path: "/fr/documents",
   tags: ["Federal Register"],
-  summary: "List Federal Register documents",
+  summary: "List documents",
   description: "Paginated listing of FR documents with filtering and sorting.",
   request: { query: frFilterSchema },
   responses: {
@@ -31,7 +31,7 @@ const getDocumentRoute = createRoute({
   method: "get",
   path: "/fr/documents/{identifier}",
   tags: ["Federal Register"],
-  summary: "Get a Federal Register document",
+  summary: "Get a document",
   description:
     "Retrieve a single Federal Register document by its document number. " +
     "Supports shorthand (2026-06029) or full form (%2Fus%2Ffr%2F2026-06029).",

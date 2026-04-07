@@ -16,7 +16,7 @@ const listDocumentsRoute = createRoute({
   method: "get",
   path: "/cfr/documents",
   tags: ["Code of Federal Regulations"],
-  summary: "List CFR sections",
+  summary: "List sections",
   description: "Paginated listing of CFR sections with filtering and sorting.",
   request: { query: cfrFilterSchema },
   responses: {
@@ -31,7 +31,7 @@ const getDocumentRoute = createRoute({
   method: "get",
   path: "/cfr/documents/{identifier}",
   tags: ["Code of Federal Regulations"],
-  summary: "Get a CFR section",
+  summary: "Get a section",
   description:
     "Retrieve a single Code of Federal Regulations section by its canonical identifier. " +
     "Supports shorthand (t17/s240.10b-5) or full form (%2Fus%2Fcfr%2Ft17%2Fs240.10b-5).",

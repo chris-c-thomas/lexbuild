@@ -101,8 +101,56 @@ export const SCALAR_THEME_CSS = /* css */ `
   width: auto !important;
 }
 
+/* When the API client (Test Request) is open, restore fixed positioning.
+   The container background serves as the dark backdrop overlay behind the card. */
+.scalar-container:has(.scalar-client) {
+  position: fixed !important;
+  overflow: hidden !important;
+  height: 100dvh !important;
+  width: 100dvw !important;
+  top: 0 !important;
+  left: 0 !important;
+  z-index: 100 !important;
+  background: rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Card-like modal: inset from viewport edges with rounded corners and shadow.
+   translateZ(0) establishes a containing block so the fixed-position X button
+   is positioned relative to the card, not the viewport. */
+.scalar-container:has(.scalar-client) > .scalar-client {
+  position: absolute !important;
+  inset: 2.5rem !important;
+  width: auto !important;
+  height: auto !important;
+  border-radius: 12px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  overflow: hidden !important;
+  transform: translateZ(0) !important;
+  z-index: 1 !important;
+}
+
+/* Scalar's click-outside-to-close backdrop — hidden unconditionally.
+   The container background handles the overlay tint instead. */
 .scalar-app-exit {
   display: none !important;
+}
+
+/* X close button: solid subtle background for contrast against the card. */
+.app-exit-button {
+  background: var(--scalar-background-2, #f5f9fa) !important;
+  color: var(--scalar-color-1, #1f2c38) !important;
+  border: 1px solid var(--scalar-border-color, #d3e3e9) !important;
+}
+.app-exit-button:hover {
+  background: var(--scalar-background-3, #e7f0f3) !important;
+}
+.dark-mode .app-exit-button {
+  background: var(--scalar-background-2, #132230) !important;
+  color: var(--scalar-color-1, #dce8f0) !important;
+  border: 1px solid var(--scalar-border-color, #243a4e) !important;
+}
+.dark-mode .app-exit-button:hover {
+  background: var(--scalar-background-3, #1c2d3c) !important;
 }
 
 /* Make Scalar's sidebar sticky below the site header */

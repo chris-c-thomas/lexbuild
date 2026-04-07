@@ -16,7 +16,7 @@ const listDocumentsRoute = createRoute({
   method: "get",
   path: "/usc/documents",
   tags: ["U.S. Code"],
-  summary: "List U.S. Code sections",
+  summary: "List sections",
   description: "Paginated listing of USC sections with filtering and sorting.",
   request: { query: uscFilterSchema },
   responses: {
@@ -31,7 +31,7 @@ const getDocumentRoute = createRoute({
   method: "get",
   path: "/usc/documents/{identifier}",
   tags: ["U.S. Code"],
-  summary: "Get a U.S. Code section",
+  summary: "Get a section",
   description:
     "Retrieve a single U.S. Code section by its canonical identifier. " +
     "Supports shorthand (t1/s1) or full form (%2Fus%2Fusc%2Ft1%2Fs1).",

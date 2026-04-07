@@ -63,7 +63,7 @@ export default function ApiReference({ specUrl }: ApiReferenceProps) {
           darkMode: isDark,
           withDefaultFonts: false,
           customCss: SCALAR_THEME_CSS,
-          defaultOpenAllTags: true,
+          defaultOpenAllTags: false,
           expandAllResponses: true,
           hideClientButton: true,
           hideDarkModeToggle: true,

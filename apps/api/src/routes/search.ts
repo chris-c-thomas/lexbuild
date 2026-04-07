@@ -99,7 +99,7 @@ const searchRoute = createRoute({
   method: "get",
   path: "/search",
   tags: ["Search"],
-  summary: "Full-text search across all sources",
+  summary: "Search documents",
   description:
     "Search across U.S. Code, Code of Federal Regulations, and Federal Register documents with faceted filtering and highlighting.",
   request: { query: searchQuerySchema },

@@ -41,7 +41,7 @@ function createTitleRoutes(sourceId: string, tag: string, urlPrefix: string) {
     method: "get",
     path: `/${urlPrefix}/titles`,
     tags: [tag],
-    summary: `List ${sourceId.toUpperCase()} titles`,
+    summary: "List titles",
     description: `Returns all ${sourceId.toUpperCase()} titles with document and chapter counts.`,
     responses: {
       200: {
@@ -55,7 +55,7 @@ function createTitleRoutes(sourceId: string, tag: string, urlPrefix: string) {
     method: "get",
     path: `/${urlPrefix}/titles/{number}`,
     tags: [tag],
-    summary: `Get ${sourceId.toUpperCase()} title detail`,
+    summary: "Get title detail",
     description: `Returns title metadata and chapter listing for the specified title.`,
     request: {
       params: z.object({
@@ -287,7 +287,7 @@ const listYearsRoute = createRoute({
   method: "get",
   path: "/fr/years",
   tags: ["Federal Register"],
-  summary: "List FR years",
+  summary: "List years",
   description: "Returns all Federal Register publication years with document counts.",
   responses: {
     200: {
@@ -301,7 +301,7 @@ const getYearRoute = createRoute({
   method: "get",
   path: "/fr/years/{year}",
   tags: ["Federal Register"],
-  summary: "Get FR year detail",
+  summary: "Get year detail",
   description: "Returns month breakdown for the specified year.",
   request: {
     params: z.object({ year: z.coerce.number().int().openapi({ example: 2026 }) }),
@@ -322,7 +322,7 @@ const getMonthRoute = createRoute({
   method: "get",
   path: "/fr/years/{year}/{month}",
   tags: ["Federal Register"],
-  summary: "Get FR month documents",
+  summary: "Get month documents",
   description: "Returns all Federal Register documents published in the specified month.",
   request: {
     params: z.object({
