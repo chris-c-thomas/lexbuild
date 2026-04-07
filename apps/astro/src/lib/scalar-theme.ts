@@ -211,6 +211,40 @@ export const SCALAR_THEME_CSS = /* css */ `
   font-weight: 600 !important;
 }
 
+/* No pill-shaped elements — enforce rounded-sm (3px) globally in Scalar. */
+.scalar-app button,
+.scalar-app .scalar-card {
+  border-radius: 3px !important;
+}
+
+/* Tighten section spacing — Scalar defaults to 90px top/bottom padding. */
+.section {
+  padding-top: 3rem !important;
+  padding-bottom: 5rem !important;
+}
+
+/* "Show More" buttons: solid slate with lighter hover */
+.show-more {
+  background: var(--scalar-color-accent) !important;
+  color: #fff !important;
+  border: 1px solid var(--scalar-color-accent) !important;
+  border-radius: 3px !important;
+  padding: 0.375rem 1rem !important;
+  font-weight: 500 !important;
+  transition: opacity 0.15s !important;
+}
+.show-more svg {
+  color: #fff !important;
+}
+.show-more:hover {
+  opacity: 0.85 !important;
+}
+
+/* Hide Scalar's AI Agent button (requires Scalar Cloud subscription). */
+.agent-button-container {
+  display: none !important;
+}
+
 /* Hide the API name/license badges (LexBuild | MIT) from the intro header.
    Redundant since the site header and page title already identify the API. */
 .section-header-wrapper > .custom-scroll {
