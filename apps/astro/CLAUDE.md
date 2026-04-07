@@ -222,6 +222,8 @@ Interactive API docs powered by `@scalar/api-reference-react`, embedded as a `cl
 - **Scalar defaults to `position: fixed; overflow: hidden` on `.scalar-container`**: This creates a full-viewport overlay that blocks page scrolling. Override to `position: static; overflow: visible` in `customCss`.
 - **Scalar's sidebar footer** (`.darklight-reference`) contains its own dark mode toggle, MCP links, and branding. Hidden via CSS to avoid conflicting with the site's `ThemeToggle`.
 - **Dark code blocks in light mode are intentional**: Scalar applies `.dark-mode` to individual `scalar-card` elements for request snippets. This is Scalar's default design, not a bug.
+- **Scalar layout/visibility config uses individual boolean props**: `hideSearch`, `hideClientButton`, `hideDarkModeToggle`, `hideModels`, `defaultOpenAllTags`, `expandAllResponses`, etc. Do NOT use `hideModals` — it is not part of Scalar's official API.
+- **Scalar dev tools panel** (localhost only): Shows current config as copyable JSON at the bottom of the reference UI. Useful for discovering available configuration options.
 
 ## Common Pitfalls
 
