@@ -2,19 +2,22 @@
 # deploy.sh — Deploy LexBuild Astro app to production VPS.
 #
 # Usage:
-#   ./scripts/deploy.sh                # Deploy code only (git pull, build, reload)
-#   ./scripts/deploy.sh --content      # Deploy code + rsync content from local output/
-#   ./scripts/deploy.sh --content-only # Rsync content only, no code deploy
-#   ./scripts/deploy.sh --remote       # Full pipeline on VPS (code + download + convert + build)
-#   ./scripts/deploy.sh --api          # Deploy API code only (git pull, build:api, pm2 reload)
-#   ./scripts/deploy.sh --api-db       # Sync lexbuild.db to VPS + reload API
-#   ./scripts/deploy.sh --api-full     # API code + database sync + reload
+#   ./scripts/deploy.sh                                # Deploy code only (git pull, build, reload)
+#   ./scripts/deploy.sh --content                      # Deploy code + rsync content from local output/
+#   ./scripts/deploy.sh --content-only                 # Rsync content only, no code deploy
+#   ./scripts/deploy.sh --nav-only                     # Rsync nav JSON only
+#   ./scripts/deploy.sh --sitemaps-only                # Rsync sitemaps only
+#   ./scripts/deploy.sh --highlights-only              # Rsync only .highlighted.html files to VPS
+#   ./scripts/deploy.sh --remote                       # Full pipeline on VPS (code + download + convert + build)
+#   ./scripts/deploy.sh --api                          # Deploy API code only (git pull, build:api, pm2 reload)
+#   ./scripts/deploy.sh --api-db                       # Sync lexbuild.db to VPS + reload API
+#   ./scripts/deploy.sh --api-full                     # API code + database sync + reload
 #   ./scripts/deploy.sh --search-vps                   # Incremental reindex directly on VPS
 #   ./scripts/deploy.sh --search-vps --source fr       # Reindex one source on VPS
-#   ./scripts/deploy.sh --highlights-only              # Rsync only .highlighted.html files to VPS
 #   ./scripts/deploy.sh --search-docker                # Full reindex in Docker, transfer to VPS
 #   ./scripts/deploy.sh --search-docker --source fr    # Incremental: add/update one source only
 #   ./scripts/deploy.sh --search-docker-seed           # Seed Docker volume from VPS data
+#   ./scripts/deploy.sh --search-docker-seed --profile dev  # Seed dev volume (548 sample docs)
 #
 # Requires:
 #   - SSH access to the VPS (key-based auth)
