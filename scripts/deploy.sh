@@ -9,6 +9,7 @@
 #   ./scripts/deploy.sh --sitemaps-only                # Rsync sitemaps only
 #   ./scripts/deploy.sh --highlights-only              # Rsync only .highlighted.html files to VPS
 #   ./scripts/deploy.sh --remote                       # Full pipeline on VPS (code + download + convert + build)
+#   ./scripts/deploy.sh --mcp                          # Deploy MCP server code only (git pull, build, pm2 reload)
 #   ./scripts/deploy.sh --api                          # Deploy API code only (git pull, build:api, pm2 reload)
 #   ./scripts/deploy.sh --api-db                       # Sync lexbuild.db to VPS + reload API
 #   ./scripts/deploy.sh --api-full                     # API code + database sync + reload
@@ -71,7 +72,7 @@ NAV_DEST="${NAV_DEST:-/srv/lexbuild/nav}"
 
 # --- Parse arguments ---
 
-MODE="code" # code | content | content-only | nav-only | sitemaps-only | remote | api | api-db | api-full | search-vps | search-docker
+MODE="code" # code | content | content-only | nav-only | sitemaps-only | remote | mcp | api | api-db | api-full | search-vps | search-docker
 SEARCH_SOURCE=""  # optional --source filter for --search-docker and --search-vps
 MEILI_PROFILE="full"  # full | dev — selects which Docker volume to use
 DATA_DEST="${DATA_DEST:-/srv/lexbuild/data}"
@@ -94,6 +95,9 @@ case "${1:-}" in
     ;;
   --remote)
     MODE="remote"
+    ;;
+  --mcp)
+    MODE="mcp"
     ;;
   --api)
     MODE="api"
@@ -143,7 +147,7 @@ case "${1:-}" in
     ;; # default: code only
   *)
     echo "Unknown option: $1"
-    echo "Usage: ./scripts/deploy.sh [--content | --content-only | --nav-only | --sitemaps-only | --highlights-only | --remote | --api | --api-db | --api-full | --search-vps [--source <name>] | --search-docker [--source <name>] | --search-docker-seed | --help]"
+    echo "Usage: ./scripts/deploy.sh [--content | --content-only | --nav-only | --sitemaps-only | --highlights-only | --remote | --mcp | --api | --api-db | --api-full | --search-vps [--source <name>] | --search-docker [--source <name>] | --search-docker-seed | --help]"
     exit 1
     ;;
 esac
@@ -427,6 +431,27 @@ EOF
     pm2 reload lexbuild-astro --update-env
 
     echo "==> Remote deploy complete"
+REMOTE
+}
+
+# --- API code deploy (used by: api, api-full) ---
+
+deploy_mcp() {
+  echo "==> Deploying MCP server to VPS..."
+
+  ssh "$VPS_HOST" << 'REMOTE'
+    set -euo pipefail
+    cd ~/lexbuild
+
+    echo "--- git pull"
+    git pull
+
+    echo "--- Building MCP server"
+    pnpm turbo build --filter=@lexbuild/mcp
+
+    echo "--- Reloading MCP process"
+    pm2 reload lexbuild-mcp --update-env
+    echo "==> MCP deploy complete"
 REMOTE
 }
 
@@ -925,6 +950,9 @@ case "$MODE" in
     ;;
   remote)
     deploy_remote
+    ;;
+  mcp)
+    deploy_mcp
     ;;
   api)
     deploy_api
