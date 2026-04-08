@@ -22,6 +22,7 @@ export const DOCS_NAV: DocsNavSection[] = [
       { title: "CLI Quickstart", slug: "getting-started/quickstart-cli" },
       { title: "Web Quickstart", slug: "getting-started/quickstart-web" },
       { title: "API Quickstart", slug: "getting-started/quickstart-api" },
+      { title: "MCP Quickstart", slug: "getting-started/quickstart-mcp" },
     ],
   },
   {
@@ -62,7 +63,13 @@ export const DOCS_NAV: DocsNavSection[] = [
   },
   {
     title: "MCP",
-    items: [{ title: "Overview", slug: "mcp/overview", badge: "Coming Soon" }],
+    items: [
+      { title: "Overview", slug: "mcp/overview" },
+      { title: "Installation", slug: "mcp/installation" },
+      { title: "Tools", slug: "mcp/tools" },
+      { title: "Resources & Prompts", slug: "mcp/resources-and-prompts" },
+      { title: "Security", slug: "mcp/security" },
+    ],
   },
   {
     title: "Guides",
