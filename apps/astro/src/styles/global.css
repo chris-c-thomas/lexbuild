@@ -420,39 +420,71 @@
   border-left-width: 3px;
   padding: 0.75rem 1rem;
   border-radius: calc(var(--radius) - 2px);
+  font-style: normal;
+  quotes: none;
+  border-left-color: var(--color-slate-blue-400);
+  background-color: var(--color-slate-blue-50);
+}
+
+.docs-prose blockquote[data-callout]::before,
+.docs-prose blockquote[data-callout]::after {
+  content: none;
+}
+
+.docs-prose blockquote[data-callout] p {
+  font-style: normal;
+}
+
+.docs-prose blockquote[data-callout] p::before,
+.docs-prose blockquote[data-callout] p::after {
+  content: none;
 }
 
 .docs-prose blockquote[data-callout] p:first-child {
   font-weight: 500;
 }
 
-.docs-prose blockquote[data-callout="note"] {
-  border-left-color: var(--color-slate-blue-500);
-  background-color: var(--color-slate-blue-50);
-}
-
-.dark .docs-prose blockquote[data-callout="note"] {
+.dark .docs-prose blockquote[data-callout] {
+  border-left-color: var(--color-slate-blue-600);
   background-color: color-mix(in oklch, var(--color-slate-blue-950) 50%, transparent);
 }
 
-.docs-prose blockquote[data-callout="warning"],
-.docs-prose blockquote[data-callout="caution"] {
-  border-left-color: var(--color-putty-500);
-  background-color: var(--color-putty-50);
+/* NOTE — summer green */
+.docs-prose blockquote[data-callout="note"] {
+  border-left-color: var(--color-summer-green-400);
+  background-color: var(--color-summer-green-50);
+}
+.dark .docs-prose blockquote[data-callout="note"] {
+  border-left-color: var(--color-summer-green-600);
+  background-color: color-mix(in oklch, var(--color-summer-green-950) 50%, transparent);
 }
 
-.dark .docs-prose blockquote[data-callout="warning"],
+/* IMPORTANT — lavender */
+.docs-prose blockquote[data-callout="important"] {
+  border-left-color: var(--color-lavender-400);
+  background-color: var(--color-lavender-50);
+}
+.dark .docs-prose blockquote[data-callout="important"] {
+  border-left-color: var(--color-lavender-600);
+  background-color: color-mix(in oklch, var(--color-lavender-950) 50%, transparent);
+}
+
+/* CAUTION — putty */
+.docs-prose blockquote[data-callout="caution"] {
+  border-left-color: var(--color-putty-400);
+  background-color: var(--color-putty-50);
+}
 .dark .docs-prose blockquote[data-callout="caution"] {
+  border-left-color: var(--color-putty-600);
   background-color: color-mix(in oklch, var(--color-putty-950) 50%, transparent);
 }
 
-.docs-prose blockquote[data-callout="tip"],
-.docs-prose blockquote[data-callout="important"] {
-  border-left-color: var(--color-summer-green-500);
-  background-color: var(--color-summer-green-50);
+/* WARNING — chestnut */
+.docs-prose blockquote[data-callout="warning"] {
+  border-left-color: var(--color-chestnut-400);
+  background-color: var(--color-chestnut-50);
 }
-
-.dark .docs-prose blockquote[data-callout="tip"],
-.dark .docs-prose blockquote[data-callout="important"] {
-  background-color: color-mix(in oklch, var(--color-summer-green-950) 50%, transparent);
+.dark .docs-prose blockquote[data-callout="warning"] {
+  border-left-color: var(--color-chestnut-600);
+  background-color: color-mix(in oklch, var(--color-chestnut-950) 50%, transparent);
 }
