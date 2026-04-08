@@ -33,10 +33,10 @@ export function createHttpApp(deps: ServerDeps): Hono {
   cleanupInterval.unref();
 
   // Health check — no auth
-  app.get("/healthz", (c) => c.json({ status: "ok" }));
+  app.get("/health", (c) => c.json({ status: "ok" }));
 
   // Readiness check — pings the Data API
-  app.get("/readyz", async (c) => {
+  app.get("/ready", async (c) => {
     try {
       await deps.api.healthCheck();
       return c.json({ status: "ready" });
