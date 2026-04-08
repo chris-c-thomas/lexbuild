@@ -41,8 +41,7 @@ function buildMeiliFilter(params: z.infer<typeof searchQuerySchema>): string | u
   const filters: string[] = [];
 
   if (params.source) {
-    const dbSource = params.source === "cfr" ? "ecfr" : params.source;
-    filters.push(`source = "${dbSource}"`);
+    filters.push(`source = "${params.source}"`);
   }
 
   if (params.title_number !== undefined) {
@@ -99,7 +98,7 @@ const searchRoute = createRoute({
   method: "get",
   path: "/search",
   tags: ["Search"],
-  summary: "Search documents",
+  summary: "Search Documents",
   description:
     "Search across U.S. Code, Code of Federal Regulations, and Federal Register documents with faceted filtering and highlighting.",
   request: { query: searchQuerySchema },

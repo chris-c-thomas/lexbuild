@@ -20,9 +20,9 @@ LexBuild provides three ways to access structured legal content:
 
 | Source | Description | Coverage |
 |---|---|---|
-| U.S. Code (USC) | Federal statutory law | 54 titles, ~60k sections |
-| eCFR | Code of Federal Regulations | 50 titles, ~200k sections |
-| Federal Register | Daily regulatory publications | 2000-present |
+| U.S. Code | Federal statutory law | 54 titles, ~60k sections |
+| eCFR | Electronic Code of Federal Regulations | 50 titles, ~200k sections |
+| Federal Register | Daily regulatory publications | 2000-present, 770k+ documents |
 
 ## What You'll Learn
 

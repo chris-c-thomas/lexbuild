@@ -3,6 +3,8 @@ export interface DocsNavItem {
   title: string;
   slug: string;
   badge?: string;
+  /** Render a separator line above this item in the sidebar. */
+  separator?: boolean;
 }
 
 /** Top-level section grouping nav items. */
@@ -47,7 +49,7 @@ export const DOCS_NAV: DocsNavSection[] = [
     title: "API",
     items: [
       { title: "API Reference", slug: "api", badge: "Interactive" },
-      { title: "Overview", slug: "api/overview", badge: "New" },
+      { title: "Overview", slug: "api/overview", separator: true },
       { title: "Authentication", slug: "api/authentication" },
       { title: "Documents", slug: "api/endpoints/documents" },
       { title: "Hierarchy", slug: "api/endpoints/hierarchy" },
@@ -56,6 +58,12 @@ export const DOCS_NAV: DocsNavSection[] = [
       { title: "Content Negotiation", slug: "api/content-negotiation" },
       { title: "Pagination", slug: "api/pagination" },
       { title: "Errors", slug: "api/errors" },
+    ],
+  },
+  {
+    title: "MCP",
+    items: [
+      { title: "Overview", slug: "mcp/overview", badge: "Coming Soon" },
     ],
   },
   {

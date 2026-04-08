@@ -5,7 +5,7 @@ export const searchQuerySchema = z.object({
     description: "Search query text",
     example: "environmental protection",
   }),
-  source: z.enum(["usc", "cfr", "fr"]).optional().openapi({
+  source: z.enum(["usc", "ecfr", "fr"]).optional().openapi({
     description: "Filter results to a specific source",
   }),
   title_number: z.coerce.number().int().optional(),

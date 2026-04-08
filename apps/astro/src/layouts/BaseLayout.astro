@@ -104,10 +104,13 @@ const meiliSearchKey = isProxyMode ? undefined : (import.meta.env.MEILI_SEARCH_K
           <nav class="text-md hidden items-center gap-5 pl-2 font-normal lg:flex">
             <SourcesDropdown client:load source={source} />
             <a
-              href="https://www.npmjs.com/package/@lexbuild/cli"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="nav-link text-muted-foreground hover:text-slate-blue-700 dark:hover:text-slate-blue-300 inline-flex items-center gap-1.5 transition-colors">
+              href="/docs/cli/installation"
+              class:list={[
+                "nav-link inline-flex items-center gap-1.5 transition-colors",
+                currentPath.startsWith("/docs/cli")
+                  ? "text-foreground font-semibold"
+                  : "text-muted-foreground hover:text-slate-blue-700 dark:hover:text-slate-blue-300",
+              ]}>
               CLI
             </a>
             <a
@@ -120,11 +123,17 @@ const meiliSearchKey = isProxyMode ? undefined : (import.meta.env.MEILI_SEARCH_K
               ]}>
               API
             </a>
+            <span
+              class="inline-flex items-start gap-0.5 text-muted-foreground/50 cursor-default select-none"
+              aria-disabled="true">
+              MCP
+              <span class="relative -top-1 rounded bg-slate-blue-100 dark:bg-slate-blue-900/50 px-1 py-px text-[0.5rem] font-medium uppercase tracking-wide text-slate-blue-600 dark:text-slate-blue-400">Soon</span>
+            </span>
             <a
               href="/docs/"
               class:list={[
                 "nav-link inline-flex items-center gap-1.5 transition-colors",
-                currentPath.startsWith("/docs") && currentPath !== "/docs/api"
+                currentPath.startsWith("/docs") && currentPath !== "/docs/api" && !currentPath.startsWith("/docs/cli")
                   ? "text-foreground font-semibold"
                   : "text-muted-foreground hover:text-slate-blue-700 dark:hover:text-slate-blue-300",
               ]}>
@@ -190,14 +199,14 @@ const meiliSearchKey = isProxyMode ? undefined : (import.meta.env.MEILI_SEARCH_K
           <span class="text-ink-muted">U.S. Legal Text as Structured Markdown · 2026</span>
         </div>
         <nav class="hidden items-center gap-6 sm:flex">
-          <a
-            href="https://www.npmjs.com/package/@lexbuild/cli"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="hover:text-slate-blue-700 dark:hover:text-slate-blue-300 transition-colors">
+          <a href="/docs/cli/installation" class="hover:text-slate-blue-700 dark:hover:text-slate-blue-300 transition-colors">
             CLI
           </a>
           <a href="/docs/api" class="hover:text-slate-blue-700 dark:hover:text-slate-blue-300 transition-colors">API</a>
+          <span class="inline-flex items-center gap-1.5 text-muted-foreground/50 cursor-default select-none" aria-disabled="true">
+            MCP
+            <span class="rounded bg-slate-blue-100 dark:bg-slate-blue-900/50 px-1.5 py-0.5 text-[0.625rem] font-medium uppercase tracking-wide text-slate-blue-600 dark:text-slate-blue-400">Soon</span>
+          </span>
           <a href="/docs/" class="hover:text-slate-blue-700 dark:hover:text-slate-blue-300 transition-colors">Docs</a>
           <a
             href="https://github.com/chris-c-thomas/LexBuild"

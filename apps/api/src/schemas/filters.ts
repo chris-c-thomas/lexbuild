@@ -20,7 +20,7 @@ export const uscFilterSchema = paginationSchema.extend({
   }),
 });
 
-export const cfrFilterSchema = paginationSchema.extend({
+export const ecfrFilterSchema = paginationSchema.extend({
   title_number: z.coerce.number().int().optional(),
   chapter_number: z.string().optional(),
   part_number: z.string().optional(),

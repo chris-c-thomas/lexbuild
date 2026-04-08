@@ -9,6 +9,7 @@ Astro.response.headers.set(
 );
 
 const siteUrl = import.meta.env.SITE_URL ?? "https://lexbuild.dev";
+const apiUrl = import.meta.env.API_URL ?? siteUrl;
 
 const seo: PageSEO = {
   title: "API Reference",
@@ -30,7 +31,7 @@ const seo: PageSEO = {
 ---
 
 <BaseLayout seo={seo}>
-  <ApiReference client:only="react" specUrl={`${siteUrl}/api/openapi.json`}>
+  <ApiReference client:only="react" specUrl={`${apiUrl}/api/openapi.json`}>
     <div slot="fallback" style="display: flex; align-items: center; justify-content: center; height: 16rem;">
       <p style="color: var(--muted-foreground);">Loading API reference...</p>
     </div>

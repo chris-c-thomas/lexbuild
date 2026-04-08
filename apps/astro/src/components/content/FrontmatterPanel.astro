@@ -351,7 +351,11 @@ const hasToggle = !!rawYaml;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--primary);
+    color: var(--color-summer-green-700, #487061);
+  }
+
+  :global(.dark) .frontmatter-label {
+    color: var(--color-summer-green-400, #98b8ab);
   }
 
   .frontmatter-value {

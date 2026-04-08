@@ -224,21 +224,143 @@ export const SCALAR_THEME_CSS = /* css */ `
   padding-bottom: 5rem !important;
 }
 
-/* "Show More" buttons: solid slate with lighter hover */
+/* ---- Section headings (tag names: System, U.S. Code, eCFR, etc.) ---- */
+.section-header h2 {
+  font-family: "IBM Plex Serif", serif !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  color: var(--scalar-color-1) !important;
+}
+
+/* Tag descriptions — refined body text under section headings */
+.section-header + p,
+.section-header ~ .section-description,
+.section-container > .section-content p:first-of-type {
+  font-size: 0.9375rem !important;
+  line-height: 1.65 !important;
+  color: var(--scalar-color-2) !important;
+}
+
+/* ---- Section dividers — subtle summer-green tinted top border ---- */
+.light-mode .section:not(:first-of-type) {
+  border-top: 1px solid #d3e4dc !important;
+}
+.dark-mode .section:not(:first-of-type) {
+  border-top: 1px solid #354b43 !important;
+}
+
+/* ---- Operation headings (Health Check, List Sources, etc.) ---- */
+.section-header h3 {
+  font-weight: 600 !important;
+  color: var(--scalar-color-1) !important;
+}
+
+/* Operation description text */
+.section-header h3 + p,
+.section-header ~ p {
+  color: var(--scalar-color-2) !important;
+  line-height: 1.6 !important;
+}
+
+/* ---- HTTP method badges (GET, POST, etc.) ---- */
+.badge {
+  font-family: "IBM Plex Mono", ui-monospace, monospace !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+}
+
+/* ---- Schema property names — medium weight for hierarchy ---- */
+.property-name,
+.property > .property-heading > span:first-child {
+  font-weight: 500 !important;
+  color: var(--scalar-color-1) !important;
+}
+
+/* ---- "required" labels — brand-tinted ---- */
+.required-badge,
+span.required {
+  color: #487061 !important;
+  font-weight: 600 !important;
+  font-size: 0.7rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+}
+.dark-mode .required-badge,
+.dark-mode span.required {
+  color: #98b8ab !important;
+}
+
+/* ---- Response status badges (200, 404) ---- */
+.response-status-code {
+  font-family: "IBM Plex Mono", ui-monospace, monospace !important;
+  font-weight: 600 !important;
+}
+
+/* ---- Scalar cards (right-column code blocks) — subtle brand border ---- */
+.scalar-card {
+  border: 1px solid var(--scalar-border-color) !important;
+}
+
+/* ---- Operations list card (the endpoint listing per section) ---- */
+.section-content .scalar-card {
+  border: 1px solid var(--scalar-border-color) !important;
+  background: var(--scalar-background-2) !important;
+}
+
+/* ---- "Show More" buttons: refined with subtle shadow ---- */
 .show-more {
   background: var(--scalar-color-accent) !important;
   color: #fff !important;
   border: 1px solid var(--scalar-color-accent) !important;
   border-radius: 3px !important;
-  padding: 0.375rem 1rem !important;
+  padding: 0.375rem 1.25rem !important;
   font-weight: 500 !important;
-  transition: opacity 0.15s !important;
+  font-size: 0.8125rem !important;
+  letter-spacing: 0.01em !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+  transition: opacity 0.15s, box-shadow 0.15s !important;
 }
 .show-more svg {
   color: #fff !important;
 }
 .show-more:hover {
-  opacity: 0.85 !important;
+  opacity: 0.9 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ---- Introduction section — branded heading + badge spacing ---- */
+.section-header h1 {
+  font-family: "IBM Plex Serif", serif !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.015em !important;
+  color: var(--scalar-color-1) !important;
+}
+
+/* Version/OAS badges above the title — add breathing room below */
+.section-header-label {
+  margin-bottom: 0.5rem !important;
+}
+
+/* ---- Sticky cards (right column) — subtle elevation ---- */
+.sticky-cards .scalar-card {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+.dark-mode .sticky-cards .scalar-card {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* ---- Schema type labels (string, number, boolean, etc.) ---- */
+.schema-type {
+  font-family: "IBM Plex Mono", ui-monospace, monospace !important;
+  font-size: 0.75rem !important;
+  color: var(--scalar-color-3) !important;
+}
+
+/* ---- Endpoint path in operation headers ---- */
+.endpoint-path,
+.operation-path {
+  font-family: "IBM Plex Mono", ui-monospace, monospace !important;
+  font-weight: 500 !important;
 }
 
 /* Hide Scalar's AI Agent button (requires Scalar Cloud subscription). */

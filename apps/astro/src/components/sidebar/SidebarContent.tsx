@@ -127,8 +127,8 @@ function FrSidebarContent({ currentPath }: { currentPath: string }) {
                       onClick={() => toggleYear(yearStr)}
                       className={`flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
                         isExpanded
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground border-l-2 border-summer-green-500"
+                          : "text-sidebar-foreground hover:bg-sidebar-accent/50 border-l-2 border-transparent"
                       }`}
                       aria-expanded={isExpanded}>
                       <ChevronRight
@@ -158,8 +158,8 @@ function FrSidebarContent({ currentPath }: { currentPath: string }) {
                                     href={`/fr/${yearStr}/${monthStr}`}
                                     className={`flex w-full items-center gap-1.5 rounded-md px-2 py-1 text-left text-[0.8rem] transition-colors ${
                                       isActiveMonth
-                                        ? "bg-sidebar-accent/70 text-sidebar-accent-foreground font-medium"
-                                        : "text-sidebar-foreground/80 hover:bg-sidebar-accent/40"
+                                        ? "bg-sidebar-accent/70 text-sidebar-accent-foreground font-medium border-l-2 border-summer-green-500"
+                                        : "text-sidebar-foreground/80 hover:bg-sidebar-accent/40 border-l-2 border-transparent"
                                     }`}>
                                     <span className="text-slate-blue-700 dark:text-slate-blue-400 shrink-0 font-mono text-[0.65rem] font-semibold">
                                       {monthStr}
@@ -479,8 +479,8 @@ function PartList({ parts, sourceId, titleDir, chapterDir, expandedPart, toggleP
               onClick={() => togglePart(part.directory)}
               className={`flex w-full items-center gap-1.5 rounded-md px-2 py-1 text-left text-xs transition-colors ${
                 isExpanded
-                  ? "bg-sidebar-accent/50 text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/30"
+                  ? "bg-sidebar-accent/50 text-sidebar-accent-foreground border-l-2 border-summer-green-500"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/30 border-l-2 border-transparent"
               }`}
               aria-expanded={isExpanded}>
               <ChevronRight

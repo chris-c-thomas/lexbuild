@@ -247,7 +247,7 @@ function FilterTab({
       onClick={onClick}
       className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
         active
-          ? "bg-slate-blue-600 dark:bg-slate-blue-500 dark:text-slate-blue-950 text-white"
+          ? "bg-summer-green-600 dark:bg-summer-green-500 dark:text-summer-green-950 text-white"
           : "text-muted-foreground hover:bg-muted hover:text-foreground"
       }`}>
       {label}

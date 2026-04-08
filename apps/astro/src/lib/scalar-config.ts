@@ -15,6 +15,7 @@ export const SCALAR_CONFIG: Partial<ApiReferenceConfiguration> = {
   theme: "none",
   withDefaultFonts: false,
   customCss: SCALAR_THEME_CSS,
+  defaultOpenFirstTag: false,
   defaultOpenAllTags: false,
   defaultHttpClient: { targetKey: "shell", clientKey: "curl" },
   hiddenClients: {

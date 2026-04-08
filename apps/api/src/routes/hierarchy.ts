@@ -41,7 +41,7 @@ function createTitleRoutes(sourceId: string, tag: string, urlPrefix: string) {
     method: "get",
     path: `/${urlPrefix}/titles`,
     tags: [tag],
-    summary: "List titles",
+    summary: "List Titles",
     description: `Returns all ${sourceId.toUpperCase()} titles with document and chapter counts.`,
     responses: {
       200: {
@@ -55,7 +55,7 @@ function createTitleRoutes(sourceId: string, tag: string, urlPrefix: string) {
     method: "get",
     path: `/${urlPrefix}/titles/{number}`,
     tags: [tag],
-    summary: "Get title detail",
+    summary: "Get Title",
     description: `Returns title metadata and chapter listing for the specified title.`,
     request: {
       params: z.object({
@@ -65,7 +65,7 @@ function createTitleRoutes(sourceId: string, tag: string, urlPrefix: string) {
     responses: {
       200: {
         content: { "application/json": { schema: titleDetailResponseSchema } },
-        description: "Title detail with chapters",
+        description: "Title metadata with chapters",
       },
       404: {
         content: { "application/json": { schema: errorResponseSchema } },
@@ -157,10 +157,10 @@ export function registerUscHierarchyRoutes(app: OpenAPIHono, db: Database.Databa
   });
 }
 
-/** Register CFR hierarchy browsing endpoints. */
-export function registerCfrHierarchyRoutes(app: OpenAPIHono, db: Database.Database): void {
-  const dbSource = URL_TO_DB_SOURCE["cfr"];
-  const { listTitlesRoute, getTitleRoute } = createTitleRoutes("cfr", "Code of Federal Regulations", "cfr");
+/** Register eCFR hierarchy browsing endpoints. */
+export function registerEcfrHierarchyRoutes(app: OpenAPIHono, db: Database.Database): void {
+  const dbSource = URL_TO_DB_SOURCE["ecfr"];
+  const { listTitlesRoute, getTitleRoute } = createTitleRoutes("ecfr", "eCFR", "ecfr");
 
   const listTitles = db.prepare(
     "SELECT title_number, title_name, count(*) as document_count, " +
@@ -197,7 +197,7 @@ export function registerCfrHierarchyRoutes(app: OpenAPIHono, db: Database.Databa
           document_count: r.document_count,
           chapter_count: r.chapter_count,
           positive_law: r.positive_law === 1,
-          url: `/api/cfr/titles/${r.title_number}`,
+          url: `/api/ecfr/titles/${r.title_number}`,
         })),
         meta: { api_version: "v1", timestamp: new Date().toISOString() },
       },
@@ -287,12 +287,12 @@ const listYearsRoute = createRoute({
   method: "get",
   path: "/fr/years",
   tags: ["Federal Register"],
-  summary: "List years",
+  summary: "List Years",
   description: "Returns all Federal Register publication years with document counts.",
   responses: {
     200: {
       content: { "application/json": { schema: yearsResponseSchema } },
-      description: "Year listing",
+      description: "Yearly Listing",
     },
   },
 });
@@ -301,15 +301,15 @@ const getYearRoute = createRoute({
   method: "get",
   path: "/fr/years/{year}",
   tags: ["Federal Register"],
-  summary: "Get year detail",
-  description: "Returns month breakdown for the specified year.",
+  summary: "Get Year",
+  description: "Returns monthly breakdown for the specified year.",
   request: {
     params: z.object({ year: z.coerce.number().int().openapi({ example: 2026 }) }),
   },
   responses: {
     200: {
       content: { "application/json": { schema: yearDetailResponseSchema } },
-      description: "Year detail with months",
+      description: "Yearly metadata per month",
     },
     404: {
       content: { "application/json": { schema: errorResponseSchema } },
@@ -322,7 +322,7 @@ const getMonthRoute = createRoute({
   method: "get",
   path: "/fr/years/{year}/{month}",
   tags: ["Federal Register"],
-  summary: "Get month documents",
+  summary: "Get Month",
   description: "Returns all Federal Register documents published in the specified month.",
   request: {
     params: z.object({
@@ -333,7 +333,7 @@ const getMonthRoute = createRoute({
   responses: {
     200: {
       content: { "application/json": { schema: monthDetailResponseSchema } },
-      description: "Month document listing",
+      description: "Monthly Listing",
     },
     404: {
       content: { "application/json": { schema: errorResponseSchema } },
@@ -366,15 +366,32 @@ export function registerFrHierarchyRoutes(app: OpenAPIHono, db: Database.Databas
       "ORDER BY publication_date ASC, document_number ASC",
   );
 
-  app.openapi(listYearsRoute, (c) => {
-    const rows = listYears.all() as Array<{ year: number; document_count: number }>;
+  app.openapi(getMonthRoute, (c) => {
+    const { year, month } = c.req.valid("param");
+    const monthStr = `${year}-${String(month).padStart(2, "0")}`;
+
+    const docs = monthDocuments.all(monthStr) as Array<{
+      id: string;
+      identifier: string;
+      document_number: string | null;
+      display_title: string;
+      document_type: string | null;
+      publication_date: string | null;
+      agency: string | null;
+    }>;
+
+    if (docs.length === 0) {
+      throw new HTTPException(404, { message: `No FR documents found for ${monthStr}` });
+    }
+
     return c.json(
       {
-        data: rows.map((r) => ({
-          year: r.year,
-          document_count: r.document_count,
-          url: `/api/fr/years/${r.year}`,
-        })),
+        data: {
+          year,
+          month,
+          document_count: docs.length,
+          documents: docs,
+        },
         meta: { api_version: "v1", timestamp: new Date().toISOString() },
       },
       200,
@@ -409,32 +426,15 @@ export function registerFrHierarchyRoutes(app: OpenAPIHono, db: Database.Databas
     );
   });
 
-  app.openapi(getMonthRoute, (c) => {
-    const { year, month } = c.req.valid("param");
-    const monthStr = `${year}-${String(month).padStart(2, "0")}`;
-
-    const docs = monthDocuments.all(monthStr) as Array<{
-      id: string;
-      identifier: string;
-      document_number: string | null;
-      display_title: string;
-      document_type: string | null;
-      publication_date: string | null;
-      agency: string | null;
-    }>;
-
-    if (docs.length === 0) {
-      throw new HTTPException(404, { message: `No FR documents found for ${monthStr}` });
-    }
-
+  app.openapi(listYearsRoute, (c) => {
+    const rows = listYears.all() as Array<{ year: number; document_count: number }>;
     return c.json(
       {
-        data: {
-          year,
-          month,
-          document_count: docs.length,
-          documents: docs,
-        },
+        data: rows.map((r) => ({
+          year: r.year,
+          document_count: r.document_count,
+          url: `/api/fr/years/${r.year}`,
+        })),
         meta: { api_version: "v1", timestamp: new Date().toISOString() },
       },
       200,
