@@ -28,6 +28,8 @@ interface MobileNavProps {
 export function MobileNav({ source, currentPath }: MobileNavProps) {
   const [open, setOpen] = useState(false);
   const [browseExpanded, setBrowseExpanded] = useState(false);
+  const [previewSource, setPreviewSource] = useState<SourceId | null>(null);
+  const activeSource = previewSource ?? source;
   const isDocsPage = currentPath.startsWith("/docs");
   const isSourcePage = !!source;
 
@@ -59,7 +61,7 @@ export function MobileNav({ source, currentPath }: MobileNavProps) {
               onClick={() => setBrowseExpanded((v) => !v)}
               className={cn(
                 "inline-flex items-center gap-0.5 text-sm font-medium transition-colors",
-                isSourcePage && !browseExpanded
+                activeSource
                   ? "text-sidebar-accent-foreground"
                   : "text-sidebar-foreground/70 hover:text-sidebar-foreground",
               )}>
@@ -88,28 +90,31 @@ export function MobileNav({ source, currentPath }: MobileNavProps) {
           {browseExpanded && (
             <div className="mt-2 flex flex-col gap-0.5 pl-1">
               {SOURCES.map((s) => (
-                <a
+                <button
                   key={s.id}
-                  href={s.href}
-                  onClick={() => setOpen(false)}
+                  type="button"
+                  onClick={() => {
+                    setPreviewSource(s.id);
+                    setBrowseExpanded(false);
+                  }}
                   className={cn(
-                    "rounded-md px-3 py-1.5 text-sm transition-colors",
-                    source === s.id
+                    "rounded-md px-3 py-1.5 text-left text-sm transition-colors",
+                    activeSource === s.id
                       ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                       : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
                   )}>
                   {s.label}
-                </a>
+                </button>
               ))}
             </div>
           )}
         </nav>
 
         {/* Content area */}
-        {isDocsPage ? (
+        {isDocsPage && !activeSource ? (
           <DocsSidebar currentPath={currentPath} />
-        ) : isSourcePage ? (
-          <SidebarContent sourceId={source} currentPath={currentPath} />
+        ) : activeSource ? (
+          <SidebarContent sourceId={activeSource} currentPath={currentPath} />
         ) : null}
 
         {/* Minimal footer */}
