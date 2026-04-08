@@ -1,5 +1,11 @@
 # @lexbuild/core
 
+## 1.21.1
+
+### Patch Changes
+
+- 3b3455b: Revise comments
+
 ## 1.19.0
 
 ### Minor Changes
