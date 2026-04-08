@@ -1,16 +1,10 @@
 /**
- * Reads the package version from package.json at runtime.
- * Avoids hardcoding the version in multiple places.
+ * Package version, injected at build time by tsup via `define`.
+ * Avoids runtime filesystem reads that break when bundled output
+ * moves relative to package.json.
  */
-import { createRequire } from "node:module";
+declare const __PKG_VERSION__: string | undefined;
 
-const require = createRequire(import.meta.url);
-
-interface PackageJson {
-  version: string;
-}
-
-const pkg: PackageJson = require("../../package.json") as PackageJson;
-
-/** The current package version from package.json. */
-export const VERSION: string = pkg.version;
+/** The current package version, injected at build time. */
+export const VERSION: string =
+  typeof __PKG_VERSION__ !== "undefined" ? __PKG_VERSION__ : "0.0.0-dev";
