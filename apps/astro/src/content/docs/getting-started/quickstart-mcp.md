@@ -10,7 +10,7 @@ Give your AI assistant direct access to the U.S. Code, Code of Federal Regulatio
 
 ## Prerequisites
 
-- [Claude Desktop](https://claude.ai/download), [Claude Code](https://claude.ai/claude-code), or another MCP-compatible client
+- [Claude Desktop](https://claude.ai/download), [Claude Code](https://claude.ai/claude-code), [Codex CLI](https://developers.openai.com/codex/cli), [Gemini CLI](https://geminicli.com/), [VS Code](https://code.visualstudio.com/), [Zed](https://zed.dev/),  or another MCP-compatible client
 - Node.js 22 or later
 
 ## 1. Configure Your Client
