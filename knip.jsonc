@@ -24,6 +24,10 @@
       "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"],
     },
+    "packages/mcp": {
+      "entry": ["src/index.ts", "src/bin/stdio.ts", "src/bin/http.ts"],
+      "project": ["src/**/*.ts"],
+    },
   },
   "ignore": [
     "apps/astro/scripts/**",

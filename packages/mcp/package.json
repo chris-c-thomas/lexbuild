@@ -1,0 +1,76 @@
+{
+  "name": "@lexbuild/mcp",
+  "version": "1.22.0",
+  "description": "Model Context Protocol server for LexBuild. Exposes U.S. legal sources to AI agents.",
+  "author": "Chris Thomas",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chris-c-thomas/LexBuild.git",
+    "directory": "packages/mcp"
+  },
+  "homepage": "https://github.com/chris-c-thomas/LexBuild/tree/main/packages/mcp",
+  "bugs": {
+    "url": "https://github.com/chris-c-thomas/LexBuild/issues"
+  },
+  "keywords": [
+    "lexbuild",
+    "mcp",
+    "model-context-protocol",
+    "legal-tech",
+    "law",
+    "rag",
+    "llm",
+    "ai-agents",
+    "us-code",
+    "cfr",
+    "federal-register"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "lexbuild-mcp": "dist/bin/stdio.js",
+    "lexbuild-mcp-http": "dist/bin/http.js"
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "inspect": "npx @modelcontextprotocol/inspector node dist/bin/stdio.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.0",
+    "hono": "^4.7.0",
+    "@hono/node-server": "^1.13.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.2",
+    "tsup": "^8",
+    "typescript": "^5.8",
+    "vitest": "^3"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

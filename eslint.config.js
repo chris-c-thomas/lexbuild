@@ -29,8 +29,8 @@ export default tseslint.config(
         {
           patterns: [
             {
-              group: ["@lexbuild/usc", "@lexbuild/ecfr", "@lexbuild/fr", "@lexbuild/cli"],
-              message: "core must not import from source packages",
+              group: ["@lexbuild/usc", "@lexbuild/ecfr", "@lexbuild/fr", "@lexbuild/cli", "@lexbuild/mcp"],
+              message: "core must not import from source or adapter packages",
             },
           ],
         },
@@ -45,7 +45,7 @@ export default tseslint.config(
         {
           patterns: [
             {
-              group: ["@lexbuild/ecfr", "@lexbuild/fr", "@lexbuild/cli"],
+              group: ["@lexbuild/ecfr", "@lexbuild/fr", "@lexbuild/cli", "@lexbuild/mcp"],
               message: "source packages must not import from each other",
             },
           ],
@@ -61,7 +61,7 @@ export default tseslint.config(
         {
           patterns: [
             {
-              group: ["@lexbuild/usc", "@lexbuild/fr", "@lexbuild/cli"],
+              group: ["@lexbuild/usc", "@lexbuild/fr", "@lexbuild/cli", "@lexbuild/mcp"],
               message: "source packages must not import from each other",
             },
           ],
@@ -77,8 +77,25 @@ export default tseslint.config(
         {
           patterns: [
             {
-              group: ["@lexbuild/usc", "@lexbuild/ecfr", "@lexbuild/cli"],
+              group: ["@lexbuild/usc", "@lexbuild/ecfr", "@lexbuild/cli", "@lexbuild/mcp"],
               message: "source packages must not import from each other",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  // packages/mcp/ restrictions — fully independent, no internal deps
+  {
+    files: ["packages/mcp/src/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@lexbuild/core", "@lexbuild/usc", "@lexbuild/ecfr", "@lexbuild/fr", "@lexbuild/cli"],
+              message: "MCP package must not import internal packages",
             },
           ],
         },
@@ -97,6 +114,7 @@ export default tseslint.config(
             { group: ["@lexbuild/ecfr*"], message: "API app must not import source packages" },
             { group: ["@lexbuild/fr*"], message: "API app must not import source packages" },
             { group: ["@lexbuild/cli*"], message: "API app must not import CLI package" },
+            { group: ["@lexbuild/mcp*"], message: "API app must not import MCP package" },
           ],
         },
       ],

@@ -1,5 +1,19 @@
 # @lexbuild/cli
 
+## 1.22.0
+
+### Minor Changes
+
+- Add @lexbuild/mcp package — Model Context Protocol server for LexBuild
+
+### Patch Changes
+
+- Updated dependencies
+  - @lexbuild/core@1.22.0
+  - @lexbuild/usc@1.22.0
+  - @lexbuild/ecfr@1.22.0
+  - @lexbuild/fr@1.22.0
+
 ## 1.19.0
 
 ### Minor Changes

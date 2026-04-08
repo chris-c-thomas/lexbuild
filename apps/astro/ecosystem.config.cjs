@@ -89,6 +89,36 @@ module.exports = {
       kill_timeout: 5000,
     },
     {
+      name: "lexbuild-mcp",
+      cwd: "/home/ubuntu/lexbuild/packages/mcp",
+      script: "./dist/bin/http.js",
+      env: {
+        NODE_ENV: "production",
+        LEXBUILD_API_URL: "http://127.0.0.1:4322",
+        LEXBUILD_API_KEY: process.env.LEXBUILD_MCP_API_KEY || "",
+        LEXBUILD_MCP_HTTP_PORT: "3030",
+        LEXBUILD_MCP_HTTP_HOST: "127.0.0.1",
+        LEXBUILD_MCP_ENV: "production",
+      },
+      instances: 1,
+      exec_mode: "fork",
+
+      // Logging
+      out_file: `${LOG_DIR}/mcp-out.log`,
+      error_file: `${LOG_DIR}/mcp-error.log`,
+      log_date_format: "YYYY-MM-DD HH:mm:ss",
+      merge_logs: true,
+
+      // Stability
+      max_memory_restart: "512M",
+      max_restarts: 10,
+      min_uptime: "10s",
+      restart_delay: 1000,
+      exp_backoff_restart_delay: 100,
+
+      kill_timeout: 5000,
+    },
+    {
       name: "lexbuild-api",
       cwd: "/home/ubuntu/lexbuild/apps/api",
       script: "./dist/index.js",
