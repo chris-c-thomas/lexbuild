@@ -24,7 +24,7 @@ export function resolveIdentifier(source: string, raw: string): string {
 
   if (decoded.startsWith("/us/")) return decoded;
 
-  const prefix = source === "cfr" ? "/us/cfr/" : source === "fr" ? "/us/fr/" : `/us/${source}/`;
+  const prefix = source === "ecfr" ? "/us/cfr/" : source === "fr" ? "/us/fr/" : `/us/${source}/`;
   return `${prefix}${decoded}`;
 }
 

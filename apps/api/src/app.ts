@@ -9,11 +9,11 @@ import { rateLimitMiddleware } from "./middleware/rate-limit.js";
 import { registerHealthRoutes } from "./routes/health.js";
 import { registerSourceRoutes } from "./routes/sources.js";
 import { registerUscRoutes } from "./routes/usc.js";
-import { registerCfrRoutes } from "./routes/cfr.js";
+import { registerEcfrRoutes } from "./routes/ecfr.js";
 import { registerFrRoutes } from "./routes/fr.js";
 import {
   registerUscHierarchyRoutes,
-  registerCfrHierarchyRoutes,
+  registerEcfrHierarchyRoutes,
   registerFrHierarchyRoutes,
 } from "./routes/hierarchy.js";
 import { registerStatsRoutes } from "./routes/stats.js";
@@ -48,10 +48,10 @@ export function createApp(config: AppConfig): OpenAPIHono {
   registerHealthRoutes(v1, db);
   registerSourceRoutes(v1, db);
   registerUscRoutes(v1, db);
-  registerCfrRoutes(v1, db);
+  registerEcfrRoutes(v1, db);
   registerFrRoutes(v1, db);
   registerUscHierarchyRoutes(v1, db);
-  registerCfrHierarchyRoutes(v1, db);
+  registerEcfrHierarchyRoutes(v1, db);
   registerFrHierarchyRoutes(v1, db);
   registerStatsRoutes(v1, db);
 
@@ -73,6 +73,31 @@ export function createApp(config: AppConfig): OpenAPIHono {
       { url: "https://lexbuild.dev/api", description: "Production" },
     ],
     security: [{ apiKey: [] }],
+    tags: [
+      {
+        name: "System",
+        description: "Health checks, available official data sources, and corpus-wide statistics.",
+      },
+      {
+        name: "U.S. Code",
+        description:
+          "Browse and retrieve sections from the United States Code, provided by the Office of the Law Revision Counsel, organized by title and chapter.",
+      },
+      {
+        name: "eCFR",
+        description:
+          "Browse and retrieve sections from the Electronic Code of Federal Regulations, provided by the Government Publishing Office, organized by title and chapter.",
+      },
+      {
+        name: "Federal Register",
+        description:
+          "Browse and retrieve Federal Register documents, provided by the Government Publishing Office, organized by year and month.",
+      },
+      {
+        name: "Search",
+        description: "Full-text search across all sources with faceted filtering.",
+      },
+    ],
   });
 
   // API reference UI now lives in the Astro app at /docs/api.

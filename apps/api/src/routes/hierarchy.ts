@@ -157,10 +157,10 @@ export function registerUscHierarchyRoutes(app: OpenAPIHono, db: Database.Databa
   });
 }
 
-/** Register CFR hierarchy browsing endpoints. */
-export function registerCfrHierarchyRoutes(app: OpenAPIHono, db: Database.Database): void {
-  const dbSource = URL_TO_DB_SOURCE["cfr"];
-  const { listTitlesRoute, getTitleRoute } = createTitleRoutes("cfr", "Code of Federal Regulations", "cfr");
+/** Register eCFR hierarchy browsing endpoints. */
+export function registerEcfrHierarchyRoutes(app: OpenAPIHono, db: Database.Database): void {
+  const dbSource = URL_TO_DB_SOURCE["ecfr"];
+  const { listTitlesRoute, getTitleRoute } = createTitleRoutes("ecfr", "eCFR", "ecfr");
 
   const listTitles = db.prepare(
     "SELECT title_number, title_name, count(*) as document_count, " +
@@ -197,7 +197,7 @@ export function registerCfrHierarchyRoutes(app: OpenAPIHono, db: Database.Databa
           document_count: r.document_count,
           chapter_count: r.chapter_count,
           positive_law: r.positive_law === 1,
-          url: `/api/cfr/titles/${r.title_number}`,
+          url: `/api/ecfr/titles/${r.title_number}`,
         })),
         meta: { api_version: "v1", timestamp: new Date().toISOString() },
       },

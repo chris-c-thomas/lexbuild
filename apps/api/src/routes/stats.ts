@@ -13,7 +13,7 @@ const statsResponseSchema = z.object({
         title_count: z.number(),
         last_updated: z.string().nullable(),
       }),
-      cfr: z.object({
+      ecfr: z.object({
         document_count: z.number(),
         title_count: z.number(),
         last_updated: z.string().nullable(),
@@ -61,7 +61,7 @@ export function registerStatsRoutes(app: OpenAPIHono, db: Database.Database): vo
       "max(last_updated) as last_updated FROM documents WHERE source = 'usc'",
   );
 
-  const cfrStats = db.prepare(
+  const ecfrStats = db.prepare(
     "SELECT count(*) as document_count, count(DISTINCT title_number) as title_count, " +
       "max(last_updated) as last_updated FROM documents WHERE source = 'ecfr'",
   );
@@ -80,7 +80,7 @@ export function registerStatsRoutes(app: OpenAPIHono, db: Database.Database): vo
   app.openapi(statsRoute, (c) => {
     const { total } = totalCount.get() as { total: number };
     const usc = uscStats.get() as { document_count: number; title_count: number; last_updated: string | null };
-    const cfr = cfrStats.get() as { document_count: number; title_count: number; last_updated: string | null };
+    const ecfr = ecfrStats.get() as { document_count: number; title_count: number; last_updated: string | null };
     const fr = frStats.get() as { document_count: number; earliest: string | null; latest: string | null };
     const docTypes = frDocTypes.all() as Array<{ document_type: string; count: number }>;
 
@@ -98,10 +98,10 @@ export function registerStatsRoutes(app: OpenAPIHono, db: Database.Database): vo
             title_count: usc.title_count,
             last_updated: usc.last_updated,
           },
-          cfr: {
-            document_count: cfr.document_count,
-            title_count: cfr.title_count,
-            last_updated: cfr.last_updated,
+          ecfr: {
+            document_count: ecfr.document_count,
+            title_count: ecfr.title_count,
+            last_updated: ecfr.last_updated,
           },
           fr: {
             document_count: fr.document_count,

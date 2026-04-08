@@ -1,5 +1,5 @@
 /** API-facing source identifier (used in URLs). */
-export type ApiSourceId = "usc" | "cfr" | "fr";
+export type ApiSourceId = "usc" | "ecfr" | "fr";
 
 /** Database-facing source value (stored in the documents table). */
 export type DbSource = "usc" | "ecfr" | "fr";
@@ -32,12 +32,12 @@ export const API_SOURCES: Record<ApiSourceId, ApiSourceConfig> = {
     sortableFields: ["title_number", "section_number", "identifier", "last_updated"],
     hasTitles: true,
   },
-  cfr: {
-    id: "cfr",
-    name: "Code of Federal Regulations",
-    shortName: "CFR",
-    description: "Federal agency regulations organized into 50 titles.",
-    urlPrefix: "/cfr",
+  ecfr: {
+    id: "ecfr",
+    name: "eCFR",
+    shortName: "eCFR",
+    description: "Electronic Code of Federal Regulations, updated continuously by the Government Publishing Office.",
+    urlPrefix: "/ecfr",
     hierarchy: ["title", "chapter", "part", "section"],
     filterableFields: ["title_number", "chapter_number", "part_number", "agency", "status", "legal_status"],
     sortableFields: ["title_number", "section_number", "identifier", "last_updated"],
@@ -58,17 +58,18 @@ export const API_SOURCES: Record<ApiSourceId, ApiSourceConfig> = {
 
 /**
  * Maps API URL source identifiers to database source values.
- * The API uses `/cfr/` (content type) but the database stores `source = "ecfr"` (data source).
+ * Currently 1:1 — both API and database use "ecfr". When Annual CFR is added,
+ * it will use a different API source ID (e.g., "cfr") mapping to its own DB source.
  */
 const URL_TO_DB: Record<ApiSourceId, DbSource> = {
   usc: "usc",
-  cfr: "ecfr",
+  ecfr: "ecfr",
   fr: "fr",
 };
 
 const DB_TO_API: Record<DbSource, ApiSourceId> = {
   usc: "usc",
-  ecfr: "cfr",
+  ecfr: "ecfr",
   fr: "fr",
 };
 

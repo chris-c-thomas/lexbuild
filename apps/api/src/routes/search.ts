@@ -41,8 +41,7 @@ function buildMeiliFilter(params: z.infer<typeof searchQuerySchema>): string | u
   const filters: string[] = [];
 
   if (params.source) {
-    const dbSource = params.source === "cfr" ? "ecfr" : params.source;
-    filters.push(`source = "${dbSource}"`);
+    filters.push(`source = "${params.source}"`);
   }
 
   if (params.title_number !== undefined) {
