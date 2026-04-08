@@ -85,6 +85,23 @@ export default tseslint.config(
       ],
     },
   },
+  // packages/mcp/ restrictions — fully independent, no internal deps
+  {
+    files: ["packages/mcp/src/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@lexbuild/core", "@lexbuild/usc", "@lexbuild/ecfr", "@lexbuild/fr", "@lexbuild/cli"],
+              message: "MCP package must not import internal packages",
+            },
+          ],
+        },
+      ],
+    },
+  },
   // apps/api/ restrictions
   {
     files: ["apps/api/src/**/*.ts"],
