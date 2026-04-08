@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.21.1]
+
+### Changed
+
+- Revise comments across the monorepo for production quality: remove redundant comments, fix orphaned docblock in core AST builder, add explaining comment for eCFR duplicate section detection, extract magic number in API rate limiter
+- Add file-level docblock to API app factory (`apps/api/src/app.ts`)
+- Update fixture files with version bump
+- Update CLAUDE.md files
+
+## [1.21.0]
+
+### Added
+
+- MCP integration placeholder in docs and API
+- Summer-green accent color across the Astro site
+
+### Changed
+
+- Renamed `/cfr/` API routes to `/ecfr/` for future Annual CFR disambiguation
+- Refactored Scalar API reference into standalone config file (`scalar-config.ts`) to match localhost dev workflow
+- Various Scalar API docs styling and layout improvements
+- Reverted select UI styles back to slate blue accent
+- Simplified API endpoint names
+
+### Fixed
+
+- Scalar API client modal positioning and overlay behavior
+- Generator output version field in frontmatter
+- Test fixture snapshot alignment
+
 ## [1.20.1]
 
 ### Changed
@@ -14,7 +44,7 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 
 ### Fixed
 
-- Resolved 10 Dependabot vulnerabilities via pnpm overrides (dompurify ^3.3.2, vite ^7.3.2, defu ^6.1.5)a
+- Resolved 10 Dependabot vulnerabilities via pnpm overrides (dompurify ^3.3.2, vite ^7.3.2, defu ^6.1.5)
 
 ## [1.20.0]
 

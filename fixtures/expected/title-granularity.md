@@ -9,7 +9,7 @@ positive_law: true
 currency: "unknown"
 last_updated: "2025-12-03"
 format_version: "1.1.0"
-generator: "lexbuild@1.21.0"
+generator: "lexbuild@1.21.1"
 chapter_count: 1
 section_count: 1
 total_token_estimate: 77

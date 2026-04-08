@@ -13,7 +13,7 @@ positive_law: true
 currency: "unknown"
 last_updated: "2025-12-03"
 format_version: "1.1.0"
-generator: "lexbuild@1.21.0"
+generator: "lexbuild@1.21.1"
 source_credit: "(Pub. L. 92–463, § 4, Oct. 6, 1972.)"
 ---
 
