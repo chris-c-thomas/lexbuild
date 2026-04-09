@@ -55,8 +55,7 @@ export function registerResources(server: McpServer, deps: ServerDeps): void {
     "cfr_section",
     new ResourceTemplate("lexbuild://us/cfr/t{title}/s{section}", { list: undefined }),
     {
-      description:
-        "A single section of the Code of Federal Regulations, returned as Markdown.",
+      description: "A single section of the Code of Federal Regulations, returned as Markdown.",
       mimeType: "text/markdown",
     },
     async (uri) => fetchResource(uri, deps),

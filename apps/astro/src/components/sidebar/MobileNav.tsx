@@ -73,9 +73,7 @@ export function MobileNav({ source, currentPath }: MobileNavProps) {
                   : "text-sidebar-foreground/70 hover:text-sidebar-foreground",
               )}>
               Browse
-              <ChevronDown
-                className={cn("size-3.5 transition-transform", browseExpanded && "rotate-180")}
-              />
+              <ChevronDown className={cn("size-3.5 transition-transform", browseExpanded && "rotate-180")} />
             </button>
             {NAV_LINKS.map((link) => {
               const isActive =

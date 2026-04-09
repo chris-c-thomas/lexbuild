@@ -137,7 +137,10 @@ const meiliSearchKey = isProxyMode ? undefined : (import.meta.env.MEILI_SEARCH_K
               href="/docs/"
               class:list={[
                 "nav-link inline-flex items-center gap-1.5 transition-colors",
-                currentPath.startsWith("/docs") && currentPath !== "/docs/api" && !currentPath.startsWith("/docs/cli") && !currentPath.startsWith("/docs/mcp")
+                currentPath.startsWith("/docs") &&
+                currentPath !== "/docs/api" &&
+                !currentPath.startsWith("/docs/cli") &&
+                !currentPath.startsWith("/docs/mcp")
                   ? "text-foreground font-semibold"
                   : "text-muted-foreground hover:text-slate-blue-700 dark:hover:text-slate-blue-300",
               ]}>
@@ -209,7 +212,11 @@ const meiliSearchKey = isProxyMode ? undefined : (import.meta.env.MEILI_SEARCH_K
             CLI
           </a>
           <a href="/docs/api" class="hover:text-slate-blue-700 dark:hover:text-slate-blue-300 transition-colors">API</a>
-          <a href="/docs/mcp/overview" class="hover:text-slate-blue-700 dark:hover:text-slate-blue-300 transition-colors">MCP</a>
+          <a
+            href="/docs/mcp/overview"
+            class="hover:text-slate-blue-700 dark:hover:text-slate-blue-300 transition-colors">
+            MCP
+          </a>
           <a href="/docs/" class="hover:text-slate-blue-700 dark:hover:text-slate-blue-300 transition-colors">Docs</a>
           <a
             href="https://github.com/chris-c-thomas/LexBuild"

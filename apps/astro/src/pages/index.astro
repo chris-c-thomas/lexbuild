@@ -136,7 +136,9 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
         U.S. Legal Texts as Structured Markdown
       </p>
       <p class="text-ink-muted mx-auto mb-7 max-w-[796px] text-[15px] leading-relaxed">
-        An open-source toolchain for turning U.S. legal codes and regulations into per-section Markdown, served through a searchable web resource, REST API, and MCP server. Built for LLMs, agentic workflows, RAG pipelines, and semantic search.
+        An open-source toolchain for turning U.S. legal codes and regulations into per-section Markdown, served through
+        a searchable web resource, REST API, and MCP server. Built for LLMs, agentic workflows, RAG pipelines, and
+        semantic search.
       </p>
       <div
         class="text-slate-blue-700 dark:text-slate-blue-400 mb-8 flex items-center justify-center gap-2 text-[14px] font-medium">
@@ -338,7 +340,9 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           How It Works
         </h2>
         <p class="text-ink-muted text-[15px]">
-          U.S. legal codes and regulations, parsed into a typed AST and rendered as per-section Markdown. Ingested from official government sources, stored in SQLite, indexed in Meilisearch, and served through a web resource, REST API, and MCP server.
+          U.S. legal codes and regulations, parsed into a typed AST and rendered as per-section Markdown. Ingested from
+          official government sources, stored in SQLite, indexed in Meilisearch, and served through a web resource, REST
+          API, and MCP server.
         </p>
       </div>
 
@@ -1277,7 +1281,9 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           Packages
         </h2>
         <p class="text-ink-muted text-[15px]">
-          The library layer of the monorepo, versioned and released in lock-step across all packages. Source-specific parsers depend on a shared core engine but not on each other, so new sources can be added without modifying existing ones.
+          The library layer of the monorepo, versioned and released in lock-step across all packages. Source-specific
+          parsers depend on a shared core engine but not on each other, so new sources can be added without modifying
+          existing ones.
         </p>
       </div>
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -1302,7 +1308,8 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           </div>
           <div class="mb-1 text-[13px] font-semibold">CLI Tool</div>
           <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
-            The single entry point that drives the full pipeline. Fetches source data, invokes the matching parser, and writes per-section Markdown to disk.
+            The single entry point that drives the full pipeline. Fetches source data, invokes the matching parser, and
+            writes per-section Markdown to disk.
           </p>
           <div
             class="text-summer-green-700 dark:text-summer-green-500 mt-auto pt-2.5 font-mono text-[12px] font-semibold">
@@ -1330,7 +1337,8 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           </div>
           <div class="mb-1 text-[13px] font-semibold">Core Engine</div>
           <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
-            The source-agnostic AST pipeline every parser depends on. Streaming tokenizer, typed AST, Markdown renderer, YAML frontmatter, and cross-reference resolution.
+            The source-agnostic AST pipeline every parser depends on. Streaming tokenizer, typed AST, Markdown renderer,
+            YAML frontmatter, and cross-reference resolution.
           </p>
           <div
             class="text-summer-green-700 dark:text-summer-green-500 mt-auto pt-2.5 font-mono text-[12px] font-semibold">
@@ -1358,7 +1366,8 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           </div>
           <div class="mb-1 text-[13px] font-semibold">MCP Server</div>
           <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
-            Exposes the corpus to MCP-compatible clients as tools, resources, and prompts. Lets agents and AI-native editors query and retrieve sections without a custom integration.
+            Exposes the corpus to MCP-compatible clients as tools, resources, and prompts. Lets agents and AI-native
+            editors query and retrieve sections without a custom integration.
           </p>
           <div
             class="text-summer-green-700 dark:text-summer-green-500 mt-auto pt-2.5 font-mono text-[12px] font-semibold">
@@ -1386,7 +1395,8 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           </div>
           <div class="mb-1 text-[13px] font-semibold">U.S. Code Parser</div>
           <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
-            USLM 1.0 parser for U.S. Code titles published by the Office of the Law Revision Counsel. Handles both positive-law and prima facie titles.
+            USLM 1.0 parser for U.S. Code titles published by the Office of the Law Revision Counsel. Handles both
+            positive-law and prima facie titles.
           </p>
           <div
             class="text-summer-green-700 dark:text-summer-green-500 mt-auto pt-2.5 font-mono text-[12px] font-semibold">
@@ -1414,7 +1424,8 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           </div>
           <div class="mb-1 text-[13px] font-semibold">eCFR Parser</div>
           <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
-            Pulls data from the ecfr.gov versioner API, with GovInfo bulk as a fallback when the API is unavailable. Handles the GPO-style DIV-based hierarchy and SGML schema.
+            Pulls data from the ecfr.gov versioner API, with GovInfo bulk as a fallback when the API is unavailable.
+            Handles the GPO-style DIV-based hierarchy and SGML schema.
           </p>
           <div
             class="text-summer-green-700 dark:text-summer-green-500 mt-auto pt-2.5 font-mono text-[12px] font-semibold">
@@ -1442,7 +1453,8 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           </div>
           <div class="mb-1 text-[13px] font-semibold">Federal Register Parser</div>
           <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
-            Parses Federal Register publications from federalregister.gov, covering final rules, proposed rules, notices, and presidential documents.
+            Parses Federal Register publications from federalregister.gov, covering final rules, proposed rules,
+            notices, and presidential documents.
           </p>
           <div
             class="text-summer-green-700 dark:text-summer-green-500 mt-auto pt-2.5 font-mono text-[12px] font-semibold">
