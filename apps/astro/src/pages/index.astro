@@ -133,21 +133,19 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
         LexBuild
       </h1>
       <p class="font-display text-slate-blue-700 dark:text-slate-blue-300 mb-6 text-2xl font-medium tracking-tight">
-        U.S. Legal Text as Structured Markdown
+        U.S. Legal Texts as Structured Markdown
       </p>
       <p class="text-ink-muted mx-auto mb-7 max-w-[796px] text-[15px] leading-relaxed">
-        An open-source CLI toolchain, searchable web resource, and data API for U.S. federal, state and other legal
-        texts. Convert official source data into structured Markdown built for LLMs, agentic workflows, RAG pipelines,
-        and semantic search systems.
+        An open-source toolchain for turning U.S. legal codes and regulations into per-section Markdown, served through a searchable web resource, REST API, and MCP server. Built for LLMs, agentic workflows, RAG pipelines, and semantic search.
       </p>
       <div
         class="text-slate-blue-700 dark:text-slate-blue-400 mb-8 flex items-center justify-center gap-2 text-[14px] font-medium">
         <span class="font-bold whitespace-nowrap">1.05M+ Documents</span>
         <div class="bg-slate-blue-500 dark:bg-slate-blue-600 h-3.5 w-px"></div>
-        <span class="font-bold whitespace-nowrap">Updated Daily</span>
+        <span class="font-bold whitespace-nowrap">Continuously Updated</span>
         <div class="bg-slate-blue-500 dark:bg-slate-blue-600 h-3.5 w-px"></div>
 
-        <span class="font-bold whitespace-nowrap">MIT Open Source</span>
+        <span class="font-bold whitespace-nowrap">MIT Licensed</span>
       </div>
       <div class="flex flex-wrap items-center justify-center gap-3">
         <a
@@ -252,7 +250,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
       </div>
       <div class="mt-5 flex justify-center">
         <a
-          href="https://github.com/chris-c-thomas/LexBuild/blob/main/docs/reference/cli-reference.md"
+          href="/docs/cli/installation"
           class="text-slate-blue-800 border-slate-blue-300 hover:border-slate-blue-500 hover:bg-slate-blue-50 dark:bg-slate-blue-900 dark:text-slate-blue-200 dark:border-slate-blue-700 dark:hover:border-slate-blue-500 dark:hover:bg-slate-blue-800 inline-flex cursor-pointer items-center gap-2 rounded-sm border bg-white px-5 py-2.5 text-sm font-semibold transition-all duration-150">
           <svg
             class="h-4 w-4"
@@ -340,8 +338,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           How It Works
         </h2>
         <p class="text-ink-muted text-[15px]">
-          The CLI toolchain converts source data to structured Markdown. The web resource and data API make it
-          browsable, searchable, and programmatically accessible.
+          U.S. legal codes and regulations, parsed into a typed AST and rendered as per-section Markdown. Ingested from official government sources, stored in SQLite, indexed in Meilisearch, and served through a web resource, REST API, and MCP server.
         </p>
       </div>
 
@@ -351,7 +348,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
         <div
           class="bg-slate-blue-50 dark:bg-slate-blue-900 border-slate-blue-200 dark:border-slate-blue-700 flex flex-wrap items-center gap-2.5 border-b px-4 py-3">
           <div
-            class="bg-slate-blue-200 dark:bg-slate-blue-800 text-slate-blue-700 dark:text-summer-green-400 flex size-9 shrink-0 items-center justify-center rounded-md">
+            class="bg-slate-blue-200 dark:bg-slate-blue-800 text-slate-blue-700 dark:text-slate-blue-300 flex size-9 shrink-0 items-center justify-center rounded-md">
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -458,7 +455,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
                     </div>
                     <div class="flex items-center gap-1.5">
                       <a
-                        class="text-slate-blue-600 dark:text-slate-blue-400 text-[0.6875rem] hover:underline"
+                        class="text-slate-blue-700 dark:text-slate-blue-400 text-[0.6875rem] hover:underline"
                         href="https://uscode.house.gov">
                         uscode.house.gov
                       </a>
@@ -466,9 +463,9 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
                   </div>
                 </div>
                 <div
-                  class="border-summer-green-300 dark:border-summer-green-700 dark:bg-card flex flex-1 items-center gap-2.5 rounded-[calc(var(--radius)-2px)] border bg-white px-3 py-2.5">
+                  class="border-lavender-300 dark:border-lavender-700 dark:bg-card flex flex-1 items-center gap-2.5 rounded-[calc(var(--radius)-2px)] border bg-white px-3 py-2.5">
                   <div
-                    class="bg-summer-green-100 text-summer-green-700 dark:bg-summer-green-900 dark:text-summer-green-300 flex size-8 shrink-0 items-center justify-center rounded-md">
+                    class="bg-lavender-100 text-lavender-700 dark:bg-lavender-900 dark:text-lavender-300 flex size-8 shrink-0 items-center justify-center rounded-md">
                     <svg
                       viewBox="0 0 24 24"
                       fill="none"
@@ -493,7 +490,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
                     </div>
                     <div class="flex items-center gap-1.5">
                       <a
-                        class="text-slate-blue-600 dark:text-slate-blue-400 text-[0.6875rem] hover:underline"
+                        class="text-lavender-700 dark:text-lavender-400 text-[0.6875rem] hover:underline"
                         href="https://www.ecfr.gov">
                         ecfr.gov
                       </a>
@@ -501,9 +498,9 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
                   </div>
                 </div>
                 <div
-                  class="border-lavender-300 dark:border-lavender-700 dark:bg-card flex flex-1 items-center gap-2.5 rounded-[calc(var(--radius)-2px)] border bg-white px-3 py-2.5">
+                  class="border-juniper-300 dark:border-juniper-700 dark:bg-card flex flex-1 items-center gap-2.5 rounded-[calc(var(--radius)-2px)] border bg-white px-3 py-2.5">
                   <div
-                    class="bg-lavender-100 text-lavender-700 dark:bg-lavender-900 dark:text-lavender-400 flex size-8 shrink-0 items-center justify-center rounded-md">
+                    class="bg-juniper-100 text-juniper-700 dark:bg-juniper-900 dark:text-juniper-300 flex size-8 shrink-0 items-center justify-center rounded-md">
                     <svg
                       viewBox="0 0 24 24"
                       fill="none"
@@ -528,7 +525,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
                     </div>
                     <div class="flex items-center gap-1.5">
                       <a
-                        class="text-slate-blue-600 dark:text-slate-blue-400 text-[0.6875rem] hover:underline"
+                        class="text-juniper-700 dark:text-juniper-400 text-[0.6875rem] hover:underline"
                         href="https://www.federalregister.gov">
                         federalregister.gov
                       </a>
@@ -538,7 +535,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
                 <div
                   class="border-putty-300 dark:border-putty-700 bg-putty-50 dark:bg-putty-950 flex flex-1 items-center gap-2.5 rounded-[calc(var(--radius)-2px)] border border-dashed px-3 py-2.5 opacity-85">
                   <div
-                    class="bg-putty-100 text-putty-600 dark:bg-putty-900 dark:text-putty-400 flex size-8 shrink-0 items-center justify-center rounded-md">
+                    class="bg-putty-100 text-putty-700 dark:bg-putty-900 dark:text-putty-300 flex size-8 shrink-0 items-center justify-center rounded-md">
                     <svg
                       viewBox="0 0 24 24"
                       fill="none"
@@ -655,7 +652,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
               </div>
               <div class="mb-0 flex flex-1 flex-col gap-1.5">
                 <div
-                  class="border-slate-blue-300 dark:border-slate-blue-700 border-l-slate-blue-400 dark:bg-card flex-1 rounded-[calc(var(--radius)-2px)] border border-l-2 bg-white px-3 py-2.5">
+                  class="border-slate-blue-200 dark:border-slate-blue-800 border-l-slate-blue-500 dark:border-l-slate-blue-500 dark:bg-card flex-1 rounded-[calc(var(--radius)-2px)] border border-l-[3px] bg-white px-3 py-2.5">
                   <div
                     class="text-slate-blue-900 mb-[0.1875rem] font-mono text-sm leading-[1.2] font-semibold dark:text-white">
                     @lexbuild/usc
@@ -663,7 +660,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
                   <div class="text-muted-foreground mt-0.5 text-[0.6875rem]">USLM XML → AST builder</div>
                 </div>
                 <div
-                  class="border-summer-green-300 dark:border-summer-green-700 border-l-summer-green-400 dark:bg-card flex-1 rounded-[calc(var(--radius)-2px)] border border-l-2 bg-white px-3 py-2.5">
+                  class="border-slate-blue-200 dark:border-slate-blue-800 border-l-lavender-500 dark:border-l-lavender-500 dark:bg-card flex-1 rounded-[calc(var(--radius)-2px)] border border-l-[3px] bg-white px-3 py-2.5">
                   <div
                     class="text-slate-blue-900 mb-[0.1875rem] font-mono text-sm leading-[1.2] font-semibold dark:text-white">
                     @lexbuild/ecfr
@@ -671,7 +668,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
                   <div class="text-muted-foreground mt-0.5 text-[0.6875rem]">eCFR XML → AST builder</div>
                 </div>
                 <div
-                  class="border-lavender-300 dark:border-lavender-700 border-l-lavender-400 dark:bg-card flex-1 rounded-[calc(var(--radius)-2px)] border border-l-2 bg-white px-3 py-2.5">
+                  class="border-slate-blue-200 dark:border-slate-blue-800 border-l-juniper-500 dark:border-l-juniper-500 dark:bg-card flex-1 rounded-[calc(var(--radius)-2px)] border border-l-[3px] bg-white px-3 py-2.5">
                   <div
                     class="text-slate-blue-900 mb-[0.1875rem] font-mono text-sm leading-[1.2] font-semibold dark:text-white">
                     @lexbuild/fr
@@ -679,7 +676,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
                   <div class="text-muted-foreground mt-0.5 text-[0.6875rem]">FR XML → AST builder</div>
                 </div>
                 <div
-                  class="border-putty-300 dark:border-putty-700 border-l-dashed border-l-putty-400 dark:border-l-putty-600 bg-putty-50 dark:bg-putty-950 flex-1 rounded-[calc(var(--radius)-2px)] border border-l-2 border-dashed px-3 py-2.5 opacity-85">
+                  class="border-putty-300 dark:border-putty-700 border-l-putty-400 dark:border-l-putty-600 bg-putty-50 dark:bg-putty-950/60 flex-1 rounded-[calc(var(--radius)-2px)] border border-l-[3px] border-dashed px-3 py-2.5 opacity-85">
                   <div
                     class="text-slate-blue-900 mb-[0.1875rem] font-mono text-sm leading-[1.2] font-semibold dark:text-white">
                     @lexbuild/&lt;source&gt;
@@ -743,7 +740,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
                     Structured Markdown
                   </div>
                   <div class="text-summer-green-700 dark:text-summer-green-400 mt-[0.0625rem] text-[0.6875rem]">
-                    YAML frontmatter + <br />per-section .md files
+                    Per-section .md files with YAML frontmatter.
                   </div>
                 </div>
               </div>
@@ -780,33 +777,77 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
         </svg>
       </div>
 
-      <!-- SQLite document store -->
-      <div class="mx-auto flex max-w-96 flex-col gap-2">
-        <div
-          class="text-slate-blue-600 dark:text-slate-blue-400 pl-0.5 text-[0.65rem] font-bold tracking-[0.08em] uppercase">
-          Database
-        </div>
-        <div
-          class="border-slate-blue-300 dark:border-slate-blue-700 bg-slate-blue-50 dark:bg-slate-blue-950 flex items-center gap-2.5 rounded-[calc(var(--radius)-2px)] border-[1.5px] px-4 py-2.5">
+      <!-- Data layer — SQLite document store and Meilisearch search index as peers -->
+      <div class="flex items-stretch gap-0 max-md:flex-col">
+        <div class="flex min-w-0 flex-1 flex-col gap-2">
           <div
-            class="bg-slate-blue-200 dark:bg-slate-blue-800 text-slate-blue-700 dark:text-slate-blue-300 flex size-8 shrink-0 items-center justify-center rounded-md">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.75"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="h-5 w-5">
-              <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
-              <path d="M3 5V19A9 3 0 0 0 21 19V5"></path>
-              <path d="M3 12A9 3 0 0 0 21 12"></path>
-            </svg>
+            class="text-slate-blue-600 dark:text-slate-blue-400 pl-0.5 text-[0.65rem] font-bold tracking-[0.08em] uppercase">
+            Document Store
           </div>
-          <div>
-            <div class="text-slate-blue-900 font-mono text-sm leading-[1.2] font-semibold dark:text-white">SQLite</div>
-            <div class="text-slate-blue-600 dark:text-slate-blue-400 mt-0.5 text-[0.6875rem]">
-              Document store with SHA-256 content hashing
+          <div
+            class="border-slate-blue-300 dark:border-slate-blue-700 bg-slate-blue-50 dark:bg-slate-blue-950 flex min-w-0 flex-1 items-center gap-2.5 rounded-[calc(var(--radius)-2px)] border-[1.5px] px-4 py-2.5">
+            <div
+              class="bg-slate-blue-200 dark:bg-slate-blue-800 text-slate-blue-700 dark:text-slate-blue-300 flex size-8 shrink-0 items-center justify-center rounded-md">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.75"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-5 w-5">
+                <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                <path d="M3 5V19A9 3 0 0 0 21 19V5"></path>
+                <path d="M3 12A9 3 0 0 0 21 12"></path>
+              </svg>
+            </div>
+            <div>
+              <div class="text-slate-blue-900 font-mono text-sm leading-[1.2] font-semibold dark:text-white">
+                SQLite
+              </div>
+              <div class="text-slate-blue-700 dark:text-slate-blue-400 mt-0.5 text-[0.6875rem]">
+                Source of truth with SHA-256 content hashing
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="flex shrink-0 items-center justify-center self-center px-1.5 max-md:px-0 max-md:py-1"
+          aria-hidden="true">
+          <span
+            class="border-slate-blue-300 dark:border-slate-blue-600 w-5 border-t-[1.5px] border-dashed max-md:h-5 max-md:w-0 max-md:border-t-0 max-md:border-l-[1.5px]">
+          </span>
+        </div>
+
+        <div class="flex min-w-0 flex-1 flex-col gap-2">
+          <div
+            class="text-slate-blue-600 dark:text-slate-blue-400 pl-0.5 text-[0.65rem] font-bold tracking-[0.08em] uppercase">
+            Search Index
+          </div>
+          <div
+            class="border-slate-blue-300 dark:border-slate-blue-700 bg-slate-blue-50 dark:bg-slate-blue-950 flex min-w-0 flex-1 items-center gap-2.5 rounded-[calc(var(--radius)-2px)] border-[1.5px] px-4 py-2.5">
+            <div
+              class="bg-slate-blue-200 dark:bg-slate-blue-800 text-slate-blue-700 dark:text-slate-blue-300 flex size-8 shrink-0 items-center justify-center rounded-md">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.75"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-5 w-5">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.3-4.3"></path>
+              </svg>
+            </div>
+            <div>
+              <div class="text-slate-blue-900 font-mono text-sm leading-[1.2] font-semibold dark:text-white">
+                Meilisearch
+              </div>
+              <div class="text-slate-blue-700 dark:text-slate-blue-400 mt-0.5 text-[0.6875rem]">
+                Derived index for fast, faceted full-text search
+              </div>
             </div>
           </div>
         </div>
@@ -840,7 +881,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
         </svg>
       </div>
 
-      <!-- Consumer apps — web resource, search, and data API -->
+      <!-- Consumer apps — the three @lexbuild interfaces over the data layer -->
       <div class="flex items-stretch gap-0 max-md:flex-col">
         <div class="flex min-w-0 flex-1 flex-col gap-2">
           <div
@@ -848,9 +889,9 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
             Web Resource
           </div>
           <div
-            class="border-chestnut-300 dark:border-chestnut-700 dark:bg-card flex min-w-0 flex-1 items-center gap-2.5 rounded-[calc(var(--radius)-2px)] border bg-white px-3 py-2.5">
+            class="border-slate-blue-300 dark:border-slate-blue-700 dark:bg-card flex min-w-0 flex-1 items-center gap-2.5 rounded-[calc(var(--radius)-2px)] border bg-white px-3 py-2.5">
             <div
-              class="bg-chestnut-100 text-chestnut-700 dark:bg-chestnut-900 dark:text-chestnut-300 flex size-8 shrink-0 items-center justify-center rounded-md">
+              class="bg-slate-blue-100 text-slate-blue-700 dark:bg-slate-blue-900 dark:text-slate-blue-300 flex size-8 shrink-0 items-center justify-center rounded-md">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -868,48 +909,8 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
               <div class="text-slate-blue-900 font-mono text-sm leading-[1.2] font-semibold dark:text-white">
                 @lexbuild/astro
               </div>
-              <div class="text-slate-blue-600 dark:text-slate-blue-400 mt-1 text-[0.6875rem]">
-                Browse, search, copy, and download any converted content document.
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div
-          class="flex shrink-0 items-center justify-center self-center px-1.5 max-md:px-0 max-md:py-1"
-          aria-hidden="true">
-          <span
-            class="border-slate-blue-300 dark:border-slate-blue-600 w-5 border-t-[1.5px] border-dashed max-md:h-5 max-md:w-0 max-md:border-t-0 max-md:border-l-[1.5px]">
-          </span>
-        </div>
-
-        <div class="flex min-w-0 flex-1 flex-col gap-2">
-          <div
-            class="text-slate-blue-600 dark:text-slate-blue-400 pl-0.5 text-[0.65rem] font-bold tracking-[0.08em] uppercase">
-            Search Service
-          </div>
-          <div
-            class="border-lavender-300 dark:border-lavender-700 dark:bg-card flex min-w-0 flex-1 items-center gap-2.5 rounded-[calc(var(--radius)-2px)] border bg-white px-3 py-2.5">
-            <div
-              class="bg-lavender-100 text-lavender-700 dark:bg-lavender-900 dark:text-lavender-400 flex size-8 shrink-0 items-center justify-center rounded-md">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.75"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="h-4 w-4">
-                <circle cx="11" cy="11" r="8"></circle>
-                <path d="m21 21-4.3-4.3"></path>
-              </svg>
-            </div>
-            <div>
-              <div class="text-slate-blue-900 font-mono text-sm leading-[1.2] font-semibold dark:text-white">
-                Meilisearch
-              </div>
-              <div class="text-slate-blue-600 dark:text-slate-blue-400 mt-1 text-[0.6875rem]">
-                Sources indexed for full-text search with relevance ranking and filtering capabilities.
+              <div class="text-slate-blue-700 dark:text-slate-blue-400 mt-1 text-[0.6875rem]">
+                Browse the full corpus. Copy or download any section.
               </div>
             </div>
           </div>
@@ -929,9 +930,9 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
             Data API
           </div>
           <div
-            class="border-summer-green-300 dark:border-summer-green-700 dark:bg-card flex min-w-0 flex-1 items-center gap-2.5 rounded-[calc(var(--radius)-2px)] border bg-white px-3 py-2.5">
+            class="border-slate-blue-300 dark:border-slate-blue-700 dark:bg-card flex min-w-0 flex-1 items-center gap-2.5 rounded-[calc(var(--radius)-2px)] border bg-white px-3 py-2.5">
             <div
-              class="bg-summer-green-100 text-summer-green-700 dark:bg-summer-green-900 dark:text-summer-green-300 flex size-8 shrink-0 items-center justify-center rounded-md">
+              class="bg-slate-blue-100 text-slate-blue-700 dark:bg-slate-blue-900 dark:text-slate-blue-300 flex size-8 shrink-0 items-center justify-center rounded-md">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -948,8 +949,50 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
               <div class="text-slate-blue-900 font-mono text-sm leading-[1.2] font-semibold dark:text-white">
                 @lexbuild/api
               </div>
-              <div class="text-slate-blue-600 dark:text-slate-blue-400 mt-1 text-[0.6875rem]">
-                Programmatic access via a REST API with JSON, Markdown, and plaintext responses.
+              <div class="text-slate-blue-700 dark:text-slate-blue-400 mt-1 text-[0.6875rem]">
+                A REST API for the full corpus, returning JSON, Markdown, or plaintext.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="flex shrink-0 items-center justify-center self-center px-1.5 max-md:px-0 max-md:py-1"
+          aria-hidden="true">
+          <span
+            class="border-slate-blue-300 dark:border-slate-blue-600 w-5 border-t-[1.5px] border-dashed max-md:h-5 max-md:w-0 max-md:border-t-0 max-md:border-l-[1.5px]">
+          </span>
+        </div>
+
+        <div class="flex min-w-0 flex-1 flex-col gap-2">
+          <div
+            class="text-slate-blue-600 dark:text-slate-blue-400 pl-0.5 text-[0.65rem] font-bold tracking-[0.08em] uppercase">
+            MCP Server
+          </div>
+          <div
+            class="border-slate-blue-300 dark:border-slate-blue-700 dark:bg-card flex min-w-0 flex-1 items-center gap-2.5 rounded-[calc(var(--radius)-2px)] border bg-white px-3 py-2.5">
+            <div
+              class="bg-slate-blue-100 text-slate-blue-700 dark:bg-slate-blue-900 dark:text-slate-blue-300 flex size-8 shrink-0 items-center justify-center rounded-md">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.75"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-4 w-4">
+                <path d="M12 8V4H8"></path>
+                <rect width="16" height="12" x="4" y="8" rx="2"></rect>
+                <path d="M2 14h2"></path><path d="M20 14h2"></path>
+                <path d="M15 13v2"></path><path d="M9 13v2"></path>
+              </svg>
+            </div>
+            <div>
+              <div class="text-slate-blue-900 font-mono text-sm leading-[1.2] font-semibold dark:text-white">
+                @lexbuild/mcp
+              </div>
+              <div class="text-slate-blue-700 dark:text-slate-blue-400 mt-1 text-[0.6875rem]">
+                The full corpus exposed as MCP tools and resources for agents and assistants.
               </div>
             </div>
           </div>
@@ -1234,18 +1277,17 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           Packages
         </h2>
         <p class="text-ink-muted text-[15px]">
-          A monorepo of composable, independently published packages. Source-specific parsers depend on a shared core
-          engine, but not on each other, so new sources can be added without modifying existing ones.
+          The library layer of the monorepo, versioned and released in lock-step across all packages. Source-specific parsers depend on a shared core engine but not on each other, so new sources can be added without modifying existing ones.
         </p>
       </div>
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <a
           href="https://www.npmjs.com/package/@lexbuild/cli"
           target="_blank"
           rel="noopener noreferrer"
           class="group border-slate-blue-200 hover:border-summer-green-400 dark:bg-card dark:border-border dark:hover:border-summer-green-500 relative flex flex-col rounded-sm border bg-white p-5 transition-colors">
           <svg
-            class="text-slate-blue-300 dark:text-slate-blue-600 group-hover:text-slate-blue-500 dark:group-hover:text-slate-blue-400 absolute top-3.5 right-3.5 h-3.5 w-3.5 transition-colors"
+            class="text-slate-blue-300 dark:text-slate-blue-600 group-hover:text-slate-blue-500 dark:group-hover:text-slate-blue-400 absolute top-3.5 right-3.5 h-4 w-4 transition-colors"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -1260,8 +1302,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           </div>
           <div class="mb-1 text-[13px] font-semibold">CLI Tool</div>
           <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
-            Downloads source XML and orchestrates Markdown conversion. Controls granularity, output paths, and batch
-            processing.
+            The single entry point that drives the full pipeline. Fetches source data, invokes the matching parser, and writes per-section Markdown to disk.
           </p>
           <div
             class="text-summer-green-700 dark:text-summer-green-500 mt-auto pt-2.5 font-mono text-[12px] font-semibold">
@@ -1274,7 +1315,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           rel="noopener noreferrer"
           class="group border-slate-blue-200 hover:border-summer-green-400 dark:bg-card dark:border-border dark:hover:border-summer-green-500 relative flex flex-col rounded-sm border bg-white p-5 transition-colors">
           <svg
-            class="text-slate-blue-300 dark:text-slate-blue-600 group-hover:text-slate-blue-500 dark:group-hover:text-slate-blue-400 absolute top-3.5 right-3.5 h-3.5 w-3.5 transition-colors"
+            class="text-slate-blue-300 dark:text-slate-blue-600 group-hover:text-slate-blue-500 dark:group-hover:text-slate-blue-400 absolute top-3.5 right-3.5 h-4 w-4 transition-colors"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -1289,8 +1330,35 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           </div>
           <div class="mb-1 text-[13px] font-semibold">Core Engine</div>
           <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
-            Streaming SAX parser, typed AST, Markdown renderer, YAML frontmatter generation, and cross-reference link
-            resolution.
+            The source-agnostic AST pipeline every parser depends on. Streaming tokenizer, typed AST, Markdown renderer, YAML frontmatter, and cross-reference resolution.
+          </p>
+          <div
+            class="text-summer-green-700 dark:text-summer-green-500 mt-auto pt-2.5 font-mono text-[12px] font-semibold">
+            Published
+          </div>
+        </a>
+        <a
+          href="https://www.npmjs.com/package/@lexbuild/mcp"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="group border-slate-blue-200 hover:border-summer-green-400 dark:bg-card dark:border-border dark:hover:border-summer-green-500 relative flex flex-col rounded-sm border bg-white p-5 transition-colors">
+          <svg
+            class="text-slate-blue-300 dark:text-slate-blue-600 group-hover:text-slate-blue-500 dark:group-hover:text-slate-blue-400 absolute top-3.5 right-3.5 h-4 w-4 transition-colors"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9">
+            </polyline><line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          <div class="text-slate-blue-700 dark:text-slate-blue-300 mb-1.5 font-mono text-[13px] font-medium">
+            @lexbuild/mcp
+          </div>
+          <div class="mb-1 text-[13px] font-semibold">MCP Server</div>
+          <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
+            Exposes the corpus to MCP-compatible clients as tools, resources, and prompts. Lets agents and AI-native editors query and retrieve sections without a custom integration.
           </p>
           <div
             class="text-summer-green-700 dark:text-summer-green-500 mt-auto pt-2.5 font-mono text-[12px] font-semibold">
@@ -1303,7 +1371,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           rel="noopener noreferrer"
           class="group border-slate-blue-200 hover:border-summer-green-400 dark:bg-card dark:border-border dark:hover:border-summer-green-500 relative flex flex-col rounded-sm border bg-white p-5 transition-colors">
           <svg
-            class="text-slate-blue-300 dark:text-slate-blue-600 group-hover:text-slate-blue-500 dark:group-hover:text-slate-blue-400 absolute top-3.5 right-3.5 h-3.5 w-3.5 transition-colors"
+            class="text-slate-blue-300 dark:text-slate-blue-600 group-hover:text-slate-blue-500 dark:group-hover:text-slate-blue-400 absolute top-3.5 right-3.5 h-4 w-4 transition-colors"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -1318,8 +1386,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           </div>
           <div class="mb-1 text-[13px] font-semibold">U.S. Code Parser</div>
           <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
-            USLM 1.0 schema parser. Handles positive-law and prima facie titles from the Office of the Law Revision
-            Counsel.
+            USLM 1.0 parser for U.S. Code titles published by the Office of the Law Revision Counsel. Handles both positive-law and prima facie titles.
           </p>
           <div
             class="text-summer-green-700 dark:text-summer-green-500 mt-auto pt-2.5 font-mono text-[12px] font-semibold">
@@ -1332,7 +1399,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           rel="noopener noreferrer"
           class="group border-slate-blue-200 hover:border-summer-green-400 dark:bg-card dark:border-border dark:hover:border-summer-green-500 relative flex flex-col rounded-sm border bg-white p-5 transition-colors">
           <svg
-            class="text-slate-blue-300 dark:text-slate-blue-600 group-hover:text-slate-blue-500 dark:group-hover:text-slate-blue-400 absolute top-3.5 right-3.5 h-3.5 w-3.5 transition-colors"
+            class="text-slate-blue-300 dark:text-slate-blue-600 group-hover:text-slate-blue-500 dark:group-hover:text-slate-blue-400 absolute top-3.5 right-3.5 h-4 w-4 transition-colors"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -1347,8 +1414,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           </div>
           <div class="mb-1 text-[13px] font-semibold">eCFR Parser</div>
           <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
-            Parses eCFR XML from the ecfr.gov versioner API with govinfo bulk fallback. Handles DIV-based hierarchy and
-            GPO/SGML schema.
+            Pulls data from the ecfr.gov versioner API, with GovInfo bulk as a fallback when the API is unavailable. Handles the GPO-style DIV-based hierarchy and SGML schema.
           </p>
           <div
             class="text-summer-green-700 dark:text-summer-green-500 mt-auto pt-2.5 font-mono text-[12px] font-semibold">
@@ -1361,7 +1427,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           rel="noopener noreferrer"
           class="group border-slate-blue-200 hover:border-summer-green-400 dark:bg-card dark:border-border dark:hover:border-summer-green-500 relative flex flex-col rounded-sm border bg-white p-5 transition-colors">
           <svg
-            class="text-slate-blue-300 dark:text-slate-blue-600 group-hover:text-slate-blue-500 dark:group-hover:text-slate-blue-400 absolute top-3.5 right-3.5 h-3.5 w-3.5 transition-colors"
+            class="text-slate-blue-300 dark:text-slate-blue-600 group-hover:text-slate-blue-500 dark:group-hover:text-slate-blue-400 absolute top-3.5 right-3.5 h-4 w-4 transition-colors"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -1376,7 +1442,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           </div>
           <div class="mb-1 text-[13px] font-semibold">Federal Register Parser</div>
           <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
-            Daily FR publications consisting of rules, proposed rules, notices, and presidential documents.
+            Parses Federal Register publications from federalregister.gov, covering final rules, proposed rules, notices, and presidential documents.
           </p>
           <div
             class="text-summer-green-700 dark:text-summer-green-500 mt-auto pt-2.5 font-mono text-[12px] font-semibold">
@@ -1392,7 +1458,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           </div>
           <div class="mb-1 text-[13px] font-semibold">Public Laws &amp; Statutes at Large</div>
           <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
-            Enrolled bills and session laws from GovInfo.gov.
+            Enrolled bills and session laws from GovInfo.gov, bridging bill text and final codification.
           </p>
           <div class="text-slate-blue-700 mt-auto pt-2.5 font-mono text-[12px] font-semibold">Planned</div>
         </div>
@@ -1403,7 +1469,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           </div>
           <div class="mb-1 text-[13px] font-semibold">Congressional Bills</div>
           <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
-            Bill text and amendments from Congress.gov.
+            Bill text and amendments from Congress.gov, across all introduced, active, and enacted legislation.
           </p>
           <div class="text-slate-blue-700 mt-auto pt-2.5 font-mono text-[12px] font-semibold">Planned</div>
         </div>
@@ -1414,7 +1480,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           </div>
           <div class="mb-1 text-[13px] font-semibold">Annual CFR</div>
           <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
-            Official annual edition from GovInfo.gov.
+            Point-in-time annual edition from GovInfo.gov, complementing the continuously-updated @lexbuild/ecfr.
           </p>
           <div class="text-slate-blue-700 mt-auto pt-2.5 font-mono text-[12px] font-semibold">Planned</div>
         </div>
@@ -1427,7 +1493,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           </div>
           <div class="mb-1 text-[13px] font-semibold">State Statutes</div>
           <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
-            State-level statutory code parsers. Same pipeline pattern, broader coverage.
+            State-level statutory code parsers. Same pipeline, broader coverage.
           </p>
           <div class="text-slate-blue-700 mt-auto pt-2.5 font-mono text-[12px] font-semibold">Planned</div>
         </div>
@@ -1438,7 +1504,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-
           </div>
           <div class="mb-1 text-[13px] font-semibold">Municipal Code</div>
           <p class="text-slate-blue-700 dark:text-slate-blue-400 text-[13px] leading-normal">
-            City and county ordinances, such as the Municipal Code of Chicago.
+            City and county ordinances, starting with the Municipal Code of Chicago.
           </p>
           <div class="text-slate-blue-700 mt-auto pt-2.5 font-mono text-[12px] font-semibold">Planned</div>
         </div>

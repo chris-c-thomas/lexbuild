@@ -77,15 +77,60 @@ const breadcrumbs: Breadcrumb[] = [
   document.querySelectorAll(".docs-prose pre").forEach(function (pre) {
     if (!pre.parentNode) return;
     var wrapper = document.createElement("div");
-    wrapper.className = "relative group";
+    wrapper.className = "relative";
     pre.parentNode.insertBefore(wrapper, pre);
     wrapper.appendChild(pre);
 
     var btn = document.createElement("button");
     btn.className =
-      "absolute top-2 right-2 rounded-md bg-background/80 border border-border px-2 py-1 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:text-foreground cursor-pointer";
-    btn.textContent = "Copy";
+      "absolute top-2.5 right-2.5 rounded-md p-1 text-slate-blue-600 dark:text-muted-foreground cursor-pointer";
     btn.setAttribute("aria-label", "Copy code to clipboard");
+    btn.setAttribute("data-state", "idle");
+
+    function setCopyIcon(b) {
+      b.replaceChildren();
+      var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("width", "18");
+      svg.setAttribute("height", "18");
+      svg.setAttribute("viewBox", "0 0 24 24");
+      svg.setAttribute("fill", "none");
+      svg.setAttribute("stroke", "currentColor");
+      svg.setAttribute("stroke-width", "2");
+      svg.setAttribute("stroke-linecap", "round");
+      svg.setAttribute("stroke-linejoin", "round");
+      var rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("x", "9");
+      rect.setAttribute("y", "9");
+      rect.setAttribute("width", "13");
+      rect.setAttribute("height", "13");
+      rect.setAttribute("rx", "2");
+      rect.setAttribute("ry", "2");
+      var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", "M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1");
+      svg.appendChild(rect);
+      svg.appendChild(path);
+      b.appendChild(svg);
+    }
+
+    function setCheckIcon(b) {
+      b.replaceChildren();
+      var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("width", "18");
+      svg.setAttribute("height", "18");
+      svg.setAttribute("viewBox", "0 0 24 24");
+      svg.setAttribute("fill", "none");
+      svg.setAttribute("stroke", "currentColor");
+      svg.setAttribute("stroke-width", "2");
+      svg.setAttribute("stroke-linecap", "round");
+      svg.setAttribute("stroke-linejoin", "round");
+      var polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+      polyline.setAttribute("points", "20 6 9 17 4 12");
+      svg.appendChild(polyline);
+      b.appendChild(svg);
+    }
+
+    setCopyIcon(btn);
+
     btn.addEventListener("click", function () {
       var code = pre.querySelector("code");
       var text = code ? code.textContent : pre.textContent;
@@ -93,15 +138,18 @@ const breadcrumbs: Breadcrumb[] = [
       navigator.clipboard
         .writeText(text || "")
         .then(function () {
-          btn.textContent = "Copied!";
+          setCheckIcon(btn);
           setTimeout(function () {
-            btn.textContent = "Copy";
+            setCopyIcon(btn);
           }, 2000);
         })
-        .catch(function () {
-          btn.textContent = "Failed";
+        .catch(function (err) {
+          console.warn("Clipboard write failed:", err);
+          // Brief error state — red tint then reset
+          btn.style.color = "var(--color-chestnut-500, #c56e6e)";
           setTimeout(function () {
-            btn.textContent = "Copy";
+            btn.style.color = "";
+            setCopyIcon(btn);
           }, 2000);
         });
     });

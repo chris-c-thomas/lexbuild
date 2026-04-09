@@ -26,7 +26,7 @@ pnpm install
 pnpm turbo build
 ```
 
-Turborepo builds packages in dependency order: `core` first, then `usc`, `ecfr`, and `fr` in parallel, then `cli` last.
+Turborepo builds packages based on the dependency graph: `usc`, `ecfr`, and `fr` depend on `core`; `cli` depends on `core` and the source packages; `mcp` is independent and builds alongside the others.
 
 Verify everything is working:
 
@@ -43,7 +43,8 @@ lexbuild/
 │   ├── usc/      # @lexbuild/usc -- U.S. Code converter and downloader
 │   ├── ecfr/     # @lexbuild/ecfr -- eCFR converter and downloader
 │   ├── fr/       # @lexbuild/fr -- Federal Register converter and downloader
-│   └── cli/      # @lexbuild/cli -- CLI binary
+│   ├── cli/      # @lexbuild/cli -- CLI binary
+│   └── mcp/      # @lexbuild/mcp -- MCP server for AI assistants
 ├── apps/
 │   ├── astro/    # Web app (Astro 6, SSR)
 │   └── api/      # Data API (Hono, SQLite)
@@ -52,7 +53,7 @@ lexbuild/
 └── scripts/      # Deploy and ops scripts
 ```
 
-Source packages (`usc`, `ecfr`, `fr`) depend only on `core`, never on each other. The CLI depends on all four packages.
+Source packages (`usc`, `ecfr`, `fr`) depend only on `core`, never on each other. The CLI depends on all source packages. The MCP server (`mcp`) is fully independent -- it has no dependency on `core` or any source package, connecting to the Data API instead.
 
 ## Common Commands
 
@@ -159,7 +160,7 @@ pnpm exec vitest run --update
    chore(ecfr): update test fixtures
    ```
 
-   Types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `style`. Scopes: `core`, `usc`, `ecfr`, `fr`, `cli`, `astro`, `api`.
+   Types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `style`. Scopes: `core`, `usc`, `ecfr`, `fr`, `cli`, `mcp`, `astro`, `api`.
 
 6. **Submit a pull request** to `main`.
 

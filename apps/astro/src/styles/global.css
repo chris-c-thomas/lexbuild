@@ -230,6 +230,19 @@
   --color-chestnut-900: #6a3138;
   --color-chestnut-950: #3a171b;
 
+  /* Juniper */
+  --color-juniper-50: #f6f9f9;
+  --color-juniper-100: #e5f0ef;
+  --color-juniper-200: #d3e4e3;
+  --color-juniper-300: #b4d0cf;
+  --color-juniper-400: #94b7b7;
+  --color-juniper-500: #67a3a3;
+  --color-juniper-600: #52888a;
+  --color-juniper-700: #467071;
+  --color-juniper-800: #3d5b5c;
+  --color-juniper-900: #354a4b;
+  --color-juniper-950: #1c2f30;
+
   /*
    * --- Semantic tokens (dark-aware via runtime vars) ---
    * Use these for custom page layouts. They auto-adapt to dark mode.
@@ -259,6 +272,22 @@
    These rules swap to the dark values when .dark is active. */
 .dark .shiki,
 .dark .shiki span {
+  color: var(--shiki-dark) !important;
+}
+
+/* Astro Content Collections dual-theme (docs code blocks).
+   Astro outputs both colors as CSS vars: --shiki-light and --shiki-dark.
+   Unlike the legal content Shiki output, neither is applied as `color` by default. */
+.astro-code {
+  background-color: var(--shiki-light-bg) !important;
+}
+.astro-code span {
+  color: var(--shiki-light);
+}
+.dark .astro-code {
+  background-color: var(--shiki-dark-bg) !important;
+}
+.dark .astro-code span {
   color: var(--shiki-dark) !important;
 }
 
@@ -404,39 +433,71 @@
   border-left-width: 3px;
   padding: 0.75rem 1rem;
   border-radius: calc(var(--radius) - 2px);
+  font-style: normal;
+  quotes: none;
+  border-left-color: var(--color-slate-blue-400);
+  background-color: var(--color-slate-blue-50);
+}
+
+.docs-prose blockquote[data-callout]::before,
+.docs-prose blockquote[data-callout]::after {
+  content: none;
+}
+
+.docs-prose blockquote[data-callout] p {
+  font-style: normal;
+}
+
+.docs-prose blockquote[data-callout] p::before,
+.docs-prose blockquote[data-callout] p::after {
+  content: none;
 }
 
 .docs-prose blockquote[data-callout] p:first-child {
   font-weight: 500;
 }
 
-.docs-prose blockquote[data-callout="note"] {
-  border-left-color: var(--color-slate-blue-500);
-  background-color: var(--color-slate-blue-50);
-}
-
-.dark .docs-prose blockquote[data-callout="note"] {
+.dark .docs-prose blockquote[data-callout] {
+  border-left-color: var(--color-slate-blue-600);
   background-color: color-mix(in oklch, var(--color-slate-blue-950) 50%, transparent);
 }
 
-.docs-prose blockquote[data-callout="warning"],
-.docs-prose blockquote[data-callout="caution"] {
-  border-left-color: var(--color-putty-500);
-  background-color: var(--color-putty-50);
+/* NOTE — summer green */
+.docs-prose blockquote[data-callout="note"] {
+  border-left-color: var(--color-summer-green-400);
+  background-color: var(--color-summer-green-50);
+}
+.dark .docs-prose blockquote[data-callout="note"] {
+  border-left-color: var(--color-summer-green-600);
+  background-color: color-mix(in oklch, var(--color-summer-green-950) 50%, transparent);
 }
 
-.dark .docs-prose blockquote[data-callout="warning"],
+/* IMPORTANT — lavender */
+.docs-prose blockquote[data-callout="important"] {
+  border-left-color: var(--color-lavender-400);
+  background-color: var(--color-lavender-50);
+}
+.dark .docs-prose blockquote[data-callout="important"] {
+  border-left-color: var(--color-lavender-600);
+  background-color: color-mix(in oklch, var(--color-lavender-950) 50%, transparent);
+}
+
+/* CAUTION — putty */
+.docs-prose blockquote[data-callout="caution"] {
+  border-left-color: var(--color-putty-400);
+  background-color: var(--color-putty-50);
+}
 .dark .docs-prose blockquote[data-callout="caution"] {
+  border-left-color: var(--color-putty-600);
   background-color: color-mix(in oklch, var(--color-putty-950) 50%, transparent);
 }
 
-.docs-prose blockquote[data-callout="tip"],
-.docs-prose blockquote[data-callout="important"] {
-  border-left-color: var(--color-summer-green-500);
-  background-color: var(--color-summer-green-50);
+/* WARNING — chestnut */
+.docs-prose blockquote[data-callout="warning"] {
+  border-left-color: var(--color-chestnut-400);
+  background-color: var(--color-chestnut-50);
 }
-
-.dark .docs-prose blockquote[data-callout="tip"],
-.dark .docs-prose blockquote[data-callout="important"] {
-  background-color: color-mix(in oklch, var(--color-summer-green-950) 50%, transparent);
+.dark .docs-prose blockquote[data-callout="warning"] {
+  border-left-color: var(--color-chestnut-600);
+  background-color: color-mix(in oklch, var(--color-chestnut-950) 50%, transparent);
 }

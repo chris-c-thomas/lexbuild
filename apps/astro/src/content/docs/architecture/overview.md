@@ -17,7 +17,8 @@ The repository is organized into packages and applications:
 | `packages/ecfr` | `@lexbuild/ecfr` | eCFR (Code of Federal Regulations) converter and downloader |
 | `packages/fr` | `@lexbuild/fr` | Federal Register converter and downloader |
 | `packages/cli` | `@lexbuild/cli` | CLI binary with `download-*` and `convert-*` commands |
-| `apps/astro` | LexBuild web app | Astro 6 SSR site for browsing converted content |
+| `packages/mcp` | `@lexbuild/mcp` | MCP server exposing legal content to AI assistants |
+| `apps/astro` | `@lexbuild/astro` | Astro 6 SSR site for browsing converted content |
 | `apps/api` | `@lexbuild/api` | Data API (Hono, SQLite, Meilisearch) for programmatic access |
 
 All packages use pnpm workspaces with `workspace:*` protocol for internal dependencies. Turborepo builds them in topological order and all published packages use lockstep versioning via Changesets.
@@ -27,11 +28,11 @@ All packages use pnpm workspaces with `workspace:*` protocol for internal depend
 The system is arranged in three dependency layers. Each layer depends only on the layer below it.
 
 ```
-Layer 3: Applications & CLI
-  @lexbuild/cli          apps/astro         apps/api
-  (orchestrates          (serves output     (serves content
-   source packages)       files, no code     from SQLite)
-                          dependency)
+Layer 3: Applications, CLI & MCP
+  @lexbuild/cli    @lexbuild/mcp    apps/astro       apps/api
+  (orchestrates    (API client,     (serves output   (serves content
+   source pkgs)    no core dep)     files, no code   from SQLite)
+                                     dependency)
 
 Layer 2: Source Packages
   @lexbuild/usc          @lexbuild/ecfr     @lexbuild/fr
@@ -70,11 +71,12 @@ Each legal source format has its own package. Source packages depend on `@lexbui
 
 New sources produce the same AST node types and feed them to core's shared renderer, keeping output format consistent across all legal corpora.
 
-### Layer 3: Applications and CLI
+### Layer 3: Applications, CLI, and MCP
 
 The top layer contains user-facing interfaces. Neither the CLI nor the applications contain conversion logic.
 
 - **`@lexbuild/cli`** -- Command-line interface built with commander. Provides commands following the `{action}-{source}` naming pattern (`download-usc`, `convert-usc`, `download-ecfr`, `convert-ecfr`, `download-fr`, `convert-fr`). All conversion work is delegated to source packages.
+- **`@lexbuild/mcp`** -- Model Context Protocol server that exposes legal content to AI assistants. A thin, typed adapter over the Data API -- no dependency on `@lexbuild/core` or any source package. Supports stdio (local) and Streamable HTTP (hosted at mcp.lexbuild.dev) transports.
 - **`apps/astro`** -- Astro 6 SSR web application at lexbuild.dev. Provides a browsable interface with full-text search via Meilisearch. Has no code dependency on any `@lexbuild/*` package -- it consumes output Markdown files and `_meta.json` sidecar indexes directly from the filesystem.
 - **`apps/api`** -- Hono REST API at lexbuild.dev/api. Provides programmatic access to the corpus from a SQLite database. Depends on `@lexbuild/core` for shared types but has no dependency on source packages.
 
