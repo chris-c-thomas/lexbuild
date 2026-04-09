@@ -105,6 +105,8 @@ This glossary defines terms you will encounter throughout the LexBuild documenta
 
 **Section-emit pattern** -- The default operating mode where the AST builder emits one completed section at a time. Each section's subtree is released from memory after emission, keeping peak memory proportional to the largest single section rather than the full title.
 
+**MCP (Model Context Protocol)** -- An open protocol that enables AI assistants to access external data sources through standardized tools, resources, and prompts. The `@lexbuild/mcp` package implements an MCP server that exposes legal content via five tools (`search_laws`, `get_section`, `list_titles`, `get_title`, `get_federal_register_document`), URI-addressable resources, and prompt templates.
+
 **Source package** -- A package that handles conversion for a specific legal XML format. Source packages depend on `@lexbuild/core` for shared infrastructure but are independent of each other. Current source packages: `@lexbuild/usc` (U.S. Code), `@lexbuild/ecfr` (eCFR), and `@lexbuild/fr` (Federal Register).
 
 **Source type** -- The `source` discriminator field in frontmatter, indicating which source package produced the output. Current values: `"usc"`, `"ecfr"`, and `"fr"`. Consumers can use this field to determine which source-specific frontmatter fields to expect.

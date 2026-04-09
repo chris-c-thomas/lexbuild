@@ -34,7 +34,7 @@ This documentation is structured to support different integration paths:
 * **Web:** Browsing, advanced search, and content extraction.
 * **API:** Authentication, endpoints, content negotiation, and pagination details.
 * **MCP:** Installation for popular AI clients, tool and resource reference, and security details.
-* **User:** Implementation strategies for RAG pipelines, bulk downloading, and legal research.
+* **User Guides:** Implementation strategies for RAG pipelines, bulk downloading, and legal research.
 * **Architecture:** Internal mechanics of the XML-to-Markdown conversion pipeline.
 * **Reference:** Comprehensive specifications for identifiers, metadata schemas, and XML element mappings.
 * **Project:** Contributing guidelines, changelog, and license.
