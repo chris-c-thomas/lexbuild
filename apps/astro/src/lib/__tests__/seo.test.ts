@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { buildPageSEO, buildTitle, buildDescription, buildJsonLd, buildBreadcrumbJsonLd } from "../seo.js";
+import {
+  buildPageSEO,
+  buildTitle,
+  buildDescription,
+  buildJsonLd,
+  buildBreadcrumbJsonLd,
+  buildArticleMeta,
+} from "../seo.js";
 import type { ContentFrontmatter, Breadcrumb } from "../types.js";
 
 // --- Test fixtures ---
@@ -75,6 +82,43 @@ const ECFR_BREADCRUMBS: Breadcrumb[] = [
 const TITLE_INDEX_BREADCRUMBS: Breadcrumb[] = [
   { label: "USC", href: "/usc" },
   { label: "Title 26", href: "/usc/title-26" },
+];
+
+const FR_DOCUMENT_FM: ContentFrontmatter = {
+  identifier: "/us/fr/2026-06029",
+  source: "fr",
+  legal_status: "published",
+  title: "AMENDMENTS TO REGULATION SHO",
+  title_number: 0,
+  title_name: "",
+  positive_law: false,
+  currency: "2026-03-25",
+  last_updated: "2026-03-25",
+  format_version: "1.1.0",
+  generator: "lexbuild@1.9.0",
+  document_number: "2026-06029",
+  document_type: "proposed_rule",
+  fr_citation: "91 FR 12345",
+  publication_date: "2026-03-25",
+  agencies: ["Securities and Exchange Commission"],
+};
+
+const FR_DOCUMENT_BREADCRUMBS: Breadcrumb[] = [
+  { label: "FR", href: "/fr" },
+  { label: "2026", href: "/fr/2026" },
+  { label: "March", href: "/fr/2026/03" },
+  { label: "2026-06029", href: "/fr/2026/03/2026-06029" },
+];
+
+const FR_YEAR_BREADCRUMBS: Breadcrumb[] = [
+  { label: "FR", href: "/fr" },
+  { label: "2026", href: "/fr/2026" },
+];
+
+const FR_MONTH_BREADCRUMBS: Breadcrumb[] = [
+  { label: "FR", href: "/fr" },
+  { label: "2026", href: "/fr/2026" },
+  { label: "March", href: "/fr/2026/03" },
 ];
 
 // --- buildTitle ---
@@ -383,5 +427,156 @@ describe("buildPageSEO", () => {
     const jsonLd = seo.jsonLd as Record<string, unknown>[];
     expect(Array.isArray(jsonLd)).toBe(true);
     expect(jsonLd).toHaveLength(2);
+  });
+
+  it("populates articleMeta for FR document pages", () => {
+    const seo = buildPageSEO({
+      source: "fr",
+      granularity: "document",
+      frontmatter: FR_DOCUMENT_FM,
+      breadcrumbs: FR_DOCUMENT_BREADCRUMBS,
+      canonicalUrl: "/fr/2026/03/2026-06029",
+      siteUrl: SITE_URL,
+    });
+
+    expect(seo.articleMeta).toBeDefined();
+    expect(seo.articleMeta!.publishedTime).toBe("2026-03-25");
+    expect(seo.articleMeta!.section).toBe("proposed rule");
+  });
+
+  it("populates articleMeta.modifiedTime for USC section pages", () => {
+    const seo = buildPageSEO({
+      source: "usc",
+      granularity: "section",
+      frontmatter: USC_SECTION_FM,
+      breadcrumbs: USC_BREADCRUMBS,
+      canonicalUrl: "/usc/title-26/chapter-01/section-501",
+      siteUrl: SITE_URL,
+    });
+
+    expect(seo.articleMeta).toBeDefined();
+    expect(seo.articleMeta!.modifiedTime).toBe("2025-12-03");
+  });
+
+  it("does not set articleMeta for index pages", () => {
+    const seo = buildPageSEO({
+      source: "usc",
+      granularity: "title",
+      frontmatter: null,
+      breadcrumbs: TITLE_INDEX_BREADCRUMBS,
+      canonicalUrl: "/usc/title-26",
+      siteUrl: SITE_URL,
+      nav: { titleNumber: 26, titleName: "INTERNAL REVENUE CODE" },
+    });
+
+    expect(seo.articleMeta).toBeUndefined();
+  });
+});
+
+// --- buildJsonLd (FR-specific) ---
+
+describe("buildJsonLd (FR)", () => {
+  it("returns Article with headline for FR documents", () => {
+    const result = buildJsonLd({
+      source: "fr",
+      granularity: "document",
+      frontmatter: FR_DOCUMENT_FM,
+      canonicalUrl: "https://lexbuild.dev/fr/2026/03/2026-06029",
+      siteUrl: SITE_URL,
+      breadcrumbs: FR_DOCUMENT_BREADCRUMBS,
+    });
+
+    expect(result).toHaveLength(2);
+    expect(result[0]!["@type"]).toBe("Article");
+    expect(result[0]!.headline).toBeDefined();
+    expect(result[0]!.headline).toBe(result[0]!.name);
+    expect(result[1]!["@type"]).toBe("BreadcrumbList");
+  });
+
+  it("returns CollectionPage with isPartOf for FR year index", () => {
+    const result = buildJsonLd({
+      source: "fr",
+      granularity: "year",
+      frontmatter: null,
+      canonicalUrl: "https://lexbuild.dev/fr/2026",
+      siteUrl: SITE_URL,
+      breadcrumbs: FR_YEAR_BREADCRUMBS,
+      nav: { year: 2026, documentCount: 15000 },
+    });
+
+    expect(result).toHaveLength(2);
+    expect(result[0]!["@type"]).toBe("CollectionPage");
+    expect(result[0]!.isPartOf).toMatchObject({ "@type": "WebSite", name: "LexBuild" });
+    expect(result[1]!["@type"]).toBe("BreadcrumbList");
+  });
+
+  it("returns CollectionPage with isPartOf for FR month index", () => {
+    const result = buildJsonLd({
+      source: "fr",
+      granularity: "month",
+      frontmatter: null,
+      canonicalUrl: "https://lexbuild.dev/fr/2026/03",
+      siteUrl: SITE_URL,
+      breadcrumbs: FR_MONTH_BREADCRUMBS,
+      nav: { year: 2026, month: 3, monthName: "March", documentCount: 1200 },
+    });
+
+    expect(result).toHaveLength(2);
+    expect(result[0]!["@type"]).toBe("CollectionPage");
+    expect(result[0]!.isPartOf).toMatchObject({ "@type": "WebSite", name: "LexBuild" });
+    expect(result[1]!["@type"]).toBe("BreadcrumbList");
+  });
+});
+
+// --- buildJsonLd (datePublished) ---
+
+describe("buildJsonLd (datePublished)", () => {
+  it("includes datePublished for eCFR sections with ISO date currency", () => {
+    const result = buildJsonLd({
+      source: "ecfr",
+      granularity: "section",
+      frontmatter: ECFR_SECTION_FM,
+      canonicalUrl: "https://lexbuild.dev/ecfr/title-17/chapter-II/part-240/section-240.10b-5",
+      siteUrl: SITE_URL,
+      breadcrumbs: ECFR_BREADCRUMBS,
+    });
+
+    expect(result[0]!.datePublished).toBe("2025-01-15");
+  });
+
+  it("omits datePublished for USC sections with non-date currency", () => {
+    const result = buildJsonLd({
+      source: "usc",
+      granularity: "section",
+      frontmatter: USC_SECTION_FM,
+      canonicalUrl: "https://lexbuild.dev/usc/title-26/chapter-01/section-501",
+      siteUrl: SITE_URL,
+      breadcrumbs: USC_BREADCRUMBS,
+    });
+
+    expect(result[0]!.datePublished).toBeUndefined();
+  });
+});
+
+// --- buildArticleMeta ---
+
+describe("buildArticleMeta", () => {
+  it("returns publishedTime and section for FR documents", () => {
+    const meta = buildArticleMeta("fr", FR_DOCUMENT_FM);
+    expect(meta.publishedTime).toBe("2026-03-25");
+    expect(meta.section).toBe("proposed rule");
+    expect(meta.modifiedTime).toBeUndefined();
+  });
+
+  it("returns modifiedTime for USC sections", () => {
+    const meta = buildArticleMeta("usc", USC_SECTION_FM);
+    expect(meta.modifiedTime).toBe("2025-12-03");
+    expect(meta.publishedTime).toBeUndefined();
+  });
+
+  it("returns modifiedTime for eCFR sections", () => {
+    const meta = buildArticleMeta("ecfr", ECFR_SECTION_FM);
+    expect(meta.modifiedTime).toBe("2025-01-15");
+    expect(meta.publishedTime).toBeUndefined();
   });
 });

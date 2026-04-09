@@ -29,10 +29,18 @@ const seo: PageSEO = {
   ogImage: `${siteUrl}/og-image.png`,
   jsonLd: [
     {
-      "@type": "WebPage",
+      "@type": "TechArticle",
       name: entry.data.title,
       description: entry.data.description,
       url: `${siteUrl}/docs/${slug}`,
+      isPartOf: { "@type": "WebSite", name: "LexBuild", url: siteUrl },
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Docs", item: `${siteUrl}/docs/getting-started/introduction` },
+        { "@type": "ListItem", position: 2, name: entry.data.title },
+      ],
     },
   ],
 };

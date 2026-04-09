@@ -69,18 +69,15 @@ if (route.granularity === "year") {
   pageTitle = `Federal Register — ${yearNum}`;
   pageDescription = `${yearData.documentCount.toLocaleString()} documents across ${yearData.months.length} month${yearData.months.length !== 1 ? "s" : ""}`;
 
-  seo = {
-    title: pageTitle,
-    description: `${yearData.documentCount.toLocaleString()} Federal Register documents from ${yearNum}.`,
-    canonicalUrl: new URL(route.canonicalUrl, siteUrl).href,
-    ogType: "website",
-    ogImage: `${siteUrl}/og-image.png`,
-    jsonLd: {
-      "@type": "CollectionPage",
-      name: pageTitle,
-      url: new URL(route.canonicalUrl, siteUrl).href,
-    },
-  };
+  seo = buildPageSEO({
+    source: SOURCE_ID,
+    granularity: route.granularity,
+    frontmatter: null,
+    breadcrumbs: route.breadcrumbs,
+    canonicalUrl: route.canonicalUrl,
+    siteUrl,
+    nav: { year: yearNum, documentCount: yearData.documentCount },
+  });
 
   indexContent = { type: "year", html: "" };
 } else if (route.granularity === "month") {
@@ -97,18 +94,15 @@ if (route.granularity === "year") {
   pageTitle = `Federal Register — ${monthName} ${yearNum}`;
   pageDescription = `${monthDocs.length.toLocaleString()} documents`;
 
-  seo = {
-    title: pageTitle,
-    description: `${monthDocs.length.toLocaleString()} Federal Register documents from ${monthName} ${yearNum}.`,
-    canonicalUrl: new URL(route.canonicalUrl, siteUrl).href,
-    ogType: "website",
-    ogImage: `${siteUrl}/og-image.png`,
-    jsonLd: {
-      "@type": "CollectionPage",
-      name: pageTitle,
-      url: new URL(route.canonicalUrl, siteUrl).href,
-    },
-  };
+  seo = buildPageSEO({
+    source: SOURCE_ID,
+    granularity: route.granularity,
+    frontmatter: null,
+    breadcrumbs: route.breadcrumbs,
+    canonicalUrl: route.canonicalUrl,
+    siteUrl,
+    nav: { year: yearNum, month: monthNum, monthName, documentCount: monthDocs.length },
+  });
 
   indexContent = { type: "month", html: "" };
 } else {

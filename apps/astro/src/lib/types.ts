@@ -159,6 +159,13 @@ export interface FrDocumentNav {
   file: string;
 }
 
+/** Article-specific Open Graph metadata (only for ogType: "article" pages). */
+export interface ArticleMeta {
+  publishedTime?: string;
+  modifiedTime?: string;
+  section?: string;
+}
+
 /** Fully resolved SEO metadata for a single page. */
 export interface PageSEO {
   /** Page title (without " | LexBuild" suffix — SEOHead appends it). */
@@ -177,6 +184,8 @@ export interface PageSEO {
   jsonLd: Record<string, unknown> | Record<string, unknown>[];
   /** When true, render title verbatim without " | LexBuild" suffix. */
   rawTitle?: boolean;
+  /** Article-specific OG metadata (article:published_time, etc.). */
+  articleMeta?: ArticleMeta;
 }
 
 /** Props passed from Astro pages to the ContentViewer React island */
