@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.23.1]
+
+### Added
+
+- Add Astro middleware to enforce `charset=utf-8` in HTML Content-Type header
+- Add `ArticleMeta` type with `article:published_time`, `article:modified_time`, and `article:section` OG tags
+- Add `og:locale` meta tag to all pages
+- Add `headline` to FR Article JSON-LD per Google's structured data spec
+- Add `datePublished` to Legislation JSON-LD for eCFR sections with ISO date currency
+- Add `TechArticle` JSON-LD with `isPartOf` and `BreadcrumbList` to docs pages
+- Add `CollectionPage` JSON-LD with `isPartOf` and `BreadcrumbList` to FR year/month index pages
+- Add `isPartOf` and `BreadcrumbList` to FR main index JSON-LD
+
+### Fixed
+
+- Fix UTF-8 character encoding in OpenGraph meta tags (§ showing as Â§ in Bing)
+- Fix FR year/month index pages bypassing `buildPageSEO()` with inconsistent inline SEO
+- Fix single-item BreadcrumbList on USC/eCFR index pages missing `item` URL
+- Fix BreadcrumbList item URLs using string concatenation instead of `new URL()` for consistency
+- Fix docs breadcrumb linking to specific page instead of `/docs` index
+
 ## [1.23.0]
 
 ### Added
