@@ -143,8 +143,14 @@ const breadcrumbs: Breadcrumb[] = [
             setCopyIcon(btn);
           }, 2000);
         })
-        .catch(function () {
-          setCopyIcon(btn);
+        .catch(function (err) {
+          console.warn("Clipboard write failed:", err);
+          // Brief error state — red tint then reset
+          btn.style.color = "var(--color-chestnut-500, #c56e6e)";
+          setTimeout(function () {
+            btn.style.color = "";
+            setCopyIcon(btn);
+          }, 2000);
         });
     });
     wrapper.appendChild(btn);

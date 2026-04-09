@@ -53,7 +53,7 @@ Fetch the full text of a single legal section by its canonical identifier. Retur
 | CFR | `/us/cfr/t{title}/s{section}` | `/us/cfr/t17/s240.10b-5` |
 | FR | Document number | `2026-06029` |
 
-Short forms like `t5/s552` are also accepted.
+Short forms like `t5/s552` are also accepted for USC and CFR sources.
 
 ### Example
 

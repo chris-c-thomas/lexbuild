@@ -6,7 +6,7 @@ order: 1
 
 # MCP Server
 
-The LexBuild MCP server gives AI assistants direct access to the U.S. Code, Code of Federal Regulations, and Federal Register through the [Model Context Protocol](https://modelcontextprotocol.io/). Your AI assistant can search, retrieve, and cite over one million legal sections without leaving the conversation.
+The LexBuild MCP server gives AI assistants direct access to the U.S. Code, Code of Federal Regulations, and Federal Register through the [Model Context Protocol](https://modelcontextprotocol.io/). Your AI assistant can search, retrieve, and cite over one million legal documents without leaving the conversation.
 
 ## Quick Install
 

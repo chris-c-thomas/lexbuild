@@ -7,10 +7,10 @@ import DocsSidebar from "@/components/docs/DocsSidebar";
 import { cn } from "@/lib/utils";
 import type { SourceId } from "@/lib/types";
 
-const SOURCES: { id: SourceId; label: string; href: string }[] = [
-  { id: "usc", label: "U.S. Code", href: "/usc" },
-  { id: "ecfr", label: "eCFR", href: "/ecfr" },
-  { id: "fr", label: "Federal Register", href: "/fr" },
+const SOURCES: { id: SourceId; label: string }[] = [
+  { id: "usc", label: "U.S. Code" },
+  { id: "ecfr", label: "eCFR" },
+  { id: "fr", label: "Federal Register" },
 ];
 
 const NAV_LINKS: { label: string; href: string }[] = [
@@ -31,7 +31,6 @@ export function MobileNav({ source, currentPath }: MobileNavProps) {
   const [previewSource, setPreviewSource] = useState<SourceId | null>(null);
   const activeSource = previewSource ?? source;
   const isDocsPage = currentPath.startsWith("/docs");
-  const isSourcePage = !!source;
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -70,20 +69,30 @@ export function MobileNav({ source, currentPath }: MobileNavProps) {
                 className={cn("size-3.5 transition-transform", browseExpanded && "rotate-180")}
               />
             </button>
-            {NAV_LINKS.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                onClick={() => setOpen(false)}
-                className={cn(
-                  "text-sm font-medium transition-colors",
-                  currentPath.startsWith(link.href.replace(/\/$/, ""))
-                    ? "text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground/70 hover:text-sidebar-foreground",
-                )}>
-                {link.label}
-              </a>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const base = link.href.replace(/\/$/, "");
+              const isActive =
+                link.label === "Docs"
+                  ? currentPath.startsWith("/docs") &&
+                    currentPath !== "/docs/api" &&
+                    !currentPath.startsWith("/docs/cli") &&
+                    !currentPath.startsWith("/docs/mcp")
+                  : currentPath.startsWith(base);
+              return (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "text-sm font-medium transition-colors",
+                    isActive
+                      ? "text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground/70 hover:text-sidebar-foreground",
+                  )}>
+                  {link.label}
+                </a>
+              );
+            })}
           </div>
 
           {/* Browse sources dropdown */}
