@@ -5,7 +5,7 @@
  * rather than reading from `import.meta.env`.
  */
 
-import type { SourceId, Granularity, ContentFrontmatter, Breadcrumb, PageSEO } from "./types.js";
+import type { SourceId, Granularity, ContentFrontmatter, Breadcrumb, PageSEO, ArticleMeta } from "./types.js";
 import { toTitleCase } from "./utils.js";
 
 // --- Internal parameter types ---
@@ -58,12 +58,13 @@ interface JsonLdParams {
 export function buildPageSEO(params: BuildPageSEOParams): PageSEO {
   const { source, granularity, frontmatter, breadcrumbs, canonicalUrl, siteUrl, nav } = params;
   const fullCanonicalUrl = new URL(canonicalUrl, siteUrl).href;
+  const isArticle = granularity === "section" || granularity === "document";
 
-  return {
+  const seo: PageSEO = {
     title: buildTitle(source, granularity, frontmatter, nav),
     description: buildDescription(source, granularity, frontmatter, nav),
     canonicalUrl: fullCanonicalUrl,
-    ogType: granularity === "section" || granularity === "document" ? "article" : "website",
+    ogType: isArticle ? "article" : "website",
     ogImage: `${siteUrl}/og-image.png`,
     jsonLd: buildJsonLd({
       source,
@@ -75,6 +76,12 @@ export function buildPageSEO(params: BuildPageSEOParams): PageSEO {
       nav,
     }),
   };
+
+  if (isArticle && frontmatter) {
+    seo.articleMeta = buildArticleMeta(source, frontmatter);
+  }
+
+  return seo;
 }
 
 // --- buildTitle ---
@@ -222,9 +229,11 @@ export function buildJsonLd(params: JsonLdParams): Record<string, unknown>[] {
 
   // FR document pages → Article type
   if (granularity === "document" && frontmatter) {
+    const articleName = frontmatter.title ? toTitleCase(frontmatter.title) : undefined;
     const article: Record<string, unknown> = {
       "@type": "Article",
-      name: frontmatter.title ? toTitleCase(frontmatter.title) : undefined,
+      name: articleName,
+      headline: articleName,
       url: canonicalUrl,
       identifier: frontmatter.document_number,
       isPartOf,
@@ -257,12 +266,29 @@ export function buildJsonLd(params: JsonLdParams): Record<string, unknown>[] {
       legislation.dateModified = frontmatter.last_updated;
     }
 
+    // Use currency as datePublished when it's an ISO date (e.g., eCFR), skip non-date values (e.g., USC "119-73")
+    if (frontmatter.currency && /^\d{4}-\d{2}-\d{2}$/.test(frontmatter.currency)) {
+      legislation.datePublished = frontmatter.currency;
+    }
+
     // Repealed sections
     if (frontmatter.legal_status === "repealed" || frontmatter.status === "repealed") {
       legislation.legislationDateVersion = frontmatter.last_updated;
     }
 
     return [legislation, breadcrumbLd];
+  }
+
+  // FR year/month index pages → CollectionPage type
+  if (source === "fr" && (granularity === "year" || granularity === "month")) {
+    const collectionPage: Record<string, unknown> = {
+      "@type": "CollectionPage",
+      name: buildTitle(source, granularity, frontmatter, nav),
+      url: canonicalUrl,
+      description: buildDescription(source, granularity, frontmatter, nav),
+      isPartOf,
+    };
+    return [collectionPage, breadcrumbLd];
   }
 
   // Index pages → WebPage type
@@ -301,4 +327,31 @@ export function buildBreadcrumbJsonLd(breadcrumbs: Breadcrumb[], siteUrl: string
     "@type": "BreadcrumbList",
     itemListElement: items,
   };
+}
+
+// --- buildArticleMeta ---
+
+/**
+ * Build article-specific OG metadata for content pages.
+ *
+ * FR documents use publication_date and document_type.
+ * USC/eCFR sections use last_updated as modifiedTime.
+ * Returns undefined when no fields are populated.
+ */
+export function buildArticleMeta(source: SourceId, fm: ContentFrontmatter): ArticleMeta | undefined {
+  if (source === "fr") {
+    if (fm.publication_date || fm.document_type) {
+      return {
+        ...(fm.publication_date ? { publishedTime: fm.publication_date } : {}),
+        ...(fm.document_type ? { section: fm.document_type.replace(/_/g, " ") } : {}),
+      };
+    }
+    return undefined;
+  }
+
+  // USC/eCFR sections
+  if (fm.last_updated) {
+    return { modifiedTime: fm.last_updated };
+  }
+  return undefined;
 }

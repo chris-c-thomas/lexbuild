@@ -53,15 +53,34 @@ export const lexbuildLight: ThemeRegistration = {
     { scope: ["support.type.property-name.json"], settings: { foreground: "#476c85" } },
     { scope: ["string.quoted.double.json"], settings: { foreground: "#975826" } },
     { scope: ["constant.numeric.json", "constant.language.json"], settings: { foreground: "#487061" } },
-    { scope: ["punctuation.definition.string.json", "punctuation.support.type.property-name.json"], settings: { foreground: "#94b7c7" } },
-    { scope: ["punctuation.separator.dictionary.pair.json", "punctuation.separator.array.json"], settings: { foreground: "#94b7c7" } },
+    {
+      scope: ["punctuation.definition.string.json", "punctuation.support.type.property-name.json"],
+      settings: { foreground: "#94b7c7" },
+    },
+    {
+      scope: ["punctuation.separator.dictionary.pair.json", "punctuation.separator.array.json"],
+      settings: { foreground: "#94b7c7" },
+    },
     // TOML
-    { scope: ["keyword.key.toml", "entity.name.tag.toml", "entity.name.table.toml"], settings: { foreground: "#476c85" } },
-    { scope: ["string.quoted.single.basic.toml", "string.quoted.double.basic.toml", "string.quoted.single.literal.toml"], settings: { foreground: "#975826" } },
+    {
+      scope: ["keyword.key.toml", "entity.name.tag.toml", "entity.name.table.toml"],
+      settings: { foreground: "#476c85" },
+    },
+    {
+      scope: [
+        "string.quoted.single.basic.toml",
+        "string.quoted.double.basic.toml",
+        "string.quoted.single.literal.toml",
+      ],
+      settings: { foreground: "#975826" },
+    },
     { scope: ["constant.numeric.toml", "constant.language.toml"], settings: { foreground: "#487061" } },
     // Shell / Bash
     { scope: ["source.shell", "source.bash"], settings: { foreground: "#1f2c38" } },
-    { scope: ["variable.other.normal.shell", "punctuation.definition.variable.shell"], settings: { foreground: "#487061" } },
+    {
+      scope: ["variable.other.normal.shell", "punctuation.definition.variable.shell"],
+      settings: { foreground: "#487061" },
+    },
     { scope: ["string.quoted.double.shell", "string.quoted.single.shell"], settings: { foreground: "#975826" } },
     { scope: ["keyword.operator.pipe.shell", "keyword.operator.redirect.shell"], settings: { foreground: "#94b7c7" } },
     { scope: ["support.function.builtin.shell"], settings: { foreground: "#476c85" } },
@@ -110,17 +129,39 @@ export const lexbuildDark: ThemeRegistration = {
     { scope: ["support.type.property-name.json"], settings: { foreground: "#b4cfda" } },
     { scope: ["string.quoted.double.json"], settings: { foreground: "#f1dfb6" } },
     { scope: ["constant.numeric.json", "constant.language.json"], settings: { foreground: "#98b8ab" } },
-    { scope: ["punctuation.definition.string.json", "punctuation.support.type.property-name.json"], settings: { foreground: "#ffffff40" } },
-    { scope: ["punctuation.separator.dictionary.pair.json", "punctuation.separator.array.json"], settings: { foreground: "#ffffff40" } },
+    {
+      scope: ["punctuation.definition.string.json", "punctuation.support.type.property-name.json"],
+      settings: { foreground: "#ffffff40" },
+    },
+    {
+      scope: ["punctuation.separator.dictionary.pair.json", "punctuation.separator.array.json"],
+      settings: { foreground: "#ffffff40" },
+    },
     // TOML
-    { scope: ["keyword.key.toml", "entity.name.tag.toml", "entity.name.table.toml"], settings: { foreground: "#b4cfda" } },
-    { scope: ["string.quoted.single.basic.toml", "string.quoted.double.basic.toml", "string.quoted.single.literal.toml"], settings: { foreground: "#f1dfb6" } },
+    {
+      scope: ["keyword.key.toml", "entity.name.tag.toml", "entity.name.table.toml"],
+      settings: { foreground: "#b4cfda" },
+    },
+    {
+      scope: [
+        "string.quoted.single.basic.toml",
+        "string.quoted.double.basic.toml",
+        "string.quoted.single.literal.toml",
+      ],
+      settings: { foreground: "#f1dfb6" },
+    },
     { scope: ["constant.numeric.toml", "constant.language.toml"], settings: { foreground: "#98b8ab" } },
     // Shell / Bash
     { scope: ["source.shell", "source.bash"], settings: { foreground: "#d3e3e9" } },
-    { scope: ["variable.other.normal.shell", "punctuation.definition.variable.shell"], settings: { foreground: "#98b8ab" } },
+    {
+      scope: ["variable.other.normal.shell", "punctuation.definition.variable.shell"],
+      settings: { foreground: "#98b8ab" },
+    },
     { scope: ["string.quoted.double.shell", "string.quoted.single.shell"], settings: { foreground: "#f1dfb6" } },
-    { scope: ["keyword.operator.pipe.shell", "keyword.operator.redirect.shell"], settings: { foreground: "#ffffff40" } },
+    {
+      scope: ["keyword.operator.pipe.shell", "keyword.operator.redirect.shell"],
+      settings: { foreground: "#ffffff40" },
+    },
     { scope: ["support.function.builtin.shell"], settings: { foreground: "#b4cfda" } },
   ],
 };

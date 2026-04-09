@@ -271,6 +271,8 @@ Interactive API docs powered by `@scalar/api-reference-react`, embedded as a `cl
 - **Homepage residual CSS is minimal (~50 lines)**: Only `color-mix()` backgrounds, JS-toggled `.active` tab states, `:global()` Shiki overrides, `auto-fit minmax` grid, and adjacent sibling combinators remain as scoped CSS. Everything else uses Tailwind utilities on the markup. The `sample-tab` class is kept as a JS hook (queried by the tab `<script>`) and CSS anchor for hover/active rules.
 - **Content Collections markdown rendering is separate from `lib/markdown.ts`**: Uses Astro's built-in pipeline configured in `astro.config.ts` (`markdown.shikiConfig` + `rehypePlugins`). The existing `lib/markdown.ts` unified pipeline is for legal content only. Do not mix them.
 - **`vite.ssr.external: ["shiki"]` coexists with Content Collections Shiki**: The external is for the runtime Shiki singleton (`lib/shiki.ts`). Astro's built-in markdown Shiki (Content Collections) uses a separate code path. Both work simultaneously.
+- **`astro:middleware` is a virtual module** (like `astro:content`): `import { defineMiddleware } from "astro:middleware"` causes tsc errors outside Astro's build pipeline. This is expected — the build succeeds.
+- **No `typecheck` turbo task for the Astro app**: `pnpm turbo typecheck --filter=@lexbuild/astro` runs 0 tasks. Use `pnpm turbo build:astro` to validate types via the Astro/Vite pipeline, or install `@astrojs/check` for standalone checking.
 
 ## Documentation Site
 
@@ -292,8 +294,11 @@ The docs site at `/docs/` uses Astro 6 Content Collections — separate from the
 
 All SEO is driven by `lib/seo.ts` (pure functions, no Astro imports) and `components/seo/SEOHead.astro`.
 
+- **`src/middleware.ts` ensures `charset=utf-8`** in the `Content-Type` header for all HTML responses. Without this, Astro's Node adapter may send `text/html` without charset, causing crawlers (Bing) to interpret UTF-8 as Latin-1 (e.g., `§` → `Â§`).
 - **`BaseLayout` requires a `PageSEO` prop** (not `title`/`description`). Every page must construct a `PageSEO` object.
-- **`buildPageSEO()`** handles content pages (catch-all routes). Static pages construct `PageSEO` literals directly.
+- **`buildPageSEO()`** handles all source catch-all routes (USC, eCFR, FR — including FR year/month index pages). Source index pages and static pages construct `PageSEO` literals directly. Do not bypass `buildPageSEO()` for catch-all routes.
+- **New structured data types** (e.g., `CollectionPage` for FR) belong as branches in `buildJsonLd()` in `seo.ts`, not as inline JSON-LD in page files.
+- **`ArticleMeta`** on `PageSEO` provides `article:published_time`, `article:modified_time`, and `article:section` OG tags. Populated automatically by `buildPageSEO()` for section/document pages when frontmatter is available.
 - **`siteUrl`** is always resolved from `import.meta.env.SITE_URL` at the call site, passed as a parameter to pure functions.
 - **`rawTitle?: true`** suppresses the ` | LexBuild` suffix (used only on the landing page).
 - **Error pages** set `robots: "noindex"`.

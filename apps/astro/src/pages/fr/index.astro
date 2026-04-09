@@ -19,12 +19,19 @@ const seo: PageSEO = {
   canonicalUrl: new URL("/fr", siteUrl).href,
   ogType: "website",
   ogImage: `${siteUrl}/og-image.png`,
-  jsonLd: {
-    "@type": "CollectionPage",
-    name: "Federal Register",
-    url: new URL("/fr", siteUrl).href,
-    description: "Federal Register documents as structured Markdown.",
-  },
+  jsonLd: [
+    {
+      "@type": "CollectionPage",
+      name: "Federal Register",
+      url: new URL("/fr", siteUrl).href,
+      description: "Federal Register documents as structured Markdown.",
+      isPartOf: { "@type": "WebSite", name: "LexBuild", url: siteUrl },
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [{ "@type": "ListItem", position: 1, name: "FR", item: new URL("/fr", siteUrl).href }],
+    },
+  ],
 };
 ---
 

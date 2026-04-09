@@ -7,13 +7,8 @@ import type { ServerDeps } from "../server/create-server.js";
 import { McpServerError } from "../server/errors.js";
 
 const ArgsSchema = {
-  source: z
-    .enum(["usc", "cfr"])
-    .describe("Legal source: usc (U.S. Code) or cfr (Code of Federal Regulations)."),
-  identifier: z
-    .string()
-    .min(1)
-    .describe("Section identifier. Examples: '/us/usc/t5/s552', 't17/s240.10b-5'."),
+  source: z.enum(["usc", "cfr"]).describe("Legal source: usc (U.S. Code) or cfr (Code of Federal Regulations)."),
+  identifier: z.string().min(1).describe("Section identifier. Examples: '/us/usc/t5/s552', 't17/s240.10b-5'."),
 };
 
 /** Registers the cite_statute prompt. */
@@ -22,8 +17,7 @@ export function registerCiteStatutePrompt(server: McpServer, deps: ServerDeps): 
     "cite_statute",
     {
       title: "Generate Bluebook Citation",
-      description:
-        "Generate a properly formatted Bluebook citation for a U.S. Code or CFR section.",
+      description: "Generate a properly formatted Bluebook citation for a U.S. Code or CFR section.",
       argsSchema: ArgsSchema,
     },
     async (args) => {

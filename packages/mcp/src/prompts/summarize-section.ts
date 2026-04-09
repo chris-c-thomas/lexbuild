@@ -10,15 +10,11 @@ import { McpServerError } from "../server/errors.js";
 const ArgsSchema = {
   source: z.enum(["usc", "cfr", "fr"]).describe("Legal source."),
   identifier: z.string().min(1).describe("Section identifier or FR document number."),
-  audience: z
-    .enum(["general", "legal", "technical"])
-    .default("general")
-    .describe("Target audience for the summary."),
+  audience: z.enum(["general", "legal", "technical"]).default("general").describe("Target audience for the summary."),
 };
 
 const AUDIENCE_INSTRUCTIONS: Record<string, string> = {
-  general:
-    "Write for a general audience with no legal background. Avoid jargon. Explain legal terms in plain English.",
+  general: "Write for a general audience with no legal background. Avoid jargon. Explain legal terms in plain English.",
   legal:
     "Write for a legal professional. Use standard legal terminology. Focus on operative provisions and exceptions.",
   technical:
@@ -31,8 +27,7 @@ export function registerSummarizeSectionPrompt(server: McpServer, deps: ServerDe
     "summarize_section",
     {
       title: "Summarize Legal Section",
-      description:
-        "Generate a plain-language summary of a legal section with key definitions and provisions.",
+      description: "Generate a plain-language summary of a legal section with key definitions and provisions.",
       argsSchema: ArgsSchema,
     },
     async (args) => {
