@@ -159,7 +159,11 @@ export interface FrDocumentNav {
   file: string;
 }
 
-/** Article-specific Open Graph metadata (only for ogType: "article" pages). */
+/**
+ * Article-specific Open Graph metadata (only for ogType: "article" pages).
+ *
+ * FR documents populate publishedTime + section. USC/eCFR sections populate modifiedTime.
+ */
 export interface ArticleMeta {
   publishedTime?: string;
   modifiedTime?: string;

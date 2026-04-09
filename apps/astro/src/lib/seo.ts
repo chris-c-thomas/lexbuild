@@ -5,14 +5,7 @@
  * rather than reading from `import.meta.env`.
  */
 
-import type {
-  SourceId,
-  Granularity,
-  ContentFrontmatter,
-  Breadcrumb,
-  PageSEO,
-  ArticleMeta,
-} from "./types.js";
+import type { SourceId, Granularity, ContentFrontmatter, Breadcrumb, PageSEO, ArticleMeta } from "./types.js";
 import { toTitleCase } from "./utils.js";
 
 // --- Internal parameter types ---
@@ -273,7 +266,7 @@ export function buildJsonLd(params: JsonLdParams): Record<string, unknown>[] {
       legislation.dateModified = frontmatter.last_updated;
     }
 
-    // Use currency as datePublished when it's an ISO date (eCFR), skip congress refs (USC)
+    // Use currency as datePublished when it's an ISO date (e.g., eCFR), skip non-date values (e.g., USC "119-73")
     if (frontmatter.currency && /^\d{4}-\d{2}-\d{2}$/.test(frontmatter.currency)) {
       legislation.datePublished = frontmatter.currency;
     }
@@ -338,17 +331,27 @@ export function buildBreadcrumbJsonLd(breadcrumbs: Breadcrumb[], siteUrl: string
 
 // --- buildArticleMeta ---
 
-/** Build article-specific OG metadata for content pages. */
-export function buildArticleMeta(source: SourceId, fm: ContentFrontmatter): ArticleMeta {
-  const meta: ArticleMeta = {};
-
+/**
+ * Build article-specific OG metadata for content pages.
+ *
+ * FR documents use publication_date and document_type.
+ * USC/eCFR sections use last_updated as modifiedTime.
+ * Returns undefined when no fields are populated.
+ */
+export function buildArticleMeta(source: SourceId, fm: ContentFrontmatter): ArticleMeta | undefined {
   if (source === "fr") {
-    if (fm.publication_date) meta.publishedTime = fm.publication_date;
-    if (fm.document_type) meta.section = fm.document_type.replace(/_/g, " ");
-  } else {
-    // USC/eCFR sections
-    if (fm.last_updated) meta.modifiedTime = fm.last_updated;
+    if (fm.publication_date || fm.document_type) {
+      return {
+        ...(fm.publication_date ? { publishedTime: fm.publication_date } : {}),
+        ...(fm.document_type ? { section: fm.document_type.replace(/_/g, " ") } : {}),
+      };
+    }
+    return undefined;
   }
 
-  return meta;
+  // USC/eCFR sections
+  if (fm.last_updated) {
+    return { modifiedTime: fm.last_updated };
+  }
+  return undefined;
 }

@@ -163,6 +163,21 @@ describe("buildTitle", () => {
     expect(title).toContain("Title 17, Part 240");
     expect(title).toContain("General Rules");
   });
+
+  it("returns toTitleCase(frontmatter.title) for FR document", () => {
+    const title = buildTitle("fr", "document", FR_DOCUMENT_FM);
+    expect(title).toContain("Amendments to Regulation");
+  });
+
+  it("builds FR year title from NavContext", () => {
+    const title = buildTitle("fr", "year", null, { year: 2026 });
+    expect(title).toBe("Federal Register — 2026");
+  });
+
+  it("builds FR month title from NavContext", () => {
+    const title = buildTitle("fr", "month", null, { monthName: "March", year: 2026 });
+    expect(title).toBe("Federal Register — March 2026");
+  });
 });
 
 // --- buildDescription ---
@@ -241,6 +256,28 @@ describe("buildDescription", () => {
   it("returns fallback for null frontmatter on section", () => {
     const desc = buildDescription("usc", "section", null);
     expect(desc).toContain("U.S. Code");
+  });
+
+  it("builds FR document description with type and agencies", () => {
+    const desc = buildDescription("fr", "document", FR_DOCUMENT_FM);
+    expect(desc).toContain("proposed rule");
+    expect(desc).toContain("Securities and Exchange Commission");
+  });
+
+  it("builds FR year index description with document count", () => {
+    const desc = buildDescription("fr", "year", null, { year: 2026, documentCount: 15000 });
+    expect(desc).toContain("15,000");
+    expect(desc).toContain("2026");
+  });
+
+  it("builds FR month index description with document count", () => {
+    const desc = buildDescription("fr", "month", null, {
+      monthName: "March",
+      year: 2026,
+      documentCount: 1200,
+    });
+    expect(desc).toContain("1,200");
+    expect(desc).toContain("March 2026");
   });
 });
 
@@ -507,6 +544,8 @@ describe("buildJsonLd (FR)", () => {
     expect(result).toHaveLength(2);
     expect(result[0]!["@type"]).toBe("CollectionPage");
     expect(result[0]!.isPartOf).toMatchObject({ "@type": "WebSite", name: "LexBuild" });
+    expect(result[0]!.name).toContain("2026");
+    expect(result[0]!.description).toContain("15,000");
     expect(result[1]!["@type"]).toBe("BreadcrumbList");
   });
 
@@ -524,6 +563,8 @@ describe("buildJsonLd (FR)", () => {
     expect(result).toHaveLength(2);
     expect(result[0]!["@type"]).toBe("CollectionPage");
     expect(result[0]!.isPartOf).toMatchObject({ "@type": "WebSite", name: "LexBuild" });
+    expect(result[0]!.name).toContain("March 2026");
+    expect(result[0]!.description).toContain("1,200");
     expect(result[1]!["@type"]).toBe("BreadcrumbList");
   });
 });
@@ -556,6 +597,39 @@ describe("buildJsonLd (datePublished)", () => {
 
     expect(result[0]!.datePublished).toBeUndefined();
   });
+
+  it("omits datePublished for currency with datetime suffix", () => {
+    const fm: ContentFrontmatter = { ...ECFR_SECTION_FM, currency: "2025-01-15T00:00:00" };
+    const result = buildJsonLd({
+      source: "ecfr",
+      granularity: "section",
+      frontmatter: fm,
+      canonicalUrl: "https://lexbuild.dev/ecfr/title-17/chapter-II/part-240/section-240.10b-5",
+      siteUrl: SITE_URL,
+      breadcrumbs: ECFR_BREADCRUMBS,
+    });
+
+    expect(result[0]!.datePublished).toBeUndefined();
+  });
+});
+
+// --- buildJsonLd (headline edge case) ---
+
+describe("buildJsonLd (headline)", () => {
+  it("sets headline to undefined when FR document has no title", () => {
+    const fm: ContentFrontmatter = { ...FR_DOCUMENT_FM, title: "" };
+    const result = buildJsonLd({
+      source: "fr",
+      granularity: "document",
+      frontmatter: fm,
+      canonicalUrl: "https://lexbuild.dev/fr/2026/03/2026-06029",
+      siteUrl: SITE_URL,
+      breadcrumbs: FR_DOCUMENT_BREADCRUMBS,
+    });
+
+    expect(result[0]!.headline).toBeUndefined();
+    expect(result[0]!.name).toBeUndefined();
+  });
 });
 
 // --- buildArticleMeta ---
@@ -563,20 +637,37 @@ describe("buildJsonLd (datePublished)", () => {
 describe("buildArticleMeta", () => {
   it("returns publishedTime and section for FR documents", () => {
     const meta = buildArticleMeta("fr", FR_DOCUMENT_FM);
-    expect(meta.publishedTime).toBe("2026-03-25");
-    expect(meta.section).toBe("proposed rule");
-    expect(meta.modifiedTime).toBeUndefined();
+    expect(meta).toBeDefined();
+    expect(meta!.publishedTime).toBe("2026-03-25");
+    expect(meta!.section).toBe("proposed rule");
+    expect(meta!.modifiedTime).toBeUndefined();
   });
 
   it("returns modifiedTime for USC sections", () => {
     const meta = buildArticleMeta("usc", USC_SECTION_FM);
-    expect(meta.modifiedTime).toBe("2025-12-03");
-    expect(meta.publishedTime).toBeUndefined();
+    expect(meta).toBeDefined();
+    expect(meta!.modifiedTime).toBe("2025-12-03");
+    expect(meta!.publishedTime).toBeUndefined();
   });
 
   it("returns modifiedTime for eCFR sections", () => {
     const meta = buildArticleMeta("ecfr", ECFR_SECTION_FM);
-    expect(meta.modifiedTime).toBe("2025-01-15");
-    expect(meta.publishedTime).toBeUndefined();
+    expect(meta).toBeDefined();
+    expect(meta!.modifiedTime).toBe("2025-01-15");
+    expect(meta!.publishedTime).toBeUndefined();
+  });
+
+  it("returns undefined when FR document has no publication_date or document_type", () => {
+    const fm: ContentFrontmatter = {
+      ...FR_DOCUMENT_FM,
+      publication_date: undefined,
+      document_type: undefined,
+    };
+    expect(buildArticleMeta("fr", fm)).toBeUndefined();
+  });
+
+  it("returns undefined when USC section has no last_updated", () => {
+    const fm: ContentFrontmatter = { ...USC_SECTION_FM, last_updated: "" };
+    expect(buildArticleMeta("usc", fm)).toBeUndefined();
   });
 });

@@ -298,7 +298,7 @@ All SEO is driven by `lib/seo.ts` (pure functions, no Astro imports) and `compon
 - **`BaseLayout` requires a `PageSEO` prop** (not `title`/`description`). Every page must construct a `PageSEO` object.
 - **`buildPageSEO()`** handles all source catch-all routes (USC, eCFR, FR — including FR year/month index pages). Source index pages and static pages construct `PageSEO` literals directly. Do not bypass `buildPageSEO()` for catch-all routes.
 - **New structured data types** (e.g., `CollectionPage` for FR) belong as branches in `buildJsonLd()` in `seo.ts`, not as inline JSON-LD in page files.
-- **`ArticleMeta`** on `PageSEO` provides `article:published_time`, `article:modified_time`, and `article:section` OG tags. Populated automatically by `buildPageSEO()` for section/document pages.
+- **`ArticleMeta`** on `PageSEO` provides `article:published_time`, `article:modified_time`, and `article:section` OG tags. Populated automatically by `buildPageSEO()` for section/document pages when frontmatter is available.
 - **`siteUrl`** is always resolved from `import.meta.env.SITE_URL` at the call site, passed as a parameter to pure functions.
 - **`rawTitle?: true`** suppresses the ` | LexBuild` suffix (used only on the landing page).
 - **Error pages** set `robots: "noindex"`.
