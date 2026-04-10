@@ -31,6 +31,9 @@ importers:
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.0.3(jiti@2.6.1))
+      '@lexbuild/ecfr':
+        specifier: workspace:*
+        version: link:packages/ecfr
       '@types/node':
         specifier: ^25.3.2
         version: 25.3.3
