@@ -30,6 +30,7 @@ $RECYCLE.BIN/
 # Personal
 # -----------------------------------------------------------------------------
 .dev
+.temp
 scripts/.deploy.env
 .search-docker-content/
 .meili-data.tar.gz
