@@ -597,8 +597,9 @@ const INSERT_SQL =
 function buildFixtureApiAggregates(): ApiAggregates {
   const frYears = new Map<number, FrYearAggregate>();
   for (const doc of FR_DOCS) {
-    const year = Number.parseInt(doc.publication_date!.slice(0, 4), 10);
-    const month = Number.parseInt(doc.publication_date!.slice(5, 7), 10);
+    if (!doc.publication_date) continue;
+    const year = Number.parseInt(doc.publication_date.slice(0, 4), 10);
+    const month = Number.parseInt(doc.publication_date.slice(5, 7), 10);
     const existing = frYears.get(year);
     if (existing) {
       existing.document_count += 1;
