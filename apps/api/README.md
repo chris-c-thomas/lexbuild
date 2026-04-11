@@ -61,7 +61,11 @@ The shared Postman files live in `apps/api/postman/`:
 - `lexbuild-api.postman_collection.json`
 - `lexbuild-api.postman_environment.json`
 
-The committed environment file keeps `api_key` blank so it is safe to share in git and works for anonymous requests at the default rate limit. If you want to use a real API key locally, create a separate local environment file such as `lexbuild-api.local.postman_environment.json` and keep your key there instead of editing the shared file.
+The committed environment file keeps `api_key` blank for anonymous requests at the default rate limit.
+
+If you want to use a real API key locally, create a separate local environment file such as `lexbuild-api.local.postman_environment.json` and keep your key there instead of editing the shared file.
+
+The shared environment keeps human-readable document identifiers such as `t1/s1`, `t17/s240.10b-5`, and `2026-06029`. The collection uses a pre-request script to derive canonical and URL-safe path variables for single-document requests, so USC and eCFR identifiers do not need to be stored pre-encoded.
 
 Local Postman environment files matching `*.local.postman_environment.json` are gitignored.
 
@@ -92,17 +96,17 @@ Full interactive documentation is available at [`/docs/api`](https://lexbuild.de
 | GET | `/api/usc/documents/{identifier}` | Retrieve a single USC section |
 | GET | `/api/usc/titles` | List all USC titles with document counts |
 | GET | `/api/usc/titles/{number}` | Title detail with chapter listing |
-| GET | `/api/cfr/documents` | List and filter CFR sections |
-| GET | `/api/cfr/documents/{identifier}` | Retrieve a single CFR section |
-| GET | `/api/cfr/titles` | List all CFR titles with document counts |
-| GET | `/api/cfr/titles/{number}` | Title detail with chapter listing |
+| GET | `/api/ecfr/documents` | List and filter eCFR sections |
+| GET | `/api/ecfr/documents/{identifier}` | Retrieve a single eCFR section |
+| GET | `/api/ecfr/titles` | List all eCFR titles with document counts |
+| GET | `/api/ecfr/titles/{number}` | Title detail with chapter listing |
 | GET | `/api/fr/documents` | List and filter FR documents |
 | GET | `/api/fr/documents/{identifier}` | Retrieve a single FR document |
 | GET | `/api/fr/years` | List all FR years with document counts |
 | GET | `/api/fr/years/{year}` | Year detail with month listing |
 | GET | `/api/fr/years/{year}/{month}` | Month detail with document listing |
 
-Document endpoints support content negotiation (`?format=json|markdown|text` or `Accept` header), field selection (`?fields=metadata|body|field1,field2`), and ETag caching (`If-None-Match` returns 304). Listing endpoints support offset and cursor pagination, multi-field filtering, and configurable sort order. Cursor-paginated responses omit the expensive total count and return `pagination.total` as `null`.
+Document endpoints support content negotiation (`?format=json|markdown|text` or `Accept` header), field selection (`?fields=metadata|body|field1,field2`), and ETag caching (`If-None-Match` returns 304). For eCFR, the API URL surface uses `/api/ecfr/...` while canonical document identifiers remain in the `/us/cfr/...` namespace. Listing endpoints support offset and cursor pagination, multi-field filtering, and configurable sort order. Cursor-paginated responses omit the expensive total count and return `pagination.total` as `null`.
 
 ## Authentication
 

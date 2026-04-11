@@ -17,7 +17,7 @@ These instructions apply to the LexBuild Data API in `apps/api/`.
   - allowed: `@lexbuild/core`
   - not allowed: `@lexbuild/usc`, `@lexbuild/ecfr`, `@lexbuild/fr`, `@lexbuild/cli`, or direct converter logic
 - API routes live under `/api/`, not `/api/v1/`.
-- CFR endpoints use `/api/cfr/` in the URL surface even though the stored source value is `ecfr`. Use the source-registry mapping rather than hardcoding assumptions.
+- eCFR endpoints use `/api/ecfr/` in the URL surface even though canonical identifiers remain in the `/us/cfr/` namespace. Use the source-registry mapping rather than hardcoding assumptions.
 - The interactive API reference lives in the Astro app. `/api/docs` should remain a redirect target, not a separate embedded docs system.
 - Treat OpenAPI as a first-class contract. When changing route inputs or outputs, update the Zod schemas and keep the generated spec consistent.
 - Prefer existing helpers for content negotiation, pagination, listings, and document metadata instead of re-implementing response shaping in route handlers.

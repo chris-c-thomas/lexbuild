@@ -1,0 +1,145 @@
+{
+  "id": "lexbuild-api-env",
+  "name": "LexBuild API",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:4322/api",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "api_key",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "search_query",
+      "value": "environmental protection",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "search_source",
+      "value": "usc",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "search_facets",
+      "value": "source,document_type,agency",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "usc_identifier",
+      "value": "t1/s1",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "ecfr_identifier",
+      "value": "t17/s240.10b-5",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "fr_identifier",
+      "value": "2026-06029",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "usc_title_number",
+      "value": "1",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "usc_status",
+      "value": "current",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "usc_positive_law",
+      "value": "true",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "usc_cursor",
+      "value": "/us/usc/t1/s1",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "ecfr_title_number",
+      "value": "17",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "ecfr_agency",
+      "value": "Securities and Exchange Commission",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "ecfr_part_number",
+      "value": "240",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "fr_year",
+      "value": "2026",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "fr_month",
+      "value": "3",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "fr_document_type",
+      "value": "rule",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "fr_agency",
+      "value": "Environmental Protection Agency",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "fr_date_from",
+      "value": "2026-03-01",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "fr_date_to",
+      "value": "2026-03-31",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "fr_effective_date_from",
+      "value": "2026-05-01",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "fr_effective_date_to",
+      "value": "2026-05-31",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}
