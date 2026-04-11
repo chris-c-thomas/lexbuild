@@ -10,3 +10,4 @@ fixtures/xml
 apps/astro/public/nav
 apps/astro/content
 apps/astro/.astro
+apps/api/postman
