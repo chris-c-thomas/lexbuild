@@ -51,7 +51,8 @@ h1 {
 .shadow-box {
   background-color: #ffffff;
   border-radius: 8px !important;
-  box-shadow: 0 1px 3px rgba(31, 44, 56, 0.06),
+  box-shadow:
+    0 1px 3px rgba(31, 44, 56, 0.06),
     0 6px 20px rgba(31, 44, 56, 0.04) !important;
   border: 1px solid #d3e3e9;
 }
@@ -299,7 +300,8 @@ body.dark {
 .dark .shadow-box:not(.alert) {
   background-color: #182838 !important;
   border-color: #243a4e !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2),
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.2),
     0 6px 20px rgba(0, 0, 0, 0.12) !important;
 }
 

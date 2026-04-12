@@ -1,12 +1,14 @@
 ---
 title: "Search Endpoint"
-description: "Full-text search across U.S. Code, CFR, and Federal Register documents with faceted filtering and highlights."
+description: "Full-text search across U.S. Code, eCFR, and Federal Register documents with faceted filtering and highlights."
 order: 5
 ---
 
 # Search Endpoint
 
-The search endpoint provides full-text search across all three sources (USC, CFR, and Federal Register) with faceted filtering, relevance ranking, and highlighted snippets. Search is powered by Meilisearch.
+The search endpoint provides full-text search across all three sources (USC, eCFR, and Federal
+Register) with faceted filtering, relevance ranking, and highlighted snippets. Search is powered
+by Meilisearch.
 
 ## Basic Search
 
@@ -29,7 +31,7 @@ curl "https://lexbuild.dev/api/search?q=environmental+protection"
   "data": {
     "hits": [
       {
-        "id": "usc-t42-s4321",
+        "id": "usc-title-42-section-4321",
         "source": "usc",
         "identifier": "/us/usc/t42/s4321",
         "heading": "Congressional declaration of purpose",
@@ -78,8 +80,8 @@ curl "https://lexbuild.dev/api/search?q=environmental+protection"
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `q` | string | *(required)* | Search query text |
-| `source` | string | -- | Filter by source: `usc`, `cfr`, or `fr` |
-| `title_number` | integer | -- | Filter by title number (USC and CFR) |
+| `source` | string | -- | Filter by source: `usc`, `ecfr`, or `fr` |
+| `title_number` | integer | -- | Filter by title number (USC and eCFR) |
 | `document_type` | string | -- | Filter FR documents: `rule`, `proposed_rule`, `notice`, `presidential_document` |
 | `agency` | string | -- | Filter by agency name |
 | `status` | string | -- | Filter by document status |
@@ -96,11 +98,11 @@ curl "https://lexbuild.dev/api/search?q=environmental+protection"
 Combine filters to narrow results to a specific source, title, or document type:
 
 ```bash
-# Search CFR only
-curl "https://lexbuild.dev/api/search?q=securities+fraud&source=cfr"
+# Search eCFR only
+curl "https://lexbuild.dev/api/search?q=securities+fraud&source=ecfr"
 
-# Search within a specific title
-curl "https://lexbuild.dev/api/search?q=disclosure&source=cfr&title_number=17"
+# Search within a specific eCFR title
+curl "https://lexbuild.dev/api/search?q=disclosure&source=ecfr&title_number=17"
 
 # Search FR rules from a date range
 curl "https://lexbuild.dev/api/search?q=emissions&source=fr&document_type=rule&date_from=2025-01-01&date_to=2025-12-31"
@@ -118,7 +120,7 @@ curl "https://lexbuild.dev/api/search?q=banking&facets=source,document_type,agen
 
 | Facet | Description |
 |---|---|
-| `source` | Document source distribution (usc, cfr, fr) |
+| `source` | Document source distribution (usc, ecfr, fr) |
 | `status` | Document status distribution |
 | `title_number` | Title number distribution |
 | `document_type` | FR document type distribution |
@@ -191,11 +193,11 @@ Each hit in the `data.hits` array contains:
 | Field | Type | Description |
 |---|---|---|
 | `id` | string | Internal document ID |
-| `source` | string | Source identifier (`usc`, `cfr`, or `fr`) |
+| `source` | string | Source identifier (`usc`, `ecfr`, or `fr`) |
 | `identifier` | string | Canonical document identifier |
 | `heading` | string | Document heading/title |
-| `title_number` | number or null | Title number (USC/CFR) |
-| `title_name` | string or null | Title name (USC/CFR) |
+| `title_number` | number or null | Title number (USC/eCFR) |
+| `title_name` | string or null | Title name (USC/eCFR) |
 | `status` | string | Document status |
 | `url` | string | Relative URL to the document on the web |
 | `document_type` | string or null | FR document type |
@@ -212,7 +214,10 @@ If the search service is unavailable, the API returns a `503 Service Unavailable
   "error": {
     "status": 503,
     "code": "REQUEST_ERROR",
-    "message": "Search service unavailable: Connection refused"
+    "message": "Search service is temporarily unavailable"
   }
 }
 ```
+
+If the search backend times out instead, the API returns `504 Gateway Timeout` with the message
+`"Search request timed out"`.

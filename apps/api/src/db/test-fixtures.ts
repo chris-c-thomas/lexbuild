@@ -661,9 +661,7 @@ export function createTestDatabase(dbPath: string): Database.Database {
     db.exec(sql);
   }
 
-  db.prepare("INSERT INTO schema_meta (key, value) VALUES ('schema_version', ?)").run(
-    String(SCHEMA_VERSION),
-  );
+  db.prepare("INSERT INTO schema_meta (key, value) VALUES ('schema_version', ?)").run(String(SCHEMA_VERSION));
   db.prepare("INSERT INTO schema_meta (key, value) VALUES (?, ?)").run(
     API_AGGREGATES_META_KEY,
     JSON.stringify(buildFixtureApiAggregates()),

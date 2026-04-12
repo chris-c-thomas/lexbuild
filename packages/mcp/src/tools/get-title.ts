@@ -7,12 +7,12 @@ import type { ServerDeps } from "../server/create-server.js";
 import { withErrorHandling } from "./with-error-handling.js";
 
 const InputSchema = {
-  source: z.enum(["usc", "cfr", "fr"]).describe("Legal source."),
+  source: z.enum(["usc", "ecfr", "fr"]).describe("Legal source."),
   number: z
     .number()
     .int()
     .positive()
-    .describe("Title number (USC/CFR) or year (FR). Examples: 5 (USC Title 5), 2026 (FR year)."),
+    .describe("Title number (USC/eCFR) or year (FR). Examples: 5 (USC Title 5), 2026 (FR year)."),
 };
 
 /** Registers the get_title tool. */
@@ -22,7 +22,7 @@ export function registerGetTitleTool(server: McpServer, deps: ServerDeps): void 
     {
       title: "Get Title or Year Detail",
       description:
-        "Get detail for a specific USC/CFR title (chapters and section counts) " +
+        "Get detail for a specific USC/eCFR title (chapters and section counts) " +
         "or a Federal Register year (months and document counts). " +
         "Use list_titles first to see available titles/years.",
       inputSchema: InputSchema,

@@ -170,9 +170,7 @@ describe("requestNeedsDocumentBody", () => {
   });
 
   it("returns false when selected fields omit body", () => {
-    expect(requestNeedsDocumentBody(makeContext("/api/usc/documents/t1?fields=title_number,status"))).toBe(
-      false,
-    );
+    expect(requestNeedsDocumentBody(makeContext("/api/usc/documents/t1?fields=title_number,status"))).toBe(false);
   });
 
   it("returns true for markdown requests", () => {

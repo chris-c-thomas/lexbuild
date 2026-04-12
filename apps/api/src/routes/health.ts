@@ -8,7 +8,7 @@ import { memoizeForTtl } from "../lib/ttl-cache.js";
 const HEALTH_CACHE_TTL_MS = 30_000;
 
 const healthResponseSchema = z.object({
-  status: z.enum(["ok", "degraded", "error"]),
+  status: z.enum(["ok", "error"]),
   version: z.string(),
   database: z.object({
     connected: z.boolean(),
@@ -42,9 +42,11 @@ export function registerHealthRoutes(app: OpenAPIHono, db: Database.Database): v
     const aggregates = getApiAggregates();
     const count =
       aggregates?.total_documents ??
-      ((db.prepare("SELECT count(*) as count FROM documents").get() as {
-        count: number;
-      }).count);
+      (
+        db.prepare("SELECT count(*) as count FROM documents").get() as {
+          count: number;
+        }
+      ).count;
 
     return {
       connected: true,

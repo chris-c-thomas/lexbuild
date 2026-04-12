@@ -1,5 +1,6 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import type { OpenAPIHono } from "@hono/zod-openapi";
+import { HTTPException } from "hono/http-exception";
 import type Database from "better-sqlite3";
 import { API_SOURCES, toDbSource } from "../lib/source-registry.js";
 import { readApiAggregates } from "../lib/api-aggregates.js";
@@ -90,20 +91,19 @@ export function registerSourceRoutes(app: OpenAPIHono, db: Database.Database): v
   });
 
   app.openapi(sourcesRoute, (c) => {
-    let data: Array<z.infer<typeof sourceSchema>> = [];
     try {
-      data = getSourceData();
+      const data = getSourceData();
+      return c.json({
+        data,
+        meta: {
+          api_version: "v1",
+          timestamp: new Date().toISOString(),
+        },
+      });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       console.error(`[sources] Failed to query document counts: ${msg}`);
+      throw new HTTPException(503, { message: "Source metadata temporarily unavailable" });
     }
-
-    return c.json({
-      data,
-      meta: {
-        api_version: "v1",
-        timestamp: new Date().toISOString(),
-      },
-    });
   });
 }

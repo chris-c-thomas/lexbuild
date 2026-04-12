@@ -122,7 +122,7 @@ describe("LexBuildApiClient", () => {
       expect(String(url)).toContain("/api/usc/documents/");
     });
 
-    it("uses cfr path for CFR documents", async () => {
+    it("uses ecfr path for eCFR documents", async () => {
       const client = createClient();
       mockFetch.mockResolvedValueOnce(
         jsonResponse({
@@ -131,9 +131,9 @@ describe("LexBuildApiClient", () => {
         }),
       );
 
-      await client.getDocument("cfr", "/us/cfr/t17/s240.10b-5");
+      await client.getDocument("ecfr", "/us/cfr/t17/s240.10b-5");
       const [url] = mockFetch.mock.calls[0]!;
-      expect(String(url)).toContain("/api/cfr/documents/");
+      expect(String(url)).toContain("/api/ecfr/documents/");
     });
   });
 

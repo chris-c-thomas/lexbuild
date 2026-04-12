@@ -141,16 +141,12 @@ export function isMeiliTimeoutError(err: unknown): boolean {
 }
 
 /** Build the sequence of search attempts from richest response to lean fallback. */
-export function buildSearchPlans(
-  params: z.infer<typeof searchQuerySchema>,
-  facets: string[],
-): SearchExecutionPlan[] {
+export function buildSearchPlans(params: z.infer<typeof searchQuerySchema>, facets: string[]): SearchExecutionPlan[] {
   const plans: SearchExecutionPlan[] = [];
   const pushUnique = (plan: SearchExecutionPlan) => {
     const exists = plans.some(
       (candidate) =>
-        candidate.includeBodySnippets === plan.includeBodySnippets &&
-        candidate.includeFacets === plan.includeFacets,
+        candidate.includeBodySnippets === plan.includeBodySnippets && candidate.includeFacets === plan.includeFacets,
     );
     if (!exists) {
       plans.push(plan);
@@ -261,7 +257,7 @@ const searchRoute = createRoute({
   tags: ["Search"],
   summary: "Search Documents",
   description:
-    "Search across U.S. Code, Code of Federal Regulations, and Federal Register documents with faceted filtering and highlighting.",
+    "Search across U.S. Code, eCFR, and Federal Register documents with faceted filtering and highlighting.",
   request: { query: searchQuerySchema },
   responses: {
     200: {
@@ -282,9 +278,7 @@ export function registerSearchRoutes(
   const executeSearch: SearchExecutor =
     searchExecutor ??
     ((query, searchOptions, timeoutMs) =>
-      client
-        .index(INDEX_NAME)
-        .search(query, searchOptions, { signal: AbortSignal.timeout(timeoutMs) }));
+      client.index(INDEX_NAME).search(query, searchOptions, { signal: AbortSignal.timeout(timeoutMs) }));
 
   // Short cache — search results depend on query but are stable between re-indexes
   app.use("/search", cacheHeaders({ maxAge: 60, sMaxAge: 300 }));

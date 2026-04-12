@@ -36,11 +36,11 @@ curl https://lexbuild.dev/api/sources
       "document_count": 59832
     },
     {
-      "id": "cfr",
-      "name": "Code of Federal Regulations",
-      "short_name": "CFR",
-      "description": "Federal agency regulations organized into 50 titles.",
-      "url_prefix": "/cfr",
+      "id": "ecfr",
+      "name": "eCFR",
+      "short_name": "eCFR",
+      "description": "Electronic Code of Federal Regulations, updated continuously by the Government Publishing Office.",
+      "url_prefix": "/ecfr",
       "hierarchy": ["title", "chapter", "part", "section"],
       "filterable_fields": ["title_number", "chapter_number", "part_number", "agency", "status", "legal_status"],
       "sortable_fields": ["title_number", "section_number", "identifier", "last_updated"],
@@ -69,7 +69,7 @@ curl https://lexbuild.dev/api/sources
 
 Each source object tells you:
 
-- **`hierarchy`** -- The browsing levels available for that source. USC and CFR use title/chapter/section; FR uses year/month/document.
+- **`hierarchy`** -- The browsing levels available for that source. USC uses title/chapter/section, eCFR uses title/chapter/part/section, and FR uses year/month/document.
 - **`filterable_fields`** -- Fields you can use as query parameters on the source's document listing endpoint.
 - **`sortable_fields`** -- Fields you can use with the `sort` parameter.
 - **`has_titles`** -- Whether the source supports the `/titles` hierarchy endpoints.
@@ -97,7 +97,7 @@ curl https://lexbuild.dev/api/stats
         "title_count": 54,
         "last_updated": "2026-03-15"
       },
-      "cfr": {
+      "ecfr": {
         "document_count": 213456,
         "title_count": 50,
         "last_updated": "2026-04-01"
@@ -130,7 +130,7 @@ curl https://lexbuild.dev/api/stats
 The stats response provides:
 
 - **`total_documents`** -- Total number of documents across all sources.
-- **USC/CFR stats** -- Document count, number of distinct titles, and the most recent `last_updated` date.
+- **USC/eCFR stats** -- Document count, number of distinct titles, and the most recent `last_updated` date.
 - **FR stats** -- Document count, date range of publications, and document counts by type (rule, proposed_rule, notice, presidential_document).
 - **`database.schema_version`** -- Internal schema version of the content database.
 
@@ -163,11 +163,16 @@ curl https://lexbuild.dev/api/health
 
 | Field | Description |
 |---|---|
-| `status` | Overall health: `ok`, `degraded`, or `error` |
+| `status` | Current health state: `ok` or `error` |
 | `version` | API package version |
 | `database.connected` | Whether the SQLite database is accessible |
 | `database.documents` | Total document count in the database |
 | `database.schema_version` | Content database schema version |
 | `uptime` | Server uptime in seconds |
 
-The health endpoint returns `"status": "error"` when the database connection fails. The HTTP status code is always 200, even in degraded states, so monitoring systems should check the `status` field in the response body.
+The health endpoint currently checks only the content database. It returns `"status": "error"`
+when that database connection fails. The HTTP status code is always 200, so monitoring systems
+should check the `status` field in the response body.
+
+Search health is separate. `/api/health` can report `ok` while `/api/search` is degraded or
+unavailable.

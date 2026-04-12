@@ -3,10 +3,7 @@ import { Hono } from "hono";
 import { resolveFormat } from "./content-negotiation.js";
 
 /** Helper to test resolveFormat by making a request through a Hono app. */
-async function getFormat(
-  queryFormat?: string,
-  acceptHeader?: string,
-): Promise<string> {
+async function getFormat(queryFormat?: string, acceptHeader?: string): Promise<string> {
   const app = new Hono();
   app.get("/test", (c) => c.json({ format: resolveFormat(c) }));
 

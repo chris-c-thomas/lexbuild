@@ -2,11 +2,7 @@ import type { Context, MiddlewareHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 
 /** Build a structured JSON error response from a caught error. */
-export function buildErrorResponse(
-  c: Context,
-  err: unknown,
-  requestId: string | undefined,
-): Response {
+export function buildErrorResponse(c: Context, err: unknown, requestId: string | undefined): Response {
   const status = err instanceof HTTPException ? err.status : 500;
   const message = err instanceof Error ? err.message : "Internal server error";
 

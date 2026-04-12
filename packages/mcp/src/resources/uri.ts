@@ -6,7 +6,7 @@ import type { ApiSource } from "../api/client.js";
 
 /** Parsed lexbuild:// URI. */
 export interface ParsedUri {
-  /** API source for the request path (e.g., "usc", "cfr", "fr"). */
+  /** API source for the request path (e.g., "usc", "ecfr", "fr"). */
   apiSource: ApiSource;
   /** Full canonical identifier (e.g., "/us/usc/t5/s552"). */
   identifier: string;
@@ -17,7 +17,7 @@ export interface ParsedUri {
  *
  * Supported patterns:
  * - `lexbuild://us/usc/t{title}/s{section}` → apiSource "usc"
- * - `lexbuild://us/cfr/t{title}/s{section}` → apiSource "cfr"
+ * - `lexbuild://us/cfr/t{title}/s{section}` → apiSource "ecfr"
  * - `lexbuild://us/fr/{document_number}` → apiSource "fr"
  *
  * @throws {Error} If the URI is malformed or has an unknown source.
@@ -34,7 +34,7 @@ export function parseLexbuildUri(uri: string): ParsedUri {
   }
 
   if (path.startsWith("us/cfr/")) {
-    return { apiSource: "cfr", identifier: `/${path}` };
+    return { apiSource: "ecfr", identifier: `/${path}` };
   }
 
   if (path.startsWith("us/fr/")) {

@@ -45,7 +45,7 @@ src/
 └── lib/
     ├── content-negotiation.ts
     ├── markdown-strip.ts   # Markdown to plaintext conversion
-    ├── source-registry.ts  # API_SOURCES config, URL_TO_DB_SOURCE mapping
+    ├── source-registry.ts  # API_SOURCES config, toDbSource/toApiSource mapping
     ├── documents.ts        # Identifier resolution, metadata building, field selection
     └── listings.ts         # Collection response envelope builder
 ```

@@ -8,7 +8,7 @@ import { wrapUntrustedContent } from "../tools/sanitize.js";
 import { McpServerError } from "../server/errors.js";
 
 const ArgsSchema = {
-  source: z.enum(["usc", "cfr", "fr"]).describe("Legal source."),
+  source: z.enum(["usc", "ecfr", "fr"]).describe("Legal source."),
   identifier: z.string().min(1).describe("Section identifier or FR document number."),
   audience: z.enum(["general", "legal", "technical"]).default("general").describe("Target audience for the summary."),
 };

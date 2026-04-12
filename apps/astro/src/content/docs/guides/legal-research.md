@@ -95,7 +95,7 @@ This tells you the rule amends regulations in 17 CFR Parts 240 and 249.
 ```bash
 # Get the specific CFR section
 curl -H "Accept: text/markdown" \
-  "https://lexbuild.dev/api/ecfr/documents/t17/s240.10b-5"
+  "https://lexbuild.dev/api/ecfr/documents/t17%2Fs240.10b-5"
 ```
 
 **4. Find the statutory authority:**
@@ -112,7 +112,7 @@ This points to Title 15 of the U.S. Code, starting at section 78a.
 
 ```bash
 curl -H "Accept: text/markdown" \
-  "https://lexbuild.dev/api/usc/documents/t15/s78a"
+  "https://lexbuild.dev/api/usc/documents/t15%2Fs78a"
 ```
 
 ## Identifier Patterns

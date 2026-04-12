@@ -210,11 +210,11 @@ curl "https://lexbuild.dev/api/usc/documents?title_number=42&limit=100"
 
 # Get a single section as raw Markdown
 curl -H "Accept: text/markdown" \
-  "https://lexbuild.dev/api/usc/documents/t42/s1395"
+  "https://lexbuild.dev/api/usc/documents/t42%2Fs1395"
 
 # Get a single eCFR section
 curl -H "Accept: text/markdown" \
-  "https://lexbuild.dev/api/ecfr/documents/t17/s240.10b-5"
+  "https://lexbuild.dev/api/ecfr/documents/t17%2Fs240.10b-5"
 ```
 
 The API supports pagination, filtering, and three response formats (JSON, Markdown, plaintext). See [API Overview](/docs/api/overview) for authentication details.

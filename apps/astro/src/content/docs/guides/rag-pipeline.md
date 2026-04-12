@@ -234,7 +234,7 @@ curl "https://lexbuild.dev/api/usc/documents?title_number=17&limit=100"
 
 # Get a single section as raw Markdown
 curl -H "Accept: text/markdown" \
-  "https://lexbuild.dev/api/usc/documents/t17/s107"
+  "https://lexbuild.dev/api/usc/documents/t17%2Fs107"
 ```
 
 The API returns the same content and metadata as the local files. Use the `format=markdown` query parameter or `Accept: text/markdown` header to get the raw Markdown with frontmatter.

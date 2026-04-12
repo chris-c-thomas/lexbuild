@@ -123,9 +123,7 @@ describe("GET /api/usc/documents/{identifier}", () => {
 
     expect(body.data.identifier).toBe("/us/usc/t1/s1");
     expect(body.data.source).toBe("usc");
-    expect(body.data.metadata.display_title).toBe(
-      "1 U.S.C. 1 - Words denoting number, gender, and so forth",
-    );
+    expect(body.data.metadata.display_title).toBe("1 U.S.C. 1 - Words denoting number, gender, and so forth");
     expect(body.data.body).toBeDefined();
     expect(body.data.body).toContain("# 1 U.S.C. 1");
   });

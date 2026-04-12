@@ -82,8 +82,3 @@ export function toDbSource(apiSource: ApiSourceId): DbSource {
 export function toApiSource(dbSource: string): string {
   return (DB_TO_API as Record<string, string>)[dbSource] ?? dbSource;
 }
-
-/**
- * @deprecated Use toDbSource() instead. Kept for backward compatibility during migration.
- */
-export const URL_TO_DB_SOURCE: Record<string, string> = URL_TO_DB;

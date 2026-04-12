@@ -19,13 +19,18 @@ The API serves three sources of U.S. federal law:
 | Source | Path Prefix | Description |
 |---|---|---|
 | **U.S. Code** (USC) | `/api/usc/` | General and permanent federal statutes organized into 54 titles |
-| **Code of Federal Regulations** (CFR) | `/api/cfr/` | Federal agency regulations organized into 50 titles |
+| **eCFR** | `/api/ecfr/` | Continuously updated CFR content organized into 50 titles |
 | **Federal Register** (FR) | `/api/fr/` | Daily journal of the U.S. government: rules, proposed rules, notices, and presidential documents |
+
+The API uses `ecfr` in route prefixes and source filters because the current regulatory corpus
+comes from the Electronic Code of Federal Regulations. Canonical document identifiers still use
+the `/us/cfr/...` namespace because the identifier scheme is keyed to the content type rather than
+the transport source.
 
 ## Key Features
 
 - **Content negotiation** -- Get responses as JSON (default), raw Markdown with YAML frontmatter, or stripped plaintext. Use the `Accept` header or `?format=` query parameter.
-- **Pagination** -- Offset-based pagination with configurable limits, totals, and a `next` link for easy traversal.
+- **Pagination** -- Offset-based pagination with configurable limits, totals, and a `next` link for easy traversal. Document collection endpoints also support cursor pagination for deep result sets.
 - **Filtering and sorting** -- Source-specific filters (title number, agency, document type, date ranges) and multi-field sorting.
 - **Field selection** -- Request only metadata, only the body, or specific fields to reduce response size.
 - **Full-text search** -- Cross-source search with faceted filtering, highlighting, and relevance ranking.
@@ -37,19 +42,19 @@ The API serves three sources of U.S. federal law:
 Fetch U.S. Code Title 1, Section 1 as JSON:
 
 ```bash
-curl https://lexbuild.dev/api/usc/documents/t1/s1
+curl https://lexbuild.dev/api/usc/documents/t1%2Fs1
 ```
 
 ```json
 {
   "data": {
-    "id": "usc-t1-s1",
+    "id": "us-usc-t1-s1",
     "identifier": "/us/usc/t1/s1",
     "source": "usc",
     "metadata": {
       "identifier": "/us/usc/t1/s1",
       "source": "usc",
-      "display_title": "1 U.S.C. SS 1 - Words denoting number, gender, and so forth",
+      "display_title": "1 U.S.C. 1 - Words denoting number, gender, and so forth",
       "title_number": 1,
       "title_name": "General Provisions",
       "section_number": "1",
@@ -69,6 +74,9 @@ curl https://lexbuild.dev/api/usc/documents/t1/s1
   }
 }
 ```
+
+When you use cursor pagination on document collection endpoints, `pagination.total` becomes
+`null` because the API skips the expensive count query.
 
 ## Interactive Documentation
 

@@ -1,6 +1,6 @@
 ---
 title: "Document Endpoints"
-description: "Retrieve and list U.S. Code, CFR, and Federal Register documents from the LexBuild API."
+description: "Retrieve and list U.S. Code, eCFR, and Federal Register documents from the LexBuild API."
 order: 3
 ---
 
@@ -42,11 +42,11 @@ curl "https://lexbuild.dev/api/usc/documents?title_number=17&limit=5"
 {
   "data": [
     {
-      "id": "usc-t17-s101",
+      "id": "us-usc-t17-s101",
       "identifier": "/us/usc/t17/s101",
       "source": "usc",
       "metadata": {
-        "display_title": "17 U.S.C. SS 101 - Definitions",
+        "display_title": "17 U.S.C. 101 - Definitions",
         "title_number": 17,
         "title_name": "Copyrights",
         "section_number": "101",
@@ -92,7 +92,7 @@ Retrieves a single USC section by its identifier. You can use either the shortha
 **Example:**
 
 ```bash
-curl https://lexbuild.dev/api/usc/documents/t17/s106
+curl https://lexbuild.dev/api/usc/documents/t17%2Fs106
 ```
 
 ```json
@@ -125,15 +125,15 @@ curl https://lexbuild.dev/api/usc/documents/t17/s106
 }
 ```
 
-## Code of Federal Regulations
+## eCFR
 
-### List CFR Documents
+### List eCFR Documents
 
 ```
-GET /api/cfr/documents
+GET /api/ecfr/documents
 ```
 
-Returns a paginated list of CFR sections with optional filtering and sorting.
+Returns a paginated list of eCFR sections with optional filtering and sorting.
 
 **Query parameters:**
 
@@ -150,39 +150,44 @@ Returns a paginated list of CFR sections with optional filtering and sorting.
 | `limit` | integer | Results per page (1-100, default: 20) |
 | `offset` | integer | Number of results to skip (default: 0) |
 
-**Example -- list CFR sections from the SEC (Title 17):**
+**Example -- list eCFR sections from the SEC (Title 17):**
 
 ```bash
-curl "https://lexbuild.dev/api/cfr/documents?title_number=17&limit=3"
+curl "https://lexbuild.dev/api/ecfr/documents?title_number=17&limit=3"
 ```
 
-### Get a Single CFR Document
+### Get a Single eCFR Document
 
 ```
-GET /api/cfr/documents/{identifier}
+GET /api/ecfr/documents/{identifier}
 ```
 
-Retrieves a single CFR section. Identifiers follow the same shorthand and full-form patterns.
+Retrieves a single eCFR section. The API route surface uses `ecfr`, while canonical identifiers
+remain in the `/us/cfr/...` namespace.
 
 **Example:**
 
 ```bash
-curl https://lexbuild.dev/api/cfr/documents/t17/s240.10b-5
+curl https://lexbuild.dev/api/ecfr/documents/t17%2Fs240.10b-5
 ```
 
-CFR metadata includes additional regulatory fields:
+eCFR metadata includes additional regulatory fields:
 
 ```json
 {
   "data": {
-    "id": "cfr-t17-s240-10b-5",
+    "id": "us-cfr-t17-s240.10b-5",
     "identifier": "/us/cfr/t17/s240.10b-5",
-    "source": "cfr",
+    "source": "ecfr",
     "metadata": {
       "identifier": "/us/cfr/t17/s240.10b-5",
-      "source": "cfr",
-      "display_title": "17 CFR SS 240.10b-5 - Employment of manipulative and deceptive devices",
+      "source": "ecfr",
+      "display_title": "17 CFR 240.10b-5 - Employment of manipulative and deceptive devices",
       "title_number": 17,
+      "title_name": "Commodity and Securities Exchanges",
+      "section_number": "240.10b-5",
+      "section_name": "Employment of manipulative and deceptive devices",
+      "chapter_number": "II",
       "part_number": "240",
       "agency": "Securities and Exchange Commission",
       "authority": "15 U.S.C. 78a et seq.",
@@ -248,7 +253,7 @@ FR metadata includes publication-specific fields:
 ```json
 {
   "data": {
-    "id": "fr-2026-06029",
+    "id": "us-fr-2026-06029",
     "identifier": "/us/fr/2026-06029",
     "source": "fr",
     "metadata": {
@@ -281,13 +286,13 @@ Single-document endpoints support content negotiation. You can request JSON, raw
 
 ```bash
 # JSON (default)
-curl https://lexbuild.dev/api/usc/documents/t1/s1
+curl https://lexbuild.dev/api/usc/documents/t1%2Fs1
 
 # Raw Markdown with YAML frontmatter
-curl -H "Accept: text/markdown" https://lexbuild.dev/api/usc/documents/t1/s1
+curl -H "Accept: text/markdown" https://lexbuild.dev/api/usc/documents/t1%2Fs1
 
 # Plaintext (Markdown formatting stripped)
-curl "https://lexbuild.dev/api/usc/documents/t1/s1?format=text"
+curl "https://lexbuild.dev/api/usc/documents/t1%2Fs1?format=text"
 ```
 
 See [Content Negotiation](/docs/api/content-negotiation) for full details.
@@ -305,10 +310,10 @@ Use the `fields` query parameter to control which parts of the response are retu
 
 ```bash
 # Get only metadata, skip the body
-curl "https://lexbuild.dev/api/usc/documents/t1/s1?fields=metadata"
+curl "https://lexbuild.dev/api/usc/documents/t1%2Fs1?fields=metadata"
 
 # Get specific fields
-curl "https://lexbuild.dev/api/usc/documents/t1/s1?fields=section_name,status,legal_status"
+curl "https://lexbuild.dev/api/usc/documents/t1%2Fs1?fields=section_name,status,legal_status"
 ```
 
 ## ETag Caching
@@ -317,12 +322,12 @@ Every single-document response includes an `ETag` header derived from the conten
 
 ```bash
 # First request
-curl -i https://lexbuild.dev/api/usc/documents/t1/s1
+curl -i https://lexbuild.dev/api/usc/documents/t1%2Fs1
 # Response includes: ETag: "a1b2c3d4e5f6g7h8"
 
 # Subsequent request with ETag
 curl -H 'If-None-Match: "a1b2c3d4e5f6g7h8"' \
-  https://lexbuild.dev/api/usc/documents/t1/s1
+  https://lexbuild.dev/api/usc/documents/t1%2Fs1
 # Returns 304 Not Modified if content unchanged
 ```
 

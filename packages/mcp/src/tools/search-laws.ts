@@ -9,7 +9,7 @@ import { withErrorHandling } from "./with-error-handling.js";
 
 const InputSchema = {
   query: z.string().min(2).max(256).describe("Natural language or keyword query. Supports quoted phrases."),
-  source: z.enum(["usc", "cfr", "fr"]).optional().describe("Restrict search to a specific source. Omit to search all."),
+  source: z.enum(["usc", "ecfr", "fr"]).optional().describe("Restrict search to a specific source. Omit to search all."),
   title: z
     .number()
     .int()

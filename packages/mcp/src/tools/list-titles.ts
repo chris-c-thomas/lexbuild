@@ -7,7 +7,7 @@ import type { ServerDeps } from "../server/create-server.js";
 import { withErrorHandling } from "./with-error-handling.js";
 
 const InputSchema = {
-  source: z.enum(["usc", "cfr", "fr"]).describe("Legal source. For usc/cfr, returns titles. For fr, returns years."),
+  source: z.enum(["usc", "ecfr", "fr"]).describe("Legal source. For usc/ecfr, returns titles. For fr, returns years."),
 };
 
 /** Registers the list_titles tool. */
@@ -17,7 +17,7 @@ export function registerListTitlesTool(server: McpServer, deps: ServerDeps): voi
     {
       title: "List Titles or Years",
       description:
-        "Enumerate available titles for USC or CFR, or available years for the Federal Register. " +
+        "Enumerate available titles for USC or eCFR, or available years for the Federal Register. " +
         "Returns title/year numbers, names, and document counts. " +
         "Use get_title to drill into a specific title or year.",
       inputSchema: InputSchema,

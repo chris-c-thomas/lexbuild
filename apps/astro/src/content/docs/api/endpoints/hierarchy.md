@@ -1,12 +1,14 @@
 ---
 title: "Hierarchy Endpoints"
-description: "Browse the structural hierarchy of USC titles, CFR titles, and Federal Register years and months."
+description: "Browse the structural hierarchy of USC titles, eCFR titles, and Federal Register years and months."
 order: 4
 ---
 
 # Hierarchy Endpoints
 
-Hierarchy endpoints let you browse the organizational structure of each source. USC and CFR are organized by title and chapter. The Federal Register is organized by year and month.
+Hierarchy endpoints let you browse the organizational structure of each source. USC and eCFR are
+organized by title and chapter in the hierarchy endpoints. The Federal Register is organized by
+year and month.
 
 ## U.S. Code Titles
 
@@ -90,18 +92,18 @@ curl https://lexbuild.dev/api/usc/titles/17
 
 If the title does not exist, the API returns a 404 error.
 
-## CFR Titles
+## eCFR Titles
 
-### List All CFR Titles
+### List All eCFR Titles
 
 ```
-GET /api/cfr/titles
+GET /api/ecfr/titles
 ```
 
-Returns all 50 CFR titles with document and chapter counts. The response shape is identical to the USC title listing.
+Returns all 50 eCFR titles with document and chapter counts. The response shape is identical to the USC title listing.
 
 ```bash
-curl https://lexbuild.dev/api/cfr/titles
+curl https://lexbuild.dev/api/ecfr/titles
 ```
 
 ```json
@@ -113,7 +115,7 @@ curl https://lexbuild.dev/api/cfr/titles
       "document_count": 134,
       "chapter_count": 4,
       "positive_law": false,
-      "url": "/api/cfr/titles/1"
+      "url": "/api/ecfr/titles/1"
     }
   ],
   "meta": {
@@ -123,16 +125,16 @@ curl https://lexbuild.dev/api/cfr/titles
 }
 ```
 
-### Get CFR Title Detail
+### Get eCFR Title Detail
 
 ```
-GET /api/cfr/titles/{number}
+GET /api/ecfr/titles/{number}
 ```
 
-Returns a CFR title with its chapter breakdown.
+Returns an eCFR title with its chapter breakdown.
 
 ```bash
-curl https://lexbuild.dev/api/cfr/titles/40
+curl https://lexbuild.dev/api/ecfr/titles/40
 ```
 
 ```json
@@ -247,7 +249,15 @@ curl https://lexbuild.dev/api/fr/years/2026
 GET /api/fr/years/{year}/{month}
 ```
 
-Returns all documents published in a specific month. The month parameter accepts one or two digits (e.g., `3` or `03` for March).
+Returns a paginated list of documents published in a specific month. The month parameter accepts
+one or two digits (for example, `3` or `03` for March).
+
+**Query parameters:**
+
+| Parameter | Type | Default | Range | Description |
+|---|---|---|---|---|
+| `limit` | integer | `100` | 1-500 | Number of documents to return |
+| `offset` | integer | `0` | 0+ | Number of documents to skip |
 
 ```bash
 curl https://lexbuild.dev/api/fr/years/2026/03
@@ -283,6 +293,13 @@ curl https://lexbuild.dev/api/fr/years/2026/03
   "meta": {
     "api_version": "v1",
     "timestamp": "2026-04-04T12:00:00.000Z"
+  },
+  "pagination": {
+    "total": 2689,
+    "limit": 100,
+    "offset": 0,
+    "has_more": true,
+    "next": "/api/fr/years/2026/03?limit=100&offset=100"
   }
 }
 ```
@@ -304,5 +321,5 @@ curl https://lexbuild.dev/api/usc/titles/42
 curl "https://lexbuild.dev/api/usc/documents?title_number=42&limit=50"
 
 # 4. Retrieve a specific section
-curl https://lexbuild.dev/api/usc/documents/t42/s1983
+curl https://lexbuild.dev/api/usc/documents/t42%2Fs1983
 ```

@@ -11,12 +11,7 @@ import type { OpenAPIHono } from "@hono/zod-openapi";
 import { createApp } from "./app.js";
 import { createTestDatabase } from "./db/test-fixtures.js";
 import { closeDatabase } from "./db/client.js";
-import {
-  initKeysDatabase,
-  closeKeysDatabase,
-  generateApiKey,
-  createApiKeyRecord,
-} from "./db/keys.js";
+import { initKeysDatabase, closeKeysDatabase, generateApiKey, createApiKeyRecord } from "./db/keys.js";
 
 export interface TestContext {
   app: OpenAPIHono;

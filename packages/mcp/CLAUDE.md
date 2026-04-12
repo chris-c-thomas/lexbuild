@@ -82,7 +82,7 @@ src/
 ## Common Pitfalls
 
 - **`exactOptionalPropertyTypes`**: Optional properties that may receive `undefined` values must be typed as `prop?: T | undefined`, not just `prop?: T`. This affects function parameters passed through from Zod schemas.
-- **CFR API path**: The Data API uses `/api/cfr/` (not `/api/ecfr/`) for CFR endpoints. The `URL_TO_DB_SOURCE` mapping in the API handles the translation.
+- **eCFR API path**: The Data API uses `/api/ecfr/` for eCFR endpoints. The `toDbSource()` function in the API handles source mapping.
 - **Stdio transport logs to stderr**: All logging goes to `console.error` to avoid corrupting the stdout JSON-RPC stream.
 - **SSRF protection**: The API client validates that all requests go to the configured `LEXBUILD_API_URL` host only.
 - **Response budget**: Tool responses are checked against `LEXBUILD_MCP_MAX_RESPONSE_BYTES` after JSON serialization. Oversized responses throw `McpServerError` with code `response_too_large`.

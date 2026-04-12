@@ -28,9 +28,7 @@ describe("GET /api/fr/documents", () => {
     const res = await ctx.app.request("/api/fr/documents");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test assertion
     const body = (await res.json()) as any;
-    const dates = body.data.map(
-      (d: { metadata: { publication_date: string } }) => d.metadata.publication_date,
-    );
+    const dates = body.data.map((d: { metadata: { publication_date: string } }) => d.metadata.publication_date);
     const sorted = [...dates].sort().reverse();
     expect(dates).toEqual(sorted);
   });
@@ -56,9 +54,7 @@ describe("GET /api/fr/documents", () => {
   });
 
   it("filters by date range", async () => {
-    const res = await ctx.app.request(
-      "/api/fr/documents?date_from=2026-03-15&date_to=2026-03-16",
-    );
+    const res = await ctx.app.request("/api/fr/documents?date_from=2026-03-15&date_to=2026-03-16");
     expect(res.status).toBe(200);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test assertion
     const body = (await res.json()) as any;

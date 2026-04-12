@@ -4,13 +4,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import Database from "better-sqlite3";
 import { API_KEYS_TABLE_SQL } from "@lexbuild/core";
-import {
-  generateApiKey,
-  hashApiKey,
-  validateApiKey,
-  trackUsage,
-  createApiKeyRecord,
-} from "./keys.js";
+import { generateApiKey, hashApiKey, validateApiKey, trackUsage, createApiKeyRecord } from "./keys.js";
 
 describe("API key functions", () => {
   let keysDb: Database.Database;
@@ -97,10 +91,7 @@ describe("API key functions", () => {
         rateLimit: 5000,
         rateWindow: 60,
       });
-      const row = keysDb.prepare("SELECT * FROM api_keys WHERE id = ?").get(id) as Record<
-        string,
-        unknown
-      >;
+      const row = keysDb.prepare("SELECT * FROM api_keys WHERE id = ?").get(id) as Record<string, unknown>;
       expect(row.key_hash).toBe(hash);
       expect(row.key_prefix).toBe(prefix);
       expect(row.label).toBe("test-persist");

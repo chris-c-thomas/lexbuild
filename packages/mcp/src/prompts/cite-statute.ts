@@ -7,7 +7,7 @@ import type { ServerDeps } from "../server/create-server.js";
 import { McpServerError } from "../server/errors.js";
 
 const ArgsSchema = {
-  source: z.enum(["usc", "cfr"]).describe("Legal source: usc (U.S. Code) or cfr (Code of Federal Regulations)."),
+  source: z.enum(["usc", "ecfr"]).describe("Legal source: usc (U.S. Code) or ecfr (eCFR / Code of Federal Regulations)."),
   identifier: z.string().min(1).describe("Section identifier. Examples: '/us/usc/t5/s552', 't17/s240.10b-5'."),
 };
 

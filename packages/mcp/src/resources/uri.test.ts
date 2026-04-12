@@ -10,7 +10,7 @@ describe("parseLexbuildUri", () => {
 
   it("parses CFR section URI", () => {
     const result = parseLexbuildUri("lexbuild://us/cfr/t17/s240.10b-5");
-    expect(result.apiSource).toBe("cfr");
+    expect(result.apiSource).toBe("ecfr");
     expect(result.identifier).toBe("/us/cfr/t17/s240.10b-5");
   });
 
@@ -28,7 +28,7 @@ describe("parseLexbuildUri", () => {
 
   it("handles CFR section with alphanumeric numbers", () => {
     const result = parseLexbuildUri("lexbuild://us/cfr/t40/s50.1");
-    expect(result.apiSource).toBe("cfr");
+    expect(result.apiSource).toBe("ecfr");
     expect(result.identifier).toBe("/us/cfr/t40/s50.1");
   });
 

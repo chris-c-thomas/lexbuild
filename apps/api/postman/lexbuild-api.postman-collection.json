@@ -1,0 +1,2579 @@
+{
+  "info": {
+    "_postman_id": "lexbuild-api-collection",
+    "name": "LexBuild Data API",
+    "description": "Complete collection for the LexBuild Data API — programmatic access to the U.S. Code, eCFR (Code of Federal Regulations), and Federal Register.\n\n**Base URL**: `https://lexbuild.dev/api` (production) or `http://localhost:4322/api` (local dev)\n\n**Authentication**: Pass your API key via `X-API-Key` header, `Authorization: Bearer <key>` header, or `?api_key=<key>` query parameter. Anonymous access is available at 100 requests/minute.\n\n**Documentation**: https://lexbuild.dev/docs/api\n\n**Content Negotiation**: Single-document endpoints support `?format=json|markdown|text` or the `Accept` header (`text/markdown`, `text/plain`).\n\n**Rate Limits**:\n- Anonymous: 100 req/min\n- Standard: 1,000 req/min\n- Elevated: 5,000 req/min\n- Unlimited: No limit\n\nRate limit headers (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-RateLimit-Policy`) are included on every response.\n\n**Identifier Variables**: Keep raw human-readable identifiers in the environment (`t1/s1`, `t17/s240.10b-5`, `2026-06029`). The collection pre-request script derives canonical and URL-safe path variables for single-document requests, so USC, eCFR, and FR identifiers do not need to be stored pre-encoded.\n\n**Saved Examples**: Embedded response examples are fixture-backed samples that illustrate response shape and representative values rather than corpus scale.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "X-API-Key",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{api_key}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "function readVar(name) {",
+          "    return pm.environment.get(name) ?? pm.collectionVariables.get(name) ?? '';",
+          "}",
+          "",
+          "function normalizeRaw(raw) {",
+          "    if (!raw) return '';",
+          "    const trimmed = raw.trim();",
+          "    if (trimmed.startsWith('%')) {",
+          "        try {",
+          "            return decodeURIComponent(trimmed);",
+          "        } catch {",
+          "            return trimmed;",
+          "        }",
+          "    }",
+          "    return trimmed;",
+          "}",
+          "",
+          "function canonicalize(source, raw) {",
+          "    const normalized = normalizeRaw(raw);",
+          "    if (!normalized) return '';",
+          "    if (normalized.startsWith('/us/')) return normalized;",
+          "    const prefixes = {",
+          "        usc: '/us/usc/',",
+          "        ecfr: '/us/cfr/',",
+          "        fr: '/us/fr/',",
+          "    };",
+          "    return `${prefixes[source]}${normalized}`;",
+          "}",
+          "",
+          "for (const source of ['usc', 'ecfr', 'fr']) {",
+          "    const raw = readVar(`${source}_identifier`);",
+          "    const canonical = canonicalize(source, raw);",
+          "    pm.variables.set(`${source}_identifier_canonical`, canonical);",
+          "    pm.variables.set(`${source}_identifier_path`, canonical ? encodeURIComponent(canonical) : '');",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test('No server errors', function () {",
+          "    pm.expect(pm.response.code).to.not.equal(500);",
+          "});",
+          "",
+          "pm.test('Response time < 5s', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+          "});",
+          "",
+          "pm.test('Content-Type header present', function () {",
+          "    pm.response.to.have.header('Content-Type');",
+          "});"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:4322/api",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "System",
+      "description": "Health checks, source metadata, corpus statistics, and OpenAPI specification.",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Returns API health status, database connectivity, document count, and uptime."
+          },
+          "response": [
+            {
+              "name": "Healthy",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"version\": \"1.23.2\",\n  \"database\": {\n    \"connected\": true,\n    \"documents\": 11,\n    \"schema_version\": 1\n  },\n  \"uptime\": 123.45\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Returns JSON', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "pm.test('Health status is ok', function () {",
+                  "    pm.expect(body.status).to.eql('ok');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Sources",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/sources",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sources"
+              ]
+            },
+            "description": "Returns metadata for all available legal sources, including filterable/sortable fields, hierarchy structure, and document counts."
+          },
+          "response": [
+            {
+              "name": "Sources",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"usc\",\n      \"name\": \"United States Code\",\n      \"short_name\": \"USC\",\n      \"description\": \"General and permanent federal statutes organized into 54 titles.\",\n      \"url_prefix\": \"/usc\",\n      \"hierarchy\": [\n        \"title\",\n        \"chapter\",\n        \"section\"\n      ],\n      \"filterable_fields\": [\n        \"title_number\",\n        \"chapter_number\",\n        \"status\",\n        \"positive_law\",\n        \"legal_status\"\n      ],\n      \"sortable_fields\": [\n        \"title_number\",\n        \"section_number\",\n        \"identifier\",\n        \"last_updated\"\n      ],\n      \"has_titles\": true,\n      \"document_count\": 4\n    },\n    {\n      \"id\": \"ecfr\",\n      \"name\": \"eCFR\",\n      \"short_name\": \"eCFR\",\n      \"description\": \"Electronic Code of Federal Regulations, updated continuously by the Government Publishing Office.\",\n      \"url_prefix\": \"/ecfr\",\n      \"hierarchy\": [\n        \"title\",\n        \"chapter\",\n        \"part\",\n        \"section\"\n      ],\n      \"filterable_fields\": [\n        \"title_number\",\n        \"chapter_number\",\n        \"part_number\",\n        \"agency\",\n        \"status\",\n        \"legal_status\"\n      ],\n      \"sortable_fields\": [\n        \"title_number\",\n        \"section_number\",\n        \"identifier\",\n        \"last_updated\"\n      ],\n      \"has_titles\": true,\n      \"document_count\": 3\n    },\n    {\n      \"id\": \"fr\",\n      \"name\": \"Federal Register\",\n      \"short_name\": \"FR\",\n      \"description\": \"Daily journal of the U.S. government: rules, proposed rules, notices, and presidential documents.\",\n      \"url_prefix\": \"/fr\",\n      \"hierarchy\": [\n        \"year\",\n        \"month\",\n        \"document\"\n      ],\n      \"filterable_fields\": [\n        \"document_type\",\n        \"agency\",\n        \"publication_date\",\n        \"effective_date\"\n      ],\n      \"sortable_fields\": [\n        \"publication_date\",\n        \"document_number\",\n        \"identifier\"\n      ],\n      \"has_titles\": false,\n      \"document_count\": 4\n    }\n  ],\n  \"meta\": {\n    \"api_version\": \"v1\",\n    \"timestamp\": \"2026-04-11T00:00:00.000Z\"\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Returns JSON', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Corpus Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stats",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "stats"
+              ]
+            },
+            "description": "Returns aggregate statistics for the entire corpus: total documents, per-source breakdowns, title counts, date ranges, and document type distributions."
+          },
+          "response": [
+            {
+              "name": "Statistics",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"total_documents\": 11,\n    \"sources\": {\n      \"usc\": {\n        \"document_count\": 4,\n        \"title_count\": 2,\n        \"last_updated\": \"2024-01-03\"\n      },\n      \"ecfr\": {\n        \"document_count\": 3,\n        \"title_count\": 2,\n        \"last_updated\": \"2024-04-01\"\n      },\n      \"fr\": {\n        \"document_count\": 4,\n        \"date_range\": {\n          \"earliest\": \"2026-03-15\",\n          \"latest\": \"2026-04-01\"\n        },\n        \"document_types\": {\n          \"rule\": 1,\n          \"proposed_rule\": 1,\n          \"notice\": 1,\n          \"presidential_document\": 1\n        }\n      }\n    },\n    \"database\": {\n      \"schema_version\": 1\n    }\n  },\n  \"meta\": {\n    \"api_version\": \"v1\",\n    \"timestamp\": \"2026-04-11T00:00:00.000Z\"\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Returns JSON', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "OpenAPI Specification",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/openapi.json",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "openapi.json"
+              ]
+            },
+            "description": "Returns the auto-generated OpenAPI 3.1 specification document describing all API endpoints, schemas, and parameters."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Returns JSON', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "pm.test('OpenAPI version is 3.1.0', function () {",
+                  "    pm.expect(body.openapi).to.eql('3.1.0');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "description": "Full-text search across all sources powered by Meilisearch. Supports filtering by source, document type, agency, date range, and custom facets.",
+      "item": [
+        {
+          "name": "Basic Search",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/search?q={{search_query}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "{{search_query}}",
+                  "description": "Search query (1–500 chars, required)"
+                }
+              ]
+            },
+            "description": "Search across all sources with default settings (20 results, relevance sort, highlights enabled, source+status facets)."
+          },
+          "response": [
+            {
+              "name": "Search Results",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "public, max-age=60, s-maxage=300"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"hits\": [\n      {\n        \"id\": \"usc-1\",\n        \"source\": \"usc\",\n        \"identifier\": \"/us/usc/t42/s7401\",\n        \"heading\": \"Congressional findings\",\n        \"title_number\": 42,\n        \"title_name\": \"The Public Health and Welfare\",\n        \"status\": \"current\",\n        \"url\": \"/usc/title-42/s7401\",\n        \"hierarchy\": [\n          \"Title 42\"\n        ],\n        \"highlights\": {\n          \"heading\": \"<mark>Congressional</mark> findings\",\n          \"identifier\": \"/us/usc/t42/s7401\"\n        }\n      }\n    ],\n    \"query\": \"environmental protection\",\n    \"processing_time_ms\": 18,\n    \"estimated_total_hits\": 1\n  },\n  \"facets\": {\n    \"source\": {\n      \"usc\": 1\n    },\n    \"status\": {\n      \"current\": 1\n    }\n  },\n  \"meta\": {\n    \"api_version\": \"v1\",\n    \"timestamp\": \"2026-04-11T00:00:00.000Z\"\n  },\n  \"pagination\": {\n    \"total\": 1,\n    \"limit\": 20,\n    \"offset\": 0,\n    \"has_more\": false\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Returns JSON', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search — Filter by Source",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/search?q={{search_query}}&source={{search_source}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "{{search_query}}"
+                },
+                {
+                  "key": "source",
+                  "value": "{{search_source}}",
+                  "description": "Filter to a single source: usc, ecfr, or fr"
+                }
+              ]
+            },
+            "description": "Search within a specific source (`usc`, `ecfr`, or `fr`) by editing `{{search_source}}` in the environment."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Returns JSON', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search — Multiple Filters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/search?q={{search_query}}&source=fr&document_type={{fr_document_type}}&date_from={{fr_date_from}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "{{search_query}}"
+                },
+                {
+                  "key": "source",
+                  "value": "fr"
+                },
+                {
+                  "key": "document_type",
+                  "value": "{{fr_document_type}}",
+                  "description": "rule, proposed_rule, notice, or presidential_document"
+                },
+                {
+                  "key": "date_from",
+                  "value": "{{fr_date_from}}",
+                  "description": "Filter by publication date (YYYY-MM-DD)"
+                },
+                {
+                  "key": "date_to",
+                  "value": "{{fr_date_to}}",
+                  "disabled": true,
+                  "description": "End date filter (YYYY-MM-DD)"
+                },
+                {
+                  "key": "agency",
+                  "value": "{{fr_agency}}",
+                  "disabled": true,
+                  "description": "Filter by agency name"
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Filter by document status"
+                },
+                {
+                  "key": "title_number",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Filter by title number (USC/eCFR)"
+                }
+              ]
+            },
+            "description": "Search with multiple FR-specific filters combined: source, document type, publication date range, and optional agency."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Returns JSON', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search — Paginated",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/search?q={{search_query}}&limit=5&offset=0&sort=relevance",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "{{search_query}}"
+                },
+                {
+                  "key": "limit",
+                  "value": "5",
+                  "description": "Results per page (1–100, default 20)"
+                },
+                {
+                  "key": "offset",
+                  "value": "0",
+                  "description": "Offset for pagination (default 0)"
+                },
+                {
+                  "key": "sort",
+                  "value": "relevance",
+                  "description": "Sort: relevance, publication_date, -publication_date, title_number, identifier, document_number"
+                }
+              ]
+            },
+            "description": "Paginated search with custom limit and sort order."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Returns JSON', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search — Custom Facets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/search?q={{search_query}}&facets={{search_facets}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "{{search_query}}"
+                },
+                {
+                  "key": "facets",
+                  "value": "{{search_facets}}",
+                  "description": "Comma-separated: source, title_number, document_type, agency, status, granularity, publication_date"
+                }
+              ]
+            },
+            "description": "Search with custom facet distribution fields. Edit `{{search_facets}}` in the environment to try different allowed facet combinations."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Returns JSON', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search — No Highlights",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/search?q={{search_query}}&highlight=false",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "{{search_query}}"
+                },
+                {
+                  "key": "highlight",
+                  "value": "false",
+                  "description": "Disable highlighted snippets in results"
+                }
+              ]
+            },
+            "description": "Search with highlighted snippets disabled for cleaner programmatic consumption."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Returns JSON', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "U.S. Code",
+      "description": "Endpoints for the United States Code — 54 titles of general and permanent federal statutes.",
+      "item": [
+        {
+          "name": "Documents",
+          "description": "List and filter USC documents.",
+          "item": [
+            {
+              "name": "List Documents",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/usc/documents",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "usc",
+                    "documents"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "20",
+                      "disabled": true,
+                      "description": "Results per page (1–100, default 20)"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0",
+                      "disabled": true,
+                      "description": "Offset for pagination"
+                    },
+                    {
+                      "key": "sort",
+                      "value": "identifier",
+                      "disabled": true,
+                      "description": "Sort field (identifier, title_number, section_number, last_updated)"
+                    }
+                  ]
+                },
+                "description": "List USC documents with default pagination (20 results, sorted by identifier)."
+              },
+              "response": [
+                {
+                  "name": "Document List",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    },
+                    {
+                      "key": "Cache-Control",
+                      "value": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800"
+                    }
+                  ],
+                  "body": "{\n  \"data\": [\n    {\n      \"id\": \"us-usc-t1-s1\",\n      \"identifier\": \"/us/usc/t1/s1\",\n      \"source\": \"usc\",\n      \"metadata\": {\n        \"display_title\": \"1 U.S.C. 1 - Words denoting number, gender, and so forth\",\n        \"title_number\": 1,\n        \"title_name\": \"General Provisions\",\n        \"section_number\": \"1\",\n        \"section_name\": \"Words denoting number, gender, and so forth\",\n        \"chapter_number\": \"1\",\n        \"chapter_name\": \"Rules of Construction\",\n        \"part_number\": null,\n        \"part_name\": null,\n        \"legal_status\": \"law\",\n        \"positive_law\": true,\n        \"status\": \"in_force\",\n        \"currency\": \"2024-01-03\",\n        \"last_updated\": \"2024-01-03\",\n        \"document_number\": null,\n        \"document_type\": null,\n        \"publication_date\": null,\n        \"agency\": null\n      }\n    },\n    {\n      \"id\": \"us-usc-t1-s2\",\n      \"identifier\": \"/us/usc/t1/s2\",\n      \"source\": \"usc\",\n      \"metadata\": {\n        \"display_title\": \"1 U.S.C. 2 - \\\"County\\\" as including \\\"parish\\\"\",\n        \"title_number\": 1,\n        \"title_name\": \"General Provisions\",\n        \"section_number\": \"2\",\n        \"section_name\": \"\\\"County\\\" as including \\\"parish\\\", and so forth\",\n        \"chapter_number\": \"1\",\n        \"chapter_name\": \"Rules of Construction\",\n        \"part_number\": null,\n        \"part_name\": null,\n        \"legal_status\": \"law\",\n        \"positive_law\": true,\n        \"status\": \"in_force\",\n        \"currency\": \"2024-01-03\",\n        \"last_updated\": \"2024-01-03\",\n        \"document_number\": null,\n        \"document_type\": null,\n        \"publication_date\": null,\n        \"agency\": null\n      }\n    },\n    {\n      \"id\": \"us-usc-t1-s3\",\n      \"identifier\": \"/us/usc/t1/s3\",\n      \"source\": \"usc\",\n      \"metadata\": {\n        \"display_title\": \"1 U.S.C. 3 - Vessel\",\n        \"title_number\": 1,\n        \"title_name\": \"General Provisions\",\n        \"section_number\": \"3\",\n        \"section_name\": \"\\\"Vessel\\\" as including all means of water transportation\",\n        \"chapter_number\": \"1\",\n        \"chapter_name\": \"Rules of Construction\",\n        \"part_number\": null,\n        \"part_name\": null,\n        \"legal_status\": \"law\",\n        \"positive_law\": true,\n        \"status\": \"in_force\",\n        \"currency\": \"2024-01-03\",\n        \"last_updated\": \"2024-01-03\",\n        \"document_number\": null,\n        \"document_type\": null,\n        \"publication_date\": null,\n        \"agency\": null\n      }\n    },\n    {\n      \"id\": \"us-usc-t26-s7801\",\n      \"identifier\": \"/us/usc/t26/s7801\",\n      \"source\": \"usc\",\n      \"metadata\": {\n        \"display_title\": \"26 U.S.C. 7801 - Authority of Department of the Treasury\",\n        \"title_number\": 26,\n        \"title_name\": \"Internal Revenue Code\",\n        \"section_number\": \"7801\",\n        \"section_name\": \"Authority of Department of the Treasury\",\n        \"chapter_number\": \"80\",\n        \"chapter_name\": \"General Rules\",\n        \"part_number\": null,\n        \"part_name\": null,\n        \"legal_status\": \"non_positive_law\",\n        \"positive_law\": false,\n        \"status\": \"in_force\",\n        \"currency\": \"2024-01-03\",\n        \"last_updated\": \"2024-01-03\",\n        \"document_number\": null,\n        \"document_type\": null,\n        \"publication_date\": null,\n        \"agency\": null\n      }\n    }\n  ],\n  \"meta\": {\n    \"api_version\": \"v1\",\n    \"format_version\": \"1.1.0\",\n    \"timestamp\": \"2026-04-11T00:00:00.000Z\"\n  },\n  \"pagination\": {\n    \"total\": 4,\n    \"limit\": 20,\n    \"offset\": 0,\n    \"has_more\": false,\n    \"next\": null\n  }\n}"
+                }
+              ],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List Documents — Filter by Title",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/usc/documents?title_number={{usc_title_number}}&limit=10",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "usc",
+                    "documents"
+                  ],
+                  "query": [
+                    {
+                      "key": "title_number",
+                      "value": "{{usc_title_number}}",
+                      "description": "Filter by USC title number"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "List documents from a specific USC title."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List Documents — Filter by Status",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/usc/documents?status={{usc_status}}&positive_law={{usc_positive_law}}&sort=title_number",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "usc",
+                    "documents"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "{{usc_status}}",
+                      "description": "Filter by status: current, repealed, reserved, transferred"
+                    },
+                    {
+                      "key": "positive_law",
+                      "value": "{{usc_positive_law}}",
+                      "description": "Filter by positive law status (true/false)"
+                    },
+                    {
+                      "key": "sort",
+                      "value": "title_number",
+                      "description": "Sort by title number ascending"
+                    },
+                    {
+                      "key": "legal_status",
+                      "value": "",
+                      "disabled": true,
+                      "description": "Alternative status filter"
+                    },
+                    {
+                      "key": "chapter_number",
+                      "value": "",
+                      "disabled": true,
+                      "description": "Filter by chapter number"
+                    }
+                  ]
+                },
+                "description": "List current positive-law sections, sorted by title number."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List Documents — Metadata Only",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/usc/documents?fields=metadata&limit=10",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "usc",
+                    "documents"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "metadata",
+                      "description": "Return metadata only, no body content"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "List documents returning only metadata (no body text). Useful for building indexes or catalogs."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List Documents — Cursor Pagination",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/usc/documents?limit=20&cursor={{usc_cursor}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "usc",
+                    "documents"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "{{usc_cursor}}",
+                      "description": "Keyset pagination cursor — use the last document's sort key from the previous page"
+                    }
+                  ]
+                },
+                "description": "Paginate using keyset/cursor pagination for stable page boundaries. Use the sort key of the last document from the previous response as the cursor value. Cursor-paginated responses return `pagination.total` as `null` and provide the next cursor in `pagination.next`."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Single Document",
+          "description": "Retrieve a single USC document by identifier. Keep `{{usc_identifier}}` human-readable in the environment; the collection pre-request script canonicalizes and URL-encodes the path value automatically.",
+          "item": [
+            {
+              "name": "Get Document (JSON)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/usc/documents/{{usc_identifier_path}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "usc",
+                    "documents",
+                    "{{usc_identifier_path}}"
+                  ]
+                },
+                "description": "Get a USC document by identifier. Set `{{usc_identifier}}` to shorthand (`t1/s1`) or a canonical identifier (`/us/usc/t1/s1`); the collection pre-request script canonicalizes and URL-encodes the path value automatically. Returns JSON with metadata and body by default."
+              },
+              "response": [
+                {
+                  "name": "Document (JSON)",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    },
+                    {
+                      "key": "ETag",
+                      "value": "\"a1b2c3d4e5f6a1b2\""
+                    },
+                    {
+                      "key": "Cache-Control",
+                      "value": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800"
+                    }
+                  ],
+                  "body": "{\n  \"data\": {\n    \"id\": \"us-usc-t1-s1\",\n    \"identifier\": \"/us/usc/t1/s1\",\n    \"source\": \"usc\",\n    \"metadata\": {\n      \"identifier\": \"/us/usc/t1/s1\",\n      \"source\": \"usc\",\n      \"legal_status\": \"law\",\n      \"display_title\": \"1 U.S.C. 1 - Words denoting number, gender, and so forth\",\n      \"title_number\": 1,\n      \"title_name\": \"General Provisions\",\n      \"section_number\": \"1\",\n      \"section_name\": \"Words denoting number, gender, and so forth\",\n      \"chapter_number\": \"1\",\n      \"chapter_name\": \"Rules of Construction\",\n      \"subchapter_number\": null,\n      \"subchapter_name\": null,\n      \"part_number\": null,\n      \"part_name\": null,\n      \"positive_law\": true,\n      \"status\": \"in_force\",\n      \"currency\": \"2024-01-03\",\n      \"last_updated\": \"2024-01-03\",\n      \"source_credit\": \"(July 30, 1947, ch. 388, 61 Stat. 633.)\"\n    },\n    \"body\": \"# 1 U.S.C. 1\\n\\nThis is test content for 1 U.S.C. 1.\\n\"\n  },\n  \"meta\": {\n    \"api_version\": \"v1\",\n    \"format_version\": \"1.1.0\",\n    \"timestamp\": \"2026-04-11T00:00:00.000Z\"\n  }\n}"
+                }
+              ],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});",
+                      "",
+                      "const body = pm.response.json();",
+                      "pm.test('Returns the requested usc document', function () {",
+                      "    pm.expect(body.data.identifier).to.eql(pm.variables.get('usc_identifier_canonical'));",
+                      "});",
+                      "",
+                      "const etag = pm.response.headers.get('ETag');",
+                      "if (etag) {",
+                      "    pm.collectionVariables.set('usc_document_etag', etag);",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Document (Markdown)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/usc/documents/{{usc_identifier_path}}?format=markdown",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "usc",
+                    "documents",
+                    "{{usc_identifier_path}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "format",
+                      "value": "markdown",
+                      "description": "Return raw Markdown with YAML frontmatter"
+                    }
+                  ]
+                },
+                "description": "Get the document as raw Markdown with YAML frontmatter. Set `{{usc_identifier}}` to a shorthand or canonical identifier; the collection pre-request script handles the path encoding. Content-Type: text/markdown."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns text/markdown', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/markdown');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Document (Plain Text)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/usc/documents/{{usc_identifier_path}}?format=text",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "usc",
+                    "documents",
+                    "{{usc_identifier_path}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "format",
+                      "value": "text",
+                      "description": "Return plain text with Markdown syntax stripped"
+                    }
+                  ]
+                },
+                "description": "Get the document as plain text (Markdown syntax stripped). Set `{{usc_identifier}}` to a shorthand or canonical identifier; the collection pre-request script handles the path encoding. Content-Type: text/plain."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns text/plain', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/plain');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Document — Metadata Only",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/usc/documents/{{usc_identifier_path}}?fields=metadata",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "usc",
+                    "documents",
+                    "{{usc_identifier_path}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "metadata",
+                      "description": "Return metadata only, no body"
+                    }
+                  ]
+                },
+                "description": "Get document metadata without the body text. Set `{{usc_identifier}}` to a shorthand or canonical identifier; the collection pre-request script handles the path encoding."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});",
+                      "",
+                      "const body = pm.response.json();",
+                      "pm.test('Returns USC metadata without body content', function () {",
+                      "    pm.expect(body.data).to.not.have.property('body');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Document — Specific Fields",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/usc/documents/{{usc_identifier_path}}?fields=display_title,status,body",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "usc",
+                    "documents",
+                    "{{usc_identifier_path}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "display_title,status,body",
+                      "description": "Comma-separated field names. 'identifier' and 'source' are always included."
+                    }
+                  ]
+                },
+                "description": "Get only specific fields. The `identifier` and `source` fields are always included. Include `body` explicitly to get the document text. The collection pre-request script canonicalizes and URL-encodes `{{usc_identifier}}` before the request is sent."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Document — Accept Header (Markdown)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "text/markdown",
+                    "description": "Request Markdown format via Accept header"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/usc/documents/{{usc_identifier_path}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "usc",
+                    "documents",
+                    "{{usc_identifier_path}}"
+                  ]
+                },
+                "description": "Get the document as Markdown using the Accept header instead of the format query parameter. The collection pre-request script canonicalizes and URL-encodes `{{usc_identifier}}` before the request is sent."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns text/markdown', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/markdown');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Hierarchy",
+          "description": "Browse the USC title and chapter hierarchy.",
+          "item": [
+            {
+              "name": "List Titles",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/usc/titles",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "usc",
+                    "titles"
+                  ]
+                },
+                "description": "List all 54 USC titles with document counts, chapter counts, and positive law status."
+              },
+              "response": [
+                {
+                  "name": "Titles",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"data\": [\n    {\n      \"title_number\": 1,\n      \"title_name\": \"General Provisions\",\n      \"document_count\": 3,\n      \"chapter_count\": 1,\n      \"positive_law\": true,\n      \"url\": \"/api/usc/titles/1\"\n    },\n    {\n      \"title_number\": 26,\n      \"title_name\": \"Internal Revenue Code\",\n      \"document_count\": 1,\n      \"chapter_count\": 1,\n      \"positive_law\": false,\n      \"url\": \"/api/usc/titles/26\"\n    }\n  ],\n  \"meta\": {\n    \"api_version\": \"v1\",\n    \"timestamp\": \"2026-04-11T00:00:00.000Z\"\n  }\n}"
+                }
+              ],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Title Detail",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/usc/titles/{{usc_title_number}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "usc",
+                    "titles",
+                    "{{usc_title_number}}"
+                  ]
+                },
+                "description": "Get detail for a specific USC title, including chapter breakdown with per-chapter document counts."
+              },
+              "response": [
+                {
+                  "name": "Title Detail",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"data\": {\n    \"title_number\": 1,\n    \"title_name\": \"General Provisions\",\n    \"document_count\": 3,\n    \"positive_law\": true,\n    \"chapters\": [\n      {\n        \"chapter_number\": \"1\",\n        \"chapter_name\": \"Rules of Construction\",\n        \"document_count\": 3\n      }\n    ]\n  },\n  \"meta\": {\n    \"api_version\": \"v1\",\n    \"timestamp\": \"2026-04-11T00:00:00.000Z\"\n  }\n}"
+                }
+              ],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "eCFR",
+      "description": "Endpoints for the Electronic Code of Federal Regulations — 50 titles of federal regulations updated daily.",
+      "item": [
+        {
+          "name": "Documents",
+          "description": "List and filter eCFR documents.",
+          "item": [
+            {
+              "name": "List Documents",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/ecfr/documents",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "ecfr",
+                    "documents"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "20",
+                      "disabled": true,
+                      "description": "Results per page (1–100, default 20)"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0",
+                      "disabled": true,
+                      "description": "Offset for pagination"
+                    },
+                    {
+                      "key": "sort",
+                      "value": "identifier",
+                      "disabled": true,
+                      "description": "Sort field"
+                    }
+                  ]
+                },
+                "description": "List eCFR documents with default pagination (20 results, sorted by identifier)."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List Documents — Filter by Title",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/ecfr/documents?title_number={{ecfr_title_number}}&limit=10",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "ecfr",
+                    "documents"
+                  ],
+                  "query": [
+                    {
+                      "key": "title_number",
+                      "value": "{{ecfr_title_number}}",
+                      "description": "Filter by CFR title number"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "List documents from a specific CFR title."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List Documents — Filter by Agency",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/ecfr/documents?agency={{ecfr_agency}}&limit=10",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "ecfr",
+                    "documents"
+                  ],
+                  "query": [
+                    {
+                      "key": "agency",
+                      "value": "{{ecfr_agency}}",
+                      "description": "Filter by regulatory agency name"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "List eCFR documents from a specific regulatory agency."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List Documents — Filter by Part",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/ecfr/documents?part_number={{ecfr_part_number}}&sort=identifier",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "ecfr",
+                    "documents"
+                  ],
+                  "query": [
+                    {
+                      "key": "part_number",
+                      "value": "{{ecfr_part_number}}",
+                      "description": "Filter by CFR part number"
+                    },
+                    {
+                      "key": "sort",
+                      "value": "identifier"
+                    },
+                    {
+                      "key": "chapter_number",
+                      "value": "",
+                      "disabled": true,
+                      "description": "Filter by chapter number"
+                    },
+                    {
+                      "key": "status",
+                      "value": "",
+                      "disabled": true,
+                      "description": "Filter by status"
+                    },
+                    {
+                      "key": "legal_status",
+                      "value": "",
+                      "disabled": true,
+                      "description": "Filter by legal status"
+                    }
+                  ]
+                },
+                "description": "List eCFR documents within a specific CFR part (e.g., Part 240 — Securities Exchange Act rules)."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List Documents — Metadata Only",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/ecfr/documents?fields=metadata&limit=10",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "ecfr",
+                    "documents"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "metadata",
+                      "description": "Return metadata only, no body content"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "List documents returning only metadata (no body text)."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Single Document",
+          "description": "Retrieve a single eCFR document by identifier. Keep `{{ecfr_identifier}}` human-readable in the environment; the collection pre-request script canonicalizes and URL-encodes the path value automatically.",
+          "item": [
+            {
+              "name": "Get Document (JSON)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/ecfr/documents/{{ecfr_identifier_path}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "ecfr",
+                    "documents",
+                    "{{ecfr_identifier_path}}"
+                  ]
+                },
+                "description": "Get an eCFR document by identifier. Set `{{ecfr_identifier}}` to shorthand (`t17/s240.10b-5`) or a canonical identifier (`/us/cfr/t17/s240.10b-5`); the collection pre-request script canonicalizes and URL-encodes the path value automatically. Metadata includes eCFR-specific fields: authority, regulatory_source, agency, cfr_part, cfr_subpart."
+              },
+              "response": [
+                {
+                  "name": "Document (JSON)",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    },
+                    {
+                      "key": "ETag",
+                      "value": "\"e5f6a1b2c3d4e5f6\""
+                    },
+                    {
+                      "key": "Cache-Control",
+                      "value": "public, max-age=3600, s-maxage=43200, stale-while-revalidate=604800"
+                    }
+                  ],
+                  "body": "{\n  \"data\": {\n    \"id\": \"us-cfr-t17-s240.10b-5\",\n    \"identifier\": \"/us/cfr/t17/s240.10b-5\",\n    \"source\": \"ecfr\",\n    \"metadata\": {\n      \"identifier\": \"/us/cfr/t17/s240.10b-5\",\n      \"source\": \"ecfr\",\n      \"legal_status\": \"authoritative_unofficial\",\n      \"display_title\": \"17 CFR 240.10b-5 - Employment of manipulative and deceptive devices\",\n      \"title_number\": 17,\n      \"title_name\": \"Commodity and Securities Exchanges\",\n      \"section_number\": \"240.10b-5\",\n      \"section_name\": \"Employment of manipulative and deceptive devices\",\n      \"chapter_number\": \"II\",\n      \"chapter_name\": \"Securities and Exchange Commission\",\n      \"subchapter_number\": null,\n      \"subchapter_name\": null,\n      \"part_number\": \"240\",\n      \"part_name\": \"General Rules and Regulations, Securities Exchange Act of 1934\",\n      \"positive_law\": false,\n      \"status\": \"in_force\",\n      \"currency\": \"2024-04-01\",\n      \"last_updated\": \"2024-04-01\",\n      \"authority\": \"15 U.S.C. 78a et seq.\",\n      \"regulatory_source\": \"[17 FR 3301, Apr. 15, 1952]\",\n      \"agency\": \"Securities and Exchange Commission\",\n      \"cfr_part\": \"240\",\n      \"cfr_subpart\": null\n    },\n    \"body\": \"# 17 CFR 240.10b-5\\n\\nThis is test content for 17 CFR 240.10b-5.\\n\"\n  },\n  \"meta\": {\n    \"api_version\": \"v1\",\n    \"format_version\": \"1.1.0\",\n    \"timestamp\": \"2026-04-11T00:00:00.000Z\"\n  }\n}"
+                }
+              ],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});",
+                      "",
+                      "const body = pm.response.json();",
+                      "pm.test('Returns the requested ecfr document', function () {",
+                      "    pm.expect(body.data.identifier).to.eql(pm.variables.get('ecfr_identifier_canonical'));",
+                      "});",
+                      "",
+                      "const etag = pm.response.headers.get('ETag');",
+                      "if (etag) {",
+                      "    pm.collectionVariables.set('ecfr_document_etag', etag);",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Document (Markdown)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/ecfr/documents/{{ecfr_identifier_path}}?format=markdown",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "ecfr",
+                    "documents",
+                    "{{ecfr_identifier_path}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "format",
+                      "value": "markdown"
+                    }
+                  ]
+                },
+                "description": "Get the document as raw Markdown with YAML frontmatter. Set `{{ecfr_identifier}}` to a shorthand or canonical identifier; the collection pre-request script handles the path encoding. Content-Type: text/markdown."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns text/markdown', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/markdown');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Document (Plain Text)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/ecfr/documents/{{ecfr_identifier_path}}?format=text",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "ecfr",
+                    "documents",
+                    "{{ecfr_identifier_path}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "format",
+                      "value": "text"
+                    }
+                  ]
+                },
+                "description": "Get the document as plain text (Markdown syntax stripped). Set `{{ecfr_identifier}}` to a shorthand or canonical identifier; the collection pre-request script handles the path encoding. Content-Type: text/plain."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns text/plain', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/plain');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Document — Metadata Only",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/ecfr/documents/{{ecfr_identifier_path}}?fields=metadata",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "ecfr",
+                    "documents",
+                    "{{ecfr_identifier_path}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "metadata"
+                    }
+                  ]
+                },
+                "description": "Get document metadata without the body text. Set `{{ecfr_identifier}}` to a shorthand or canonical identifier; the collection pre-request script handles the path encoding."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});",
+                      "",
+                      "const body = pm.response.json();",
+                      "pm.test('Returns eCFR metadata without body content', function () {",
+                      "    pm.expect(body.data).to.not.have.property('body');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Hierarchy",
+          "description": "Browse the eCFR title hierarchy.",
+          "item": [
+            {
+              "name": "List Titles",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/ecfr/titles",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "ecfr",
+                    "titles"
+                  ]
+                },
+                "description": "List all 50 CFR titles with document counts and chapter counts."
+              },
+              "response": [
+                {
+                  "name": "Titles",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"data\": [\n    {\n      \"title_number\": 17,\n      \"title_name\": \"Commodity and Securities Exchanges\",\n      \"document_count\": 2,\n      \"chapter_count\": 1,\n      \"positive_law\": false,\n      \"url\": \"/api/ecfr/titles/17\"\n    },\n    {\n      \"title_number\": 40,\n      \"title_name\": \"Protection of Environment\",\n      \"document_count\": 1,\n      \"chapter_count\": 1,\n      \"positive_law\": false,\n      \"url\": \"/api/ecfr/titles/40\"\n    }\n  ],\n  \"meta\": {\n    \"api_version\": \"v1\",\n    \"timestamp\": \"2026-04-11T00:00:00.000Z\"\n  }\n}"
+                }
+              ],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Title Detail",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/ecfr/titles/{{ecfr_title_number}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "ecfr",
+                    "titles",
+                    "{{ecfr_title_number}}"
+                  ]
+                },
+                "description": "Get detail for a specific CFR title, including chapter breakdown with per-chapter document counts."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Federal Register",
+      "description": "Endpoints for the Federal Register — daily journal of the U.S. Government containing rules, proposed rules, notices, and presidential documents.",
+      "item": [
+        {
+          "name": "Documents",
+          "description": "List and filter Federal Register documents.",
+          "item": [
+            {
+              "name": "List Documents",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/fr/documents",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "fr",
+                    "documents"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "20",
+                      "disabled": true,
+                      "description": "Results per page (1–100, default 20)"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0",
+                      "disabled": true,
+                      "description": "Offset for pagination"
+                    },
+                    {
+                      "key": "sort",
+                      "value": "-publication_date",
+                      "disabled": true,
+                      "description": "Sort: publication_date, -publication_date, document_number, identifier"
+                    }
+                  ]
+                },
+                "description": "List FR documents with default pagination (20 results, sorted newest first)."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List Documents — Filter by Type",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/fr/documents?document_type={{fr_document_type}}&limit=10",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "fr",
+                    "documents"
+                  ],
+                  "query": [
+                    {
+                      "key": "document_type",
+                      "value": "{{fr_document_type}}",
+                      "description": "rule, proposed_rule, notice, or presidential_document"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "List Federal Register documents filtered by document type."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List Documents — Date Range",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/fr/documents?date_from={{fr_date_from}}&date_to={{fr_date_to}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "fr",
+                    "documents"
+                  ],
+                  "query": [
+                    {
+                      "key": "date_from",
+                      "value": "{{fr_date_from}}",
+                      "description": "Publication date start (YYYY-MM-DD)"
+                    },
+                    {
+                      "key": "date_to",
+                      "value": "{{fr_date_to}}",
+                      "description": "Publication date end (YYYY-MM-DD)"
+                    }
+                  ]
+                },
+                "description": "List FR documents published within a date range."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List Documents — Filter by Agency",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/fr/documents?agency={{fr_agency}}&limit=10",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "fr",
+                    "documents"
+                  ],
+                  "query": [
+                    {
+                      "key": "agency",
+                      "value": "{{fr_agency}}",
+                      "description": "Filter by agency name"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "List Federal Register documents from a specific agency."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List Documents — Effective Date",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/fr/documents?effective_date_from={{fr_effective_date_from}}&sort=-publication_date",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "fr",
+                    "documents"
+                  ],
+                  "query": [
+                    {
+                      "key": "effective_date_from",
+                      "value": "{{fr_effective_date_from}}",
+                      "description": "Effective date start (YYYY-MM-DD)"
+                    },
+                    {
+                      "key": "effective_date_to",
+                      "value": "{{fr_effective_date_to}}",
+                      "disabled": true,
+                      "description": "Effective date end (YYYY-MM-DD)"
+                    },
+                    {
+                      "key": "sort",
+                      "value": "-publication_date"
+                    }
+                  ]
+                },
+                "description": "List FR documents by effective date. Useful for finding rules that take effect in a given period."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List Documents — Metadata Only",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/fr/documents?fields=metadata&limit=10",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "fr",
+                    "documents"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "metadata"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "List documents returning only metadata (no body text)."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Single Document",
+          "description": "Retrieve a single Federal Register document by identifier. Keep `{{fr_identifier}}` as a document number or canonical identifier in the environment; the collection pre-request script canonicalizes and URL-encodes the path value automatically.",
+          "item": [
+            {
+              "name": "Get Document (JSON)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/fr/documents/{{fr_identifier_path}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "fr",
+                    "documents",
+                    "{{fr_identifier_path}}"
+                  ]
+                },
+                "description": "Get an FR document by identifier. Set `{{fr_identifier}}` to a document number (`2026-06029`) or canonical identifier (`/us/fr/2026-06029`); the collection pre-request script canonicalizes and URL-encodes the path value automatically. Metadata includes FR-specific fields: document_number, document_type, publication_date, agencies, fr_citation, fr_volume, effective_date, comments_close_date, fr_action, docket_ids, cfr_references."
+              },
+              "response": [
+                {
+                  "name": "Document (JSON)",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    },
+                    {
+                      "key": "ETag",
+                      "value": "\"1111111111111111\""
+                    },
+                    {
+                      "key": "Cache-Control",
+                      "value": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=2592000"
+                    }
+                  ],
+                  "body": "{\n  \"data\": {\n    \"id\": \"us-fr-2026-06029\",\n    \"identifier\": \"/us/fr/2026-06029\",\n    \"source\": \"fr\",\n    \"metadata\": {\n      \"identifier\": \"/us/fr/2026-06029\",\n      \"source\": \"fr\",\n      \"legal_status\": \"official\",\n      \"display_title\": \"Air Quality Standards Amendments\",\n      \"title_number\": null,\n      \"title_name\": null,\n      \"section_number\": null,\n      \"section_name\": null,\n      \"chapter_number\": null,\n      \"chapter_name\": null,\n      \"subchapter_number\": null,\n      \"subchapter_name\": null,\n      \"part_number\": null,\n      \"part_name\": null,\n      \"positive_law\": false,\n      \"status\": null,\n      \"currency\": null,\n      \"last_updated\": \"2026-03-15\",\n      \"document_number\": \"2026-06029\",\n      \"document_type\": \"rule\",\n      \"publication_date\": \"2026-03-15\",\n      \"agency\": \"Environmental Protection Agency\",\n      \"agencies\": [\n        \"Environmental Protection Agency\"\n      ],\n      \"fr_citation\": \"91 FR 12345\",\n      \"fr_volume\": 91,\n      \"effective_date\": \"2026-05-15\",\n      \"comments_close_date\": null,\n      \"fr_action\": \"Final rule\",\n      \"docket_ids\": [\n        \"EPA-HQ-OAR-2024-0001\"\n      ],\n      \"cfr_references\": [\n        \"40 CFR 50\",\n        \"40 CFR 58\"\n      ]\n    },\n    \"body\": \"# Air Quality Standards Amendments\\n\\nThis is test content for Air Quality Standards Amendments.\\n\"\n  },\n  \"meta\": {\n    \"api_version\": \"v1\",\n    \"format_version\": \"1.1.0\",\n    \"timestamp\": \"2026-04-11T00:00:00.000Z\"\n  }\n}"
+                }
+              ],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});",
+                      "",
+                      "const body = pm.response.json();",
+                      "pm.test('Returns the requested fr document', function () {",
+                      "    pm.expect(body.data.identifier).to.eql(pm.variables.get('fr_identifier_canonical'));",
+                      "});",
+                      "",
+                      "const etag = pm.response.headers.get('ETag');",
+                      "if (etag) {",
+                      "    pm.collectionVariables.set('fr_document_etag', etag);",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Document (Markdown)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/fr/documents/{{fr_identifier_path}}?format=markdown",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "fr",
+                    "documents",
+                    "{{fr_identifier_path}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "format",
+                      "value": "markdown"
+                    }
+                  ]
+                },
+                "description": "Get the document as raw Markdown with YAML frontmatter. Set `{{fr_identifier}}` to a document number or canonical identifier; the collection pre-request script handles the path encoding. Content-Type: text/markdown."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns text/markdown', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/markdown');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Document (Plain Text)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/fr/documents/{{fr_identifier_path}}?format=text",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "fr",
+                    "documents",
+                    "{{fr_identifier_path}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "format",
+                      "value": "text"
+                    }
+                  ]
+                },
+                "description": "Get the document as plain text (Markdown syntax stripped). Set `{{fr_identifier}}` to a document number or canonical identifier; the collection pre-request script handles the path encoding. Content-Type: text/plain."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns text/plain', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/plain');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Document — Metadata Only",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/fr/documents/{{fr_identifier_path}}?fields=metadata",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "fr",
+                    "documents",
+                    "{{fr_identifier_path}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "metadata"
+                    }
+                  ]
+                },
+                "description": "Get document metadata without the body text. Set `{{fr_identifier}}` to a document number or canonical identifier; the collection pre-request script handles the path encoding."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});",
+                      "",
+                      "const body = pm.response.json();",
+                      "pm.test('Returns Federal Register metadata without body content', function () {",
+                      "    pm.expect(body.data).to.not.have.property('body');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Hierarchy",
+          "description": "Browse Federal Register documents by year and month.",
+          "item": [
+            {
+              "name": "List Years",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/fr/years",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "fr",
+                    "years"
+                  ]
+                },
+                "description": "List all years with Federal Register documents and their document counts."
+              },
+              "response": [
+                {
+                  "name": "Years",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"data\": [\n    {\n      \"year\": 2026,\n      \"document_count\": 4,\n      \"url\": \"/api/fr/years/2026\"\n    }\n  ],\n  \"meta\": {\n    \"api_version\": \"v1\",\n    \"timestamp\": \"2026-04-11T00:00:00.000Z\"\n  }\n}"
+                }
+              ],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Year Detail",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/fr/years/{{fr_year}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "fr",
+                    "years",
+                    "{{fr_year}}"
+                  ]
+                },
+                "description": "Get detail for a specific year, including monthly breakdown with per-month document counts."
+              },
+              "response": [
+                {
+                  "name": "Year Detail",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"data\": {\n    \"year\": 2026,\n    \"document_count\": 4,\n    \"months\": [\n      {\n        \"month\": 3,\n        \"document_count\": 3,\n        \"url\": \"/api/fr/years/2026/03\"\n      },\n      {\n        \"month\": 4,\n        \"document_count\": 1,\n        \"url\": \"/api/fr/years/2026/04\"\n      }\n    ]\n  },\n  \"meta\": {\n    \"api_version\": \"v1\",\n    \"timestamp\": \"2026-04-11T00:00:00.000Z\"\n  }\n}"
+                }
+              ],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Month Detail",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/fr/years/{{fr_year}}/{{fr_month}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "fr",
+                    "years",
+                    "{{fr_year}}",
+                    "{{fr_month}}"
+                  ]
+                },
+                "description": "Get detail for a specific month, including a listing of all documents published that month with key metadata (document number, title, type, date, agency)."
+              },
+              "response": [
+                {
+                  "name": "Month Detail",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"data\": {\n    \"year\": 2026,\n    \"month\": 3,\n    \"document_count\": 3,\n    \"documents\": [\n      {\n        \"id\": \"us-fr-2026-06029\",\n        \"identifier\": \"/us/fr/2026-06029\",\n        \"document_number\": \"2026-06029\",\n        \"display_title\": \"Air Quality Standards Amendments\",\n        \"document_type\": \"rule\",\n        \"publication_date\": \"2026-03-15\",\n        \"agency\": \"Environmental Protection Agency\"\n      },\n      {\n        \"id\": \"us-fr-2026-06030\",\n        \"identifier\": \"/us/fr/2026-06030\",\n        \"document_number\": \"2026-06030\",\n        \"display_title\": \"Proposed Emissions Standards for Heavy-Duty Vehicles\",\n        \"document_type\": \"proposed_rule\",\n        \"publication_date\": \"2026-03-16\",\n        \"agency\": \"Environmental Protection Agency\"\n      },\n      {\n        \"id\": \"us-fr-2026-06031\",\n        \"identifier\": \"/us/fr/2026-06031\",\n        \"document_number\": \"2026-06031\",\n        \"display_title\": \"Securities Exchange Act Notice\",\n        \"document_type\": \"notice\",\n        \"publication_date\": \"2026-03-17\",\n        \"agency\": \"Securities and Exchange Commission\"\n      }\n    ]\n  },\n  \"meta\": {\n    \"api_version\": \"v1\",\n    \"timestamp\": \"2026-04-11T00:00:00.000Z\"\n  },\n  \"pagination\": {\n    \"total\": 3,\n    \"limit\": 100,\n    \"offset\": 0,\n    \"has_more\": false,\n    \"next\": null\n  }\n}"
+                }
+              ],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Returns JSON', function () {",
+                      "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

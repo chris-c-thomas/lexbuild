@@ -28,9 +28,7 @@ describe("cacheHeaders", () => {
     app.get("/data", (c) => c.json({ ok: true }));
 
     const res = await app.request("/data");
-    expect(res.headers.get("Cache-Control")).toBe(
-      "public, max-age=60, stale-while-revalidate=120",
-    );
+    expect(res.headers.get("Cache-Control")).toBe("public, max-age=60, stale-while-revalidate=120");
   });
 
   it("includes all directives when fully configured", async () => {
@@ -39,9 +37,7 @@ describe("cacheHeaders", () => {
     app.get("/data", (c) => c.json({ ok: true }));
 
     const res = await app.request("/data");
-    expect(res.headers.get("Cache-Control")).toBe(
-      "public, max-age=60, s-maxage=3600, stale-while-revalidate=120",
-    );
+    expect(res.headers.get("Cache-Control")).toBe("public, max-age=60, s-maxage=3600, stale-while-revalidate=120");
   });
 
   it("does not set Cache-Control on non-200 responses", async () => {

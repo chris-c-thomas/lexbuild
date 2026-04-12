@@ -17,7 +17,7 @@ describe("USC hierarchy", () => {
       const res = await ctx.app.request("/api/usc/titles");
       expect(res.status).toBe(200);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test assertion
-    const body = (await res.json()) as any;
+      const body = (await res.json()) as any;
 
       expect(body.data).toHaveLength(2);
       const titleNumbers = body.data.map((t: { title_number: number }) => t.title_number);
@@ -28,7 +28,7 @@ describe("USC hierarchy", () => {
     it("includes document_count and chapter_count per title", async () => {
       const res = await ctx.app.request("/api/usc/titles");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test assertion
-    const body = (await res.json()) as any;
+      const body = (await res.json()) as any;
 
       const title1 = body.data.find((t: { title_number: number }) => t.title_number === 1);
       expect(title1.document_count).toBe(3);
@@ -45,7 +45,7 @@ describe("USC hierarchy", () => {
     it("includes meta with api_version and timestamp", async () => {
       const res = await ctx.app.request("/api/usc/titles");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test assertion
-    const body = (await res.json()) as any;
+      const body = (await res.json()) as any;
       expect(body.meta.api_version).toBe("v1");
       expect(body.meta.timestamp).toBeDefined();
     });
@@ -56,7 +56,7 @@ describe("USC hierarchy", () => {
       const res = await ctx.app.request("/api/usc/titles/1");
       expect(res.status).toBe(200);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test assertion
-    const body = (await res.json()) as any;
+      const body = (await res.json()) as any;
 
       expect(body.data.title_number).toBe(1);
       expect(body.data.title_name).toBe("General Provisions");
@@ -86,7 +86,7 @@ describe("eCFR hierarchy", () => {
       const res = await ctx.app.request("/api/ecfr/titles");
       expect(res.status).toBe(200);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test assertion
-    const body = (await res.json()) as any;
+      const body = (await res.json()) as any;
 
       expect(body.data).toHaveLength(2);
       const titleNumbers = body.data.map((t: { title_number: number }) => t.title_number);
@@ -97,7 +97,7 @@ describe("eCFR hierarchy", () => {
     it("includes correct counts per eCFR title", async () => {
       const res = await ctx.app.request("/api/ecfr/titles");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test assertion
-    const body = (await res.json()) as any;
+      const body = (await res.json()) as any;
 
       const title17 = body.data.find((t: { title_number: number }) => t.title_number === 17);
       expect(title17.document_count).toBe(2);
@@ -114,7 +114,7 @@ describe("eCFR hierarchy", () => {
       const res = await ctx.app.request("/api/ecfr/titles/17");
       expect(res.status).toBe(200);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test assertion
-    const body = (await res.json()) as any;
+      const body = (await res.json()) as any;
 
       expect(body.data.title_number).toBe(17);
       expect(body.data.document_count).toBe(2);
@@ -130,7 +130,7 @@ describe("eCFR hierarchy", () => {
       const body = (await res.json()) as any;
       expect(body.error.status).toBe(404);
       expect(body.error.code).toBe("REQUEST_ERROR");
-      expect(body.error.message).toContain("No CFR title 999 found");
+      expect(body.error.message).toContain("No eCFR title 999 found");
     });
   });
 });
@@ -141,7 +141,7 @@ describe("FR hierarchy", () => {
       const res = await ctx.app.request("/api/fr/years");
       expect(res.status).toBe(200);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test assertion
-    const body = (await res.json()) as any;
+      const body = (await res.json()) as any;
 
       expect(body.data).toHaveLength(1);
       expect(body.data[0].year).toBe(2026);
@@ -152,7 +152,7 @@ describe("FR hierarchy", () => {
     it("includes meta with api_version", async () => {
       const res = await ctx.app.request("/api/fr/years");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test assertion
-    const body = (await res.json()) as any;
+      const body = (await res.json()) as any;
       expect(body.meta.api_version).toBe("v1");
     });
   });
@@ -162,7 +162,7 @@ describe("FR hierarchy", () => {
       const res = await ctx.app.request("/api/fr/years/2026");
       expect(res.status).toBe(200);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test assertion
-    const body = (await res.json()) as any;
+      const body = (await res.json()) as any;
 
       expect(body.data.year).toBe(2026);
       expect(body.data.document_count).toBe(4);
@@ -193,7 +193,7 @@ describe("FR hierarchy", () => {
       const res = await ctx.app.request("/api/fr/years/2026/3");
       expect(res.status).toBe(200);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test assertion
-    const body = (await res.json()) as any;
+      const body = (await res.json()) as any;
 
       expect(body.data.year).toBe(2026);
       expect(body.data.month).toBe(3);
@@ -231,7 +231,7 @@ describe("FR hierarchy", () => {
       const res = await ctx.app.request("/api/fr/years/2026/3?limit=1&offset=1");
       expect(res.status).toBe(200);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test assertion
-    const body = (await res.json()) as any;
+      const body = (await res.json()) as any;
 
       expect(body.data.documents).toHaveLength(1);
       expect(body.pagination.offset).toBe(1);
@@ -242,7 +242,7 @@ describe("FR hierarchy", () => {
       const res = await ctx.app.request("/api/fr/years/2026/4");
       expect(res.status).toBe(200);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test assertion
-    const body = (await res.json()) as any;
+      const body = (await res.json()) as any;
 
       expect(body.data.documents).toHaveLength(1);
       expect(body.data.documents[0].document_type).toBe("presidential_document");

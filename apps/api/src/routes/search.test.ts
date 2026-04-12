@@ -103,9 +103,7 @@ describe("GET /api/search", () => {
   });
 
   it("returns 504 when all fallback attempts time out", async () => {
-    const searchExecutor = vi
-      .fn<SearchExecutor>()
-      .mockRejectedValue(new DOMException("timed out", "TimeoutError"));
+    const searchExecutor = vi.fn<SearchExecutor>().mockRejectedValue(new DOMException("timed out", "TimeoutError"));
 
     const app = createSearchRouteApp(searchExecutor);
     const res = await app.request("/search?q=environmental%20protection");
@@ -278,10 +276,7 @@ describe("isMeiliTimeoutError", () => {
 
 describe("buildSearchPlans", () => {
   it("builds progressively leaner plans for highlighted faceted searches", () => {
-    const plans = buildSearchPlans(
-      { q: "test", limit: 20, offset: 0, highlight: true },
-      ["source", "status"],
-    );
+    const plans = buildSearchPlans({ q: "test", limit: 20, offset: 0, highlight: true }, ["source", "status"]);
 
     expect(plans).toEqual([
       { includeBodySnippets: true, includeFacets: true, timeoutMs: 5000 },
@@ -291,10 +286,7 @@ describe("buildSearchPlans", () => {
   });
 
   it("keeps a single plan for already-lean searches", () => {
-    const plans = buildSearchPlans(
-      { q: "test", limit: 20, offset: 0, highlight: false },
-      [],
-    );
+    const plans = buildSearchPlans({ q: "test", limit: 20, offset: 0, highlight: false }, []);
 
     expect(plans).toHaveLength(1);
     expect(plans[0]).toEqual({ includeBodySnippets: false, includeFacets: false, timeoutMs: 5000 });
@@ -353,13 +345,10 @@ describe("executeSearchWithFallback", () => {
       });
 
     await expect(
-      executeSearchWithFallback(
-        executor,
-        { q: "test", limit: 20, offset: 0, highlight: true },
-        undefined,
-        undefined,
-        ["source", "status"],
-      ),
+      executeSearchWithFallback(executor, { q: "test", limit: 20, offset: 0, highlight: true }, undefined, undefined, [
+        "source",
+        "status",
+      ]),
     ).resolves.toMatchObject({ query: "test", estimatedTotalHits: 0 });
 
     expect(executor).toHaveBeenCalledTimes(2);
@@ -403,13 +392,10 @@ describe("executeSearchWithFallback", () => {
     const executor = vi.fn().mockRejectedValue(new Error("unavailable"));
 
     await expect(
-      executeSearchWithFallback(
-        executor,
-        { q: "test", limit: 20, offset: 0, highlight: true },
-        undefined,
-        undefined,
-        ["source", "status"],
-      ),
+      executeSearchWithFallback(executor, { q: "test", limit: 20, offset: 0, highlight: true }, undefined, undefined, [
+        "source",
+        "status",
+      ]),
     ).rejects.toThrow("unavailable");
 
     expect(executor).toHaveBeenCalledTimes(1);

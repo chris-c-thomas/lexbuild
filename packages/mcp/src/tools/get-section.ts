@@ -10,8 +10,8 @@ import { withErrorHandling } from "./with-error-handling.js";
 
 const InputSchema = {
   source: z
-    .enum(["usc", "cfr", "fr"])
-    .describe("Legal source: usc (U.S. Code), cfr (Code of Federal Regulations), or fr (Federal Register)."),
+    .enum(["usc", "ecfr", "fr"])
+    .describe("Legal source: usc (U.S. Code), ecfr (eCFR / Code of Federal Regulations), or fr (Federal Register)."),
   identifier: z
     .string()
     .min(1)

@@ -22,7 +22,7 @@ export interface PaginationMeta {
 /** Parameters for the search endpoint. */
 export interface SearchParams {
   q: string;
-  source?: "usc" | "cfr" | "fr" | undefined;
+  source?: "usc" | "ecfr" | "fr" | undefined;
   title_number?: number | undefined;
   limit?: number | undefined;
   offset?: number | undefined;
