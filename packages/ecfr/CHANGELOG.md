@@ -1,5 +1,11 @@
 # @lexbuild/ecfr
 
+## 2.0.0
+
+### Patch Changes
+
+- @lexbuild/core@2.0.0
+
 ## 1.23.3
 
 ### Patch Changes

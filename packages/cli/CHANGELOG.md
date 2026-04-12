@@ -1,5 +1,14 @@
 # @lexbuild/cli
 
+## 2.0.0
+
+### Patch Changes
+
+- @lexbuild/core@2.0.0
+- @lexbuild/usc@2.0.0
+- @lexbuild/ecfr@2.0.0
+- @lexbuild/fr@2.0.0
+
 ## 1.23.3
 
 ### Patch Changes
