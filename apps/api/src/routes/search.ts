@@ -256,8 +256,7 @@ const searchRoute = createRoute({
   path: "/search",
   tags: ["Search"],
   summary: "Search Documents",
-  description:
-    "Search across U.S. Code, eCFR, and Federal Register documents with faceted filtering and highlighting.",
+  description: "Search across U.S. Code, eCFR, and Federal Register documents with faceted filtering and highlighting.",
   request: { query: searchQuerySchema },
   responses: {
     200: {
