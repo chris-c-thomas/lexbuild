@@ -1,6 +1,6 @@
 {
   "name": "@lexbuild/mcp",
-  "version": "1.23.2",
+  "version": "1.23.3",
   "description": "Model Context Protocol server for LexBuild. Exposes U.S. legal sources to AI agents.",
   "author": "Chris Thomas",
   "license": "MIT",

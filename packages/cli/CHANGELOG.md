@@ -1,5 +1,16 @@
 # @lexbuild/cli
 
+## 1.23.3
+
+### Patch Changes
+
+- f1cf97f: Persist API aggregate snapshots during ingest so the Data API can serve stats and Federal Register hierarchy endpoints without recomputing full-table aggregates on live requests.
+- Updated dependencies [f1cf97f]
+  - @lexbuild/core@1.23.3
+  - @lexbuild/ecfr@1.23.3
+  - @lexbuild/fr@1.23.3
+  - @lexbuild/usc@1.23.3
+
 ## 1.22.0
 
 ### Minor Changes
