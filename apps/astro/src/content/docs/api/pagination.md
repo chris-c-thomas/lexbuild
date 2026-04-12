@@ -162,7 +162,7 @@ collection endpoints always return the standard listing metadata envelope.
 Pass a comma-separated list of field names to include only those fields:
 
 ```bash
-curl "https://lexbuild.dev/api/usc/documents/t1/s1?fields=section_name,status,legal_status"
+curl "https://lexbuild.dev/api/usc/documents/t1%2Fs1?fields=section_name,status,legal_status"
 ```
 
 ```json
@@ -188,7 +188,7 @@ The `identifier` and `source` fields are always included regardless of the field
 To include the body in a custom field list, add `body` as one of the fields:
 
 ```bash
-curl "https://lexbuild.dev/api/usc/documents/t1/s1?fields=section_name,body"
+curl "https://lexbuild.dev/api/usc/documents/t1%2Fs1?fields=section_name,body"
 ```
 
 ### Available Metadata Fields

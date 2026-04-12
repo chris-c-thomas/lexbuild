@@ -92,7 +92,7 @@ Retrieves a single USC section by its identifier. You can use either the shortha
 **Example:**
 
 ```bash
-curl https://lexbuild.dev/api/usc/documents/t17/s106
+curl https://lexbuild.dev/api/usc/documents/t17%2Fs106
 ```
 
 ```json
@@ -168,7 +168,7 @@ remain in the `/us/cfr/...` namespace.
 **Example:**
 
 ```bash
-curl https://lexbuild.dev/api/ecfr/documents/t17/s240.10b-5
+curl https://lexbuild.dev/api/ecfr/documents/t17%2Fs240.10b-5
 ```
 
 eCFR metadata includes additional regulatory fields:
@@ -286,13 +286,13 @@ Single-document endpoints support content negotiation. You can request JSON, raw
 
 ```bash
 # JSON (default)
-curl https://lexbuild.dev/api/usc/documents/t1/s1
+curl https://lexbuild.dev/api/usc/documents/t1%2Fs1
 
 # Raw Markdown with YAML frontmatter
-curl -H "Accept: text/markdown" https://lexbuild.dev/api/usc/documents/t1/s1
+curl -H "Accept: text/markdown" https://lexbuild.dev/api/usc/documents/t1%2Fs1
 
 # Plaintext (Markdown formatting stripped)
-curl "https://lexbuild.dev/api/usc/documents/t1/s1?format=text"
+curl "https://lexbuild.dev/api/usc/documents/t1%2Fs1?format=text"
 ```
 
 See [Content Negotiation](/docs/api/content-negotiation) for full details.
@@ -310,10 +310,10 @@ Use the `fields` query parameter to control which parts of the response are retu
 
 ```bash
 # Get only metadata, skip the body
-curl "https://lexbuild.dev/api/usc/documents/t1/s1?fields=metadata"
+curl "https://lexbuild.dev/api/usc/documents/t1%2Fs1?fields=metadata"
 
 # Get specific fields
-curl "https://lexbuild.dev/api/usc/documents/t1/s1?fields=section_name,status,legal_status"
+curl "https://lexbuild.dev/api/usc/documents/t1%2Fs1?fields=section_name,status,legal_status"
 ```
 
 ## ETag Caching
@@ -322,12 +322,12 @@ Every single-document response includes an `ETag` header derived from the conten
 
 ```bash
 # First request
-curl -i https://lexbuild.dev/api/usc/documents/t1/s1
+curl -i https://lexbuild.dev/api/usc/documents/t1%2Fs1
 # Response includes: ETag: "a1b2c3d4e5f6g7h8"
 
 # Subsequent request with ETag
 curl -H 'If-None-Match: "a1b2c3d4e5f6g7h8"' \
-  https://lexbuild.dev/api/usc/documents/t1/s1
+  https://lexbuild.dev/api/usc/documents/t1%2Fs1
 # Returns 304 Not Modified if content unchanged
 ```
 

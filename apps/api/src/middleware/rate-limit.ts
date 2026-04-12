@@ -1,4 +1,5 @@
 import type { Context, MiddlewareHandler } from "hono";
+import { HTTPException } from "hono/http-exception";
 import type Database from "better-sqlite3";
 import { validateApiKey, trackUsage } from "../db/keys.js";
 
@@ -101,19 +102,10 @@ export function rateLimitMiddleware(keysDb: Database.Database): MiddlewareHandle
         }
         // Invalid/expired/revoked key: treat as anonymous (don't reveal key validity)
       } catch (err: unknown) {
-        // Database error — return 503 rather than silently downgrading to anonymous limits
+        // Database error — throw 503 rather than silently downgrading to anonymous limits
         const msg = err instanceof Error ? err.message : String(err);
         console.error(`[rate-limit] API key validation failed (keys DB error): ${msg}`);
-        return c.json(
-          {
-            error: {
-              status: 503,
-              code: "SERVICE_UNAVAILABLE",
-              message: "Authentication service temporarily unavailable",
-            },
-          },
-          503,
-        );
+        throw new HTTPException(503, { message: "Authentication service temporarily unavailable" });
       }
     }
 

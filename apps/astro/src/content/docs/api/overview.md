@@ -42,7 +42,7 @@ the transport source.
 Fetch U.S. Code Title 1, Section 1 as JSON:
 
 ```bash
-curl https://lexbuild.dev/api/usc/documents/t1/s1
+curl https://lexbuild.dev/api/usc/documents/t1%2Fs1
 ```
 
 ```json

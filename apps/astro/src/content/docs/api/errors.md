@@ -69,7 +69,7 @@ Rate limit errors include an additional field:
 Requesting a document with an identifier that does not exist in the database:
 
 ```bash
-curl https://lexbuild.dev/api/usc/documents/t1/s999
+curl https://lexbuild.dev/api/usc/documents/t1%2Fs999
 ```
 
 ```
@@ -123,7 +123,7 @@ curl https://lexbuild.dev/api/fr/years/1990
 Sending too many requests within the rate limit window:
 
 ```bash
-curl -i https://lexbuild.dev/api/usc/documents/t1/s1
+curl -i https://lexbuild.dev/api/usc/documents/t1%2Fs1
 ```
 
 ```

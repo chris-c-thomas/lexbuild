@@ -13,7 +13,7 @@ The LexBuild API is open for anonymous read access. All endpoints work without a
 You can start making requests immediately with no setup:
 
 ```bash
-curl https://lexbuild.dev/api/usc/documents/t1/s1
+curl https://lexbuild.dev/api/usc/documents/t1%2Fs1
 ```
 
 Anonymous requests are rate limited to **100 requests per minute per IP address**.
@@ -26,20 +26,20 @@ For higher rate limits, include an API key with your requests. You can pass the 
 
 ```bash
 curl -H "Authorization: Bearer lxb_your_key_here" \
-  https://lexbuild.dev/api/usc/documents/t1/s1
+  https://lexbuild.dev/api/usc/documents/t1%2Fs1
 ```
 
 **X-API-Key header:**
 
 ```bash
 curl -H "X-API-Key: lxb_your_key_here" \
-  https://lexbuild.dev/api/usc/documents/t1/s1
+  https://lexbuild.dev/api/usc/documents/t1%2Fs1
 ```
 
 **Query parameter:**
 
 ```bash
-curl "https://lexbuild.dev/api/usc/documents/t1/s1?api_key=lxb_your_key_here"
+curl "https://lexbuild.dev/api/usc/documents/t1%2Fs1?api_key=lxb_your_key_here"
 ```
 
 The `Authorization: Bearer` header is the recommended approach. Avoid passing keys in query parameters in production since URLs may be logged by intermediaries.
@@ -80,7 +80,7 @@ X-RateLimit-Policy: anonymous
 When you exceed the rate limit, the API returns a `429 Too Many Requests` response with a `Retry-After` header:
 
 ```bash
-curl -i https://lexbuild.dev/api/usc/documents/t1/s1
+curl -i https://lexbuild.dev/api/usc/documents/t1%2Fs1
 ```
 
 ```

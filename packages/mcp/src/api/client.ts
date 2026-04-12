@@ -147,12 +147,12 @@ export class LexBuildApiClient {
     }
   }
 
-  /** List titles for USC or CFR. */
+  /** List titles for USC or eCFR. */
   async listTitles(source: "usc" | "ecfr", options?: { signal?: AbortSignal | undefined }): Promise<TitlesResponse> {
     return this.json<TitlesResponse>(`/api/${source}/titles`, options);
   }
 
-  /** Get detail for a specific title (chapters). */
+  /** Get detail for a specific USC or eCFR title (chapters). */
   async getTitleDetail(
     source: "usc" | "ecfr",
     titleNumber: number,

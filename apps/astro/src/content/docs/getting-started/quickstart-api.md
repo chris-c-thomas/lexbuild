@@ -24,7 +24,7 @@ canonical document identifiers remain in the `/us/cfr/...` namespace.
 Retrieve a single U.S. Code section as JSON:
 
 ```bash
-curl https://lexbuild.dev/api/usc/documents/t1/s1
+curl https://lexbuild.dev/api/usc/documents/t1%2Fs1
 ```
 
 This returns the document for 1 USC Section 1 ("Words denoting number, gender, and so forth"):
@@ -64,14 +64,14 @@ This returns the document for 1 USC Section 1 ("Words denoting number, gender, a
 Request the same document as Markdown:
 
 ```bash
-curl https://lexbuild.dev/api/usc/documents/t1/s1 \
+curl https://lexbuild.dev/api/usc/documents/t1%2Fs1 \
   -H "Accept: text/markdown"
 ```
 
 Or use the `format` query parameter:
 
 ```bash
-curl "https://lexbuild.dev/api/usc/documents/t1/s1?format=markdown"
+curl "https://lexbuild.dev/api/usc/documents/t1%2Fs1?format=markdown"
 ```
 
 Supported formats:

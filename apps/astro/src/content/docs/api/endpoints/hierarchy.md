@@ -321,5 +321,5 @@ curl https://lexbuild.dev/api/usc/titles/42
 curl "https://lexbuild.dev/api/usc/documents?title_number=42&limit=50"
 
 # 4. Retrieve a specific section
-curl https://lexbuild.dev/api/usc/documents/t42/s1983
+curl https://lexbuild.dev/api/usc/documents/t42%2Fs1983
 ```
