@@ -6,11 +6,15 @@ order: 8
 
 # Pagination and Sorting
 
-Listing endpoints return paginated results with consistent pagination metadata. You can control page size, skip results, sort by different fields, and select specific response fields.
+Listing endpoints return paginated results with consistent pagination metadata. You can control
+page size, skip results, and sort by different fields. Single-document endpoints also support
+field selection when you want only part of the response payload.
 
 ## Offset Pagination
 
-All listing endpoints use offset-based pagination with `limit` and `offset` query parameters.
+Document collection endpoints use offset-based pagination with `limit` and `offset` query
+parameters. The search endpoint and the Federal Register month listing at
+`/api/fr/years/{year}/{month}` also use offset pagination, but not cursor pagination.
 
 | Parameter | Type | Default | Range | Description |
 |---|---|---|---|---|
@@ -63,7 +67,10 @@ curl "https://lexbuild.dev$(curl -s 'https://lexbuild.dev/api/usc/documents?titl
 
 ## Cursor Pagination
 
-As an alternative to offset-based pagination, listing endpoints also accept a `cursor` parameter for keyset pagination. The cursor value is the last document's sort key from the previous page.
+As an alternative to offset-based pagination, the document collection endpoints
+`/api/usc/documents`, `/api/ecfr/documents`, and `/api/fr/documents` also accept a `cursor`
+parameter for keyset pagination. The cursor value is the last document's sort key from the
+previous page.
 
 ```bash
 # First page
@@ -74,6 +81,22 @@ curl "https://lexbuild.dev/api/usc/documents?title_number=42&limit=20&cursor=/us
 ```
 
 Cursor pagination is more efficient than large offsets for deep result sets, since it does not require the database to skip over previously seen rows.
+
+When you use cursor pagination, the response omits the expensive count query. That means
+`pagination.total` is `null`, `pagination.offset` resets to `0`, and `pagination.next` carries the
+next cursor value for you.
+
+```json
+{
+  "pagination": {
+    "total": null,
+    "limit": 20,
+    "offset": 0,
+    "has_more": true,
+    "next": "/api/usc/documents?title_number=42&sort=identifier&limit=20&cursor=%2Fus%2Fusc%2Ft42%2Fs1321"
+  }
+}
+```
 
 ## Sorting
 
@@ -97,14 +120,14 @@ Each source has a different default sort:
 | Source | Default Sort | Description |
 |---|---|---|
 | USC | `identifier` | Canonical identifier (title/section order) |
-| CFR | `identifier` | Canonical identifier (title/section order) |
+| eCFR | `identifier` | Canonical identifier (title/section order) |
 | FR | `-publication_date` | Newest documents first |
 
 ### Available Sort Fields
 
 The sort fields vary by source. Use the [sources endpoint](/docs/api/endpoints/sources) to see the `sortable_fields` for each source.
 
-**USC and CFR:**
+**USC and eCFR:**
 
 | Field | Description |
 |---|---|
@@ -123,13 +146,14 @@ The sort fields vary by source. Use the [sources endpoint](/docs/api/endpoints/s
 
 ## Field Selection
 
-Use the `fields` query parameter to control which metadata fields are included in the response. This works on both listing endpoints and single-document endpoints.
+The `fields` query parameter is currently honored on single-document endpoints. Document
+collection endpoints always return the standard listing metadata envelope.
 
 ### Preset Values
 
 | Value | Effect |
 |---|---|
-| *(omitted)* | All metadata fields and body (single document) or all metadata (listings) |
+| *(omitted)* | All metadata fields and body |
 | `metadata` | All metadata fields, no body |
 | `body` | Body content only, minimal metadata |
 
@@ -182,6 +206,6 @@ Fields available depend on the source. Common fields across all sources:
 
 **USC-specific fields:** `title_number`, `title_name`, `section_number`, `section_name`, `chapter_number`, `chapter_name`, `subchapter_number`, `subchapter_name`, `positive_law`, `currency`, `source_credit`
 
-**CFR-specific fields:** `title_number`, `title_name`, `section_number`, `section_name`, `chapter_number`, `chapter_name`, `part_number`, `part_name`, `agency`, `authority`, `regulatory_source`, `cfr_part`, `cfr_subpart`
+**eCFR-specific fields:** `title_number`, `title_name`, `section_number`, `section_name`, `chapter_number`, `chapter_name`, `part_number`, `part_name`, `agency`, `authority`, `regulatory_source`, `cfr_part`, `cfr_subpart`
 
 **FR-specific fields:** `document_number`, `document_type`, `publication_date`, `agency`, `agencies`, `fr_citation`, `fr_volume`, `effective_date`, `comments_close_date`, `fr_action`, `docket_ids`, `cfr_references`

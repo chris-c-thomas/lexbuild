@@ -50,13 +50,15 @@ Rate limit errors include an additional field:
 | `429` | Too Many Requests | Rate limit exceeded |
 | `500` | Internal Server Error | Unexpected server-side failure |
 | `503` | Service Unavailable | Search service (Meilisearch) is unreachable |
+| `504` | Gateway Timeout | Search request timed out before the backend responded |
 
 ## Error Codes
 
 | Code | Status | Description |
 |---|---|---|
 | `DOCUMENT_NOT_FOUND` | 404 | The requested document identifier does not exist |
-| `REQUEST_ERROR` | 400/404/503 | General request error (invalid params, missing resource, service unavailable) |
+| `NOT_FOUND` | 404 | No route exists at the requested API path |
+| `REQUEST_ERROR` | 400/404/503/504 | General request error (invalid params, missing resource, service unavailable, or timeout) |
 | `RATE_LIMIT_EXCEEDED` | 429 | Too many requests in the current window |
 | `INTERNAL_ERROR` | 500 | Unexpected server error |
 
@@ -159,12 +161,32 @@ curl "https://lexbuild.dev/api/search?q=test"
   "error": {
     "status": 503,
     "code": "REQUEST_ERROR",
-    "message": "Search service unavailable: Connection refused"
+    "message": "Search service is temporarily unavailable"
   }
 }
 ```
 
 This only affects the search endpoint. Document, hierarchy, sources, and stats endpoints operate independently of the search service.
+
+### Search Timeout
+
+When the search backend does not respond before the request timeout:
+
+```bash
+curl "https://lexbuild.dev/api/search?q=test"
+```
+
+```json
+{
+  "error": {
+    "status": 504,
+    "code": "REQUEST_ERROR",
+    "message": "Search request timed out"
+  }
+}
+```
+
+The API intentionally returns a generic timeout message rather than exposing backend details.
 
 ### Internal Server Error
 
@@ -242,4 +264,4 @@ def fetch_document(identifier):
 - **Always check the HTTP status code before parsing the response body.** A non-2xx response always contains an `error` object, never a `data` object.
 - **Use the `code` field for programmatic branching**, not the `message` field. Messages are human-readable and may change.
 - **For rate limiting, always respect `Retry-After`.** Do not implement a fixed retry interval -- the header tells you exactly how long to wait.
-- **The search endpoint can return 503 independently** of other endpoints. If you get a 503 on search, the document and hierarchy endpoints are likely still working.
+- **The search endpoint can return 503 or 504 independently** of other endpoints. If search fails, the document and hierarchy endpoints are likely still working.

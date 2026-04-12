@@ -16,12 +16,15 @@ https://lexbuild.dev/api
 
 All endpoints are prefixed with `/api/`. No authentication is required for read-only access.
 
+For regulatory content, the API route surface uses `/api/ecfr/...` and `source=ecfr`, while
+canonical document identifiers remain in the `/us/cfr/...` namespace.
+
 ## Your First Request
 
 Retrieve a single U.S. Code section as JSON:
 
 ```bash
-curl https://lexbuild.dev/api/usc/documents/1-1
+curl https://lexbuild.dev/api/usc/documents/t1/s1
 ```
 
 This returns the document for 1 USC Section 1 ("Words denoting number, gender, and so forth"):
@@ -29,14 +32,29 @@ This returns the document for 1 USC Section 1 ("Words denoting number, gender, a
 ```json
 {
   "data": {
+    "id": "us-usc-t1-s1",
     "identifier": "/us/usc/t1/s1",
-    "heading": "1 USC \u00a7 1 - Words denoting number, gender, and so forth",
     "source": "usc",
-    "title_number": 1,
-    "section_number": "1",
-    "granularity": "section",
-    "body": "# \u00a7 1. Words denoting number, gender, and so forth\n\n...",
-    "token_estimate": 1250
+    "metadata": {
+      "identifier": "/us/usc/t1/s1",
+      "source": "usc",
+      "display_title": "1 U.S.C. 1 - Words denoting number, gender, and so forth",
+      "title_number": 1,
+      "title_name": "General Provisions",
+      "section_number": "1",
+      "section_name": "Words denoting number, gender, and so forth",
+      "chapter_number": "1",
+      "chapter_name": "Rules of Construction",
+      "legal_status": "law",
+      "positive_law": true,
+      "status": "in_force"
+    },
+    "body": "In determining the meaning of any Act of Congress..."
+  },
+  "meta": {
+    "api_version": "v1",
+    "format_version": "1.0",
+    "timestamp": "2026-04-11T00:00:00.000Z"
   }
 }
 ```
@@ -46,14 +64,14 @@ This returns the document for 1 USC Section 1 ("Words denoting number, gender, a
 Request the same document as Markdown:
 
 ```bash
-curl https://lexbuild.dev/api/usc/documents/1-1 \
+curl https://lexbuild.dev/api/usc/documents/t1/s1 \
   -H "Accept: text/markdown"
 ```
 
 Or use the `format` query parameter:
 
 ```bash
-curl "https://lexbuild.dev/api/usc/documents/1-1?format=markdown"
+curl "https://lexbuild.dev/api/usc/documents/t1/s1?format=markdown"
 ```
 
 Supported formats:
@@ -62,7 +80,7 @@ Supported formats:
 |---|---|---|
 | JSON | `application/json` (default) | `?format=json` |
 | Markdown | `text/markdown` | `?format=markdown` |
-| Plain text | `text/plain` | `?format=plaintext` |
+| Plain text | `text/plain` | `?format=text` |
 
 ## Browse Available Sources
 
@@ -75,10 +93,14 @@ curl https://lexbuild.dev/api/sources
 ```json
 {
   "data": [
-    { "id": "usc", "name": "U.S. Code", "document_count": 60421 },
-    { "id": "cfr", "name": "Code of Federal Regulations", "document_count": 232847 },
-    { "id": "fr", "name": "Federal Register", "document_count": 785000 }
-  ]
+    { "id": "usc", "name": "United States Code", "url_prefix": "/usc", "document_count": 60421 },
+    { "id": "ecfr", "name": "eCFR", "url_prefix": "/ecfr", "document_count": 232847 },
+    { "id": "fr", "name": "Federal Register", "url_prefix": "/fr", "document_count": 785000 }
+  ],
+  "meta": {
+    "api_version": "v1",
+    "timestamp": "2026-04-11T00:00:00.000Z"
+  }
 }
 ```
 
@@ -107,7 +129,7 @@ curl "https://lexbuild.dev/api/search?q=environmental+protection&limit=5"
 Filter search results by source:
 
 ```bash
-curl "https://lexbuild.dev/api/search?q=securities+fraud&source=cfr&limit=5"
+curl "https://lexbuild.dev/api/search?q=securities+fraud&source=ecfr&limit=5"
 ```
 
 > [!TIP]

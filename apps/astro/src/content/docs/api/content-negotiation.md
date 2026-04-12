@@ -70,13 +70,13 @@ curl https://lexbuild.dev/api/usc/documents/t1/s1
 ```json
 {
   "data": {
-    "id": "usc-t1-s1",
+    "id": "us-usc-t1-s1",
     "identifier": "/us/usc/t1/s1",
     "source": "usc",
     "metadata": {
       "identifier": "/us/usc/t1/s1",
       "source": "usc",
-      "display_title": "1 U.S.C. SS 1 - Words denoting number, gender, and so forth",
+      "display_title": "1 U.S.C. 1 - Words denoting number, gender, and so forth",
       "title_number": 1,
       "title_name": "General Provisions",
       "section_number": "1",
@@ -172,7 +172,7 @@ Content negotiation applies only to single-document endpoints:
 | Endpoint | Supports Content Negotiation |
 |---|---|
 | `GET /api/usc/documents/{identifier}` | Yes |
-| `GET /api/cfr/documents/{identifier}` | Yes |
+| `GET /api/ecfr/documents/{identifier}` | Yes |
 | `GET /api/fr/documents/{identifier}` | Yes |
 | `GET /api/usc/documents` (listing) | No (always JSON) |
 | `GET /api/search` | No (always JSON) |
