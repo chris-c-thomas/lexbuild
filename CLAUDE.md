@@ -300,6 +300,9 @@ Note: identifiers use `/us/cfr/` (content type) not `/us/ecfr/` (data source). B
 - **Docker search index checkpoints**: The incremental indexing script writes checkpoint files (`.search-indexed-at-{source}`) into the content directory. For Docker runs, these are persisted in `downloads/.search-checkpoints/` and restored into the temp content dir on each run. If this directory is deleted, the next Docker index run will scan all files from scratch.
 - **Docker volume profiles**: `MEILI_PROFILE=dev|full` selects volume (`meili-data-dev` or `meili-data-full`). Dev mode runs without master key (`MEILI_ENV=development`). Full mode requires `MEILI_MASTER_KEY` for VPS-compatible data.
 - **Cloudflare "Managed robots.txt"**: When enabled, Cloudflare overwrites the site's `robots.txt` to block AI crawlers. For LexBuild (public domain legal content), this should be **OFF**. The custom `robots.txt` at `apps/astro/public/robots.txt` blocks AI crawlers from `/_astro/` (hashed static assets), `/nav/` (internal JSON), and `/api/` while allowing legal content.
+- **VPS PM2 logs live at `/home/ubuntu/pm2/logs/lexbuild/`**, not `~/.pm2/logs/`. The latter is legacy — only `pm2-logrotate-out.log` still writes there. Check the new path when debugging PM2-managed services.
+- **VPS has 6 GiB swap** at `/swapfile` (persisted in `/etc/fstab`). Added as defense against Meilisearch OOM during bulk upserts on a 7.6 GiB RAM Lightsail box. Don't remove.
+- **Stuck Meilisearch tasks crash-loop across restarts**: document-addition tasks that OOM Meilisearch are persisted in LMDB and re-attempted after every PM2 restart (observed ~60s crash cycle, 160+ restarts in 2.5 hours). Cancel via `curl -XPOST -H "Authorization: Bearer $MEILI_MASTER_KEY" "http://127.0.0.1:7700/tasks/cancel?uids=<list>"` — the cancellation typically executes during a healthy window even if the stuck task itself can't complete.
 
 ## When Adding New Source Types
 
