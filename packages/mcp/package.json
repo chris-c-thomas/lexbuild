@@ -1,6 +1,6 @@
 {
   "name": "@lexbuild/mcp",
-  "version": "1.24.0",
+  "version": "1.24.1",
   "description": "Model Context Protocol server for LexBuild. Exposes U.S. legal sources to AI agents.",
   "author": "Chris Thomas",
   "license": "MIT",
@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.0",
-    "hono": "^4.7.0",
+    "hono": "^4.12.14",
     "@hono/node-server": "^1.13.0",
     "zod": "^3.25.0"
   },
