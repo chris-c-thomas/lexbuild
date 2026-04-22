@@ -5,6 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [1.25.0]
+
+### Added
+
+- Add single-pass multi-granularity conversion: `convert-usc` and `convert-ecfr` accept `--granularities <list>` plus `--output-section`, `--output-chapter`, `--output-title`, and (eCFR only) `--output-part` to emit every requested granularity from one parse of the source XML
+- Add `granularities: Array<{granularity, output}>` option to `convertTitle()` and `convertEcfrTitle()` with function overloads: multi-granularity mode returns `ConvertResult[]`, single-granularity mode returns `ConvertResult`
+- Add `ReadonlySet<LevelType>` support to `ASTBuilder.emitAt` and `EcfrASTBuilder.emitAt`; deeper levels fire first and emitted nodes remain attached to their parents so higher-level emissions see the complete subtree
+- Add discriminated-union `ConvertOptions` / `EcfrConvertOptions`: `SingleConvertOptions | MultiConvertOptions` (and eCFR equivalents) — the mutex between `granularity`/`output` and `granularities` is now enforced at the type level
+- Add new exported types: `BaseConvertOptions`, `SingleConvertOptions`, `MultiConvertOptions`, `UscGranularity`, `UscGranularityOutput` (and eCFR equivalents: `BaseEcfrConvertOptions`, `SingleEcfrConvertOptions`, `MultiEcfrConvertOptions`, `EcfrGranularity`, `EcfrGranularityOutput`)
+- Add multi-level emit tests for both USLM and eCFR builders (emission order, ancestor chain correctness, reference identity between emissions, appendix-inside-part stack-based attach rule)
+- Add byte-parity integration tests: multi-granularity conversion output matches N separate single-granularity runs exactly (modulo `_meta.json`/`README.md` timestamps)
+- Add CLI-layer tests for `parseGranularityList` / `parseEcfrGranularityList` covering happy paths, unknown granularity names, duplicate detection, missing `--output-<g>` flags, and back-compat fallback
+- Add dry-run test in multi-granularity mode
+
+### Changed
+
+- Refactor `scripts/update-usc.sh` and `scripts/update-ecfr.sh` step 3 to a single `convert-*` invocation with `--granularities`, replacing the previous N-per-source-per-granularity pattern
+- Refactor USC/eCFR converters to a collect-then-write pattern keyed by `Map<LevelType, CollectedSection[]>`, dispatching to per-granularity write routines
+- Builder attach-to-parent logic now uses a live-stack membership check (`hasEmittingAncestorOnStack`) instead of `LEVEL_TYPES` index comparison, correctly handling USLM's permissive nesting (e.g. an appendix inside a part)
+- Extract `emitLevelFor(granularity)` helper in USC converter to replace the `granularity as LevelType` cast
+- `parseGranularityList` / `parseEcfrGranularityList` now reject duplicate granularity names in the CLI flag; `resolveGranularities` does the same at the converter API
+- `chapterMap` in the eCFR chapter-granularity write path now skips sections with no chapter ancestor (with a `console.warn`) instead of synthesizing `chapter-__root__.md`
+- `extractTitleInfo` now emits a `console.warn` when the title-number fallback to `"0"` fires, surfacing malformed source XML rather than silently producing `/us/cfr/t0/...` identifiers
+- CLI `runConversion` branches on `opts.granularities !== undefined` to call the correct `convertTitle` / `convertEcfrTitle` overload with a concrete input type — no more `as unknown` or `as Parameters<...>` casts
+- Document `--granularities` as "single-pass multi-granularity output" in all public docs (per Copilot PR review)
+
+### Fixed
+
+- Remove `as ConvertOptions` cast from `convertTitle` / `convertEcfrTitle` implementation bodies that previously laundered overload types; the discriminated union now flows correctly
+- Annotate intentionally unquoted `$CLI` / `$TITLE_ARG` / `$CURRENCY_ARG` usages in update scripts with `# shellcheck disable=SC2086` to document word-splitting intent
+
+### Documentation
+
+- Refresh README.md across the monorepo (root, `@lexbuild/cli`, `@lexbuild/usc`, `@lexbuild/ecfr`, `@lexbuild/core`, `apps/astro`) to cover `--granularities`, the new options types, and the updated update-script workflow
+- Update Astro site docs: `/cli/commands`, `/reference/cli-reference`, `/architecture/conversion-pipeline`, `/cli/sources/us-code`, `/cli/sources/ecfr`, plus the `bulk-download` and `rag-pipeline` guides
+- Update internal docs under `.claude/internal/docs/`: `cli-reference`, `conversion-pipeline`, `package-usc`, `package-ecfr`, `package-core`, `deployment`, `getting-started`
+- Clarify JSDoc on `SingleConvertOptions.output` / `SingleEcfrConvertOptions.output` ("Required in single-granularity mode") and `MultiEcfrConvertOptions` (note that chapter output is synthesized from the section bucket)
+- Add docblocks on `hasEmittingAncestorOnStack()` in both builders explaining the appendix-inside-part rationale
+- Add learnings to `CLAUDE.md` files: multi-level emit architecture, byte-parity test timestamp skips, Commander `getOptionValueSource` pattern for flag mutex
+- Sync `apps/api` version to `1.25.0` (app was at `1.23.2`) to keep the monorepo in lockstep
+
 ## [1.24.0]
 
 ### Changed
