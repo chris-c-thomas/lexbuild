@@ -67,9 +67,9 @@ export interface BaseConvertOptions {
 
 /** Single-granularity mode: one output directory, one granularity. */
 export interface SingleConvertOptions extends BaseConvertOptions {
-  /** Output directory root */
+  /** Output directory root. Required in single-granularity mode. */
   output: string;
-  /** Output granularity. Defaults to "section" when omitted. */
+  /** Output granularity. Defaults to `"section"` when omitted. */
   granularity?: UscGranularity | undefined;
   /** @internal — must not be set in single-granularity mode */
   granularities?: undefined;

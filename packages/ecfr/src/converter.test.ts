@@ -159,4 +159,37 @@ describe("convertEcfrTitle multi-granularity parity", () => {
     const stats = await stat(singleDirs.section);
     expect(stats.isDirectory()).toBe(true);
   });
+
+  it("dry-run in multi-granularity mode reports counts without writing files", async () => {
+    const results = await convertEcfrTitle({
+      ...BASE,
+      input: resolve(FIXTURES_DIR, "title-structure.xml"),
+      dryRun: true,
+      granularities: [
+        { granularity: "section", output: multiDirs.section },
+        { granularity: "part", output: multiDirs.part },
+        { granularity: "title", output: multiDirs.title },
+      ],
+    });
+
+    expect(results).toHaveLength(3);
+    for (const r of results) {
+      expect(r.dryRun).toBe(true);
+      expect(r.files).toEqual([]);
+    }
+
+    const byGranularity = Object.fromEntries(results.map((r) => [r.granularity, r]));
+    // title-structure fixture has 3 sections, 2 parts, 1 title
+    expect(byGranularity.section!.sectionsWritten).toBe(3);
+    expect(byGranularity.part!.sectionsWritten).toBe(2);
+    expect(byGranularity.title!.sectionsWritten).toBe(1);
+
+    // Verify no files were actually written to the multi output dirs.
+    const sectionFiles = await listFiles(multiDirs.section);
+    const partFiles = await listFiles(multiDirs.part);
+    const titleFiles = await listFiles(multiDirs.title);
+    expect(sectionFiles).toEqual([]);
+    expect(partFiles).toEqual([]);
+    expect(titleFiles).toEqual([]);
+  });
 });

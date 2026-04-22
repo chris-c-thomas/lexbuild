@@ -160,7 +160,10 @@ if [ "$DEPLOY_ONLY" = false ]; then
   fi
 
   # Step 2: Download
+  # $TITLE_ARG is intentionally unquoted so `--titles 1,17` word-splits into
+  # two CLI args. shellcheck disable=SC2086
   echo "--- Step 2/7: Downloading eCFR titles ($TITLE_ARG)"
+  # shellcheck disable=SC2086
   $CLI download-ecfr $TITLE_ARG
   echo ""
 
@@ -170,6 +173,7 @@ if [ "$DEPLOY_ONLY" = false ]; then
   # emits section + title + chapter + part from one pass of the XML, writing
   # each to its own output dir. writeFileIfChanged preserves mtimes.
   echo "--- Step 3/7: Converting eCFR titles ($TITLE_ARG) at all granularities"
+  # shellcheck disable=SC2086
   $CLI convert-ecfr $TITLE_ARG $CURRENCY_ARG \
     --granularities section,title,chapter,part \
     --output ./output \

@@ -149,6 +149,17 @@ export class ASTBuilder {
     return typeof at === "string" ? levelType === at : at.has(levelType);
   }
 
+  /**
+   * True iff some level frame currently on the stack is itself an emit
+   * target. Used by `closeLevel` to decide whether the closing node must be
+   * attached to its parent so a higher emission sees the full subtree.
+   *
+   * This is the correct check for USLM's permissive level nesting (e.g. an
+   * `<appendix>` inside a `<part>`) — reasoning via `LEVEL_TYPES` index
+   * ordering would drop the appendix because its index is shallower than
+   * the containing part's. Live stack membership handles anomalous nesting
+   * correctly.
+   */
   private hasEmittingAncestorOnStack(): boolean {
     for (const f of this.stack) {
       if (f.kind === "level" && f.node?.type === "level") {

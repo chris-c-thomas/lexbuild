@@ -69,15 +69,24 @@ export interface BaseEcfrConvertOptions {
 
 /** Single-granularity mode: one output directory, one granularity. */
 export interface SingleEcfrConvertOptions extends BaseEcfrConvertOptions {
-  /** Output root directory */
+  /** Output root directory. Required in single-granularity mode. */
   output: string;
-  /** Output granularity. Defaults to "section" when omitted. */
+  /** Output granularity. Defaults to `"section"` when omitted. */
   granularity?: EcfrGranularity | undefined;
   /** @internal — must not be set in single-granularity mode */
   granularities?: undefined;
 }
 
-/** Multi-granularity mode: a set of `{granularity, output}` pairs emitted from one parse. */
+/**
+ * Multi-granularity mode: a set of `{granularity, output}` pairs emitted from
+ * one parse.
+ *
+ * The builder emits at the set of unique `LevelType`s needed to satisfy the
+ * requested granularities. `section` and `chapter` both emit at the section
+ * level — chapter output is synthesized from the section bucket at write
+ * time (by grouping sections under their chapter ancestor). `part` and
+ * `title` each emit at their own level.
+ */
 export interface MultiEcfrConvertOptions extends BaseEcfrConvertOptions {
   /** Multiple `{granularity, output}` pairs to produce in a single parse. */
   granularities: readonly EcfrGranularityOutput[];
@@ -259,14 +268,18 @@ export async function convertEcfrTitle(
   return first;
 }
 
-/** Extract title number and name from the first available collected node. */
+/**
+ * Extract title number and name from the first available collected node.
+ *
+ * Falls back to `{"0", ""}` when no emitted node has a title ancestor and no
+ * title-level node was emitted. That path produces `/us/cfr/t0/...` canonical
+ * identifiers, which is almost always a sign of malformed source XML — we
+ * warn rather than silently corrupt downstream data.
+ */
 function extractTitleInfo(collectedByLevel: Map<LevelType, CollectedSection[]>): {
   titleNumber: string;
   titleName: string;
 } {
-  let titleNumber = "0";
-  let titleName = "";
-
   // Prefer section emissions (richest ancestor chain), fall back to others.
   const probeOrder: LevelType[] = ["section", "part", "chapter", "title"];
   for (const lt of probeOrder) {
@@ -275,18 +288,24 @@ function extractTitleInfo(collectedByLevel: Map<LevelType, CollectedSection[]>):
     if (!first) continue;
     const titleAncestor = first.context.ancestors.find((a) => a.levelType === "title");
     if (titleAncestor) {
-      titleNumber = titleAncestor.numValue ?? "0";
-      titleName = titleAncestor.heading ?? first.context.documentMeta.dcTitle ?? "";
-      return { titleNumber, titleName };
+      return {
+        titleNumber: titleAncestor.numValue ?? "0",
+        titleName: titleAncestor.heading ?? first.context.documentMeta.dcTitle ?? "",
+      };
     }
     if (first.node.levelType === "title") {
-      titleNumber = first.node.numValue ?? "0";
-      titleName = first.node.heading ?? first.context.documentMeta.dcTitle ?? "";
-      return { titleNumber, titleName };
+      return {
+        titleNumber: first.node.numValue ?? "0",
+        titleName: first.node.heading ?? first.context.documentMeta.dcTitle ?? "",
+      };
     }
   }
 
-  return { titleNumber, titleName };
+  console.warn(
+    "[@lexbuild/ecfr] convertEcfrTitle: could not resolve title number from emitted nodes; " +
+      "output will use `/us/cfr/t0/...` identifiers. Source XML likely missing a DIV1 TYPE=\"TITLE\".",
+  );
+  return { titleNumber: "0", titleName: "" };
 }
 
 interface WriteGranularityArgs {
@@ -339,19 +358,31 @@ async function writeGranularity(args: WriteGranularityArgs): Promise<EcfrConvert
       { sections: CollectedSection[]; chapterAncestor: AncestorInfo; firstContext: EmitContext }
     >();
 
+    let skippedRootless = 0;
     for (const item of collected) {
       const chapterAnc = item.context.ancestors.find((a) => a.levelType === "chapter");
-      const chapterKey = chapterAnc?.numValue ?? "__root__";
-      const existing = chapterMap.get(chapterKey);
+      if (!chapterAnc?.numValue) {
+        // Section without a chapter ancestor cannot be placed in a chapter
+        // file. Rare in eCFR (e.g. parts directly under subtitle with no
+        // surrounding chapter). Drop rather than synthesize a junk filename.
+        skippedRootless++;
+        continue;
+      }
+      const existing = chapterMap.get(chapterAnc.numValue);
       if (existing) {
         existing.sections.push(item);
       } else {
-        chapterMap.set(chapterKey, {
+        chapterMap.set(chapterAnc.numValue, {
           sections: [item],
-          chapterAncestor: chapterAnc ?? { levelType: "chapter", numValue: chapterKey },
+          chapterAncestor: chapterAnc,
           firstContext: item.context,
         });
       }
+    }
+    if (skippedRootless > 0) {
+      console.warn(
+        `[@lexbuild/ecfr] convertEcfrTitle: chapter granularity skipped ${skippedRootless} section(s) with no chapter ancestor`,
+      );
     }
 
     for (const [_chapterKey, { sections, chapterAncestor, firstContext }] of chapterMap) {
@@ -555,11 +586,13 @@ function buildDryRunResult(
   let count: number;
 
   if (granularity === "chapter") {
+    // Mirror the write-phase filter: sections with no chapter ancestor
+    // would be dropped rather than grouped under a synthetic key.
     const chapterKeys = new Set<string>();
     for (const { node, context } of collected) {
       const chapterAnc = context.ancestors.find((a) => a.levelType === "chapter");
-      const key = chapterAnc?.numValue ?? "__root__";
-      chapterKeys.add(key);
+      if (!chapterAnc?.numValue) continue;
+      chapterKeys.add(chapterAnc.numValue);
       totalEstimate += estimateTokens(node);
     }
     count = chapterKeys.size;

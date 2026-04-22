@@ -257,4 +257,29 @@ describe("EcfrASTBuilder", () => {
     expect(appendixChildren.length).toBe(1);
     expect((appendixChildren[0] as LevelNode).numValue).toBe("Appendix A");
   });
+
+  it("multi-emit {part,title} attaches appendix to part exactly once (stack-based attach rule)", async () => {
+    // An appendix nested inside a part is the motivating case for
+    // `hasEmittingAncestorOnStack` — appendix is a "big level" with a lower
+    // hierarchy index than part, so naive index-based reasoning would drop
+    // the appendix from the part's children. The live stack check keeps it
+    // attached once.
+    const collected = await parseFixture(
+      "appendix.xml",
+      new Set<"section" | "part" | "title">(["part", "title"]),
+    );
+
+    const parts = collected.filter((c) => c.node.levelType === "part");
+    const titles = collected.filter((c) => c.node.levelType === "title");
+    expect(parts.length).toBe(1);
+    expect(titles.length).toBe(1);
+
+    const partAppendixes = collectLevelsOfType(parts[0]!.node, "appendix");
+    expect(partAppendixes.length).toBe(1);
+    expect(partAppendixes[0]!.numValue).toBe("Appendix A");
+
+    // The same appendix instance is reachable from the title subtree (via part).
+    const titleAppendixes = collectLevelsOfType(titles[0]!.node, "appendix");
+    expect(titleAppendixes).toContain(partAppendixes[0]);
+  });
 });
