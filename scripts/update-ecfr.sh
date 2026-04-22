@@ -12,12 +12,12 @@
 # Steps:
 #   1. Detect changed titles via eCFR API metadata
 #   2. Download changed title XML from eCFR API
-#   3. Convert changed titles to Markdown (writeFileIfChanged preserves mtimes)
+#   3. Convert changed titles to Markdown at all granularities (section, title, chapter, part)
 #   4. Generate highlights for changed sections (mtime-based, skippable)
 #   5. Regenerate eCFR nav JSON
 #   6. Regenerate sitemaps
 #   7. Save checkpoint
-#   8. Rsync content + nav + sitemaps to VPS
+#   8. Rsync content (all granularities) + nav + sitemaps to VPS
 #   9. Incremental search index on VPS
 #
 # Requires:
@@ -157,9 +157,18 @@ if [ "$DEPLOY_ONLY" = false ]; then
   $CLI download-ecfr $TITLE_ARG
   echo ""
 
-  # Step 3: Convert
+  # Step 3: Convert at every granularity. Section is the default output; title,
+  # chapter, and part re-emit the same parsed AST at higher levels for the
+  # Astro app's browsable landing pages. writeFileIfChanged preserves mtimes.
   echo "--- Step 3/7: Converting eCFR titles ($TITLE_ARG)"
+  echo "    section granularity"
   $CLI convert-ecfr $TITLE_ARG $CURRENCY_ARG
+  echo "    title granularity"
+  $CLI convert-ecfr $TITLE_ARG $CURRENCY_ARG -g title -o ./output-title
+  echo "    chapter granularity"
+  $CLI convert-ecfr $TITLE_ARG $CURRENCY_ARG -g chapter -o ./output-chapter
+  echo "    part granularity"
+  $CLI convert-ecfr $TITLE_ARG $CURRENCY_ARG -g part -o ./output-part
   echo ""
 
   # Step 4: Highlights (optional)
@@ -206,6 +215,21 @@ echo "--- Step 8/9: Syncing to VPS"
 if [ -d "output/ecfr" ]; then
   echo "    eCFR sections"
   rsync -avz --checksum output/ecfr/ "${VPS_HOST}:${CONTENT_DEST}/ecfr/sections/"
+fi
+
+if [ -d "output-title/ecfr" ]; then
+  echo "    eCFR titles"
+  rsync -avz output-title/ecfr/ "${VPS_HOST}:${CONTENT_DEST}/ecfr/titles/"
+fi
+
+if [ -d "output-chapter/ecfr" ]; then
+  echo "    eCFR chapters"
+  rsync -avz output-chapter/ecfr/ "${VPS_HOST}:${CONTENT_DEST}/ecfr/chapters/"
+fi
+
+if [ -d "output-part/ecfr" ]; then
+  echo "    eCFR parts"
+  rsync -avz output-part/ecfr/ "${VPS_HOST}:${CONTENT_DEST}/ecfr/parts/"
 fi
 
 if [ -d "apps/astro/public/nav" ]; then

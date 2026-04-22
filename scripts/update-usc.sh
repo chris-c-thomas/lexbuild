@@ -11,12 +11,12 @@
 # Steps:
 #   1. Check latest OLRC release point against stored checkpoint
 #   2. Download all USC titles (bulk zip)
-#   3. Convert all titles to Markdown (writeFileIfChanged preserves mtimes)
+#   3. Convert all titles to Markdown at every granularity (section, title, chapter)
 #   4. Generate highlights for changed sections (mtime-based, skippable)
 #   5. Regenerate USC nav JSON
 #   6. Regenerate sitemaps
 #   7. Save new release point
-#   8. Rsync content + nav + sitemaps to VPS
+#   8. Rsync content (all granularities) + nav + sitemaps to VPS
 #   9. Incremental search index on VPS
 #
 # Requires:
@@ -140,9 +140,16 @@ if [ "$DEPLOY_ONLY" = false ]; then
   $CLI download-usc --all
   echo ""
 
-  # Step 3: Convert
+  # Step 3: Convert at every granularity. Section is the default output; title
+  # and chapter re-emit the same parsed AST at higher levels for the Astro
+  # app's browsable landing pages. writeFileIfChanged preserves mtimes.
   echo "--- Step 3/7: Converting USC titles"
+  echo "    section granularity"
   $CLI convert-usc --all
+  echo "    title granularity"
+  $CLI convert-usc --all -g title -o ./output-title
+  echo "    chapter granularity"
+  $CLI convert-usc --all -g chapter -o ./output-chapter
   echo ""
 
   # Step 4: Highlights (optional)
@@ -191,6 +198,16 @@ echo "--- Step 8/9: Syncing to VPS"
 if [ -d "output/usc" ]; then
   echo "    USC sections"
   rsync -avz --checksum output/usc/ "${VPS_HOST}:${CONTENT_DEST}/usc/sections/"
+fi
+
+if [ -d "output-title/usc" ]; then
+  echo "    USC titles"
+  rsync -avz output-title/usc/ "${VPS_HOST}:${CONTENT_DEST}/usc/titles/"
+fi
+
+if [ -d "output-chapter/usc" ]; then
+  echo "    USC chapters"
+  rsync -avz output-chapter/usc/ "${VPS_HOST}:${CONTENT_DEST}/usc/chapters/"
 fi
 
 if [ -d "apps/astro/public/nav" ]; then
