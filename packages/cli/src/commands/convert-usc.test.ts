@@ -132,9 +132,7 @@ describe("parseGranularityList", () => {
   });
 
   it("prefers --output-section over --output when both are set", () => {
-    const result = parseGranularityList(
-      opts({ granularities: "section", output: "./out", outputSection: "./out-s" }),
-    );
+    const result = parseGranularityList(opts({ granularities: "section", output: "./out", outputSection: "./out-s" }));
     expect(result).toEqual([{ granularity: "section", output: resolve("./out-s") }]);
   });
 
@@ -166,37 +164,33 @@ describe("parseGranularityList", () => {
   });
 
   it("throws on unknown granularity name", () => {
-    expect(() => parseGranularityList(opts({ granularities: "foo" }))).toThrow(
+    expect(() => parseGranularityList(opts({ granularities: "foo" }))).toThrow(/Unknown granularity "foo"/);
+  });
+
+  it("throws on unknown granularity while accepting known ones in the same list", () => {
+    expect(() => parseGranularityList(opts({ granularities: "section,foo", output: "./out" }))).toThrow(
       /Unknown granularity "foo"/,
     );
   });
 
-  it("throws on unknown granularity while accepting known ones in the same list", () => {
-    expect(() =>
-      parseGranularityList(opts({ granularities: "section,foo", output: "./out" })),
-    ).toThrow(/Unknown granularity "foo"/);
-  });
-
   it("throws on duplicate granularity in the list", () => {
-    expect(() =>
-      parseGranularityList(
-        opts({ granularities: "section,section", output: "./out" }),
-      ),
-    ).toThrow(/Duplicate granularity "section"/);
+    expect(() => parseGranularityList(opts({ granularities: "section,section", output: "./out" }))).toThrow(
+      /Duplicate granularity "section"/,
+    );
   });
 
   it("throws when a listed granularity has no matching --output-<g> flag", () => {
-    expect(() =>
-      parseGranularityList(opts({ granularities: "title", output: "./out" })),
-    ).toThrow(/Missing --output-title/);
+    expect(() => parseGranularityList(opts({ granularities: "title", output: "./out" }))).toThrow(
+      /Missing --output-title/,
+    );
   });
 
   it("throws when section is listed but neither --output nor --output-section is given", () => {
     const o = opts({ granularities: "section" });
     // Commander defaults output to "./output"; to simulate absent output, override.
     const stripped = { ...o, output: undefined as unknown as string, outputSection: undefined };
-    expect(() =>
-      parseGranularityList(stripped as Parameters<typeof parseGranularityList>[0]),
-    ).toThrow(/Missing --output/);
+    expect(() => parseGranularityList(stripped as Parameters<typeof parseGranularityList>[0])).toThrow(
+      /Missing --output/,
+    );
   });
 });

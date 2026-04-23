@@ -58,34 +58,30 @@ describe("parseEcfrGranularityList", () => {
   });
 
   it("throws on unknown granularity name", () => {
-    expect(() => parseEcfrGranularityList(opts({ granularities: "foo" }))).toThrow(
-      /Unknown granularity "foo"/,
-    );
+    expect(() => parseEcfrGranularityList(opts({ granularities: "foo" }))).toThrow(/Unknown granularity "foo"/);
   });
 
   it("throws on duplicate granularity in the list", () => {
     expect(() =>
-      parseEcfrGranularityList(
-        opts({ granularities: "part,part", output: "./out", outputPart: "./out-p" }),
-      ),
+      parseEcfrGranularityList(opts({ granularities: "part,part", output: "./out", outputPart: "./out-p" })),
     ).toThrow(/Duplicate granularity "part"/);
   });
 
   it("throws when --output-part is missing for part granularity", () => {
-    expect(() =>
-      parseEcfrGranularityList(opts({ granularities: "part", output: "./out" })),
-    ).toThrow(/Missing --output-part/);
+    expect(() => parseEcfrGranularityList(opts({ granularities: "part", output: "./out" }))).toThrow(
+      /Missing --output-part/,
+    );
   });
 
   it("throws when --output-chapter is missing for chapter granularity", () => {
-    expect(() =>
-      parseEcfrGranularityList(opts({ granularities: "chapter", output: "./out" })),
-    ).toThrow(/Missing --output-chapter/);
+    expect(() => parseEcfrGranularityList(opts({ granularities: "chapter", output: "./out" }))).toThrow(
+      /Missing --output-chapter/,
+    );
   });
 
   it("throws when --output-title is missing for title granularity", () => {
-    expect(() =>
-      parseEcfrGranularityList(opts({ granularities: "title", output: "./out" })),
-    ).toThrow(/Missing --output-title/);
+    expect(() => parseEcfrGranularityList(opts({ granularities: "title", output: "./out" }))).toThrow(
+      /Missing --output-title/,
+    );
   });
 });

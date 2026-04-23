@@ -299,10 +299,7 @@ Examples:
       process.exit(1);
     }
 
-    if (
-      options.granularities !== undefined &&
-      this.getOptionValueSource("granularity") === "cli"
-    ) {
+    if (options.granularities !== undefined && this.getOptionValueSource("granularity") === "cli") {
       console.error(error("Cannot combine --granularity and --granularities — use one or the other"));
       process.exit(1);
     }

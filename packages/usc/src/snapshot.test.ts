@@ -5,6 +5,11 @@
  * against a pinned expected file in `fixtures/expected/`. If the output
  * changes unintentionally, the test fails. Run `vitest --update` to
  * regenerate snapshots after intentional changes.
+ *
+ * The `generator` frontmatter field contains the current package version,
+ * which bumps every release. To avoid 16 snapshot churn diffs on every
+ * version bump, we normalize the generator line to `lexbuild@__VERSION__`
+ * before comparison; fixtures are stored with the placeholder.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
@@ -16,6 +21,11 @@ import type { SingleConvertOptions } from "./converter.js";
 
 const FIXTURES_DIR = resolve(import.meta.dirname, "../../../fixtures/fragments");
 const EXPECTED_DIR = resolve(import.meta.dirname, "../../../fixtures/expected");
+
+/** Replace the live `generator: "lexbuild@X.Y.Z"` with a version-agnostic placeholder. */
+function normalizeGenerator(content: string): string {
+  return content.replace(/generator: "lexbuild@[^"]+"/g, 'generator: "lexbuild@__VERSION__"');
+}
 
 /** Default options — all notes included, section granularity, plaintext links */
 const DEFAULTS: Omit<SingleConvertOptions, "input" | "output"> = {
@@ -51,7 +61,7 @@ describe("snapshot tests", () => {
       output: outputDir,
     });
 
-    const content = await readFile(result.files[0]!, "utf-8");
+    const content = normalizeGenerator(await readFile(result.files[0]!, "utf-8"));
     await expect(content).toMatchFileSnapshot(join(EXPECTED_DIR, "simple-section.md"));
   });
 
@@ -66,7 +76,7 @@ describe("snapshot tests", () => {
       output: outputDir,
     });
 
-    const content = await readFile(result.files[0]!, "utf-8");
+    const content = normalizeGenerator(await readFile(result.files[0]!, "utf-8"));
     await expect(content).toMatchFileSnapshot(join(EXPECTED_DIR, "subsections.md"));
   });
 
@@ -81,7 +91,7 @@ describe("snapshot tests", () => {
       output: outputDir,
     });
 
-    const content = await readFile(result.files[0]!, "utf-8");
+    const content = normalizeGenerator(await readFile(result.files[0]!, "utf-8"));
     await expect(content).toMatchFileSnapshot(join(EXPECTED_DIR, "notes-all.md"));
   });
 
@@ -97,7 +107,7 @@ describe("snapshot tests", () => {
       includeNotes: false,
     });
 
-    const content = await readFile(result.files[0]!, "utf-8");
+    const content = normalizeGenerator(await readFile(result.files[0]!, "utf-8"));
     await expect(content).toMatchFileSnapshot(join(EXPECTED_DIR, "notes-none.md"));
   });
 
@@ -114,7 +124,7 @@ describe("snapshot tests", () => {
       includeAmendments: true,
     });
 
-    const content = await readFile(result.files[0]!, "utf-8");
+    const content = normalizeGenerator(await readFile(result.files[0]!, "utf-8"));
     await expect(content).toMatchFileSnapshot(join(EXPECTED_DIR, "notes-amendments-only.md"));
   });
 
@@ -131,7 +141,7 @@ describe("snapshot tests", () => {
       includeStatutoryNotes: true,
     });
 
-    const content = await readFile(result.files[0]!, "utf-8");
+    const content = normalizeGenerator(await readFile(result.files[0]!, "utf-8"));
     await expect(content).toMatchFileSnapshot(join(EXPECTED_DIR, "notes-statutory-only.md"));
   });
 
@@ -146,7 +156,7 @@ describe("snapshot tests", () => {
       output: outputDir,
     });
 
-    const content = await readFile(result.files[0]!, "utf-8");
+    const content = normalizeGenerator(await readFile(result.files[0]!, "utf-8"));
     await expect(content).toMatchFileSnapshot(join(EXPECTED_DIR, "table.md"));
   });
 
@@ -161,7 +171,7 @@ describe("snapshot tests", () => {
       output: outputDir,
     });
 
-    const content = await readFile(result.files[0]!, "utf-8");
+    const content = normalizeGenerator(await readFile(result.files[0]!, "utf-8"));
     await expect(content).toMatchFileSnapshot(join(EXPECTED_DIR, "layout.md"));
   });
 
@@ -177,7 +187,7 @@ describe("snapshot tests", () => {
       granularity: "title",
     });
 
-    const content = await readFile(result.files[0]!, "utf-8");
+    const content = normalizeGenerator(await readFile(result.files[0]!, "utf-8"));
     await expect(content).toMatchFileSnapshot(join(EXPECTED_DIR, "title-granularity.md"));
   });
 
@@ -194,7 +204,7 @@ describe("snapshot tests", () => {
       });
 
       const chapterDir = join(outputDir, "usc", "title-05", "chapter-35");
-      const first = await readFile(join(chapterDir, "section-3598.md"), "utf-8");
+      const first = normalizeGenerator(await readFile(join(chapterDir, "section-3598.md"), "utf-8"));
       await expect(first).toMatchFileSnapshot(join(EXPECTED_DIR, "duplicate-first.md"));
     });
 
@@ -206,7 +216,7 @@ describe("snapshot tests", () => {
       });
 
       const chapterDir = join(outputDir, "usc", "title-05", "chapter-35");
-      const second = await readFile(join(chapterDir, "section-3598-2.md"), "utf-8");
+      const second = normalizeGenerator(await readFile(join(chapterDir, "section-3598-2.md"), "utf-8"));
       await expect(second).toMatchFileSnapshot(join(EXPECTED_DIR, "duplicate-second.md"));
     });
 
@@ -218,7 +228,7 @@ describe("snapshot tests", () => {
       });
 
       const chapterDir = join(outputDir, "usc", "title-05", "chapter-35");
-      const other = await readFile(join(chapterDir, "section-3599.md"), "utf-8");
+      const other = normalizeGenerator(await readFile(join(chapterDir, "section-3599.md"), "utf-8"));
       await expect(other).toMatchFileSnapshot(join(EXPECTED_DIR, "duplicate-other.md"));
     });
   });
@@ -236,7 +246,7 @@ describe("snapshot tests", () => {
       });
 
       const chapterDir = join(outputDir, "usc", "title-05", "chapter-10");
-      const content = await readFile(join(chapterDir, "section-1001.md"), "utf-8");
+      const content = normalizeGenerator(await readFile(join(chapterDir, "section-1001.md"), "utf-8"));
       await expect(content).toMatchFileSnapshot(join(EXPECTED_DIR, "status-repealed.md"));
     });
 
@@ -248,7 +258,7 @@ describe("snapshot tests", () => {
       });
 
       const chapterDir = join(outputDir, "usc", "title-05", "chapter-10");
-      const content = await readFile(join(chapterDir, "section-1002.md"), "utf-8");
+      const content = normalizeGenerator(await readFile(join(chapterDir, "section-1002.md"), "utf-8"));
       await expect(content).toMatchFileSnapshot(join(EXPECTED_DIR, "status-transferred.md"));
     });
 
@@ -260,7 +270,7 @@ describe("snapshot tests", () => {
       });
 
       const chapterDir = join(outputDir, "usc", "title-05", "chapter-10");
-      const content = await readFile(join(chapterDir, "section-1003.md"), "utf-8");
+      const content = normalizeGenerator(await readFile(join(chapterDir, "section-1003.md"), "utf-8"));
       await expect(content).toMatchFileSnapshot(join(EXPECTED_DIR, "status-reserved.md"));
     });
 
@@ -272,7 +282,7 @@ describe("snapshot tests", () => {
       });
 
       const chapterDir = join(outputDir, "usc", "title-05", "chapter-10");
-      const content = await readFile(join(chapterDir, "section-1004.md"), "utf-8");
+      const content = normalizeGenerator(await readFile(join(chapterDir, "section-1004.md"), "utf-8"));
       await expect(content).toMatchFileSnapshot(join(EXPECTED_DIR, "status-current.md"));
     });
   });

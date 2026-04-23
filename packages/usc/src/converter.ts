@@ -146,9 +146,7 @@ function resolveGranularities(options: ConvertOptions): UscGranularityOutput[] {
   const hasSingle = options.granularity !== undefined || options.output !== undefined;
 
   if (hasMulti && hasSingle) {
-    throw new Error(
-      "convertTitle: `granularities` is mutually exclusive with `granularity`/`output`",
-    );
+    throw new Error("convertTitle: `granularities` is mutually exclusive with `granularity`/`output`");
   }
 
   if (hasMulti) {
@@ -159,9 +157,7 @@ function resolveGranularities(options: ConvertOptions): UscGranularityOutput[] {
     const seen = new Set<UscGranularity>();
     for (const entry of list) {
       if (seen.has(entry.granularity)) {
-        throw new Error(
-          `convertTitle: duplicate granularity "${entry.granularity}" in \`granularities\``,
-        );
+        throw new Error(`convertTitle: duplicate granularity "${entry.granularity}" in \`granularities\``);
       }
       seen.add(entry.granularity);
     }
@@ -209,9 +205,7 @@ interface CollectedSection {
  */
 export async function convertTitle(options: MultiConvertOptions): Promise<ConvertResult[]>;
 export async function convertTitle(options: SingleConvertOptions): Promise<ConvertResult>;
-export async function convertTitle(
-  options: ConvertOptions,
-): Promise<ConvertResult | ConvertResult[]> {
+export async function convertTitle(options: ConvertOptions): Promise<ConvertResult | ConvertResult[]> {
   const opts: ConvertOptions = { ...DEFAULTS, ...options };
   const granularityList = resolveGranularities(opts);
 
@@ -363,9 +357,7 @@ async function writeGranularity(
 
   return {
     sectionsWritten:
-      opts.dryRun || granularity === "title" || granularity === "chapter"
-        ? sectionMetas.length
-        : files.length,
+      opts.dryRun || granularity === "title" || granularity === "chapter" ? sectionMetas.length : files.length,
     files,
     titleNumber: docMeta.docNumber ?? "unknown",
     titleName: titleHeading ?? docMeta.dcTitle ?? "Unknown Title",

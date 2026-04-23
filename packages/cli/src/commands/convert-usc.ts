@@ -88,11 +88,7 @@ export function parseGranularityList(
 }
 
 /** Build the shared convert options from CLI flags. */
-function buildConvertOptions(
-  inputPath: string,
-  outputPath: string,
-  options: ConvertCommandOptions,
-): ConvertOptions {
+function buildConvertOptions(inputPath: string, outputPath: string, options: ConvertCommandOptions): ConvertOptions {
   const hasSelectiveFlags = options.includeEditorialNotes || options.includeStatutoryNotes || options.includeAmendments;
   const includeNotes = hasSelectiveFlags ? false : options.includeNotes;
 
@@ -316,10 +312,7 @@ Examples:
 
     // --granularity and --granularities are mutually exclusive (ignoring the
     // `-g section` default).
-    if (
-      options.granularities !== undefined &&
-      this.getOptionValueSource("granularity") === "cli"
-    ) {
+    if (options.granularities !== undefined && this.getOptionValueSource("granularity") === "cli") {
       console.error(error("Cannot combine --granularity and --granularities — use one or the other"));
       process.exit(1);
     }

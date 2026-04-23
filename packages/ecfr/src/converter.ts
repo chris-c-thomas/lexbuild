@@ -164,9 +164,7 @@ function resolveGranularities(options: EcfrConvertOptions): EcfrGranularityOutpu
   const hasSingle = options.granularity !== undefined || options.output !== undefined;
 
   if (hasMulti && hasSingle) {
-    throw new Error(
-      "convertEcfrTitle: `granularities` is mutually exclusive with `granularity`/`output`",
-    );
+    throw new Error("convertEcfrTitle: `granularities` is mutually exclusive with `granularity`/`output`");
   }
 
   if (hasMulti) {
@@ -177,9 +175,7 @@ function resolveGranularities(options: EcfrConvertOptions): EcfrGranularityOutpu
     const seen = new Set<EcfrGranularity>();
     for (const entry of list) {
       if (seen.has(entry.granularity)) {
-        throw new Error(
-          `convertEcfrTitle: duplicate granularity "${entry.granularity}" in \`granularities\``,
-        );
+        throw new Error(`convertEcfrTitle: duplicate granularity "${entry.granularity}" in \`granularities\``);
       }
       seen.add(entry.granularity);
     }
@@ -200,15 +196,9 @@ function resolveGranularities(options: EcfrConvertOptions): EcfrGranularityOutpu
  * - Single-granularity mode (`output` + optional `granularity`) returns one `EcfrConvertResult`.
  * - Multi-granularity mode (`granularities`) parses once and returns one result per entry.
  */
-export async function convertEcfrTitle(
-  options: MultiEcfrConvertOptions,
-): Promise<EcfrConvertResult[]>;
-export async function convertEcfrTitle(
-  options: SingleEcfrConvertOptions,
-): Promise<EcfrConvertResult>;
-export async function convertEcfrTitle(
-  options: EcfrConvertOptions,
-): Promise<EcfrConvertResult | EcfrConvertResult[]> {
+export async function convertEcfrTitle(options: MultiEcfrConvertOptions): Promise<EcfrConvertResult[]>;
+export async function convertEcfrTitle(options: SingleEcfrConvertOptions): Promise<EcfrConvertResult>;
+export async function convertEcfrTitle(options: EcfrConvertOptions): Promise<EcfrConvertResult | EcfrConvertResult[]> {
   const granularityList = resolveGranularities(options);
 
   // Build the emit set as the union of levels needed across requested granularities.
@@ -303,7 +293,7 @@ function extractTitleInfo(collectedByLevel: Map<LevelType, CollectedSection[]>):
 
   console.warn(
     "[@lexbuild/ecfr] convertEcfrTitle: could not resolve title number from emitted nodes; " +
-      "output will use `/us/cfr/t0/...` identifiers. Source XML likely missing a DIV1 TYPE=\"TITLE\".",
+      'output will use `/us/cfr/t0/...` identifiers. Source XML likely missing a DIV1 TYPE="TITLE".',
   );
   return { titleNumber: "0", titleName: "" };
 }
@@ -427,9 +417,7 @@ async function writeGranularity(args: WriteGranularityArgs): Promise<EcfrConvert
       ? files.length
       : granularity === "chapter"
         ? new Set(
-            collected
-              .map((c) => c.context.ancestors.find((a) => a.levelType === "part")?.numValue)
-              .filter(Boolean),
+            collected.map((c) => c.context.ancestors.find((a) => a.levelType === "part")?.numValue).filter(Boolean),
           ).size
         : 0;
 
@@ -548,15 +536,7 @@ async function writeSectionGranularity(args: SectionWriteArgs): Promise<EcfrConv
     if (currentRss > peakMemory) peakMemory = currentRss;
   }
 
-  await writeMetaFiles(
-    sectionMetas,
-    titleNumber,
-    titleName,
-    output,
-    "section",
-    options.input,
-    options.currencyDate,
-  );
+  await writeMetaFiles(sectionMetas, titleNumber, titleName, output, "section", options.input, options.currencyDate);
 
   const files = sectionMetas.map((m) => join(buildTitleDir(titleNumber, output), m.relativeFile));
 

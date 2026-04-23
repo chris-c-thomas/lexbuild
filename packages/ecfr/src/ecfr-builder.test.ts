@@ -26,12 +26,7 @@ function collectLevelsOfType(root: LevelNode, levelType: string): LevelNode[] {
 /** Helper: parse an XML fixture and collect emitted nodes */
 async function parseFixture(
   fixtureName: string,
-  emitAt:
-    | "section"
-    | "part"
-    | "chapter"
-    | "title"
-    | ReadonlySet<"section" | "part" | "chapter" | "title"> = "section",
+  emitAt: "section" | "part" | "chapter" | "title" | ReadonlySet<"section" | "part" | "chapter" | "title"> = "section",
 ): Promise<Array<{ node: LevelNode; context: EmitContext }>> {
   const collected: Array<{ node: LevelNode; context: EmitContext }> = [];
 
@@ -264,10 +259,7 @@ describe("EcfrASTBuilder", () => {
     // hierarchy index than part, so naive index-based reasoning would drop
     // the appendix from the part's children. The live stack check keeps it
     // attached once.
-    const collected = await parseFixture(
-      "appendix.xml",
-      new Set<"section" | "part" | "title">(["part", "title"]),
-    );
+    const collected = await parseFixture("appendix.xml", new Set<"section" | "part" | "title">(["part", "title"]));
 
     const parts = collected.filter((c) => c.node.levelType === "part");
     const titles = collected.filter((c) => c.node.levelType === "title");
