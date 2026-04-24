@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
+## [Unreleased]
+
+### Changed
+
+- Unify the update-script flag scheme. `./scripts/update.sh` (no args) now updates all sources incrementally from each source's last checkpoint. Source restriction lives on `--source`; source-scoping flags (`--titles`, `--days`, `--from`, `--to`) live at the top level instead of per-source prefixes. Old prefixes (`--ecfr-titles`, `--ecfr-all`, `--ecfr-skip-highlights`, `--fr-days`, `--fr-from`, `--fr-to`, `--usc-force`, `--usc-skip-highlights`) are removed; running them prints a migration hint and exits 1. `update-ecfr.sh --all` similarly removed in favor of `--force`.
+- Add `--skip-search`, `--dry-run`, and consistent `--force` semantics to all four scripts.
+- `update-fr.sh` now persists a JSON checkpoint at `downloads/fr/.fr-state.json` (`{ lastRun, lastDate }`). Default invocations resume from `lastDate`. Bootstrap (no checkpoint) errors with a hint requiring `--from` or `--days`, since FR has no inherent "all".
+- eCFR/USC bootstrap (missing `.ecfr-titles-state.json` / `.usc-release-point`) now logs the bootstrap explicitly and falls back to a full first-run automatically.
+- When `--force` runs against all three sources, the orchestrator now performs a single full `deploy.sh --search-docker` reindex at the end instead of three per-source incremental indexes.
+
 ## [1.25.0]
 
 ### Added

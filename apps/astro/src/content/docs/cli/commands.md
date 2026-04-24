@@ -127,17 +127,20 @@ lexbuild convert-fr --all
 
 ## Update Scripts
 
-For routine updates, wrapper scripts handle the full pipeline (detect changes, download, convert, generate artifacts, deploy):
+A single orchestrator handles change detection, download, convert, and deploy across all sources. Default is incremental from each source's last checkpoint:
 
 ```bash
-./scripts/update.sh                      # All sources
-./scripts/update.sh --source ecfr        # One source
-./scripts/update-ecfr.sh --skip-deploy   # eCFR, local only
-./scripts/update-fr.sh --days 3          # FR, last 3 days
-./scripts/update-usc.sh                  # USC, checks release point
+./scripts/update.sh                                # All sources, incremental from checkpoints
+./scripts/update.sh --source fr                    # One source
+./scripts/update.sh --source ecfr,fr               # Multi-source
+./scripts/update.sh --source ecfr --titles 1,17    # eCFR titles 1, 17 only
+./scripts/update.sh --source fr --days 7           # FR last 7 days
+./scripts/update.sh --source usc --force           # USC full redownload + reconvert
+./scripts/update.sh --skip-deploy                  # Local pipeline only
+./scripts/update.sh --dry-run                      # Print plan, exit 0
 ```
 
-Each script auto-detects what changed and only processes updates. `update-usc.sh` and `update-ecfr.sh` convert all granularities in one call using `--granularities` (see above), so the convert step parses the XML once per title rather than once per granularity. See [Incremental Updates](/docs/guides/bulk-download#incremental-updates) for details.
+`update-usc.sh` and `update-ecfr.sh` convert all granularities in one call using `--granularities` (see above), so the convert step parses the XML once per title rather than once per granularity. See [Incremental Updates](/docs/guides/bulk-download#incremental-updates) for details on checkpoints and bootstrap behavior.
 
 ## Getting Help
 

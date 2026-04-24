@@ -12,6 +12,13 @@ For the complete changelog, see [CHANGELOG.md on GitHub](https://github.com/chri
 
 ## Recent Releases
 
+### Unreleased
+
+- Unified update-script flag scheme. `./scripts/update.sh` (no args) now updates all sources incrementally from each source's last checkpoint. Source restriction via `--source`; source-scoping flags (`--titles`, `--days`, `--from`, `--to`) live at the top level. Old prefixes (`--ecfr-titles`, `--fr-days`, `--usc-force`, etc.) are removed and print migration hints
+- New `--skip-search`, `--dry-run`, and consistent `--force` semantics across all four scripts
+- New FR checkpoint at `downloads/fr/.fr-state.json` (`{ lastRun, lastDate }`). Default `update-fr.sh` resumes from `lastDate`. Missing checkpoint errors with a hint requiring `--from` or `--days`
+- eCFR/USC bootstrap (missing checkpoint) now logs explicitly and runs a full first-run automatically
+
 ### 1.17.2
 
 - Added **Data API** (`apps/api/`) -- Hono-based REST API serving U.S. legal content from SQLite with Meilisearch search proxy

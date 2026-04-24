@@ -143,24 +143,40 @@ lexbuild convert-fr --from 2026-03-01
 
 ### Update Scripts
 
-For streamlined incremental updates, wrapper scripts handle the full pipeline (detect changes, download, convert, generate artifacts, deploy):
+A single orchestrator handles change detection, download, convert, and deploy across every source. Default is incremental from each source's last checkpoint:
 
 ```bash
-# All sources — auto-detects changes, downloads, converts, deploys
+# All sources, incremental from each source's checkpoint
 ./scripts/update.sh
 
-# Individual sources
-./scripts/update-ecfr.sh               # Only changed titles (via API metadata)
-./scripts/update-fr.sh --days 3         # Last 3 days
-./scripts/update-usc.sh                 # Checks OLRC release point
+# Restrict to specific sources
+./scripts/update.sh --source fr
+./scripts/update.sh --source ecfr,fr
 
-# Local only (no VPS deploy)
+# Source-scoping
+./scripts/update.sh --source ecfr --titles 1,17    # eCFR titles 1, 17 only
+./scripts/update.sh --source fr --days 7           # FR last 7 days
+
+# Force a full redownload + reconvert
+./scripts/update.sh --source usc --force
+./scripts/update.sh --force --from 2026-01-01      # All sources (FR force requires --from)
+
+# Local only (no VPS deploy, no search reindex)
 ./scripts/update.sh --skip-deploy
+
+# Preview without running
+./scripts/update.sh --dry-run
 ```
 
-The eCFR script compares `latestAmendedOn` dates from the eCFR API against a local checkpoint to detect which titles have new amendments. The USC script checks for new OLRC release points. The FR script uses date-range filtering.
+Checkpoints live in `downloads/<source>/`:
 
-All converters use `writeFileIfChanged()` internally, so unchanged sections keep their original file timestamps. This means downstream tools (Shiki highlighting, Meilisearch indexing) automatically skip reprocessing unchanged content.
+- **eCFR** (`.ecfr-titles-state.json`) snapshots each title's `latestAmendedOn` date. The script compares against the live eCFR API to detect which titles have new amendments.
+- **USC** (`.usc-release-point`) stores the latest OLRC release point ID; the pipeline runs only when the API returns a newer one.
+- **FR** (`.fr-state.json`) stores `lastRun` and `lastDate`. Default invocations use `lastDate` as the `--from` argument and update `lastDate` to today after a successful run.
+
+If a checkpoint is missing, eCFR/USC bootstrap into a full first-run automatically. FR has no inherent "all" (decades of documents), so a missing checkpoint requires explicit `--from YYYY-MM-DD` or `--days N`.
+
+All converters use `writeFileIfChanged()` internally, so unchanged sections keep their original file timestamps. Downstream tools (Shiki highlighting, Meilisearch indexing) automatically skip reprocessing unchanged content.
 
 ## Output Granularity
 

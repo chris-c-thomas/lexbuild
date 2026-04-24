@@ -131,17 +131,32 @@ lexbuild enrich-fr --from 2000-01-01
 
 ### Incremental Updates
 
-Update scripts handle change detection, download, convert, and deploy in one command:
+A single script handles change detection, download, convert, and deploy across every source. The default is incremental from each source's last checkpoint:
 
 ```bash
-# Update all sources (auto-detects changes)
+# Painless: update everything from each source's checkpoint
+./scripts/update.sh
+
+# Restrict to one source (or several)
+./scripts/update.sh --source fr
+./scripts/update.sh --source ecfr,fr
+
+# Source-scoping flags
+./scripts/update.sh --source ecfr --titles 1,17    # eCFR titles 1, 17 only
+./scripts/update.sh --source fr --days 7           # FR last 7 days
+
+# Force a full redownload + reconvert
+./scripts/update.sh --source usc --force
+./scripts/update.sh --force --from 2026-01-01      # All sources (FR force requires --from)
+
+# Local only (no rsync to VPS, no search reindex)
 ./scripts/update.sh --skip-deploy
 
-# Update individual sources
-./scripts/update-ecfr.sh --skip-deploy
-./scripts/update-fr.sh --days 3 --skip-deploy
-./scripts/update-usc.sh --skip-deploy
+# Preview without running
+./scripts/update.sh --dry-run
 ```
+
+Each source has a checkpoint in `downloads/<source>/`. eCFR/USC bootstrap automatically into a full first-run if their checkpoint is missing; FR errors with a hint and requires `--from`. Run `./scripts/update.sh --help` (or any sub-script with `--help`) for the full grammar.
 
 `update-usc.sh` and `update-ecfr.sh` convert every granularity in one parse using the `--granularities` flag (see below), so the convert step no longer scales with the number of output granularities.
 

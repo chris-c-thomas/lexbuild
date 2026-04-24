@@ -19,19 +19,22 @@ lexbuild/
 │   └── api/         # @lexbuild/api — Data API (Hono, SQLite, Meilisearch proxy)
 ├── scripts/
 │   ├── deploy.sh              # Production deploy (code, content, or full remote pipeline)
-│   ├── update.sh              # Unified incremental content update (all sources)
-│   ├── update-ecfr.sh         # eCFR incremental update (auto-detects changed titles)
-│   ├── update-fr.sh           # FR incremental update (date-range based)
-│   ├── update-usc.sh          # USC incremental update (release point detection)
+│   ├── update.sh              # Unified content update orchestrator (incremental by default)
+│   ├── update-ecfr.sh         # eCFR sub-script (change-detection via API metadata)
+│   ├── update-fr.sh           # FR sub-script (checkpoint-based date window)
+│   ├── update-usc.sh          # USC sub-script (release-point detection)
 │   ├── ecfr-changed-titles.ts # eCFR change detection helper (API metadata vs checkpoint)
 │   ├── setup-secrets.sh       # Initialize ~/.lexbuild-secrets on VPS
 │   └── .deploy.env.example    # Template for .deploy.env (VPS_HOST config)
 ├── downloads/
 │   ├── usc/
-│   │   └── xml/     # Full USC XML files (usc01.xml ... usc54.xml) — gitignored
+│   │   ├── xml/                       # Full USC XML files (usc01.xml ... usc54.xml) — gitignored
+│   │   └── .usc-release-point         # USC checkpoint (latest OLRC release point ID)
 │   ├── ecfr/
-│   │   └── xml/     # Full eCFR XML files (ECFR-title1.xml ... ECFR-title50.xml) — gitignored
-│   └── fr/          # FR XML + JSON files (YYYY/MM/doc-number.xml/.json) — gitignored
+│   │   ├── xml/                       # Full eCFR XML files (ECFR-title1.xml ... ECFR-title50.xml) — gitignored
+│   │   └── .ecfr-titles-state.json    # eCFR checkpoint (per-title amendment dates)
+│   └── fr/                            # FR XML + JSON files (YYYY/MM/doc-number.xml/.json) — gitignored
+│       └── .fr-state.json             # FR checkpoint ({ lastRun, lastDate })
 ├── fixtures/
 │   ├── fragments/   # Small synthetic XML snippets for unit tests
 │   └── expected/    # Expected output snapshots for integration tests
@@ -129,17 +132,34 @@ pnpm turbo build:api --filter=@lexbuild/api        # Production build
 ./scripts/deploy.sh --search-docker --source fr   # Incremental: index one source into existing volume
 ./scripts/deploy.sh --search-docker-seed          # Seed Docker volume from VPS (recover after volume loss)
 
-# Incremental content updates (from monorepo root)
-# Search indexing runs locally in Docker, not on the VPS — each update script's
-# final step delegates to `deploy.sh --search-docker --source <name>`.
-./scripts/update.sh                                # All sources incrementally
-./scripts/update.sh --source ecfr                  # One source
-./scripts/update.sh --skip-deploy                  # Local only
-./scripts/update-ecfr.sh                           # eCFR only (auto-detects changed titles)
-./scripts/update-ecfr.sh --titles 1,17             # Specific eCFR titles
-./scripts/update-fr.sh --days 3                    # FR last 3 days
-./scripts/update-usc.sh                            # USC (checks for new release point)
+# Content updates (from monorepo root)
+# Default behavior is incremental from each source's checkpoint. Search indexing
+# runs locally in Docker; each sub-script delegates to `deploy.sh --search-docker
+# --source <name>` after the local pipeline.
+./scripts/update.sh                                # All sources, incremental from checkpoints
+./scripts/update.sh --source fr                    # One source, incremental
+./scripts/update.sh --source ecfr,fr               # Multi-source, incremental
+./scripts/update.sh --source ecfr --titles 1,17    # eCFR titles 1, 17 only (skip change-detection)
+./scripts/update.sh --source fr --days 7           # FR last 7 days
+./scripts/update.sh --source usc --force           # USC full redownload + reconvert
+./scripts/update.sh --force --from 2026-01-01      # All sources, full rebuild (FR force requires --from)
+./scripts/update.sh --skip-deploy                  # Local only (no rsync, no search)
+./scripts/update.sh --skip-search                  # Rsync content/nav, but skip search reindex
+./scripts/update.sh --deploy-only                  # Push existing local output + reindex
+./scripts/update.sh --dry-run                      # Print plan, exit 0
 ```
+
+Sub-scripts (`update-ecfr.sh`, `update-fr.sh`, `update-usc.sh`) accept the same flag grammar
+minus `--source`. Run any of them with `--help` for the full list.
+
+**Checkpoints** (gitignored, in `downloads/<source>/`):
+- `usc/.usc-release-point` — latest OLRC release point ID (plain text).
+- `ecfr/.ecfr-titles-state.json` — per-title `latestAmendedOn` snapshot.
+- `fr/.fr-state.json` — `{ lastRun, lastDate }`. Default `update-fr.sh` uses `lastDate` as `--from`.
+
+If a checkpoint is missing, eCFR/USC bootstrap into a full first-run automatically. FR bootstrap
+errors with a hint; you must specify `--from YYYY-MM-DD` or `--days N` because FR has no inherent
+"all" (decades of documents).
 
 See `packages/cli/CLAUDE.md` for full command options. See `apps/astro/CLAUDE.md` for content pipeline scripts.
 
