@@ -2,11 +2,18 @@
 # update-usc.sh — Check for new USC release point, download, convert, and deploy.
 #
 # Usage:
-#   ./scripts/update-usc.sh                  # Check for new release point
-#   ./scripts/update-usc.sh --force          # Force full reconvert
-#   ./scripts/update-usc.sh --skip-deploy    # Local only (no VPS push)
-#   ./scripts/update-usc.sh --deploy-only    # Push existing output + reindex
+#   ./scripts/update-usc.sh                  # Incremental: check for new release point
+#   ./scripts/update-usc.sh --force          # Force full redownload + reconvert
+#   ./scripts/update-usc.sh --skip-deploy    # Local only (no VPS push, no search)
+#   ./scripts/update-usc.sh --skip-search    # Skip search reindex (still rsync)
 #   ./scripts/update-usc.sh --skip-highlights # Skip highlight generation
+#   ./scripts/update-usc.sh --deploy-only    # Push existing output + reindex
+#   ./scripts/update-usc.sh --dry-run        # Print plan, exit 0
+#
+# Modes:
+#   incremental  Default. Compares latest OLRC release point to .usc-release-point.
+#   bootstrap    No checkpoint at downloads/usc/.usc-release-point. Treated as new release point.
+#   force        --force: skip release-point check, always download + reconvert.
 #
 # Steps:
 #   1. Check latest OLRC release point against stored checkpoint
@@ -44,6 +51,8 @@ FORCE=false
 SKIP_DEPLOY=false
 DEPLOY_ONLY=false
 SKIP_HIGHLIGHTS=false
+SKIP_SEARCH=false
+DRY_RUN=false
 LATEST=""
 
 while [[ $# -gt 0 ]]; do
@@ -64,25 +73,68 @@ while [[ $# -gt 0 ]]; do
       SKIP_HIGHLIGHTS=true
       shift
       ;;
+    --skip-search)
+      SKIP_SEARCH=true
+      shift
+      ;;
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
     --help|-h)
-      sed -n '2,/^$/{ s/^# //; s/^#$//; p }' "$0"
+      awk 'NR==1{next} /^$/{exit} {sub(/^# ?/, ""); print}' "$0"
       exit 0
       ;;
     *)
-      echo "Unknown option: $1"
-      echo "Run with --help for usage."
+      echo "Unknown option: $1" >&2
+      echo "Run with --help for usage." >&2
       exit 1
       ;;
   esac
 done
 
 if [ "$SKIP_DEPLOY" = true ] && [ "$DEPLOY_ONLY" = true ]; then
-  echo "Error: --skip-deploy and --deploy-only are mutually exclusive."
+  echo "Error: --skip-deploy and --deploy-only are mutually exclusive." >&2
   exit 1
 fi
 
 CLI="node packages/cli/dist/index.js"
 CHECKPOINT="downloads/usc/.usc-release-point"
+
+# --- Resolve mode ---
+
+MODE=""
+if [ "$DEPLOY_ONLY" = true ]; then
+  MODE="deploy-only"
+elif [ "$FORCE" = true ]; then
+  MODE="force"
+elif [ ! -f "$CHECKPOINT" ]; then
+  MODE="bootstrap"
+else
+  MODE="incremental"
+fi
+
+# --- Print plan and exit on --dry-run ---
+
+print_plan() {
+  echo "==> USC update plan"
+  echo "    Mode:             $MODE"
+  echo "    Force:            $FORCE"
+  echo "    Skip deploy:      $SKIP_DEPLOY"
+  echo "    Skip search:      $SKIP_SEARCH"
+  echo "    Skip highlights:  $SKIP_HIGHLIGHTS"
+  echo "    Checkpoint:       $CHECKPOINT"
+  if [ -f "$CHECKPOINT" ]; then
+    echo "    Stored RP:        $(cat "$CHECKPOINT")"
+  else
+    echo "    Stored RP:        (none — bootstrap)"
+  fi
+}
+
+if [ "$DRY_RUN" = true ]; then
+  print_plan
+  exit 0
+fi
 
 # --- Preflight checks ---
 
@@ -137,6 +189,9 @@ if [ "$DEPLOY_ONLY" = false ]; then
 
   if [ -n "$STORED" ] && [ "$LATEST" != "$STORED" ]; then
     echo "    New release point: $LATEST (was $STORED)"
+  elif [ -z "$STORED" ]; then
+    echo "    Bootstrap: no checkpoint at $CHECKPOINT — performing full first-run download."
+    echo "    Release point: $LATEST"
   else
     echo "    Release point: $LATEST"
   fi
@@ -261,8 +316,12 @@ echo ""
 # restart-storms under memory pressure). The deploy script handles: local
 # Docker Meilisearch, incremental indexing, tar+scp of the LMDB data dir,
 # and the atomic PM2 swap on the VPS.
-echo "--- Step 9/9: Building and shipping search index via local Docker"
-"$SCRIPT_DIR/deploy.sh" --search-docker --source usc
+if [ "$SKIP_SEARCH" = true ]; then
+  echo "--- Skipping search index step (--skip-search)"
+else
+  echo "--- Step 9/9: Building and shipping search index via local Docker"
+  "$SCRIPT_DIR/deploy.sh" --search-docker --source usc
+fi
 
 echo ""
 if [ -n "$LATEST" ]; then

@@ -3,22 +3,31 @@
 #
 # Usage:
 #   ./scripts/update-ecfr.sh                     # Incremental: only changed titles
-#   ./scripts/update-ecfr.sh --titles 1,17       # Explicit titles
-#   ./scripts/update-ecfr.sh --all               # Force full reconvert
-#   ./scripts/update-ecfr.sh --skip-deploy       # Local only (no VPS push)
-#   ./scripts/update-ecfr.sh --deploy-only       # Push existing output + reindex
+#   ./scripts/update-ecfr.sh --titles 1,17       # Explicit titles (skip change-detection)
+#   ./scripts/update-ecfr.sh --force             # Force reconvert all 50 titles
+#   ./scripts/update-ecfr.sh --skip-deploy       # Local only (no VPS push, no search)
+#   ./scripts/update-ecfr.sh --skip-search       # Skip search reindex (still rsync)
 #   ./scripts/update-ecfr.sh --skip-highlights   # Skip highlight generation
+#   ./scripts/update-ecfr.sh --deploy-only       # Push existing output + reindex
+#   ./scripts/update-ecfr.sh --dry-run           # Print plan, exit 0
+#
+# Modes:
+#   incremental  Default. ecfr-changed-titles.ts compares API metadata vs checkpoint.
+#   bootstrap    No checkpoint at downloads/ecfr/.ecfr-titles-state.json.
+#                ecfr-changed-titles.ts returns all titles; pipeline performs full bootstrap.
+#   titles       Explicit --titles spec. Bypasses change-detection.
+#   force        --force: download + convert all 50 titles regardless of checkpoint.
 #
 # Steps:
-#   1. Detect changed titles via eCFR API metadata
-#   2. Download changed title XML from eCFR API
-#   3. Convert changed titles to Markdown at all granularities (section, title, chapter, part)
-#   4. Generate highlights for changed sections (mtime-based, skippable)
-#   5. Regenerate eCFR nav JSON
-#   6. Regenerate sitemaps
-#   7. Save checkpoint
-#   8. Rsync content (all granularities) + nav + sitemaps to VPS
-#   9. Incremental search index on VPS
+#   1. Detect changed titles via eCFR API metadata (or use --titles / --force).
+#   2. Download changed title XML from eCFR API.
+#   3. Convert changed titles to Markdown at all granularities (section, title, chapter, part).
+#   4. Generate highlights for changed sections (mtime-based, skippable).
+#   5. Regenerate eCFR nav JSON.
+#   6. Regenerate sitemaps (deferred when LEXBUILD_DEFER_SITEMAP=1).
+#   7. Save checkpoint.
+#   8. Rsync content (all granularities) + nav + sitemaps to VPS.
+#   9. Incremental search index via Docker.
 #
 # Requires:
 #   - Built CLI: pnpm turbo build (or at least @lexbuild/ecfr + @lexbuild/cli)
@@ -40,13 +49,17 @@ fi
 CONTENT_DEST="${CONTENT_DEST:-/srv/lexbuild/content}"
 NAV_DEST="${NAV_DEST:-/srv/lexbuild/nav}"
 
+ECFR_CHECKPOINT_PATH="$REPO_ROOT/downloads/ecfr/.ecfr-titles-state.json"
+
 # --- Parse arguments ---
 
 TITLES=""
-ALL=false
+FORCE=false
 SKIP_DEPLOY=false
 DEPLOY_ONLY=false
 SKIP_HIGHLIGHTS=false
+SKIP_SEARCH=false
+DRY_RUN=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -54,8 +67,8 @@ while [[ $# -gt 0 ]]; do
       TITLES="$2"
       shift 2
       ;;
-    --all)
-      ALL=true
+    --force)
+      FORCE=true
       shift
       ;;
     --skip-deploy)
@@ -70,21 +83,79 @@ while [[ $# -gt 0 ]]; do
       SKIP_HIGHLIGHTS=true
       shift
       ;;
+    --skip-search)
+      SKIP_SEARCH=true
+      shift
+      ;;
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    --all)
+      echo "Error: --all has been removed. Use --force instead." >&2
+      echo "       ./scripts/update-ecfr.sh --force" >&2
+      exit 1
+      ;;
     --help|-h)
-      sed -n '2,/^$/{ s/^# //; s/^#$//; p }' "$0"
+      awk 'NR==1{next} /^$/{exit} {sub(/^# ?/, ""); print}' "$0"
       exit 0
       ;;
     *)
-      echo "Unknown option: $1"
-      echo "Run with --help for usage."
+      echo "Unknown option: $1" >&2
+      echo "Run with --help for usage." >&2
       exit 1
       ;;
   esac
 done
 
 if [ "$SKIP_DEPLOY" = true ] && [ "$DEPLOY_ONLY" = true ]; then
-  echo "Error: --skip-deploy and --deploy-only are mutually exclusive."
+  echo "Error: --skip-deploy and --deploy-only are mutually exclusive." >&2
   exit 1
+fi
+
+if [ -n "$TITLES" ] && [ "$FORCE" = true ]; then
+  echo "Error: --titles and --force are mutually exclusive." >&2
+  exit 1
+fi
+
+# --- Resolve mode ---
+
+MODE=""
+if [ "$DEPLOY_ONLY" = true ]; then
+  MODE="deploy-only"
+elif [ "$FORCE" = true ]; then
+  MODE="force"
+elif [ -n "$TITLES" ]; then
+  MODE="titles"
+elif [ ! -f "$ECFR_CHECKPOINT_PATH" ]; then
+  MODE="bootstrap"
+else
+  MODE="incremental"
+fi
+
+# --- Print plan and exit on --dry-run ---
+
+print_plan() {
+  echo "==> eCFR update plan"
+  echo "    Mode:             $MODE"
+  if [ -n "$TITLES" ]; then
+    echo "    Titles:           $TITLES"
+  fi
+  echo "    Force:            $FORCE"
+  echo "    Skip deploy:      $SKIP_DEPLOY"
+  echo "    Skip search:      $SKIP_SEARCH"
+  echo "    Skip highlights:  $SKIP_HIGHLIGHTS"
+  echo "    Checkpoint:       $ECFR_CHECKPOINT_PATH"
+  if [ -f "$ECFR_CHECKPOINT_PATH" ]; then
+    echo "    Checkpoint exists: yes"
+  else
+    echo "    Checkpoint exists: no (bootstrap)"
+  fi
+}
+
+if [ "$DRY_RUN" = true ]; then
+  print_plan
+  exit 0
 fi
 
 CLI="node packages/cli/dist/index.js"
@@ -92,7 +163,7 @@ CLI="node packages/cli/dist/index.js"
 # --- Preflight checks ---
 
 if [ ! -f "packages/cli/dist/index.js" ]; then
-  echo "Error: CLI not built. Run: pnpm turbo build"
+  echo "Error: CLI not built. Run: pnpm turbo build" >&2
   exit 1
 fi
 
@@ -104,7 +175,7 @@ if [ "$SKIP_DEPLOY" = false ] && [ "$DEPLOY_ONLY" = false ] && [ -z "${VPS_HOST:
 fi
 
 if [ "$DEPLOY_ONLY" = true ] && [ -z "${VPS_HOST:-}" ]; then
-  echo "Error: --deploy-only requires VPS_HOST. Set it in scripts/.deploy.env."
+  echo "Error: --deploy-only requires VPS_HOST. Set it in scripts/.deploy.env." >&2
   exit 1
 fi
 
@@ -119,33 +190,42 @@ if [ "$DEPLOY_ONLY" = false ]; then
   PIPELINE_MARKER="$(mktemp -t lexbuild-ecfr-update.XXXXXX)"
   trap 'rm -f "$PIPELINE_MARKER"' EXIT
 
-  # Step 1: Detect changed titles (unless --titles or --all specified)
+  # Step 1: Detect titles to process
   CURRENCY_DATE=""
 
-  if [ -n "$TITLES" ]; then
-    echo "==> eCFR update for titles: $TITLES"
-  elif [ "$ALL" = true ]; then
-    echo "==> eCFR full update (all titles)"
-    TITLES="all"
-  else
-    echo "--- Step 1/7: Detecting changed eCFR titles"
-    CHANGE_JSON=$(npx tsx scripts/ecfr-changed-titles.ts --json)
-    TITLES=$(echo "$CHANGE_JSON" | node -e "
-      const d = JSON.parse(require('fs').readFileSync('/dev/stdin','utf-8'));
-      process.stdout.write(d.changedTitles.join(','));
-    ")
-    CURRENCY_DATE=$(echo "$CHANGE_JSON" | node -e "
-      const d = JSON.parse(require('fs').readFileSync('/dev/stdin','utf-8'));
-      process.stdout.write(d.currencyDate || '');
-    ")
+  case "$MODE" in
+    titles)
+      echo "==> eCFR update for titles: $TITLES"
+      ;;
+    force)
+      echo "==> eCFR force update (all titles)"
+      TITLES="all"
+      ;;
+    bootstrap)
+      echo "==> eCFR bootstrap: no checkpoint at $ECFR_CHECKPOINT_PATH"
+      echo "    Performing full first-run download (all titles)."
+      TITLES="all"
+      ;;
+    incremental)
+      echo "--- Step 1/7: Detecting changed eCFR titles"
+      CHANGE_JSON=$(npx tsx scripts/ecfr-changed-titles.ts --json)
+      TITLES=$(echo "$CHANGE_JSON" | node -e "
+        const d = JSON.parse(require('fs').readFileSync('/dev/stdin','utf-8'));
+        process.stdout.write(d.changedTitles.join(','));
+      ")
+      CURRENCY_DATE=$(echo "$CHANGE_JSON" | node -e "
+        const d = JSON.parse(require('fs').readFileSync('/dev/stdin','utf-8'));
+        process.stdout.write(d.currencyDate || '');
+      ")
 
-    if [ -z "$TITLES" ]; then
-      echo "    No eCFR titles changed since last run. Nothing to do."
-      exit 0
-    fi
-    echo "    Changed titles: $TITLES"
-    echo ""
-  fi
+      if [ -z "$TITLES" ]; then
+        echo "    No eCFR titles changed since last run. Nothing to do."
+        exit 0
+      fi
+      echo "    Changed titles: $TITLES"
+      echo ""
+      ;;
+  esac
 
   # Build CLI download/convert args
   if [ "$TITLES" = "all" ]; then
@@ -200,7 +280,12 @@ if [ "$DEPLOY_ONLY" = false ]; then
   # emitted ~300 bytes of frontmatter with no body). A healthy eCFR title
   # corpus is ~1.3GB across 49 titles; if we're under 10MB total, something
   # broke and we should not overwrite production with stubs.
-  if [ -d "output-title/ecfr" ]; then
+  #
+  # Skipped in `titles` mode: a single-title run only refreshes one file and
+  # legitimately leaves the rest of output-title/ecfr untouched (preserved by
+  # writeFileIfChanged), so total bytes there have no meaning for that run's
+  # health. Force/incremental modes still get the check.
+  if [ "$MODE" != "titles" ] && [ -d "output-title/ecfr" ]; then
     TITLE_BYTES=$(find output-title/ecfr -name "*.md" -type f -exec wc -c {} + 2>/dev/null | awk 'END {print $1}')
     TITLE_BYTES="${TITLE_BYTES:-0}"
     if [ "$TITLE_BYTES" -lt 10000000 ]; then
@@ -297,8 +382,12 @@ echo ""
 # restart-storms under memory pressure). The deploy script handles: local
 # Docker Meilisearch, incremental indexing, tar+scp of the LMDB data dir,
 # and the atomic PM2 swap on the VPS.
-echo "--- Step 9/9: Building and shipping search index via local Docker"
-"$SCRIPT_DIR/deploy.sh" --search-docker --source ecfr
+if [ "$SKIP_SEARCH" = true ]; then
+  echo "--- Skipping search index step (--skip-search)"
+else
+  echo "--- Step 9/9: Building and shipping search index via local Docker"
+  "$SCRIPT_DIR/deploy.sh" --search-docker --source ecfr
+fi
 
 echo ""
 echo "==> eCFR update complete"
