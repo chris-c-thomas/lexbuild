@@ -293,6 +293,7 @@ Note: identifiers use `/us/cfr/` (content type) not `/us/ecfr/` (data source). B
 
 ## Common Pitfalls
 
+- **macOS zsh aliases `cp` and `mv` to `-i` by default**: interactive overwrite prompts will block scripted flows and Bash tool calls (which can't respond). Use `cat src > dest` for file overwrites, `command cp` / `command mv` to bypass the alias, or `cp -f` / `mv -f` to force.
 - **macOS ships bash 3.2 + `set -u` crashes empty-array expansion**: `/usr/bin/env bash` resolves to `/bin/bash` 3.2.57 on macOS. `printf '%s\n' "${arr[@]}"` and `"${arr[@]}"` at call sites fire `bash: arr[@]: unbound variable` when the array is empty. Use the bash 3.2-safe pattern: `printf '%s\n' "${arr[@]+"${arr[@]}"}"` (and same at call sites). Affects every script in `scripts/` since they all use `set -euo pipefail`.
 - **`set -u` + `$2` in value-taking case arms**: a case arm like `--foo) some_helper "hint $2" ;;` crashes with `bash: $2: unbound variable` if the user runs `script --foo` (no value) — *before* the helper's error-handling runs. Use `${2:-<placeholder>}`. The migration helpers in `scripts/update.sh` are the live example.
 - **macOS BSD sed vs GNU sed brace blocks**: `sed -n '2,/^$/{ s/^# //; p }'` (multi-command brace block) breaks on BSD sed with "extra characters at the end of p command". Use `awk 'NR==1{next} /^$/{exit} {sub(/^# ?/, ""); print}'` for cross-platform multi-line extraction. The update scripts use this pattern for `--help`.

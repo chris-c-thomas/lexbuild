@@ -236,6 +236,7 @@ Interactive API docs powered by `@scalar/api-reference-react`, embedded as a `cl
 
 ## Common Pitfalls
 
+- **Astro `<script>` tag bodies do NOT evaluate `{expression}` template interpolations** — only attributes do. Template interpolations inside `<script>` get passed to the browser as literal text. For dynamic content in scripts, pass via a React island prop (`<DownloadButton client:load content={x} />`) or use `set:html={x}`.
 - **Tailwind v4 uses `@tailwindcss/vite`**, NOT `@astrojs/tailwind` (Tailwind v3). No `postcss.config.mjs` needed.
 - **Tailwind v4 `@theme inline` vars are build-time only** — not runtime CSS custom properties. However, `var()` references to `:root`/`.dark` runtime vars ARE preserved. Scoped `<style>` must use runtime vars or hex directly.
 - **Tailwind v4 utilities may silently fail in `.astro` scoped `<style>` blocks** — but work reliably in template HTML classes, including arbitrary values (`border-[1.5px]`, `rounded-[calc(var(--radius)-2px)]`, `flex-[1.5]`), `dark:` on custom palette colors, and `max-md:` responsive. Prefer Tailwind in template HTML; use scoped `<style>` only for what Tailwind cannot express.
