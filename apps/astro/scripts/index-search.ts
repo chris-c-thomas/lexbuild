@@ -7,11 +7,21 @@
  * IMPORTANT: Keep sources, SearchDocument shape, and index configuration in
  * sync with `index-search-incremental.ts` (the incremental upsert script).
  *
- * Usage: npx tsx scripts/index-search.ts [content-dir]
+ * Usage: npx tsx scripts/index-search.ts [content-dir] [--batch-size <n>] [--verbose-batches]
+ *
+ * Options:
+ *   content-dir           Path to content directory (default: ./content)
+ *   --batch-size <n>      Override docs-per-batch (default 500). Smaller batches use
+ *                         less Meilisearch memory per flush — useful to isolate
+ *                         pathological docs or avoid OOM on memory-tight hosts.
+ *   --verbose-batches     Print the first/last doc ID of each flushed batch. Combined
+ *                         with --batch-size 1 this produces a per-doc log that makes
+ *                         a poison document obvious (last printed ID before a crash).
  *
  * Environment:
  *   MEILI_URL          Meilisearch endpoint (default: http://127.0.0.1:7700)
  *   MEILI_MASTER_KEY   Master key for admin operations (default: none for dev)
+ *   MEILI_BATCH_SIZE   Fallback for --batch-size when the flag is not set.
  */
 
 import { readdir, readFile } from "node:fs/promises";
@@ -24,7 +34,7 @@ import matter from "gray-matter";
 const MEILI_URL = process.env.MEILI_URL ?? "http://127.0.0.1:7700";
 const MEILI_MASTER_KEY = process.env.MEILI_MASTER_KEY ?? "";
 const INDEX_NAME = "lexbuild";
-const BATCH_SIZE = 500;
+const DEFAULT_BATCH_SIZE = 500;
 const BODY_TRUNCATE_CHARS = 5000;
 const GC_INTERVAL = 50_000; // Force GC every N files to prevent heap exhaustion
 
@@ -155,6 +165,7 @@ class BatchIndexer {
     private readonly client: Meilisearch,
     private readonly indexName: string,
     private readonly batchSize: number,
+    private readonly verbose: boolean = false,
   ) {}
 
   async add(doc: SearchDocument): Promise<void> {
@@ -172,9 +183,15 @@ class BatchIndexer {
     const toSend = this.batch;
     this.batch = [];
 
-    const index = this.client.index(this.indexName);
-    const task = await index.addDocuments(toSend);
-    await this.client.tasks.waitForTask(task.taskUid, { timeout: 300_000 });
+    if (this.verbose) {
+      const firstId = toSend[0]?.id ?? "";
+      const lastId = toSend[toSend.length - 1]?.id ?? "";
+      const label = toSend.length === 1 ? firstId : `${firstId} … ${lastId}`;
+      // Force-flush stdout so the last logged batch is durable on crash.
+      process.stdout.write(`  → flushing ${toSend.length} docs: ${label}\n`);
+    }
+
+    await this.flushWithRetry(toSend);
 
     this.totalSent += toSend.length;
     this.batchesSent++;
@@ -184,6 +201,64 @@ class BatchIndexer {
       const mem = (process.memoryUsage.rss() / 1024 / 1024).toFixed(0);
       console.log(`  ${this.totalSent} docs sent (${elapsed}s, ${mem}MB RSS)`);
     }
+  }
+
+  // Meilisearch can silently restart mid-task under memory pressure, causing
+  // ECONNRESET on either addDocuments POST or waitForTask polling. Submitted
+  // tasks are persisted in LMDB and typically resume on server recovery, so we
+  // wait for /health to return "available" and retry — rather than giving up
+  // after a short backoff that can easily expire inside one crash cycle
+  // (observed ~60s between crashes). waitForTask reuses the original taskUid
+  // so we wait for the already-enqueued task rather than resubmitting.
+  private async flushWithRetry(toSend: SearchDocument[]): Promise<void> {
+    const maxAttempts = 5;
+    const healthWaitMs = 180_000;
+    const index = this.client.index(this.indexName);
+    let taskUid: number | null = null;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        if (taskUid === null) {
+          const task = await index.addDocuments(toSend);
+          taskUid = task.taskUid;
+        }
+        await this.client.tasks.waitForTask(taskUid, { timeout: 300_000 });
+        return;
+      } catch (err) {
+        if (attempt === maxAttempts) throw err;
+        const message = err instanceof Error ? err.message : String(err);
+        const firstId = toSend[0]?.id ?? "";
+        const context = taskUid !== null ? `waitForTask(${taskUid})` : "addDocuments";
+        process.stdout.write(
+          `  ⟳ attempt ${attempt}/${maxAttempts - 1} — ${context} failed (${message}) for batch starting ${firstId}\n`,
+        );
+        const recovered = await this.waitForMeiliHealth(healthWaitMs);
+        if (!recovered) {
+          process.stdout.write(`  ⟳ Meilisearch did not recover within ${healthWaitMs / 1000}s — giving up this batch\n`);
+          throw err;
+        }
+        // Small grace period after recovery lets Meilisearch finish its startup.
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+      }
+    }
+  }
+
+  private async waitForMeiliHealth(maxWaitMs: number): Promise<boolean> {
+    const deadline = Date.now() + maxWaitMs;
+    const pollMs = 5000;
+    while (Date.now() < deadline) {
+      try {
+        const health = await this.client.health();
+        if (health.status === "available") {
+          process.stdout.write(`  ⟳ Meilisearch healthy — resuming\n`);
+          return true;
+        }
+      } catch {
+        // Connection refused / reset — Meilisearch still down or restarting
+      }
+      await new Promise((resolve) => setTimeout(resolve, pollMs));
+    }
+    return false;
   }
 
   get total(): number {
@@ -415,12 +490,45 @@ async function configureIndex(client: Meilisearch): Promise<void> {
 // --- Main ---
 
 async function main(): Promise<void> {
-  const contentDir = resolve(process.argv[2] ?? "./content");
+  const args = process.argv.slice(2);
+  let contentDir = "./content";
+  let verboseBatches = false;
 
-  console.log(`Content directory: ${contentDir}`);
+  // Resolve batch size from env first; a --batch-size flag overrides.
+  let batchSize = DEFAULT_BATCH_SIZE;
+  const envBatch = process.env.MEILI_BATCH_SIZE;
+  if (envBatch) {
+    const parsed = Number.parseInt(envBatch, 10);
+    if (!Number.isFinite(parsed) || parsed < 1) {
+      console.error(`Invalid MEILI_BATCH_SIZE: ${envBatch}. Must be a positive integer.`);
+      process.exit(1);
+    }
+    batchSize = parsed;
+  }
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i]!;
+    if (arg === "--verbose-batches") {
+      verboseBatches = true;
+    } else if (arg === "--batch-size" && args[i + 1]) {
+      const parsed = Number.parseInt(args[i + 1]!, 10);
+      if (!Number.isFinite(parsed) || parsed < 1) {
+        console.error(`Invalid --batch-size: ${args[i + 1]}. Must be a positive integer.`);
+        process.exit(1);
+      }
+      batchSize = parsed;
+      i++;
+    } else if (!arg.startsWith("--")) {
+      contentDir = arg;
+    }
+  }
+
+  const resolvedDir = resolve(contentDir);
+
+  console.log(`Content directory: ${resolvedDir}`);
   console.log(`Meilisearch URL: ${MEILI_URL}`);
   console.log(`Index name: ${INDEX_NAME}`);
-  console.log(`Batch size: ${BATCH_SIZE}`);
+  console.log(`Batch size: ${batchSize}${verboseBatches ? " (verbose)" : ""}`);
   console.log(`Mode: full reindex (deletes existing index, rebuilds from scratch)`);
 
   const client = new Meilisearch({
@@ -448,23 +556,23 @@ async function main(): Promise<void> {
 
   await configureIndex(client);
 
-  const indexer = new BatchIndexer(client, INDEX_NAME, BATCH_SIZE);
+  const indexer = new BatchIndexer(client, INDEX_NAME, batchSize, verboseBatches);
 
   console.log("\nIndexing USC documents...");
   console.log("  Reading .md files, extracting frontmatter, sending to Meilisearch in batches...");
-  const uscCount = await indexUscDocuments(contentDir, indexer);
+  const uscCount = await indexUscDocuments(resolvedDir, indexer);
   await indexer.flush();
   console.log(`  ${uscCount} USC documents indexed`);
 
   console.log("\nIndexing eCFR documents...");
   console.log("  Reading .md files, extracting frontmatter, sending to Meilisearch in batches...");
-  const ecfrCount = await indexEcfrDocuments(contentDir, indexer);
+  const ecfrCount = await indexEcfrDocuments(resolvedDir, indexer);
   await indexer.flush();
   console.log(`  ${ecfrCount} eCFR documents indexed`);
 
   console.log("\nIndexing FR documents...");
   console.log("  Reading .md files, extracting frontmatter, sending to Meilisearch in batches...");
-  const frCount = await indexFrDocuments(contentDir, indexer);
+  const frCount = await indexFrDocuments(resolvedDir, indexer);
   await indexer.flush();
   console.log(`  ${frCount} FR documents indexed`);
 
