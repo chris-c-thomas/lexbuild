@@ -1,5 +1,11 @@
 # @lexbuild/usc
 
+## 1.26.0
+
+### Minor Changes
+
+- Lockstep release. No source-code changes in this package; bumped alongside the rest of the monorepo for the v1.26.0 release. Highlights for the release are in the root `CHANGELOG.md` (update-script flag-scheme overhaul, FR checkpoint, security patches via `pnpm.overrides`).
+
 ## 1.25.0
 
 ### Minor Changes

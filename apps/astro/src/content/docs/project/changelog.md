@@ -12,13 +12,15 @@ For the complete changelog, see [CHANGELOG.md on GitHub](https://github.com/chri
 
 ## Recent Releases
 
-### Unreleased
+### 1.26.0
 
 - Unified update-script flag scheme. `./scripts/update.sh` (no args) now updates all sources incrementally from each source's last checkpoint. Source restriction via `--source`; source-scoping flags (`--titles`, `--days`, `--from`, `--to`) live at the top level. Old prefixes (`--ecfr-titles`, `--fr-days`, `--usc-force`, etc.) are removed and print migration hints
-- New `--skip-search`, `--dry-run`, and consistent `--force` semantics across all four scripts
-- New FR checkpoint at `downloads/fr/.fr-state.json` (`{ lastRun, lastDate }`). Default `update-fr.sh` resumes from `lastDate`. Missing checkpoint errors with a hint requiring `--from` or `--days`
+- New `--skip-search`, `--dry-run`, `-v / --verbose`, and consistent `--force` semantics across all four scripts
+- New FR checkpoint at `downloads/fr/.fr-state.json` (`{ lastRun, lastDate }`). Default `update-fr.sh` resumes from `lastDate`. Missing checkpoint errors with a hint requiring `--from` or `--days`. Backfill runs no longer regress the cursor (write `max(checkpoint, DATE_TO)`)
 - eCFR/USC bootstrap (missing checkpoint) now logs explicitly and runs a full first-run automatically
 - Fixed: `--verbose` / `-v` on the update scripts now actually works — sub-scripts accept the flag and pass `--verbose` through to their `convert-*` CLI step (previously exited 1 with "Unknown option")
+- Fixed: default `./scripts/update.sh` no longer crashes on macOS bash 3.2 + `set -u`; bare value-taking flags now print a friendly error instead of crashing
+- Security: patched transitive `protobufjs` (critical, RCE), `postcss`, and `dompurify` via `pnpm.overrides`
 
 ### 1.17.2
 

@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
-## [Unreleased]
+## [1.26.0] - 2026-04-24
+
+### Security
+
+- Patch transitive dependency vulnerabilities via `pnpm.overrides`: `protobufjs ^7.5.5` (critical, GHSA-xq3m-2v4x-88gg arbitrary code execution), `postcss ^8.5.10` (GHSA-qx2v-qp2m-jg93 XSS), `dompurify ^3.4.0` bumped from `^3.3.2` (GHSA-39q2-94rc-95cp, GHSA-v9jr-rg53-9pgp, GHSA-h7mw-gpvr-xq4m, GHSA-crv5-9vww-q3g8 XSS / sanitizer bypasses).
 
 ### Changed
 
@@ -13,11 +17,17 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 - Add `--skip-search`, `--dry-run`, and consistent `--force` semantics to all four scripts.
 - `update-fr.sh` now persists a JSON checkpoint at `downloads/fr/.fr-state.json` (`{ lastRun, lastDate }`). Default invocations resume from `lastDate`. Bootstrap (no checkpoint) errors with a hint requiring `--from` or `--days`, since FR has no inherent "all".
 - eCFR/USC bootstrap (missing `.ecfr-titles-state.json` / `.usc-release-point`) now logs the bootstrap explicitly and falls back to a full first-run automatically.
-- When `--force` runs against all three sources, the orchestrator now performs a single full `deploy.sh --search-docker` reindex at the end instead of three per-source incremental indexes.
+- When `--force` runs against all three sources, the orchestrator now performs a single full `deploy.sh --search-docker` reindex at the end instead of three per-source incremental indexes (auto-skipped when `VPS_HOST` is unset).
+- `update.sh` `--source` parsing now trims surrounding whitespace per entry, so `--source ecfr, fr` (with a space after the comma) works.
+- Bare value-taking flags (`--source`, `--titles`, `--from`, `--to`, `--days`) without a value now print a friendly error and exit 1 instead of crashing under `set -u` with `$2: unbound variable`.
 
 ### Fixed
 
 - `--verbose` / `-v` on `update.sh` and the three sub-scripts now actually works. Previously the orchestrator parsed it and forwarded `--verbose` to each sub-script, but the sub-scripts rejected it as "Unknown option" and exited 1. Each sub-script now accepts `-v` / `--verbose` and threads `--verbose` through to its `convert-*` CLI invocation.
+- `update.sh` no longer crashes default `./scripts/update.sh` invocation on macOS bash 3.2 + `set -u`. Empty-array expansion and `removed_flag $2` references both used patterns that fired `bash: ...: unbound variable` before any user-facing error could print. Switched to `${arr[@]+"${arr[@]}"}` and `${2:-<placeholder>}`.
+- `update-fr.sh` checkpoint write is now atomic (tmp + rename) and guards against backfill regression: a `--from 2020-01-01 --to 2020-12-31` run on a machine whose checkpoint is already 2026-04-20 no longer regresses the cursor (which would have triggered a multi-year redownload on the next default run). Now writes `max(checkpoint, DATE_TO)`.
+- `update-fr.sh` `read_checkpoint_date` now warns explicitly when the checkpoint file exists but is malformed, instead of silently routing the user to a misleading "no checkpoint" bootstrap-error.
+- `update.sh` `--titles` validation now correctly requires `--source` to include `ecfr` (USC sub-script doesn't accept `--titles`; previously `--source usc --titles X` silently ran the full USC pipeline with no filtering).
 
 ## [1.25.0]
 
