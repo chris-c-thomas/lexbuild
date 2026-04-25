@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 interface DownloadButtonProps {
   content: string;
   filename: string;
+  label?: string;
 }
 
 /** Downloads the raw Markdown content as a .md file. */
-export function DownloadButton({ content, filename }: DownloadButtonProps) {
+export function DownloadButton({ content, filename, label = "Download" }: DownloadButtonProps) {
   const [downloaded, setDownloaded] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(null);
 
@@ -42,7 +43,7 @@ export function DownloadButton({ content, filename }: DownloadButtonProps) {
       ) : (
         <>
           <Download className="size-3.5" />
-          Download
+          {label}
         </>
       )}
     </Button>

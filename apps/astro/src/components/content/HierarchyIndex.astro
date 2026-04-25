@@ -4,11 +4,10 @@
  * Shows child items as cards with stats, plus a download button
  * for the current granularity's .md file (if it exists).
  */
-import { Button } from "@/components/ui/button";
+import { DownloadButton } from "@/components/content/DownloadButton";
 import { toTitleCase } from "@/lib/utils";
 import { getFile } from "@/lib/content";
 import type { SourceId, Granularity } from "@/lib/types";
-import { Download } from "lucide-react";
 
 interface ChildItem {
   label: string;
@@ -48,16 +47,13 @@ const granularityLabel = granularity === "title" ? "Title" : granularity === "ch
       {description && <p class="text-ink-muted mt-1 text-[15px]">{description}</p>}
     </div>
     {
-      downloadAvailable && downloadFilename && (
-        <>
-          <Button variant="outline" size="sm" id="download-btn">
-            <Download data-icon="inline-start" />
-            Download {granularityLabel}
-          </Button>
-          <script id="download-content" type="text/plain" data-filename={downloadFilename}>
-            {downloadContent}
-          </script>
-        </>
+      downloadAvailable && downloadFilename && downloadContent && (
+        <DownloadButton
+          client:load
+          content={downloadContent}
+          filename={downloadFilename}
+          label={`Download ${granularityLabel}`}
+        />
       )
     }
   </div>
@@ -99,19 +95,3 @@ const granularityLabel = granularity === "title" ? "Title" : granularity === "ch
     )
   }
 </div>
-
-<script>
-  document.getElementById("download-btn")?.addEventListener("click", () => {
-    const container = document.getElementById("download-content");
-    if (!container) return;
-    const blob = new Blob([container.textContent || ""], {
-      type: "text/markdown;charset=utf-8",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = container.getAttribute("data-filename") || "download.md";
-    a.click();
-    URL.revokeObjectURL(url);
-  });
-</script>
