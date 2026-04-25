@@ -217,9 +217,7 @@ class BatchIndexer {
       process.stdout.write(`  → flushing ${toSend.length} docs: ${label}\n`);
     }
 
-    const index = this.client.index(this.indexName);
-    const task = await index.addDocuments(toSend);
-    await this.client.tasks.waitForTask(task.taskUid, { timeout: 300_000 });
+    await this.flushWithRetry(toSend);
 
     this.totalSent += toSend.length;
     this.batchesSent++;
@@ -229,6 +227,64 @@ class BatchIndexer {
       const mem = (process.memoryUsage.rss() / 1024 / 1024).toFixed(0);
       console.log(`  ${this.totalSent} docs upserted (${elapsed}s, ${mem}MB RSS)`);
     }
+  }
+
+  // Meilisearch can silently restart mid-task under memory pressure, causing
+  // ECONNRESET on either addDocuments POST or waitForTask polling. Submitted
+  // tasks are persisted in LMDB and typically resume on server recovery, so we
+  // wait for /health to return "available" and retry — rather than giving up
+  // after a short backoff that can easily expire inside one crash cycle
+  // (observed ~60s between crashes). waitForTask reuses the original taskUid
+  // so we wait for the already-enqueued task rather than resubmitting.
+  private async flushWithRetry(toSend: SearchDocument[]): Promise<void> {
+    const maxAttempts = 5;
+    const healthWaitMs = 180_000;
+    const index = this.client.index(this.indexName);
+    let taskUid: number | null = null;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        if (taskUid === null) {
+          const task = await index.addDocuments(toSend);
+          taskUid = task.taskUid;
+        }
+        await this.client.tasks.waitForTask(taskUid, { timeout: 300_000 });
+        return;
+      } catch (err) {
+        if (attempt === maxAttempts) throw err;
+        const message = err instanceof Error ? err.message : String(err);
+        const firstId = toSend[0]?.id ?? "";
+        const context = taskUid !== null ? `waitForTask(${taskUid})` : "addDocuments";
+        process.stdout.write(
+          `  ⟳ attempt ${attempt}/${maxAttempts - 1} — ${context} failed (${message}) for batch starting ${firstId}\n`,
+        );
+        const recovered = await this.waitForMeiliHealth(healthWaitMs);
+        if (!recovered) {
+          process.stdout.write(`  ⟳ Meilisearch did not recover within ${healthWaitMs / 1000}s — giving up this batch\n`);
+          throw err;
+        }
+        // Small grace period after recovery lets Meilisearch finish its startup.
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+      }
+    }
+  }
+
+  private async waitForMeiliHealth(maxWaitMs: number): Promise<boolean> {
+    const deadline = Date.now() + maxWaitMs;
+    const pollMs = 5000;
+    while (Date.now() < deadline) {
+      try {
+        const health = await this.client.health();
+        if (health.status === "available") {
+          process.stdout.write(`  ⟳ Meilisearch healthy — resuming\n`);
+          return true;
+        }
+      } catch {
+        // Connection refused / reset — Meilisearch still down or restarting
+      }
+      await new Promise((resolve) => setTimeout(resolve, pollMs));
+    }
+    return false;
   }
 
   get total(): number {
