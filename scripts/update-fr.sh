@@ -11,6 +11,7 @@
 #   ./scripts/update-fr.sh --skip-search            # Skip search reindex (still rsync)
 #   ./scripts/update-fr.sh --deploy-only            # Push existing output + reindex
 #   ./scripts/update-fr.sh --dry-run                # Print plan, exit 0
+#   ./scripts/update-fr.sh -v / --verbose           # Pass --verbose through to convert-fr
 #
 # Modes:
 #   incremental  Default. --from = lastDate from .fr-state.json, --to = today.
@@ -58,6 +59,7 @@ SKIP_DEPLOY=false
 DEPLOY_ONLY=false
 SKIP_SEARCH=false
 DRY_RUN=false
+VERBOSE=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -91,6 +93,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --dry-run)
       DRY_RUN=true
+      shift
+      ;;
+    -v|--verbose)
+      VERBOSE=true
       shift
       ;;
     --help|-h)
@@ -275,7 +281,10 @@ if [ "$DEPLOY_ONLY" = false ]; then
 
   # Step 3: Convert (date-filtered — only converts files in the date range)
   echo "--- Step 3/8: Converting FR documents ($DATE_FROM to $DATE_TO)"
-  $CLI convert-fr --all --from "$DATE_FROM" --to "$DATE_TO"
+  VERBOSE_ARG=""
+  [ "$VERBOSE" = true ] && VERBOSE_ARG="--verbose"
+  # shellcheck disable=SC2086
+  $CLI convert-fr --all --from "$DATE_FROM" --to "$DATE_TO" $VERBOSE_ARG
   echo ""
 
   # Sanity check: downloaded XML must yield converted Markdown. writeFileIfChanged

@@ -10,6 +10,7 @@
 #   ./scripts/update-ecfr.sh --skip-highlights   # Skip highlight generation
 #   ./scripts/update-ecfr.sh --deploy-only       # Push existing output + reindex
 #   ./scripts/update-ecfr.sh --dry-run           # Print plan, exit 0
+#   ./scripts/update-ecfr.sh -v / --verbose      # Pass --verbose through to convert-ecfr
 #
 # Modes:
 #   incremental  Default. ecfr-changed-titles.ts compares API metadata vs checkpoint.
@@ -60,6 +61,7 @@ DEPLOY_ONLY=false
 SKIP_HIGHLIGHTS=false
 SKIP_SEARCH=false
 DRY_RUN=false
+VERBOSE=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -89,6 +91,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --dry-run)
       DRY_RUN=true
+      shift
+      ;;
+    -v|--verbose)
+      VERBOSE=true
       shift
       ;;
     --all)
@@ -253,8 +259,10 @@ if [ "$DEPLOY_ONLY" = false ]; then
   # emits section + title + chapter + part from one pass of the XML, writing
   # each to its own output dir. writeFileIfChanged preserves mtimes.
   echo "--- Step 3/7: Converting eCFR titles ($TITLE_ARG) at all granularities"
+  VERBOSE_ARG=""
+  [ "$VERBOSE" = true ] && VERBOSE_ARG="--verbose"
   # shellcheck disable=SC2086
-  $CLI convert-ecfr $TITLE_ARG $CURRENCY_ARG \
+  $CLI convert-ecfr $TITLE_ARG $CURRENCY_ARG $VERBOSE_ARG \
     --granularities section,title,chapter,part \
     --output ./output \
     --output-title ./output-title \

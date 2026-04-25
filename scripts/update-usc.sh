@@ -9,6 +9,7 @@
 #   ./scripts/update-usc.sh --skip-highlights # Skip highlight generation
 #   ./scripts/update-usc.sh --deploy-only    # Push existing output + reindex
 #   ./scripts/update-usc.sh --dry-run        # Print plan, exit 0
+#   ./scripts/update-usc.sh -v / --verbose   # Pass --verbose through to convert-usc
 #
 # Modes:
 #   incremental  Default. Compares latest OLRC release point to .usc-release-point.
@@ -53,6 +54,7 @@ DEPLOY_ONLY=false
 SKIP_HIGHLIGHTS=false
 SKIP_SEARCH=false
 DRY_RUN=false
+VERBOSE=false
 LATEST=""
 
 while [[ $# -gt 0 ]]; do
@@ -79,6 +81,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --dry-run)
       DRY_RUN=true
+      shift
+      ;;
+    -v|--verbose)
+      VERBOSE=true
       shift
       ;;
     --help|-h)
@@ -210,8 +216,10 @@ if [ "$DEPLOY_ONLY" = false ]; then
   # $CLI is intentionally unquoted so its embedded spaces word-split into
   # "node ... dist/index.js" args. shellcheck disable=SC2086
   echo "--- Step 3/7: Converting USC titles at all granularities"
+  VERBOSE_ARG=""
+  [ "$VERBOSE" = true ] && VERBOSE_ARG="--verbose"
   # shellcheck disable=SC2086
-  $CLI convert-usc --all \
+  $CLI convert-usc --all $VERBOSE_ARG \
     --granularities section,title,chapter \
     --output ./output \
     --output-title ./output-title \
